@@ -15,6 +15,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -39,7 +40,7 @@ func GetStorageClass(
 
 	// Check existing storage classes for a match based on the name
 	sc, err := o.GetStorageClass(ctx, newScConfig.Name)
-	if err != nil && !utils.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, err
 	}
 	if sc != nil {

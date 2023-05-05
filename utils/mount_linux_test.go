@@ -4,10 +4,11 @@ package utils
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestParseProcMountinfo(t *testing.T) {
@@ -149,21 +150,21 @@ func TestMountSMBPath(t *testing.T) {
 	ctx := context.Background()
 	result := mountSMBPath(ctx, "\\export\\path", "\\mount\\path", "test-user", "password")
 	assert.Error(t, result, "no error")
-	assert.True(t, IsUnsupportedError(result), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(result), "not UnsupportedError")
 }
 
 func TestUmountSMBPath(t *testing.T) {
 	ctx := context.Background()
 	result := UmountSMBPath(ctx, "", "test-target")
 	assert.Error(t, result, "no error")
-	assert.True(t, IsUnsupportedError(result), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(result), "not UnsupportedError")
 }
 
 func TestWindowsBindMount(t *testing.T) {
 	ctx := context.Background()
 	result := WindowsBindMount(ctx, "test-source", "test-target", []string{"test-val1", "test-val2"})
 	assert.Error(t, result, "no error")
-	assert.True(t, IsUnsupportedError(result), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(result), "not UnsupportedError")
 }
 
 func TestIsCompatible_NFSProtocol(t *testing.T) {

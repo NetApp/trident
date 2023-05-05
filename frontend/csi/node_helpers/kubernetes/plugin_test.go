@@ -4,7 +4,6 @@ package kubernetes
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,6 +19,7 @@ import (
 	mockOrchestrator "github.com/netapp/trident/mocks/mock_core"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (

@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -33,6 +32,7 @@ import (
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestMain(m *testing.M) {
@@ -2101,7 +2101,7 @@ func runRecoveryTests(
 		}
 		f, ok := backend.Driver().(*fakedriver.StorageDriver)
 		if !ok {
-			t.Fatalf("%e", utils.TypeAssertionError("backend.Driver().(*fakedriver.StorageDriver)"))
+			t.Fatalf("%e", errors.TypeAssertionError("backend.Driver().(*fakedriver.StorageDriver)"))
 		}
 		// Destroy should be always called on the backend
 		if _, ok := f.DestroyedVolumes[f.GetInternalVolumeName(ctx(), c.volumeConfig.Name)]; !ok && c.expectDestroy {
@@ -2257,7 +2257,7 @@ func runSnapshotRecoveryTests(
 		}
 		f, ok := backend.Driver().(*fakedriver.StorageDriver)
 		if !ok {
-			t.Fatalf("%e", utils.TypeAssertionError("backend.Driver().(*fakedriver.StorageDriver)"))
+			t.Fatalf("%e", errors.TypeAssertionError("backend.Driver().(*fakedriver.StorageDriver)"))
 		}
 
 		_, ok = f.DestroyedSnapshots[c.snapshotConfig.ID()]
@@ -2432,110 +2432,110 @@ func TestOrchestratorNotReady(t *testing.T) {
 
 	orchestrator := getOrchestrator(t, false)
 	orchestrator.bootstrapped = false
-	orchestrator.bootstrapError = utils.NotReadyError()
+	orchestrator.bootstrapError = errors.NotReadyError()
 
 	backend, err = orchestrator.AddBackend(ctx(), "", "")
-	if backend != nil || !utils.IsNotReadyError(err) {
+	if backend != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected AddBackend to return an error.")
 	}
 
 	backend, err = orchestrator.GetBackend(ctx(), "")
-	if backend != nil || !utils.IsNotReadyError(err) {
+	if backend != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected GetBackend to return an error.")
 	}
 
 	backends, err = orchestrator.ListBackends(ctx())
-	if backends != nil || !utils.IsNotReadyError(err) {
+	if backends != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected ListBackends to return an error.")
 	}
 
 	err = orchestrator.DeleteBackend(ctx(), "")
-	if !utils.IsNotReadyError(err) {
+	if !errors.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteBackend to return an error.")
 	}
 
 	volume, err = orchestrator.AddVolume(ctx(), nil)
-	if volume != nil || !utils.IsNotReadyError(err) {
+	if volume != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected AddVolume to return an error.")
 	}
 
 	volume, err = orchestrator.CloneVolume(ctx(), nil)
-	if volume != nil || !utils.IsNotReadyError(err) {
+	if volume != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected CloneVolume to return an error.")
 	}
 
 	volume, err = orchestrator.GetVolume(ctx(), "")
-	if volume != nil || !utils.IsNotReadyError(err) {
+	if volume != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected GetVolume to return an error.")
 	}
 
 	volumes, err = orchestrator.ListVolumes(ctx())
-	if volumes != nil || !utils.IsNotReadyError(err) {
+	if volumes != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected ListVolumes to return an error.")
 	}
 
 	err = orchestrator.DeleteVolume(ctx(), "")
-	if !utils.IsNotReadyError(err) {
+	if !errors.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteVolume to return an error.")
 	}
 
 	err = orchestrator.AttachVolume(ctx(), "", "", nil)
-	if !utils.IsNotReadyError(err) {
+	if !errors.IsNotReadyError(err) {
 		t.Errorf("Expected AttachVolume to return an error.")
 	}
 
 	err = orchestrator.DetachVolume(ctx(), "", "")
-	if !utils.IsNotReadyError(err) {
+	if !errors.IsNotReadyError(err) {
 		t.Errorf("Expected DetachVolume to return an error.")
 	}
 
 	snapshot, err = orchestrator.CreateSnapshot(ctx(), nil)
-	if snapshot != nil || !utils.IsNotReadyError(err) {
+	if snapshot != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected CreateSnapshot to return an error.")
 	}
 
 	snapshot, err = orchestrator.GetSnapshot(ctx(), "", "")
-	if snapshot != nil || !utils.IsNotReadyError(err) {
+	if snapshot != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected GetSnapshot to return an error.")
 	}
 
 	snapshots, err = orchestrator.ListSnapshots(ctx())
-	if snapshots != nil || !utils.IsNotReadyError(err) {
+	if snapshots != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected ListSnapshots to return an error.")
 	}
 
 	snapshots, err = orchestrator.ReadSnapshotsForVolume(ctx(), "")
-	if snapshots != nil || !utils.IsNotReadyError(err) {
+	if snapshots != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected ReadSnapshotsForVolume to return an error.")
 	}
 
 	err = orchestrator.DeleteSnapshot(ctx(), "", "")
-	if !utils.IsNotReadyError(err) {
+	if !errors.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteSnapshot to return an error.")
 	}
 
 	err = orchestrator.ReloadVolumes(ctx())
-	if !utils.IsNotReadyError(err) {
+	if !errors.IsNotReadyError(err) {
 		t.Errorf("Expected ReloadVolumes to return an error.")
 	}
 
 	storageClass, err = orchestrator.AddStorageClass(ctx(), nil)
-	if storageClass != nil || !utils.IsNotReadyError(err) {
+	if storageClass != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected AddStorageClass to return an error.")
 	}
 
 	storageClass, err = orchestrator.GetStorageClass(ctx(), "")
-	if storageClass != nil || !utils.IsNotReadyError(err) {
+	if storageClass != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected GetStorageClass to return an error.")
 	}
 
 	storageClasses, err = orchestrator.ListStorageClasses(ctx())
-	if storageClasses != nil || !utils.IsNotReadyError(err) {
+	if storageClasses != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected ListStorageClasses to return an error.")
 	}
 
 	err = orchestrator.DeleteStorageClass(ctx(), "")
-	if !utils.IsNotReadyError(err) {
+	if !errors.IsNotReadyError(err) {
 		t.Errorf("Expected DeleteStorageClass to return an error.")
 	}
 }
@@ -2985,7 +2985,7 @@ func TestGetVolumePublicationNotFound(t *testing.T) {
 
 	actualPub, err := orchestrator.GetVolumePublication(ctx(), "NotFound", "NotFound")
 	assert.NotNilf(t, err, fmt.Sprintf("unexpected success getting volume publication: %v", err))
-	assert.True(t, utils.IsNotFoundError(err), "incorrect error type returned")
+	assert.True(t, errors.IsNotFoundError(err), "incorrect error type returned")
 	assert.Empty(t, actualPub, "non-empty publication returned")
 }
 
@@ -3016,7 +3016,7 @@ func TestGetVolumePublicationError(t *testing.T) {
 
 	actualPub, err := orchestrator.GetVolumePublication(ctx(), fakePub.VolumeName, fakePub.NodeName)
 	assert.NotNilf(t, err, fmt.Sprintf("unexpected success getting volume publication: %v", err))
-	assert.False(t, utils.IsNotFoundError(err), "incorrect error type returned")
+	assert.False(t, errors.IsNotFoundError(err), "incorrect error type returned")
 	assert.Empty(t, actualPub, "non-empty publication returned")
 }
 
@@ -3485,7 +3485,7 @@ func TestDeleteVolumePublicationNotFoundPersistence(t *testing.T) {
 	orchestrator.nodes.Set(fakeNode.Name, fakeNode)
 
 	// Verify delete is idempotent when the persistence object is missing
-	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(utils.NotFoundError("not found"))
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(errors.NotFoundError("not found"))
 	err := orchestrator.DeleteVolumePublication(ctx(), fakePub.VolumeName, fakePub.NodeName)
 	assert.Nilf(t, err, fmt.Sprintf("unexpected error deleting volume publication: %v", err))
 	assert.NotContains(t, orchestrator.volumePublications.Map(), fakePub.VolumeName,
@@ -3519,7 +3519,7 @@ func TestDeleteVolumePublicationError(t *testing.T) {
 
 	err := orchestrator.DeleteVolumePublication(ctx(), fakePub.VolumeName, fakePub.NodeName)
 	assert.NotNil(t, err, fmt.Sprintf("unexpected success deleting volume publication"))
-	assert.False(t, utils.IsNotFoundError(err), "incorrect error type returned")
+	assert.False(t, errors.IsNotFoundError(err), "incorrect error type returned")
 	assert.Equal(t, fakePub, orchestrator.volumePublications.Get(fakePub.VolumeName, fakePub.NodeName),
 		"publication improperly removed/updated in cache")
 }
@@ -3668,7 +3668,7 @@ func TestUpdateNode_NodeNotFound(t *testing.T) {
 
 	result := orchestrator.UpdateNode(ctx(), "testNode1", &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
 
-	assert.True(t, utils.IsNotFoundError(result), "UpdateNode did not fail")
+	assert.True(t, errors.IsNotFoundError(result), "UpdateNode did not fail")
 }
 
 func TestUpdateNode_NodeStoreUpdateFailed(t *testing.T) {
@@ -4547,7 +4547,7 @@ func TestPublishVolume(t *testing.T) {
 				mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
 				mockBackend.EXPECT().EnablePublishEnforcement(coreCtx, gomock.Any()).Return(
-					utils.UnsupportedError("unsupported error"))
+					errors.UnsupportedError("unsupported error"))
 				mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockBackend.EXPECT().Volumes().Return(map[string]*storage.Volume{volumeName: volume})
 				mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
@@ -6478,7 +6478,7 @@ func TestCreateSnapshotError(t *testing.T) {
 				mockStoreClient.EXPECT().AddVolumeTransaction(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
 			if tt.name == "MaxLimitError" {
-				mockBackend.EXPECT().CreateSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil, utils.MaxLimitReachedError("error"))
+				mockBackend.EXPECT().CreateSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil, errors.MaxLimitReachedError("error"))
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to delete transaction"))
 			}
 			if tt.name == "CreateSnapshotError" {
@@ -7277,7 +7277,7 @@ func TestReconcileVolumePublications_FailsWithBootstrapError(t *testing.T) {
 	// Set up caches and inject mocks to test if a publication is created or the legacy volume.
 	o := getOrchestrator(t, false)
 	o.storeClient = mockStoreClient
-	o.bootstrapError = utils.NotReadyError()
+	o.bootstrapError = errors.NotReadyError()
 	o.volumePublicationsSynced = false
 
 	// Set up expected mock calls.

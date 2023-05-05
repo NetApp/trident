@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func (p *Plugin) Probe(
@@ -26,7 +26,7 @@ func (p *Plugin) Probe(
 	// Ensure Trident bootstrapped OK.  We only return an error if Trident bootstrapping
 	// failed (i.e. unrecoverable), not if Trident is still initializing.
 	_, err := p.orchestrator.GetVersion(ctx)
-	if utils.IsBootstrapError(err) {
+	if errors.IsBootstrapError(err) {
 		return &csi.ProbeResponse{}, status.Error(codes.FailedPrecondition, err.Error())
 	}
 

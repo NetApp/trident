@@ -23,6 +23,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -567,7 +568,7 @@ func (p *Plugin) dockerError(ctx context.Context, err error) error {
 		Logc(ctx).WithError(err).Error("Docker frontend method returning error.")
 	}
 
-	if utils.IsBootstrapError(err) {
+	if errors.IsBootstrapError(err) {
 		return fmt.Errorf("%s; use 'journalctl -fu docker' to learn more", err.Error())
 	} else {
 		return err
@@ -583,7 +584,7 @@ func (p *Plugin) reloadVolumes(ctx context.Context) error {
 		err := p.orchestrator.ReloadVolumes(ctx)
 		if err == nil {
 			return nil
-		} else if utils.IsNotReadyError(err) {
+		} else if errors.IsNotReadyError(err) {
 			return err
 		} else {
 			return backoff.Permanent(err)

@@ -17,6 +17,7 @@ import (
 	"golang.org/x/sys/unix"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type statFSResult struct {
@@ -246,5 +247,5 @@ func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
 func SMBActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.SMBActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.SMBActiveOnHost")
-	return false, UnsupportedError("SMBActiveOnHost is not supported for linux")
+	return false, errors.UnsupportedError("SMBActiveOnHost is not supported for linux")
 }

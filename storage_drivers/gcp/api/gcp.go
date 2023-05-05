@@ -8,7 +8,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,6 +23,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -382,7 +382,7 @@ func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, err
 	}
 
 	if len(matchingVolumes) == 0 {
-		return nil, utils.NotFoundError(fmt.Sprintf("volume with name %s not found", name))
+		return nil, errors.NotFoundError(fmt.Sprintf("volume with name %s not found", name))
 	} else if len(matchingVolumes) > 1 {
 		return nil, fmt.Errorf("multiple volumes with name %s found", name)
 	}
@@ -410,7 +410,7 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 	}
 
 	if len(volumes) == 0 {
-		return nil, utils.NotFoundError(fmt.Sprintf("volume with creationToken %s not found", creationToken))
+		return nil, errors.NotFoundError(fmt.Sprintf("volume with creationToken %s not found", creationToken))
 	} else if len(volumes) > 1 {
 		return nil, fmt.Errorf("multiple volumes with creationToken %s found", creationToken)
 	}
@@ -427,7 +427,7 @@ func (d *Client) VolumeExistsByCreationToken(ctx context.Context, creationToken 
 	}
 
 	if err := d.getErrorFromAPIResponse(response, responseBody); err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil, nil
 		} else {
 			return false, nil, err
@@ -1030,7 +1030,7 @@ func (d *Client) getErrorFromAPIResponse(response *http.Response, responseBody [
 		} else {
 			switch response.StatusCode {
 			case http.StatusNotFound:
-				return utils.NotFoundError(responseData.Message)
+				return errors.NotFoundError(responseData.Message)
 			default:
 				return Error{response.StatusCode, responseData.Code, responseData.Message}
 			}

@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetDeviceFilePath(t *testing.T) {
@@ -23,5 +25,5 @@ func TestGetUnmountPath(t *testing.T) {
 	result, err := GetUnmountPath(ctx, &VolumeTrackingInfo{})
 	assert.Equal(t, result, "", "got unmount path")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }

@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 	trident "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var ontapConfigRedactList = [...]string{
@@ -196,7 +196,7 @@ func CheckVolumeSizeLimits(
 	}).Debugf("Comparing limits")
 
 	if requestedSize > float64(volumeSizeLimit) {
-		return true, volumeSizeLimit, utils.UnsupportedCapacityRangeError(fmt.Errorf(
+		return true, volumeSizeLimit, errors.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested size: %1.f > the size limit: %d", requestedSize, volumeSizeLimit))
 	}
 
@@ -207,7 +207,7 @@ func CheckVolumeSizeLimits(
 // volume size
 func CheckMinVolumeSize(requestedSizeBytes, minVolumeSizeBytes uint64) error {
 	if requestedSizeBytes < minVolumeSizeBytes {
-		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size ("+
+		return errors.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size ("+
 			"%d bytes) is too small; the minimum volume size is %d bytes",
 			requestedSizeBytes, minVolumeSizeBytes))
 	}

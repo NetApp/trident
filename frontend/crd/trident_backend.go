@@ -9,7 +9,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func (c *TridentCrdController) updateTridentBackendHandler(old, new interface{}) {
@@ -90,7 +90,7 @@ func (c *TridentCrdController) handleTridentBackend(keyItem *KeyItem) error {
 	// Get the backend config that matches the backendUUID, i.e. the key
 	backendConfig, err := c.getBackendConfigWithBackendUUID(ctx, namespace, name)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			Logx(ctx).Warnf("No backend config is associated with the backendUUID '%v'.", name)
 		} else {
 			Logx(ctx).Errorf("unable to identify a backend config associated with the backendUUID '%v'.", name)

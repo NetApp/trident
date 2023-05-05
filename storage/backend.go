@@ -7,7 +7,6 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -22,6 +21,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // Driver provides a common interface for storage related operations
@@ -89,7 +89,8 @@ type Mirrorer interface {
 	PromoteMirror(ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string) (bool, error)
 	GetMirrorStatus(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, error)
 	ReleaseMirror(ctx context.Context, localInternalVolumeName string) error
-	GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
+	GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string,
+		string, error)
 }
 
 // StateGetter provides a common interface for backends that support polling backend for state information.
@@ -942,7 +943,7 @@ func (b *StorageBackend) CanGetState() bool {
 func (b *StorageBackend) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	stateDriver, ok := b.driver.(StateGetter)
 	if !ok {
-		Logc(ctx).WithError(utils.UnsupportedError(
+		Logc(ctx).WithError(errors.UnsupportedError(
 			fmt.Sprintf("polling is not implemented by backends of type %v", b.driver.Name())))
 		return "", nil
 	}
@@ -1200,7 +1201,7 @@ func (b *StorageBackend) EstablishMirror(
 ) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return utils.UnsupportedError(
+		return errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
@@ -1213,7 +1214,7 @@ func (b *StorageBackend) PromoteMirror(
 ) (bool, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return false, utils.UnsupportedError(
+		return false, errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
@@ -1226,7 +1227,7 @@ func (b *StorageBackend) ReestablishMirror(
 ) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return utils.UnsupportedError(
+		return errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
@@ -1239,7 +1240,7 @@ func (b *StorageBackend) GetMirrorStatus(
 ) (string, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return "", utils.UnsupportedError(fmt.Sprintf(
+		return "", errors.UnsupportedError(fmt.Sprintf(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 	return mirrorDriver.GetMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle)
@@ -1253,17 +1254,19 @@ func (b *StorageBackend) CanMirror() bool {
 func (b *StorageBackend) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return utils.UnsupportedError(
+		return errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
 	return mirrorDriver.ReleaseMirror(ctx, localInternalVolumeName)
 }
 
-func (b *StorageBackend) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+func (b *StorageBackend) GetReplicationDetails(
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return "", "", "", utils.UnsupportedError(fmt.Sprintf(
+		return "", "", "", errors.UnsupportedError(fmt.Sprintf(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 	return mirrorDriver.GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle)
@@ -1272,7 +1275,7 @@ func (b *StorageBackend) GetReplicationDetails(ctx context.Context, localInterna
 func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {
 	chapEnabledDriver, ok := b.driver.(ChapEnabled)
 	if !ok {
-		return nil, utils.UnsupportedError(fmt.Sprintf(
+		return nil, errors.UnsupportedError(fmt.Sprintf(
 			"retrieving chap credentials is not supported on backends of type %v", b.driver.Name()))
 	}
 	return chapEnabledDriver.GetChapInfo(ctx, volumeName, nodeName)
@@ -1281,7 +1284,7 @@ func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName s
 func (b *StorageBackend) EnablePublishEnforcement(ctx context.Context, volume *Volume) error {
 	driver, ok := b.driver.(PublishEnforceable)
 	if !ok {
-		return utils.UnsupportedError(fmt.Sprintf(
+		return errors.UnsupportedError(fmt.Sprintf(
 			"publish enforcement is not supported on backends of type %v", b.driver.Name()))
 	}
 	return driver.EnablePublishEnforcement(ctx, volume)

@@ -19,7 +19,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ func (h *helper) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 		var ok bool
 		relationship, ok = relationshipObj.(*netappv1.TridentMirrorRelationship)
 		if !ok {
-			return "", utils.TypeAssertionError("relationshipObj.(*netappv1.TridentMirrorRelationship)")
+			return "", errors.TypeAssertionError("relationshipObj.(*netappv1.TridentMirrorRelationship)")
 		}
 	}
 	// If TMR is pointing to PVC but PVC is missing annotation, we search for a single TMR pointing to the PVC
@@ -140,7 +140,7 @@ func (h *helper) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 	for index := range relationships {
 		rel, ok := relationships[index].(*netappv1.TridentMirrorRelationship)
 		if !ok {
-			return "", utils.TypeAssertionError("relationships[index].(*netappv1.TridentMirrorRelationship)")
+			return "", errors.TypeAssertionError("relationships[index].(*netappv1.TridentMirrorRelationship)")
 		}
 		mappings := rel.Spec.VolumeMappings
 		for index := range mappings {

@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetFilesystemSize(t *testing.T) {
@@ -15,5 +17,5 @@ func TestGetFilesystemSize(t *testing.T) {
 	result, err := getFilesystemSize(ctx, "")
 	assert.Equal(t, result, int64(0), "got non-zero filesystem size")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }

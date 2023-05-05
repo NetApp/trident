@@ -5,7 +5,6 @@ package azure
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -24,6 +23,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -658,7 +658,7 @@ func (d *NASStorageDriver) Create(
 	if volumeExists {
 		if extantVolume.ProvisioningState == api.StateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return utils.VolumeCreatingError(
+			return errors.VolumeCreatingError(
 				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
 		}
 
@@ -914,7 +914,7 @@ func (d *NASStorageDriver) CreateClone(
 	if volumeExists {
 		if extantVolume.ProvisioningState == api.StateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return utils.VolumeCreatingError(
+			return errors.VolumeCreatingError(
 				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
 		}
 		return drivers.NewVolumeExistsError(name)
@@ -1202,7 +1202,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 
 		case api.StateAccepted, api.StateCreating:
 			Logc(ctx).WithFields(logFields).Debugf("Volume is in %s state.", state)
-			return utils.VolumeCreatingError(err.Error())
+			return errors.VolumeCreatingError(err.Error())
 
 		case api.StateDeleting:
 			// Wait for deletion to complete
@@ -1373,7 +1373,7 @@ func (d *NASStorageDriver) GetSnapshot(
 	// Get the snapshot
 	snapshot, err := d.SDK.SnapshotForVolume(ctx, extantVolume, internalSnapName)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("could not check for existing snapshot; %v", err)
@@ -1524,7 +1524,7 @@ func (d *NASStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return utils.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
 }
 
 // DeleteSnapshot deletes a snapshot of a volume.
@@ -1560,7 +1560,7 @@ func (d *NASStorageDriver) DeleteSnapshot(
 	snapshot, err := d.SDK.SnapshotForVolume(ctx, extantVolume, internalSnapName)
 	if err != nil {
 		// If the snapshot is already gone, return success
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return nil
 		}
 		return fmt.Errorf("unable to find snapshot %s; %v", internalSnapName, err)

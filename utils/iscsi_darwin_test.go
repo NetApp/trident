@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestISCSIActiveOnHost(t *testing.T) {
@@ -21,5 +23,5 @@ func TestISCSIActiveOnHost(t *testing.T) {
 	result, err := ISCSIActiveOnHost(ctx, host)
 	assert.False(t, result, "iscsi is active on host")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }

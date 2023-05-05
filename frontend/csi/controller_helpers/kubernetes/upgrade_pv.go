@@ -16,7 +16,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ func (h *helper) UpgradeVolume(
 		Op:              storage.UpgradeVolume,
 	}
 	txnErr := h.orchestrator.AddVolumeTransaction(ctx, volTxn)
-	if utils.IsFoundError(txnErr) {
+	if errors.IsFoundError(txnErr) {
 		oldTxn, getErr := h.orchestrator.GetVolumeTransaction(ctx, volTxn)
 		if getErr != nil {
 			return nil, fmt.Errorf("PV upgrade: error gathering old upgrade transaction; %v", getErr)

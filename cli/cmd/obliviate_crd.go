@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (

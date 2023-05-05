@@ -20,6 +20,7 @@ import (
 	"golang.org/x/sys/unix"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -226,7 +227,7 @@ func getDeviceFSType(ctx context.Context, device string) (string, error) {
 
 	out, err := execCommandWithTimeout(ctx, "blkid", 5*time.Second, true, device)
 	if err != nil {
-		if IsTimeoutError(err) {
+		if errors.IsTimeoutError(err) {
 			listAllISCSIDevices(ctx)
 			return "", err
 		} else if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
@@ -369,7 +370,7 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 
 		// Exit code 2 means bad passphrase
 		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == 2 {
-			return IncorrectLUKSPassphraseError(fmt.Sprintf("no key available with this passphrase; %v", err))
+			return errors.IncorrectLUKSPassphraseError(fmt.Sprintf("no key available with this passphrase; %v", err))
 		}
 		return fmt.Errorf("failed to resize LUKS device %s; %v", d.MappedDevicePath(), err)
 	}

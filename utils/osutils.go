@@ -16,6 +16,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -192,7 +193,7 @@ func execCommandWithTimeoutAndInput(
 			Logc(ctx).WithFields(LogFields{
 				"process": name,
 			}).Error("process killed after timeout")
-			result = execCommandResult{Output: nil, Error: TimeoutError("process killed after timeout")}
+			result = execCommandResult{Output: nil, Error: errors.TimeoutError("process killed after timeout")}
 		} else {
 			Logc(ctx).WithFields(LogFields{
 				"process": name,

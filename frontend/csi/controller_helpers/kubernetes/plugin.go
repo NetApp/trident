@@ -42,6 +42,7 @@ import (
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -529,13 +530,13 @@ func (h *helper) listVolumeAttachments(ctx context.Context) ([]k8sstoragev1.Volu
 	if err != nil {
 		statusErr, ok := err.(*apierrors.StatusError)
 		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-			return nil, utils.NotFoundError(fmt.Sprintf("no volume attachments found; %s", err.Error()))
+			return nil, errors.NotFoundError(fmt.Sprintf("no volume attachments found; %s", err.Error()))
 		}
 		return nil, err
 	}
 
 	if attachments == nil {
-		return nil, utils.NotFoundError("no volume attachments found")
+		return nil, errors.NotFoundError("no volume attachments found")
 	}
 
 	return attachments.Items, nil
@@ -552,7 +553,7 @@ func (h *helper) reconcileVolumePublications(ctx context.Context) error {
 	Logc(ctx).Debug("Performing publication reconciliation.")
 	attachments, err := h.listVolumeAttachments(ctx)
 	if err != nil {
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			Logc(ctx).Errorf("Unable list volume attachments; aborting publication reconciliation; %v", err)
 			return err
 		}
@@ -597,7 +598,7 @@ func (h *helper) listAttachmentsAsPublications(
 		nodeName := attachment.Spec.NodeName
 		tridentVolume, err := h.orchestrator.GetVolume(ctx, volumeName)
 		if err != nil {
-			if utils.IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(LogFields{
 					"attachment": attachment.Name,
 					"volume":     volumeName,
@@ -1258,7 +1259,7 @@ func (h *helper) deleteNode(obj interface{}) {
 	Logc(ctx).WithFields(logFields).Debug("Node deleted from cache.")
 
 	if err := h.orchestrator.DeleteNode(ctx, node.Name); err != nil {
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not delete node from Trident's database.")
 		}
 	}
@@ -1278,7 +1279,7 @@ func (h *helper) processNode(ctx context.Context, node *v1.Node, eventType strin
 	case eventDelete:
 		err := h.orchestrator.DeleteNode(ctx, node.Name)
 		if err != nil {
-			if !utils.IsNotFoundError(err) {
+			if !errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Errorf("error deleting node from Trident's database; %v", err)
 			}
 		}
@@ -1300,7 +1301,7 @@ func (h *helper) GetNodePublicationState(
 	if err != nil {
 		statusErr, ok := err.(*apierrors.StatusError)
 		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-			return nil, utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+			return nil, errors.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 		}
 		return nil, err
 	}

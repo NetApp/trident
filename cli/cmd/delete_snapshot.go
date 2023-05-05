@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -79,7 +78,7 @@ func snapshotDelete(snapshotIDs []string) error {
 		}
 		for _, snapshotID := range snapshotIDs {
 			if !strings.ContainsRune(snapshotID, '/') {
-				return utils.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; Please use the format "+
+				return errors.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; Please use the format "+
 					"<volume name>/<snapshot name>", snapshotID))
 			}
 		}

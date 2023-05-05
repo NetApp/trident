@@ -4,7 +4,6 @@ package kubernetes
 
 import (
 	"context"
-	"errors"
 	"io"
 	"os"
 	"strings"
@@ -28,6 +27,7 @@ import (
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -433,7 +433,7 @@ func TestDeleteNode(t *testing.T) {
 		// Valid attributes with prefix
 		{newNode, nil},
 		{newNode, errors.New("failed")},
-		{newNode, utils.NotFoundError("not found")},
+		{newNode, errors.NotFoundError("not found")},
 	}
 
 	for _, test := range tests {

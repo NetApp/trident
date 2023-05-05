@@ -5,7 +5,6 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -264,7 +264,7 @@ func (j *jsonReaderWriter) ReadJSONFile(
 				"filepath": filepath,
 				"error":    err.Error(),
 			}).Warningf("Could not find JSON file: %s.", filepath)
-			return NotFoundError(err.Error())
+			return errors.NotFoundError(err.Error())
 		}
 		return err
 	}
@@ -276,7 +276,7 @@ func (j *jsonReaderWriter) ReadJSONFile(
 	}
 	// We do not consider an empty file valid JSON.
 	if fileInfo.Size() == 0 {
-		return InvalidJSONError("file was empty, which is not considered valid JSON")
+		return errors.InvalidJSONError("file was empty, which is not considered valid JSON")
 	}
 
 	err = json.NewDecoder(file).Decode(fileContents)
@@ -286,7 +286,7 @@ func (j *jsonReaderWriter) ReadJSONFile(
 			"error":    err.Error(),
 		}).Error(fmt.Sprintf("Could not parse %s file.", fileDescription))
 
-		e, _ := AsInvalidJSONError(err)
+		e, _ := errors.AsInvalidJSONError(err)
 		return e
 	}
 

@@ -9,20 +9,20 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
 
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // handleTridentBackendConfig compares the actual state with the desired, and attempts to converge the two.
 // It then updates the Status block of the TridentBackendConfig resource with the current status of the resource.
 func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) error {
 	if keyItem == nil {
-		return utils.ReconcileDeferredError(fmt.Errorf("keyItem item is nil"))
+		return errors.ReconcileDeferredError(fmt.Errorf("keyItem item is nil"))
 	}
 
 	key := keyItem.key
@@ -49,11 +49,11 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 	backendConfig, err = c.backendConfigsLister.TridentBackendConfigs(namespace).Get(name)
 	if err != nil {
 		// The resource may no longer exist, in which case we stop processing.
-		if errors.IsNotFound(err) {
+		if k8sapierrors.IsNotFound(err) {
 			Logx(ctx).WithField("key", key).Trace("Object in work queue no longer exists.")
 			return nil
 		}
-		return utils.ReconcileDeferredError(err)
+		return errors.ReconcileDeferredError(err)
 	}
 
 	// Ensure backendconfig is not deleting, then ensure it has a finalizer
@@ -65,7 +65,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 			backendConfigCopy.AddTridentFinalizers()
 
 			if backendConfig, err = c.updateTridentBackendConfigCR(ctx, backendConfigCopy); err != nil {
-				return utils.ReconcileDeferredError(fmt.Errorf("error setting finalizer; %v", err))
+				return errors.ReconcileDeferredError(fmt.Errorf("error setting finalizer; %v", err))
 			}
 		}
 	} else {
@@ -102,11 +102,11 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 
 		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Failed to process backend.",
 			corev1.EventTypeWarning); statusErr != nil {
-			err = utils.ReconcileDeferredError(fmt.Errorf(
+			err = errors.ReconcileDeferredError(fmt.Errorf(
 				"validation error: %v, Also encountered error while updating the status: %v", err, statusErr))
 		}
 
-		return utils.UnsupportedConfigError(err)
+		return errors.UnsupportedConfigError(err)
 	}
 
 	// Retrieve the deletion policy
@@ -126,7 +126,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 				"Also encountered error while updating the status: %v", err, statusErr)
 		}
 
-		return utils.ReconcileDeferredError(fmt.Errorf("encountered error while retrieving the deletion policy :%v", err))
+		return errors.ReconcileDeferredError(fmt.Errorf("encountered error while retrieving the deletion policy :%v", err))
 	}
 
 	Logx(ctx).WithFields(LogFields{
@@ -147,26 +147,26 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 		// We add a new backend or bind to an existing one
 		err = c.addBackendConfig(ctx, backendConfig, deletionPolicy)
 		if err != nil {
-			return utils.ReconcileDeferredError(err)
+			return errors.ReconcileDeferredError(err)
 		}
 	case tridentv1.PhaseBound, tridentv1.PhaseLost, tridentv1.PhaseUnknown:
 		// We update the CR
 		err = c.updateBackendConfig(ctx, backendConfig, deletionPolicy)
 		if err != nil {
-			if utils.IsUnsupportedConfigError(err) {
+			if errors.IsUnsupportedConfigError(err) {
 				return err
 			}
-			return utils.ReconcileDeferredError(err)
+			return errors.ReconcileDeferredError(err)
 		}
 	case tridentv1.PhaseDeleting:
 		// We delete the CR
 		err = c.deleteBackendConfig(ctx, backendConfig, deletionPolicy)
 		if err != nil {
-			return utils.ReconcileDeferredError(err)
+			return errors.ReconcileDeferredError(err)
 		}
 	default:
 		// This should never be the case
-		return utils.UnsupportedConfigError(fmt.Errorf("backend config has an unsupported phase: '%v'", phase))
+		return errors.UnsupportedConfigError(fmt.Errorf("backend config has an unsupported phase: '%v'", phase))
 	}
 
 	return nil
@@ -242,7 +242,7 @@ func (c *TridentCrdController) updateBackendConfig(
 		phase = tridentv1.PhaseUnknown
 	} else if backend == nil {
 		Logx(ctx).WithFields(logFields).Errorf("Could not find backend during update.")
-		err = utils.UnsupportedConfigError(fmt.Errorf("could not find backend during update"))
+		err = errors.UnsupportedConfigError(fmt.Errorf("could not find backend during update"))
 
 		phase = tridentv1.PhaseLost
 	} else {
@@ -256,7 +256,7 @@ func (c *TridentCrdController) updateBackendConfig(
 		if err != nil {
 			phase = tridentv1.TridentBackendConfigPhase(backendConfig.Status.Phase)
 
-			if utils.IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				Logx(ctx).WithFields(LogFields{
 					"backendConfig.Name": backendConfig.Name,
 				}).Error("Could not find backend during update.")
@@ -430,7 +430,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyDelete(
 			phase = tridentv1.TridentBackendConfigPhase(backendConfig.Status.Phase)
 			err = fmt.Errorf("unable to delete backend '%v'; %v", backendConfig.Status.BackendInfo.BackendName, err)
 
-			if !utils.IsNotFoundError(err) {
+			if !errors.IsNotFoundError(err) {
 				message = fmt.Sprintf("Unable to delete backend; %v", err)
 				Logx(ctx).WithFields(logFields).Errorf(message)
 			} else {
@@ -510,7 +510,7 @@ func (c *TridentCrdController) deleteBackendConfigUsingPolicyRetain(
 			err = fmt.Errorf("failed to remove configRef from the backend '%v'; %v",
 				backendConfig.Status.BackendInfo.BackendName, err)
 
-			if !utils.IsNotFoundError(err) {
+			if !errors.IsNotFoundError(err) {
 				message = fmt.Sprintf("Failed to remove configRef from the backend; %v", err)
 				Logx(ctx).WithFields(logFields).Errorf(message)
 			} else {
@@ -548,7 +548,7 @@ func (c *TridentCrdController) getBackendConfigWithBackendUUID(
 		}
 	}
 
-	return nil, utils.NotFoundError("backend config not found")
+	return nil, errors.NotFoundError("backend config not found")
 }
 
 // getBackendConfigsWithSecret identifies the backend configs referencing a given secret (if any)
@@ -578,7 +578,7 @@ func (c *TridentCrdController) getBackendConfigsWithSecret(
 		return backendConfigs, nil
 	}
 
-	return backendConfigs, utils.NotFoundError("no backend config with the matching secret found")
+	return backendConfigs, errors.NotFoundError("no backend config with the matching secret found")
 }
 
 // updateLogAndStatus updates the event logs and status of a TridentOrchestrator CR (if required)

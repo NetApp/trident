@@ -14,7 +14,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestMain(m *testing.M) {
@@ -377,12 +377,12 @@ func TestCheckMinVolumeSize(t *testing.T) {
 		{
 			requestedSizeBytes:  1000000000,
 			minimumVolSizeBytes: 1000000001,
-			expected:            utils.UnsupportedCapacityRangeError(fmt.Errorf("test")),
+			expected:            errors.UnsupportedCapacityRangeError(fmt.Errorf("test")),
 		},
 		{
 			requestedSizeBytes:  1000000000,
 			minimumVolSizeBytes: 1000000001,
-			expected: fmt.Errorf("wrapping the UnsuppportedCapacityError; %w", utils.UnsupportedCapacityRangeError(
+			expected: fmt.Errorf("wrapping the UnsuppportedCapacityError; %w", errors.UnsupportedCapacityRangeError(
 				fmt.Errorf("test"))),
 		},
 	}
@@ -390,8 +390,8 @@ func TestCheckMinVolumeSize(t *testing.T) {
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("CheckMinimumVolSize: %d", i), func(t *testing.T) {
 			actualErr := CheckMinVolumeSize(test.requestedSizeBytes, test.minimumVolSizeBytes)
-			actualIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(actualErr)
-			expectedIsUnsupportedCapError, _ := utils.HasUnsupportedCapacityRangeError(test.expected)
+			actualIsUnsupportedCapError, _ := errors.HasUnsupportedCapacityRangeError(actualErr)
+			expectedIsUnsupportedCapError, _ := errors.HasUnsupportedCapacityRangeError(test.expected)
 			assert.Equal(t, actualIsUnsupportedCapError, expectedIsUnsupportedCapError)
 		})
 	}

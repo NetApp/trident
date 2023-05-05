@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -41,7 +40,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -312,7 +311,7 @@ func (k *KubeClient) GetDeploymentByLabel(label string, allNamespaces bool) (*ap
 	} else if len(deployments) > 1 {
 		return nil, fmt.Errorf("multiple deployments have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no deployments have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no deployments have the label %s", label))
 	}
 }
 
@@ -493,7 +492,7 @@ func (k *KubeClient) GetServiceByLabel(label string, allNamespaces bool) (*v1.Se
 	} else if len(services) > 1 {
 		return nil, fmt.Errorf("multiple services have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no services have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no services have the label %s", label))
 	}
 }
 
@@ -604,7 +603,7 @@ func (k *KubeClient) GetStatefulSetByLabel(label string, allNamespaces bool) (*a
 	} else if len(statefulsets) > 1 {
 		return nil, fmt.Errorf("multiple statefulsets have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no statefulsets have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no statefulsets have the label %s", label))
 	}
 }
 
@@ -694,7 +693,7 @@ func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*app
 	} else if len(daemonsets) > 1 {
 		return nil, fmt.Errorf("multiple daemonsets have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no daemonsets have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no daemonsets have the label %s", label))
 	}
 }
 
@@ -940,7 +939,7 @@ func (k *KubeClient) GetConfigMapByLabel(label string, allNamespaces bool) (*v1.
 	} else if len(configMaps) > 1 {
 		return nil, fmt.Errorf("multiple configmaps have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no configmaps have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no configmaps have the label %s", label))
 	}
 }
 
@@ -1019,7 +1018,7 @@ func (k *KubeClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, e
 	} else if len(pods) > 1 {
 		return nil, fmt.Errorf("multiple pods have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no pods have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no pods have the label %s", label))
 	}
 }
 
@@ -1126,7 +1125,7 @@ func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.Persis
 	} else if len(pvcList.Items) > 1 {
 		return nil, fmt.Errorf("multiple PVCs have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no PVCs have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no PVCs have the label %s", label))
 	}
 }
 
@@ -1189,7 +1188,7 @@ func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
 	} else if len(pvList.Items) > 1 {
 		return nil, fmt.Errorf("multiple PVs have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no PVs have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no PVs have the label %s", label))
 	}
 }
 
@@ -1249,7 +1248,7 @@ func (k *KubeClient) GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecu
 	} else if len(pspList) > 1 {
 		return nil, fmt.Errorf("multiple pod security policies have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no pod security policy have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no pod security policy have the label %s", label))
 	}
 }
 
@@ -1296,7 +1295,8 @@ func (k *KubeClient) DeletePodSecurityPolicyByLabel(label string) error {
 		return err
 	}
 
-	if err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(reqCtx(), psp.Name, k.deleteOptions()); err != nil {
+	if err = k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(reqCtx(), psp.Name,
+		k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1310,7 +1310,8 @@ func (k *KubeClient) DeletePodSecurityPolicyByLabel(label string) error {
 
 // DeletePodSecurityPolicy deletes a pod security policy object matching the specified PSP name.
 func (k *KubeClient) DeletePodSecurityPolicy(pspName string) error {
-	if err := k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(reqCtx(), pspName, k.deleteOptions()); err != nil {
+	if err := k.clientset.PolicyV1beta1().PodSecurityPolicies().Delete(reqCtx(), pspName,
+		k.deleteOptions()); err != nil {
 		return err
 	}
 
@@ -1344,7 +1345,9 @@ func (k *KubeClient) PatchPodSecurityPolicyByLabel(label string, patchBytes []by
 
 // PatchPodSecurityPolicyByLabelAndName patches a pod security policy object matching the specified label
 // and name in the namespace of the client.
-func (k *KubeClient) PatchPodSecurityPolicyByLabelAndName(label, pspName string, patchBytes []byte, patchType types.PatchType) error {
+func (k *KubeClient) PatchPodSecurityPolicyByLabelAndName(
+	label, pspName string, patchBytes []byte, patchType types.PatchType,
+) error {
 	pspList, err := k.GetPodSecurityPoliciesByLabel(label)
 	if err != nil {
 		return err
@@ -1403,7 +1406,7 @@ func (k *KubeClient) GetServiceAccountByLabel(label string, allNamespaces bool) 
 	} else if len(serviceAccounts) > 1 {
 		return nil, fmt.Errorf("multiple service accounts have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no service accounts have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no service accounts have the label %s", label))
 	}
 }
 
@@ -1552,7 +1555,8 @@ func (k *KubeClient) deleteServiceAccountForeground(name, namespace string) erro
 
 // PatchServiceAccountByLabelAndName patches a Service Account object matching the specified label
 // and name in the namespace of the client.
-func (k *KubeClient) PatchServiceAccountByLabelAndName(label, serviceAccountName string, patchBytes []byte,
+func (k *KubeClient) PatchServiceAccountByLabelAndName(
+	label, serviceAccountName string, patchBytes []byte,
 	patchType types.PatchType,
 ) error {
 	serviceAccount, err := k.GetServiceAccountByLabelAndName(label, serviceAccountName, false)
@@ -1642,7 +1646,7 @@ func (k *KubeClient) GetClusterRoleByLabel(label string) (*v13.ClusterRole, erro
 	} else if len(clusterRoles) > 1 {
 		return nil, fmt.Errorf("multiple cluster roles have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no cluster roles have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no cluster roles have the label %s", label))
 	}
 }
 
@@ -1742,7 +1746,8 @@ func (k *KubeClient) DeleteRole(name string) error {
 
 // PatchClusterRoleByLabelAndName patches a Cluster Role object matching the specified label
 // and name in the namespace of the client.
-func (k *KubeClient) PatchClusterRoleByLabelAndName(label, clusterRoleName string, patchBytes []byte,
+func (k *KubeClient) PatchClusterRoleByLabelAndName(
+	label, clusterRoleName string, patchBytes []byte,
 	patchType types.PatchType,
 ) error {
 	clusterRole, err := k.GetClusterRoleByLabelAndName(label, clusterRoleName)
@@ -1765,7 +1770,8 @@ func (k *KubeClient) PatchClusterRoleByLabelAndName(label, clusterRoleName strin
 
 // PatchRoleByLabelAndName patches a Role object matching the specified label
 // and name in the namespace of the client.
-func (k *KubeClient) PatchRoleByLabelAndName(label, roleName string, patchBytes []byte,
+func (k *KubeClient) PatchRoleByLabelAndName(
+	label, roleName string, patchBytes []byte,
 	patchType types.PatchType,
 ) error {
 	role, err := k.GetRoleByLabelAndName(label, roleName)
@@ -1861,7 +1867,7 @@ func (k *KubeClient) GetClusterRoleBindingByLabel(label string) (*v13.ClusterRol
 	} else if len(clusterRoleBindings) > 1 {
 		return nil, fmt.Errorf("multiple cluster role bindings have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no cluster role bindings have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no cluster role bindings have the label %s", label))
 	}
 }
 
@@ -1962,7 +1968,8 @@ func (k *KubeClient) DeleteRoleBinding(name string) error {
 
 // PatchClusterRoleBindingByLabelAndName patches a Cluster Role binding object matching the specified label
 // and name in the namespace of the client.
-func (k *KubeClient) PatchClusterRoleBindingByLabelAndName(label, clusterRoleBindingName string, patchBytes []byte,
+func (k *KubeClient) PatchClusterRoleBindingByLabelAndName(
+	label, clusterRoleBindingName string, patchBytes []byte,
 	patchType types.PatchType,
 ) error {
 	clusterRoleBinding, err := k.GetClusterRoleBindingByLabelAndName(label, clusterRoleBindingName)
@@ -1985,7 +1992,8 @@ func (k *KubeClient) PatchClusterRoleBindingByLabelAndName(label, clusterRoleBin
 
 // PatchRoleBindingByLabelAndName patches a Role binding object matching the specified label
 // and name in the namespace of the client.
-func (k *KubeClient) PatchRoleBindingByLabelAndName(label, roleBindingName string, patchBytes []byte,
+func (k *KubeClient) PatchRoleBindingByLabelAndName(
+	label, roleBindingName string, patchBytes []byte,
 	patchType types.PatchType,
 ) error {
 	roleBinding, err := k.GetRoleBindingByLabelAndName(label, roleBindingName)
@@ -2043,7 +2051,7 @@ func (k *KubeClient) GetCSIDriverByLabel(label string) (*storagev1.CSIDriver, er
 	} else if len(CSIDrivers) > 1 {
 		return nil, fmt.Errorf("multiple CSI drivers have the label %s", label)
 	} else {
-		return nil, utils.NotFoundError(fmt.Sprintf("no CSI drivers have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no CSI drivers have the label %s", label))
 	}
 }
 
@@ -2164,7 +2172,8 @@ func (k *KubeClient) PatchNamespace(namespace string, patchBytes []byte, patchTy
 		return err
 	}
 
-	if _, err := k.clientset.CoreV1().Namespaces().Patch(reqCtx(), ns.Name, patchType, patchBytes, patchOpts); err != nil {
+	if _, err := k.clientset.CoreV1().Namespaces().Patch(reqCtx(), ns.Name, patchType, patchBytes,
+		patchOpts); err != nil {
 		return err
 	}
 
@@ -2193,7 +2202,7 @@ func (k *KubeClient) GetResourceQuotaByLabel(label string) (*v1.ResourceQuota, e
 	}
 
 	if len(resourceQuotas) == 0 {
-		return nil, utils.NotFoundError(fmt.Sprintf("no resource quotas have the label %s", label))
+		return nil, errors.NotFoundError(fmt.Sprintf("no resource quotas have the label %s", label))
 	} else if len(resourceQuotas) > 1 {
 		return nil, fmt.Errorf("multiple resource quotas have the label %s", label)
 	}
@@ -2495,12 +2504,12 @@ func (k *KubeClient) createObjectByYAML(yamlData string) error {
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
 				if objNamespace, ok = ns.(string); !ok {
-					return utils.TypeAssertionError("ns.(string)")
+					return errors.TypeAssertionError("ns.(string)")
 				}
 			}
 			if name, ok := metadata["name"]; ok {
 				if objName, ok = name.(string); !ok {
-					return utils.TypeAssertionError("name.(string)")
+					return errors.TypeAssertionError("name.(string)")
 				}
 			}
 		}
@@ -2590,12 +2599,12 @@ func (k *KubeClient) deleteObjectByYAML(yamlData string, ignoreNotFound bool) er
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
 				if objNamespace, ok = ns.(string); !ok {
-					return utils.TypeAssertionError("ns.(string)")
+					return errors.TypeAssertionError("ns.(string)")
 				}
 			}
 			if name, ok := metadata["name"]; ok {
 				if objName, ok = name.(string); !ok {
-					return utils.TypeAssertionError("name.(string)")
+					return errors.TypeAssertionError("name.(string)")
 				}
 			}
 		}
@@ -2660,12 +2669,12 @@ func (k *KubeClient) getUnstructuredObjectByYAML(yamlData string) (*unstructured
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
 				if objNamespace, ok = ns.(string); !ok {
-					return nil, utils.TypeAssertionError("ns.(string)")
+					return nil, errors.TypeAssertionError("ns.(string)")
 				}
 			}
 			if name, ok := metadata["name"]; ok {
 				if objName, ok = name.(string); !ok {
-					return nil, utils.TypeAssertionError("name.(string)")
+					return nil, errors.TypeAssertionError("name.(string)")
 				}
 			}
 		}
@@ -2712,12 +2721,12 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 		if metadata, ok := md.(map[string]interface{}); ok {
 			if ns, ok := metadata["namespace"]; ok {
 				if objNamespace, ok = ns.(string); !ok {
-					return utils.TypeAssertionError("ns.(string)")
+					return errors.TypeAssertionError("ns.(string)")
 				}
 			}
 			if name, ok := metadata["name"]; ok {
 				if objName, ok = name.(string); !ok {
-					return utils.TypeAssertionError("name.(string)")
+					return errors.TypeAssertionError("name.(string)")
 				}
 			}
 		}
@@ -2733,7 +2742,8 @@ func (k *KubeClient) updateObjectByYAML(yamlData string) error {
 	updateOptions := updateOpts
 
 	if namespaced {
-		if _, err = client.Resource(*gvr).Namespace(objNamespace).Update(reqCtx(), unstruct, updateOptions); err != nil {
+		if _, err = client.Resource(*gvr).Namespace(objNamespace).Update(reqCtx(), unstruct,
+			updateOptions); err != nil {
 			return err
 		}
 	} else {
@@ -2783,7 +2793,7 @@ func (k *KubeClient) convertYAMLToUnstructuredObject(yamlData string) (
 // method will first consult this client's internal cache and will update the cache only if the resource being
 // sought is not present.
 func (k *KubeClient) getDynamicResource(gvk *schema.GroupVersionKind) (*schema.GroupVersionResource, bool, error) {
-	if gvr, namespaced, err := k.getDynamicResourceNoRefresh(gvk); utils.IsNotFoundError(err) {
+	if gvr, namespaced, err := k.getDynamicResourceNoRefresh(gvk); errors.IsNotFoundError(err) {
 
 		discoveryClient := k.clientset.Discovery()
 
@@ -2828,7 +2838,7 @@ func (k *KubeClient) getDynamicResourceNoRefresh(
 		"kind":    gvk.Kind,
 	}).Trace("API resource not found.")
 
-	return nil, false, utils.NotFoundError("API resource not found")
+	return nil, false, errors.NotFoundError("API resource not found")
 }
 
 // getDynamicResourceFromResourceList accepts an APIResourceList array as returned from the K8S API server
@@ -2846,11 +2856,11 @@ func (k *KubeClient) getDynamicResourceFromResourceList(
 	groupVersion, err := schema.ParseGroupVersion(resources.GroupVersion)
 	if err != nil {
 		Logc(ctx).WithField("groupVersion", groupVersion).Errorf("Could not parse group/version; %v", err)
-		return nil, false, utils.NotFoundError("Could not parse group/version")
+		return nil, false, errors.NotFoundError("Could not parse group/version")
 	}
 
 	if groupVersion.Group != gvk.Group || groupVersion.Version != gvk.Version {
-		return nil, false, utils.NotFoundError("API resource not found, group/version mismatch")
+		return nil, false, errors.NotFoundError("API resource not found, group/version mismatch")
 	}
 
 	for _, resource := range resources.APIResources {
@@ -2878,7 +2888,7 @@ func (k *KubeClient) getDynamicResourceFromResourceList(
 		}
 	}
 
-	return nil, false, utils.NotFoundError("API resource not found")
+	return nil, false, errors.NotFoundError("API resource not found")
 }
 
 // RemoveTridentUserFromOpenShiftSCC removes the specified user (typically a service account) from the 'anyuid'
@@ -3056,7 +3066,8 @@ func (k *KubeClient) GetSnapshotterCRDVersion() (snapshotterCRDVersion string) {
 		snapshotterCRDVersion = versionBeta
 	}
 
-	Logc(ctx).WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.", snapshotterCRDVersion)
+	Logc(ctx).WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.",
+		snapshotterCRDVersion)
 
 	return
 }

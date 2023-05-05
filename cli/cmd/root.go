@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -19,13 +18,12 @@ import (
 	"github.com/spf13/cobra"
 	k8s "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	_ "k8s.io/client-go/plugin/pkg/client/auth" // Load all auth plugins
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-
-	// Load all auth plugins
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (

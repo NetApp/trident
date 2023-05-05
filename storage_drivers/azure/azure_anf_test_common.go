@@ -2,8 +2,9 @@ package azure
 
 import (
 	"context"
-	"errors"
 	"strconv"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (

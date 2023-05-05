@@ -10,6 +10,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -174,13 +175,13 @@ func (s *TridentBackendConfigSpec) GetSecretName() (string, error) {
 	} else {
 		credentialsMap, ok := credentials.(map[string]interface{})
 		if !ok {
-			return "", utils.TypeAssertionError("credentials.(map[string]interface{}")
+			return "", errors.TypeAssertionError("credentials.(map[string]interface{}")
 		}
 		if name, ok := credentialsMap["name"]; !ok {
 			secretName = ""
 		} else {
 			if secretName, ok = name.(string); !ok {
-				return "", utils.TypeAssertionError("name.(string)")
+				return "", errors.TypeAssertionError("name.(string)")
 			}
 		}
 	}

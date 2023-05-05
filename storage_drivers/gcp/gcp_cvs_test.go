@@ -5,7 +5,6 @@ package gcp
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -1182,7 +1182,7 @@ func TestCreate_VolumeSizeErrors(t *testing.T) {
 	volConfig.Size = "1Gi"
 	d.Config.CommonStorageDriverConfig.LimitVolumeSize = "1Mi"
 	err = d.Create(ctx(), volConfig, vPool, nil)
-	isErr, _ := utils.HasUnsupportedCapacityRangeError(err)
+	isErr, _ := errors.HasUnsupportedCapacityRangeError(err)
 	assert.True(t, isErr, "Valid volume size")
 }
 
@@ -1367,7 +1367,7 @@ func TestCreate_SOVolumeCreatingError(t *testing.T) {
 		Return(api.StateCreating, errors.New("failed"))
 
 	err := d.Create(ctx(), volConfig, vPool, nil)
-	assert.True(t, utils.IsVolumeCreatingError(err), "Volume created")
+	assert.True(t, errors.IsVolumeCreatingError(err), "Volume created")
 }
 
 func TestCreate_SOVolume(t *testing.T) {
@@ -1428,7 +1428,7 @@ func TestCreateClone_VolumeExistsErrors(t *testing.T) {
 	extantVol.LifeCycleState = api.StateRestoring
 	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, extantVol, nil)
 	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
-	assert.True(t, utils.IsVolumeCreatingError(err), "Volume doesn't exist")
+	assert.True(t, errors.IsVolumeCreatingError(err), "Volume doesn't exist")
 
 	// Volume available/updating error
 	extantVol.LifeCycleState = api.StateUpdating
@@ -2155,7 +2155,7 @@ func TestResize_UnsupportedCapacity(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
 	err := d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes)-1)
-	isErr, _ := utils.HasUnsupportedCapacityRangeError(err)
+	isErr, _ := errors.HasUnsupportedCapacityRangeError(err)
 	assert.True(t, isErr, "Valid new volume size")
 }
 

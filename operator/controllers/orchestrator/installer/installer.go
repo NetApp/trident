@@ -24,6 +24,7 @@ import (
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -1552,7 +1553,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 
 			if tempError {
 				Log().Debug("Containers are still in creating state.")
-				return utils.TempOperatorError(fmt.Errorf(
+				return errors.TempOperatorError(fmt.Errorf(
 					"pod provisioning in progress; containers are still in creating state"))
 			}
 
@@ -1565,7 +1566,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 		// and may be related to a terminating deployment.
 		if pod.DeletionTimestamp != nil {
 			Log().Debug("Unable to find Trident pod; found a pod in terminating state.")
-			return utils.TempOperatorError(fmt.Errorf("unable to find Trident pod; found a pod in terminating state"))
+			return errors.TempOperatorError(fmt.Errorf("unable to find Trident pod; found a pod in terminating state"))
 		}
 
 		return nil
@@ -1584,7 +1585,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 		totalWaitTime := k8sTimeout
 		// In case pod is still creating and taking extra time due to issues such as latency in pulling
 		// container image, then additional time should be allocated for the pod to come online.
-		if utils.IsTempOperatorError(err) {
+		if errors.IsTempOperatorError(err) {
 			extraWaitTime := 150 * time.Second
 			totalWaitTime = totalWaitTime + extraWaitTime
 			podBackoff.MaxElapsedTime = extraWaitTime

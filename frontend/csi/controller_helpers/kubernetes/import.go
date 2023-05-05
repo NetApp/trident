@@ -16,7 +16,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ func (h *helper) ImportVolume(
 
 	existingVol, err := h.orchestrator.GetVolumeByInternalName(ctx, request.InternalName)
 	if err == nil {
-		return nil, utils.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
+		return nil, errors.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
 			existingVol, request.InternalName))
 	}
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,6 +22,7 @@ import (
 	mockk8scontrollerhelper "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_kubernetes_helper"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func generateHTTPRequest(method, body string) *http.Request {
@@ -118,7 +118,7 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
-	mockOrchestrator.EXPECT().GetVolume(request.Context(), volume.Config.Name).Return(volume, utils.NotFoundError("test error"))
+	mockOrchestrator.EXPECT().GetVolume(request.Context(), volume.Config.Name).Return(volume, errors.NotFoundError("test error"))
 
 	rc = volumeLUKSPassphraseNamesUpdater(writer, request, response, map[string]string{"volume": volume.Config.Name}, []byte(body))
 
@@ -175,7 +175,7 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
 	mockOrchestrator.EXPECT().GetVolume(request.Context(), volume.Config.Name).Return(volume, nil)
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(utils.NotFoundError("test error"))
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(errors.NotFoundError("test error"))
 
 	rc = volumeLUKSPassphraseNamesUpdater(writer, request, response, map[string]string{"volume": volume.Config.Name}, []byte(body))
 

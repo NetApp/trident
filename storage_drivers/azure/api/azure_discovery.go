@@ -5,7 +5,6 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -21,6 +20,7 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -924,7 +924,7 @@ func (c Client) EnsureVolumeInValidCapacityPool(ctx context.Context, volume *Fil
 		}
 	}
 
-	return utils.NotFoundError(fmt.Sprintf("volume %s is part of another capacity pool not referenced "+
+	return errors.NotFoundError(fmt.Sprintf("volume %s is part of another capacity pool not referenced "+
 		"by this backend", volume.CreationToken))
 }
 

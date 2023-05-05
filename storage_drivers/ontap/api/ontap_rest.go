@@ -8,7 +8,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -39,6 +38,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -4507,11 +4507,11 @@ func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEna
 func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error {
 	// We can only modify existing rules, so we must check if this rule exists first
 	quotaRule, err := c.QuotaGetEntry(ctx, volumeName, qtreeName, quotaType)
-	if err != nil && !utils.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		// Error looking up quota rule
 		Logc(ctx).Error(err)
 		return err
-	} else if err != nil && utils.IsNotFoundError(err) {
+	} else if err != nil && errors.IsNotFoundError(err) {
 		// Quota rule doesn't exist; add it instead
 		return c.QuotaAddEntry(ctx, volumeName, qtreeName, quotaType, diskLimit)
 	}
@@ -4664,7 +4664,7 @@ func (c RestClient) QuotaGetEntry(
 		target += fmt.Sprintf("/%s", qtreeName)
 	}
 	if result.Payload == nil {
-		return nil, utils.NotFoundError(fmt.Sprintf("quota rule entries for %s not found", target))
+		return nil, errors.NotFoundError(fmt.Sprintf("quota rule entries for %s not found", target))
 	} else if len(result.Payload.QuotaRuleResponseInlineRecords) > 1 {
 		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
 	} else if len(result.Payload.QuotaRuleResponseInlineRecords) == 1 {
@@ -4673,7 +4673,7 @@ func (c RestClient) QuotaGetEntry(
 		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
 	}
 
-	return nil, utils.NotFoundError(fmt.Sprintf("no entries for %s", target))
+	return nil, errors.NotFoundError(fmt.Sprintf("no entries for %s", target))
 }
 
 // QuotaEntryList returns the disk limit quotas for a Flexvol

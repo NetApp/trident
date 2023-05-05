@@ -7,6 +7,8 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestReadJSONFile_Succeeds(t *testing.T) {
@@ -41,7 +43,7 @@ func TestReadJSONFile_FailsWithIncompleteJSON(t *testing.T) {
 
 	returnedPubInfo := &VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
-	assert.True(t, IsInvalidJSONError(err), "expected invalidJSONError due to file containing incomplete JSON")
+	assert.True(t, errors.IsInvalidJSONError(err), "expected invalidJSONError due to file containing incomplete JSON")
 }
 
 func TestReadJSONFile_FailsBecauseUnmarshalTypeError(t *testing.T) {
@@ -62,13 +64,13 @@ func TestReadJSONFile_FailsBecauseUnmarshalTypeError(t *testing.T) {
 
 	returnedPubInfo := &VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
-	assert.True(t, IsInvalidJSONError(err), "expected invalidJSONError due to unmarshallable type in valid JSON")
+	assert.True(t, errors.IsInvalidJSONError(err), "expected invalidJSONError due to unmarshallable type in valid JSON")
 }
 
 func TestReadJSONFile_FailsBecauseNoFile(t *testing.T) {
 	returnedPubInfo := &VolumePublishInfo{}
 	err := JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
-	assert.True(t, IsNotFoundError(err), "expected NotFoundError when file doesn't exist")
+	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError when file doesn't exist")
 }
 
 func TestReadJSONFile_FailsWithPermissionsError(t *testing.T) {
@@ -79,7 +81,7 @@ func TestReadJSONFile_FailsWithPermissionsError(t *testing.T) {
 
 	returnedPubInfo := &VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
-	assert.True(t, !IsInvalidJSONError(err) && !IsNotFoundError(err), "expected unwrapped error")
+	assert.True(t, !errors.IsInvalidJSONError(err) && !errors.IsNotFoundError(err), "expected unwrapped error")
 }
 
 func TestReadJSONFile_FailsWithSyntaxError(t *testing.T) {
@@ -93,7 +95,7 @@ func TestReadJSONFile_FailsWithSyntaxError(t *testing.T) {
 
 	returnedPubInfo := &VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
-	assert.True(t, IsInvalidJSONError(err), "expected invalid JSON if syntax error")
+	assert.True(t, errors.IsInvalidJSONError(err), "expected invalid JSON if syntax error")
 }
 
 func TestReadJSONFile_FailsBecauseEmptyFile(t *testing.T) {
@@ -105,7 +107,7 @@ func TestReadJSONFile_FailsBecauseEmptyFile(t *testing.T) {
 	returnedPubInfo := &VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.Error(t, err, "expected an error from an empty file")
-	assert.True(t, IsInvalidJSONError(err), "expected InvalidJSONError due to empty file")
+	assert.True(t, errors.IsInvalidJSONError(err), "expected InvalidJSONError due to empty file")
 }
 
 func TestWriteJSONFile_Succeeds(t *testing.T) {

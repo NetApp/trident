@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"archive/zip"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (

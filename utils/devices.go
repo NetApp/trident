@@ -4,7 +4,6 @@ package utils
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -18,6 +17,7 @@ import (
 	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const luksDevicePrefix = "luks-"
@@ -425,7 +425,7 @@ func canFlushMultipathDevice(ctx context.Context, devicePath string) error {
 	}).Error("Flush pre-check failed for the device.")
 
 	if !strings.Contains(outString, "no usable paths found") {
-		return ISCSIDeviceFlushError("multipath device is not ready for flush")
+		return errors.ISCSIDeviceFlushError("multipath device is not ready for flush")
 	}
 
 	// Apply timeout only for the case LUN is made offline or deleted,
@@ -442,11 +442,11 @@ func canFlushMultipathDevice(ctx context.Context, devicePath string) error {
 					"maxWait": iSCSIMaxFlushWaitDuration,
 				}).Debug("Volume is not safe to remove, but max flush wait time is expired, skip flush.")
 			delete(iSCSIVolumeFlushExceptions, devicePath)
-			return TimeoutError(fmt.Sprintf("Max flush wait time expired. Elapsed: %v", elapsed))
+			return errors.TimeoutError(fmt.Sprintf("Max flush wait time expired. Elapsed: %v", elapsed))
 		}
 	}
 
-	return ISCSIDeviceFlushError("multipath device is unavailable")
+	return errors.ISCSIDeviceFlushError("multipath device is unavailable")
 }
 
 // multipathFlushDevice invokes the 'multipath' commands to flush paths for a single device.
@@ -462,7 +462,7 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 
 	deviceErr := canFlushMultipathDevice(ctx, devicePath)
 	if deviceErr != nil {
-		if IsISCSIDeviceFlushError(deviceErr) {
+		if errors.IsISCSIDeviceFlushError(deviceErr) {
 			Logc(ctx).WithFields(
 				LogFields{
 					"error":  deviceErr,
@@ -470,7 +470,7 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 				}).Debug("Flush failed.")
 			return deviceErr
 		}
-		if IsTimeoutError(deviceErr) {
+		if errors.IsTimeoutError(deviceErr) {
 			Logc(ctx).WithFields(LogFields{
 				"error":  deviceErr,
 				"device": devicePath,
@@ -969,7 +969,7 @@ func removeSCSIDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo, ignoreErr
 	if !skipFlush {
 		err := multipathFlushDevice(ctx, deviceInfo)
 		if err != nil {
-			if IsTimeoutError(err) {
+			if errors.IsTimeoutError(err) {
 				// Proceed to removeDevice(), ignore any errors.
 				ignoreErrors = true
 			} else if !ignoreErrors {

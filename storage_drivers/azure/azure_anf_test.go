@@ -5,7 +5,6 @@ package azure
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"os"
 	"regexp"
@@ -28,6 +27,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestMain(m *testing.M) {
@@ -1250,7 +1250,7 @@ func TestCreate_VolumeExistsCreating(t *testing.T) {
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
 	assert.Error(t, result, "create did not fail")
-	assert.IsType(t, utils.VolumeCreatingError(""), result, "not VolumeCreatingError")
+	assert.IsType(t, errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2197,7 +2197,8 @@ func TestCreateClone_VolumeExistsCreating(t *testing.T) {
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
 	assert.Error(t, result, "expected error")
-	assert.IsType(t, utils.VolumeCreatingError(""), result, "not VolumeCreatingError")
+	assert.IsType(t,
+		errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2933,7 +2934,7 @@ func TestWaitForVolumeCreate_Creating(t *testing.T) {
 		result := driver.waitForVolumeCreate(ctx, filesystem)
 
 		assert.Error(t, result, "expected error")
-		assert.IsType(t, utils.VolumeCreatingError(""), result, "not VolumeCreatingError")
+		assert.IsType(t, errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
 	}
 }
 
@@ -3632,7 +3633,7 @@ func TestGetSnapshot_NonexistentSnapshot(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, snapConfig.InternalName).Return(nil,
-		utils.NotFoundError("not found")).Times(1)
+		errors.NotFoundError("not found")).Times(1)
 
 	result, resultErr := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -3930,7 +3931,7 @@ func TestRestoreSnapshot(t *testing.T) {
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Error(t, result, "expected error")
-	assert.IsType(t, utils.UnsupportedError(""), result, "not UnsupportedError")
+	assert.IsType(t, errors.UnsupportedError(""), result, "not UnsupportedError")
 }
 
 func TestDeleteSnapshot(t *testing.T) {
@@ -4005,7 +4006,7 @@ func TestDeleteSnapshot_NonexistentSnapshot(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
-	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, "snap1").Return(nil, utils.NotFoundError("not found")).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, "snap1").Return(nil, errors.NotFoundError("not found")).Times(1)
 
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
@@ -4224,7 +4225,7 @@ func TestResize_NonexistentVolume(t *testing.T) {
 	newSize := uint64(VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, utils.NotFoundError("not found")).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errors.NotFoundError("not found")).Times(1)
 
 	result := driver.Resize(ctx, volConfig, newSize)
 
@@ -4459,7 +4460,7 @@ func TestCreateFollowup_NonexistentVolume(t *testing.T) {
 	volConfig, _, _ := getStructsForPublishNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, utils.NotFoundError("not found")).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errors.NotFoundError("not found")).Times(1)
 
 	result := driver.CreateFollowup(ctx, volConfig)
 

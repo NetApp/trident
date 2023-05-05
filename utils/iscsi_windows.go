@@ -8,11 +8,12 @@ import (
 	"context"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // ISCSIActiveOnHost unused stub function
 func ISCSIActiveOnHost(ctx context.Context, host HostSystem) (bool, error) {
 	Logc(ctx).Debug(">>>> iscsi_windows.ISCSIActiveOnHost")
 	defer Logc(ctx).Debug("<<<< iscsi_windows.ISCSIActiveOnHost")
-	return false, UnsupportedError("ISCSIActiveOnHost is not supported for windows")
+	return false, errors.UnsupportedError("ISCSIActiveOnHost is not supported for windows")
 }

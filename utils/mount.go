@@ -4,7 +4,6 @@ package utils
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"path"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // mountFilesystemForResize expands a filesystem. The xfs_growfs utility requires a mount point to expand the

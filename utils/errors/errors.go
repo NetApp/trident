@@ -1,6 +1,6 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
-package utils
+package errors
 
 import (
 	"encoding/json"
@@ -9,6 +9,26 @@ import (
 	"io"
 	"strings"
 )
+
+// ///////////////////////////////////////////////////////////////////////////
+// Wrappers for standard library errors package
+// ///////////////////////////////////////////////////////////////////////////
+
+func New(message string) error {
+	return errors.New(message)
+}
+
+func Is(err, target error) bool {
+	return errors.Is(err, target)
+}
+
+func As(err error, target any) bool {
+	return errors.As(err, target)
+}
+
+func Unwrap(err error) error {
+	return errors.Unwrap(err)
+}
 
 // ///////////////////////////////////////////////////////////////////////////
 // bootstrapError

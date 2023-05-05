@@ -5,7 +5,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -17,6 +16,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -2819,7 +2819,7 @@ func (c Client) SnapmirrorPolicyGet(
 
 	switch len(policies) {
 	case 0:
-		return nil, utils.NotFoundError(fmt.Sprintf("could not find snapmirror policy %v", policyName))
+		return nil, errors.NotFoundError(fmt.Sprintf("could not find snapmirror policy %v", policyName))
 	case 1:
 		return &policies[0], nil
 	default:

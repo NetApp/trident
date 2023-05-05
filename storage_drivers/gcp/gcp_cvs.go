@@ -5,7 +5,6 @@ package gcp
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -26,6 +25,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -658,7 +658,7 @@ func (d *NFSStorageDriver) Create(
 		}
 		if extantVolume.LifeCycleState == api.StateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return utils.VolumeCreatingError(
+			return errors.VolumeCreatingError(
 				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
 		}
 		return drivers.NewVolumeExistsError(name)
@@ -869,7 +869,7 @@ func (d *NFSStorageDriver) createSOVolume(
 		createRequest.PoolID = GCPPool.PoolID
 
 		err := d.createVolume(ctx, createRequest, config)
-		if utils.IsVolumeCreatingError(err) {
+		if errors.IsVolumeCreatingError(err) {
 			// For this case, volume create will be retried in the future
 			// So we return here itself instead of trying for another pool
 			return err
@@ -989,7 +989,7 @@ func (d *NFSStorageDriver) CreateClone(
 
 		case api.StateCreating, api.StateRestoring:
 			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return utils.VolumeCreatingError(fmt.Sprintf("volume state is %s, not %s",
+			return errors.VolumeCreatingError(fmt.Sprintf("volume state is %s, not %s",
 				extantVolume.LifeCycleState, api.StateAvailable))
 
 		case api.StateAvailable, api.StateUpdating:
@@ -1282,7 +1282,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 			Logc(ctx).WithFields(LogFields{
 				"volume": volumeName,
 			}).Debugf("Volume is in %s state.", state)
-			return utils.VolumeCreatingError(err.Error())
+			return errors.VolumeCreatingError(err.Error())
 		}
 
 		// Don't leave a CVS volume in a non-transitional state laying around in error state
@@ -1771,7 +1771,7 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	// Make sure we're not shrinking the volume
 	if int64(sizeBytes) < volume.QuotaInBytes {
-		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested size %d is less than existing volume size %d",
+		return errors.UnsupportedCapacityRangeError(fmt.Errorf("requested size %d is less than existing volume size %d",
 			sizeBytes,
 			volume.QuotaInBytes))
 	}
@@ -2079,7 +2079,7 @@ func (d *NFSStorageDriver) GetPoolsForCreate(
 	// Software class backend doesn't have pools with matching filters, so we throw error
 	if len(GCPPools) == 0 {
 		if poolErrors != "" {
-			return nil, utils.ResourceExhaustedError(fmt.Errorf(poolErrors))
+			return nil, errors.ResourceExhaustedError(fmt.Errorf(poolErrors))
 		}
 		return nil, fmt.Errorf("no GCP pools found")
 	}

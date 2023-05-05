@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -147,7 +149,7 @@ func helperTestLUNWhenNotFound(t *testing.T, l LUNs, input LUNData) {
 	assert.False(t, l.CheckLUNExists(input.LUN), "LUN already exist")
 
 	volID, err := l.VolumeID(input.LUN)
-	assert.True(t, IsNotFoundError(err), "Expecting volume ID not found error")
+	assert.True(t, errors.IsNotFoundError(err), "Expecting volume ID not found error")
 	assert.Empty(t, volID, "volume ID should be empty")
 
 	assert.True(t, l.IsEmpty(), "LUN info should be empty")
@@ -362,7 +364,7 @@ func TestISCSISessions_ISCSISessionData(t *testing.T) {
 
 	// Try non-existent portal
 	sessionData, err = iSCSISessionNotEmpty.ISCSISessionData("5.6.7.8")
-	assert.True(t, IsNotFoundError(err), "Non-empty session should return NotFoundError")
+	assert.True(t, errors.IsNotFoundError(err), "Non-empty session should return NotFoundError")
 
 	// Try existing portal
 	sessionData, err = iSCSISessionNotEmpty.ISCSISessionData(portal)

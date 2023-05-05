@@ -20,6 +20,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // K8sClient is a method receiver that implements the ExtendedK8sClient interface
@@ -170,7 +171,7 @@ func (k *K8sClient) GetCSIDriverInformation(csiDriverName, appLabel string, shou
 
 		Log().Debug("Deleting unlabeled Trident CSI Driver by name as it can cause issues during installation.")
 		if err = k.DeleteCSIDriver(csiDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
 			}
 		} else {
@@ -264,7 +265,7 @@ func (k *K8sClient) DeleteCSIDriverCR(csiDriverName, appLabel string) error {
 		Log().Debug("Deleting unlabeled Trident CSI Driver by name as it may have been created outside of the Trident" +
 			" Operator.")
 		if err = k.DeleteCSIDriver(csiDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
 			}
 		} else {
@@ -368,7 +369,7 @@ func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, 
 
 		Log().Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
 		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role")
 			}
 		} else {
@@ -427,7 +428,7 @@ func (k *K8sClient) GetMultipleRoleInformation(roleNames []string, appLabel stri
 		Log().Debug("Deleting unlabeled Trident role by name as it can cause issues during installation.")
 		for _, roleName := range roleNames {
 			if err = k.DeleteRole(roleName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role")
 				}
 			} else {
@@ -570,7 +571,7 @@ func (k *K8sClient) DeleteTridentClusterRole(clusterRoleName, appLabel string) e
 		Log().Debug("Deleting unlabeled Trident cluster role by name as it may have been created outside of the Trident" +
 			" Operator.")
 		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role.")
 			}
 		} else {
@@ -612,7 +613,7 @@ func (k *K8sClient) DeleteMultipleTridentRoles(roleNames []string, appLabel stri
 			" Operator.")
 		for _, roleName := range roleNames {
 			if err = k.DeleteRole(roleName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role.")
 				}
 			} else {
@@ -655,7 +656,7 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, app
 
 		Log().Debug("Deleting unlabeled Trident cluster role binding by name as it can cause issues during installation.")
 		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role binding.")
 			}
 		} else {
@@ -754,7 +755,7 @@ func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appL
 		Log().Debug("Deleting unlabeled Trident cluster role binding by name as it may have been created outside of the" +
 			" Trident Operator.")
 		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role binding.")
 			}
 		} else {
@@ -865,7 +866,7 @@ func (k *K8sClient) GetMultipleRoleBindingInformation(
 		Log().Debug("Deleting unlabeled Trident role binding by name as it can cause issues during installation.")
 		for _, roleBindingName := range roleBindingNames {
 			if err = k.DeleteRoleBinding(roleBindingName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role binding.")
 				}
 			} else {
@@ -970,7 +971,7 @@ func (k *K8sClient) DeleteMultipleTridentRoleBindings(roleBindingNames []string,
 			" Trident Operator.")
 		for _, roleBindingName := range roleBindingNames {
 			if err := k.DeleteRoleBinding(roleBindingName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role binding.")
 				}
 			} else {
@@ -1538,7 +1539,7 @@ func (k *K8sClient) GetMultiplePodSecurityPolicyInformation(
 		Log().Debug("Deleting unlabeled Trident pod security policy by name as it can cause issues during installation.")
 		for _, pspName := range pspNames {
 			if err = k.DeletePodSecurityPolicy(pspName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident pod security policy.")
 				}
 			} else {
@@ -1640,7 +1641,7 @@ func (k *K8sClient) DeleteTridentPodSecurityPolicy(pspName, appLabel string) err
 		Log().Debug("Deleting unlabeled Trident pod security policy account by name as it may have been created outside" +
 			" of the Trident Operator.")
 		if err = k.DeletePodSecurityPolicy(pspName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident pod security policy.")
 			}
 		} else {
@@ -1714,7 +1715,7 @@ func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string,
 
 		Log().Debug("Deleting unlabeled Trident secret by name as it can cause issues during installation.")
 		if err = k.DeleteSecret(secretName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident secret.")
 			}
 		} else {
@@ -1801,7 +1802,7 @@ func (k *K8sClient) DeleteTridentSecret(secretName, appLabel, namespace string) 
 
 		Log().Debug("Deleting unlabeled Trident secret by name as it may have been created outside of the Trident Operator.")
 		if err = k.DeleteSecret(secretName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident secret.")
 			}
 		} else {
@@ -1892,7 +1893,7 @@ func (k *K8sClient) GetServiceInformation(serviceName, appLabel, namespace strin
 
 		Log().Debug("Deleting unlabeled Trident service by name as it can cause issues during installation.")
 		if err = k.DeleteService(serviceName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident service.")
 			}
 		} else {
@@ -1992,7 +1993,7 @@ func (k *K8sClient) DeleteTridentService(serviceName, appLabel, namespace string
 
 		Log().Debug("Deleting unlabeled Trident service by name as it may have been created outside of the Trident Operator.")
 		if err = k.DeleteService(serviceName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident service.")
 			}
 		} else {
@@ -2077,7 +2078,7 @@ func (k *K8sClient) GetMultipleServiceAccountInformation(
 		Log().Debug("Deleting unlabeled Trident service account by name as it can cause issues during installation.")
 		for _, accountName := range serviceAccountNames {
 			if err = k.DeleteServiceAccount(accountName, namespace, false); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident service account.")
 				}
 			} else {
@@ -2192,7 +2193,7 @@ func (k *K8sClient) DeleteMultipleTridentServiceAccounts(serviceAccountNames []s
 			" Trident Operator.")
 		for _, serviceAccountName := range serviceAccountNames {
 			if err = k.DeleteServiceAccount(serviceAccountName, namespace, false); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident service account.")
 				}
 			} else {

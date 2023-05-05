@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetIPAddresses(t *testing.T) {
@@ -203,5 +205,5 @@ func TestSMBActiveOnHost(t *testing.T) {
 	result, err := SMBActiveOnHost(ctx)
 	assert.False(t, result, "smb is active on the host")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }

@@ -22,6 +22,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func (p *Plugin) CreateVolume(
@@ -52,7 +53,7 @@ func (p *Plugin) CreateVolume(
 
 	// Check for pre-existing volume with the same name
 	existingVolume, err := p.orchestrator.GetVolume(ctx, req.Name)
-	if err != nil && !utils.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -297,7 +298,7 @@ func (p *Plugin) DeleteVolume(
 		}).Debugf("Could not delete volume.")
 
 		// In CSI, delete is idempotent, so don't return an error if the volume doesn't exist
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			return nil, p.getCSIErrorForOrchestratorError(err)
 		}
 	}
@@ -444,7 +445,7 @@ func (p *Plugin) verifyVolumePublicationIsNew(ctx context.Context, vp *utils.Vol
 		return nil
 	} else {
 		// Volume publication already exists with different values
-		return utils.FoundError("this volume is already published to this node with different options")
+		return errors.FoundError("this volume is already published to this node with different options")
 	}
 }
 
@@ -482,7 +483,7 @@ func (p *Plugin) ControllerUnpublishVolume(
 	nodePublicationState, err := p.controllerHelper.GetNodePublicationState(ctx, nodeID)
 	if err != nil {
 		msg := "Could not check if node is safe to publish volumes"
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			Logc(ctx).WithField("node", nodeID).WithError(err).Errorf("%s.", msg)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -492,7 +493,7 @@ func (p *Plugin) ControllerUnpublishVolume(
 	err = p.orchestrator.UpdateNode(ctx, nodeID, nodePublicationState)
 	if err != nil {
 		msg := "Could not update core with node status"
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			Logc(ctx).WithField("node", nodeID).WithError(err).Errorf("%s.", msg)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -504,7 +505,7 @@ func (p *Plugin) ControllerUnpublishVolume(
 
 	// Unpublish the volume by updating NFS export rules, removing node IQN from igroup, etc.
 	if err = p.orchestrator.UnpublishVolume(ctx, volumeID, nodeID); err != nil {
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not unpublish volume.")
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -574,7 +575,7 @@ func (p *Plugin) ListVolumes(
 	// Verify volume named same as starting-token exists or not.
 	if req.StartingToken != "" {
 		existingVolume, err := p.orchestrator.GetVolume(ctx, req.StartingToken)
-		if err != nil && !utils.IsNotFoundError(err) {
+		if err != nil && !errors.IsNotFoundError(err) {
 			return nil, p.getCSIErrorForOrchestratorError(err)
 		}
 
@@ -678,7 +679,7 @@ func (p *Plugin) CreateSnapshot(
 
 	// Check for pre-existing snapshot with the same name on the same volume
 	existingSnapshot, err := p.orchestrator.GetSnapshot(ctx, volumeName, snapshotName)
-	if err != nil && !utils.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	}
 
@@ -714,13 +715,13 @@ func (p *Plugin) CreateSnapshot(
 	// Create the snapshot
 	newSnapshot, err := p.orchestrator.CreateSnapshot(ctx, snapshotConfig)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return nil, status.Error(codes.NotFound, err.Error())
-		} else if utils.IsUnsupportedError(err) {
+		} else if errors.IsUnsupportedError(err) {
 			// CSI snapshotter has no exponential backoff for retries, so slow it down here
 			time.Sleep(10 * time.Second)
 			return nil, status.Error(codes.FailedPrecondition, err.Error())
-		} else if utils.IsMaxLimitReachedError(err) {
+		} else if errors.IsMaxLimitReachedError(err) {
 			// CSI snapshotter has no exponential backoff for retries, so slow it down here
 			time.Sleep(10 * time.Second)
 			return nil, status.Error(codes.ResourceExhausted, err.Error())
@@ -767,7 +768,7 @@ func (p *Plugin) DeleteSnapshot(
 		}).Debugf("Could not delete snapshot.")
 
 		// In CSI, delete is idempotent, so don't return an error if the snapshot doesn't exist
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			return nil, p.getCSIErrorForOrchestratorError(err)
 		}
 	}
@@ -797,7 +798,7 @@ func (p *Plugin) ListSnapshots(
 		if sourceVolume != "" {
 			snapshots, err = p.orchestrator.ListSnapshotsForVolume(ctx, sourceVolume)
 			// CSI spec expects empty return if source volume is not found
-			if err != nil && utils.IsNotFoundError(err) {
+			if err != nil && errors.IsNotFoundError(err) {
 				err = nil
 				snapshots = make([]*storage.SnapshotExternal, 0)
 			}

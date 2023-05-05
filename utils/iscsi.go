@@ -5,7 +5,6 @@ package utils
 import (
 	"context"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -20,6 +19,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -1214,7 +1214,7 @@ func ensureIscsiTarget(
 
 		exitErr, ok := err.(*exec.ExitError)
 		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == ISCSIErrLoginAuthFailed {
-			return AuthError("failed to discover targets: CHAP authorization failure")
+			return errors.AuthError("failed to discover targets: CHAP authorization failure")
 		}
 
 		return fmt.Errorf("failed to discover targets: %v", err)
@@ -1388,7 +1388,7 @@ func LoginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
 		exitErr, ok := err.(*exec.ExitError)
 		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == ISCSIErrLoginAuthFailed {
-			return AuthError("iSCSI login failed: CHAP authorization failure")
+			return errors.AuthError("iSCSI login failed: CHAP authorization failure")
 		}
 
 		return err
@@ -1428,7 +1428,7 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 			}).Errorf("unable to ensure iSCSI target exists: %v", err)
 
 			if !loginFailedDueToChap {
-				if IsAuthError(err) {
+				if errors.IsAuthError(err) {
 					Logc(ctx).Debug("Unable to ensure iSCSI target exists - authorization failed using CHAP")
 					loginFailedDueToChap = true
 				}
@@ -1462,7 +1462,7 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 				"portalIP": portal,
 			}).Error("Login to iSCSI target failed.")
 			if !loginFailedDueToChap {
-				if IsAuthError(err) {
+				if errors.IsAuthError(err) {
 					Logc(ctx).Debug("iSCSI login failed - authorization failed using CHAP")
 					loginFailedDueToChap = true
 				}
@@ -1504,7 +1504,7 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 		// login failed for all portals using CHAP, verify if any login failed due to authorization failure,
 		// return AuthError; NodeStageISCSIVolume() would handle appropriately
 		if loginFailedDueToChap {
-			return successfulLogin, AuthError("iSCSI login failed: CHAP authorization failure")
+			return successfulLogin, errors.AuthError("iSCSI login failed: CHAP authorization failure")
 		}
 	}
 
@@ -2027,7 +2027,7 @@ func InspectAllISCSISessions(ctx context.Context, publishedSessions, currentSess
 		// GET currentSessionData and currentPortalInfo
 		currentSessionData, err := currentSessions.ISCSISessionData(portal)
 		if err != nil {
-			if IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Warning("Portal is missing from the current sessions.")
 				publishedSessionData.Remediation = LoginScan
 

@@ -7,6 +7,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func GetFilesystemStats(ctx context.Context, path string) (int64, int64, int64, int64, int64, int64, error) {
@@ -70,7 +71,7 @@ func IsLikelyDir(mountpoint string) (bool, error) {
 func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) error {
 	Logc(ctx).Debug(">>>> mount_windows.mountNFSPath")
 	defer Logc(ctx).Debug("<<<< mount_windows.mountNFSPath")
-	return UnsupportedError("mountNFSPath is not supported on non-linux platform")
+	return errors.UnsupportedError("mountNFSPath is not supported on non-linux platform")
 }
 
 // mountSMBPath attaches the supplied SMB share at the supplied location with options.
@@ -142,56 +143,56 @@ func WindowsBindMount(ctx context.Context, source, target string, options []stri
 func IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool, error) {
 	Logc(ctx).Debug(">>>> mount_windows.IsNFSShareMounted")
 	defer Logc(ctx).Debug("<<<< mount_windows.IsNFSShareMounted")
-	return false, UnsupportedError("IsNFSShareMounted is not supported on non-linux platform")
+	return false, errors.UnsupportedError("IsNFSShareMounted is not supported on non-linux platform")
 }
 
 // MountDevice is a dummy added for compilation on non-linux platform.
 func MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) (err error) {
 	Logc(ctx).Debug(">>>> mount_windows.MountDevice")
 	defer Logc(ctx).Debug("<<<< mount_windows.MountDevice")
-	return UnsupportedError("MountDevice is not supported on non-linux platform")
+	return errors.UnsupportedError("MountDevice is not supported on non-linux platform")
 }
 
 // RemoveMountPoint is a dummy added for compilation on non-linux platform.
 func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	Logc(ctx).Debug(">>>> mount_windows.RemoveMountPoint")
 	defer Logc(ctx).Debug("<<<< mount_windows.RemoveMountPoint")
-	return UnsupportedError("RemoveMountPoint is not supported on non-linux platform")
+	return errors.UnsupportedError("RemoveMountPoint is not supported on non-linux platform")
 }
 
 // UmountAndRemoveTemporaryMountPoint is a dummy added for compilation on non-linux platform.
 func UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error {
 	Logc(ctx).Debug(">>>> mount_windows.UmountAndRemoveTemporaryMountPoint")
 	defer Logc(ctx).Debug("<<<< mount_windows.UmountAndRemoveTemporaryMountPoint")
-	return UnsupportedError("UmountAndRemoveTemporaryMountPoint is not supported on non-linux platform")
+	return errors.UnsupportedError("UmountAndRemoveTemporaryMountPoint is not supported on non-linux platform")
 }
 
 // UmountAndRemoveMountPoint is a dummy added for compilation on non-linux platform.
 func UmountAndRemoveMountPoint(ctx context.Context, mountPoint string) error {
 	Logc(ctx).Debug(">>>> mount_windows.UmountAndRemoveMountPoint")
 	defer Logc(ctx).Debug("<<<< mount_windows.UmountAndRemoveMountPoint")
-	return UnsupportedError("UmountAndRemoveMountPoint is not supported on non-linux platform")
+	return errors.UnsupportedError("UmountAndRemoveMountPoint is not supported on non-linux platform")
 }
 
 // RemountDevice is a dummy added for compilation on non-linux platform.
 func RemountDevice(ctx context.Context, mountpoint, options string) (err error) {
 	Logc(ctx).Debug(">>>> mount_windows.RemountDevice")
 	defer Logc(ctx).Debug("<<<< mount_windows.RemountDevice")
-	return UnsupportedError("RemountDevice is not supported on non-linux platform")
+	return errors.UnsupportedError("RemountDevice is not supported on non-linux platform")
 }
 
 // GetSelfMountInfo is a dummy added for compilation on non-linux platform.
 func GetSelfMountInfo(ctx context.Context) ([]MountInfo, error) {
 	Logc(ctx).Debug(">>>> mount_darwin.GetSelfMountInfo")
 	defer Logc(ctx).Debug("<<<< mount_darwin.GetSelfMountInfo")
-	return nil, UnsupportedError("GetSelfMountInfo is not supported on non-linux platform")
+	return nil, errors.UnsupportedError("GetSelfMountInfo is not supported on non-linux platform")
 }
 
 // GetHostMountInfo is a dummy added for compilation on non-linux platform.
 func GetHostMountInfo(ctx context.Context) ([]MountInfo, error) {
 	Logc(ctx).Debug(">>>> mount_darwin.GetHostMountInfo")
 	defer Logc(ctx).Debug("<<<< mount_darwin.GetHostMountInfo")
-	return nil, UnsupportedError("GetHostMountInfo is not supported on non-linux platform")
+	return nil, errors.UnsupportedError("GetHostMountInfo is not supported on non-linux platform")
 }
 
 // IsCompatible checks for compatibility of protocol and platform

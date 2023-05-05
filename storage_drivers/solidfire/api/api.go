@@ -7,7 +7,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const httpContentType = "json-rpc"

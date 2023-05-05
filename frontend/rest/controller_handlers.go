@@ -22,6 +22,7 @@ import (
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type listResponse interface {
@@ -31,9 +32,9 @@ type listResponse interface {
 func httpStatusCodeForAdd(err error) int {
 	if err == nil {
 		return http.StatusCreated
-	} else if utils.IsNotReadyError(err) {
+	} else if errors.IsNotReadyError(err) {
 		return http.StatusServiceUnavailable
-	} else if utils.IsBootstrapError(err) {
+	} else if errors.IsBootstrapError(err) {
 		return http.StatusInternalServerError
 	} else {
 		return http.StatusBadRequest
@@ -43,11 +44,11 @@ func httpStatusCodeForAdd(err error) int {
 func httpStatusCodeForGetUpdateList(err error) int {
 	if err == nil {
 		return http.StatusOK
-	} else if utils.IsNotReadyError(err) {
+	} else if errors.IsNotReadyError(err) {
 		return http.StatusServiceUnavailable
-	} else if utils.IsBootstrapError(err) {
+	} else if errors.IsBootstrapError(err) {
 		return http.StatusInternalServerError
-	} else if utils.IsNotFoundError(err) {
+	} else if errors.IsNotFoundError(err) {
 		return http.StatusNotFound
 	} else {
 		return http.StatusBadRequest
@@ -57,11 +58,11 @@ func httpStatusCodeForGetUpdateList(err error) int {
 func httpStatusCodeForDelete(err error) int {
 	if err == nil {
 		return http.StatusOK
-	} else if utils.IsNotReadyError(err) {
+	} else if errors.IsNotReadyError(err) {
 		return http.StatusServiceUnavailable
-	} else if utils.IsBootstrapError(err) {
+	} else if errors.IsBootstrapError(err) {
 		return http.StatusInternalServerError
-	} else if utils.IsNotFoundError(err) {
+	} else if errors.IsNotFoundError(err) {
 		return http.StatusNotFound
 	} else {
 		return http.StatusBadRequest
@@ -605,7 +606,7 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 	volume, err := orchestrator.GetVolume(r.Context(), vars["volume"])
 	if err != nil {
 		updateResponse.Error = err.Error()
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return http.StatusNotFound
 		} else {
 			return http.StatusInternalServerError
@@ -622,7 +623,7 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 	err = orchestrator.UpdateVolume(r.Context(), vars["volume"], passphraseNames)
 	if err != nil {
 		response.setError(fmt.Errorf("failed to update LUKS passphrase names for volume %s: %s", vars["volume"], err.Error()))
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return http.StatusNotFound
 		}
 		return http.StatusInternalServerError

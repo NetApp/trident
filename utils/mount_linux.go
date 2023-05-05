@@ -3,7 +3,6 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -15,6 +14,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // IsLikelyNotMountPoint uses heuristics to determine if a directory is not a mountpoint.
@@ -296,7 +296,7 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 		if strings.Contains(string(out), umountNotMounted) {
 			err = nil
 		}
-		if IsTimeoutError(err) {
+		if errors.IsTimeoutError(err) {
 			Logc(ctx).WithField("error", err).Error("Umount failed, attempting to force umount")
 			out, err = execCommandWithTimeout(ctx, "umount", umountTimeout, true, mountpoint, "-f")
 			if strings.Contains(string(out), umountNotMounted) {
@@ -340,21 +340,21 @@ func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 func mountSMBPath(ctx context.Context, exportPath, mountpoint, username, password string) error {
 	Logc(ctx).Debug(">>>> mount_linux.mountSMBPath")
 	defer Logc(ctx).Debug("<<<< mount_linux.mountSMBPath")
-	return UnsupportedError("mountSMBPath is not supported on non-windows platform")
+	return errors.UnsupportedError("mountSMBPath is not supported on non-windows platform")
 }
 
 // UmountSMBPath is a dummy added for compilation on non-windows platform.
 func UmountSMBPath(ctx context.Context, mappingPath, target string) (err error) {
 	Logc(ctx).Debug(">>>> mount_linux.UmountSMBPath")
 	defer Logc(ctx).Debug("<<<< mount_linux.UmountSMBPath")
-	return UnsupportedError("UmountSMBPath is not supported on non-windows platform")
+	return errors.UnsupportedError("UmountSMBPath is not supported on non-windows platform")
 }
 
 // WindowsBindMount is a dummy added for compilation on non-windows platform.
 func WindowsBindMount(ctx context.Context, source, target string, options []string) (err error) {
 	Logc(ctx).Debug(">>>> mount_linux.WindowsBindMount")
 	defer Logc(ctx).Debug("<<<< mount_linux.WindowsBindMount")
-	return UnsupportedError("WindowsBindMount is not supported on non-windows platform")
+	return errors.UnsupportedError("WindowsBindMount is not supported on non-windows platform")
 }
 
 // IsCompatible checks for compatibility of protocol and platform

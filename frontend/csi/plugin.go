@@ -22,6 +22,7 @@ import (
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -369,23 +370,23 @@ func (p *Plugin) addVolumeCapabilityAccessModes(ctx context.Context, vc []csi.Vo
 }
 
 func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {
-	if utils.IsNotReadyError(err) {
+	if errors.IsNotReadyError(err) {
 		return status.Error(codes.Unavailable, err.Error())
-	} else if utils.IsBootstrapError(err) {
+	} else if errors.IsBootstrapError(err) {
 		return status.Error(codes.FailedPrecondition, err.Error())
-	} else if utils.IsNotFoundError(err) {
+	} else if errors.IsNotFoundError(err) {
 		return status.Error(codes.NotFound, err.Error())
-	} else if ok, errPtr := utils.HasUnsupportedCapacityRangeError(err); ok && errPtr != nil {
+	} else if ok, errPtr := errors.HasUnsupportedCapacityRangeError(err); ok && errPtr != nil {
 		return status.Error(codes.OutOfRange, errPtr.Error())
-	} else if utils.IsFoundError(err) {
+	} else if errors.IsFoundError(err) {
 		return status.Error(codes.AlreadyExists, err.Error())
-	} else if utils.IsNodeNotSafeToPublishForBackendError(err) {
+	} else if errors.IsNodeNotSafeToPublishForBackendError(err) {
 		return status.Error(codes.FailedPrecondition, err.Error())
-	} else if utils.IsVolumeCreatingError(err) {
+	} else if errors.IsVolumeCreatingError(err) {
 		return status.Error(codes.DeadlineExceeded, err.Error())
-	} else if utils.IsVolumeDeletingError(err) {
+	} else if errors.IsVolumeDeletingError(err) {
 		return status.Error(codes.DeadlineExceeded, err.Error())
-	} else if ok, errPtr := utils.HasResourceExhaustedError(err); ok && errPtr != nil {
+	} else if ok, errPtr := errors.HasResourceExhaustedError(err); ok && errPtr != nil {
 		return status.Error(codes.ResourceExhausted, err.Error())
 	} else {
 		return status.Error(codes.Unknown, err.Error())

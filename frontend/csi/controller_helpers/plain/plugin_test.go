@@ -4,7 +4,6 @@ package plain
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,6 +19,7 @@ import (
 	mock "github.com/netapp/trident/mocks/mock_core"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestMain(m *testing.M) {

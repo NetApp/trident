@@ -4,7 +4,6 @@ package k8sclient
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -24,6 +23,7 @@ import (
 	torc "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
 	tprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type Clients struct {

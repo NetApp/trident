@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,7 +16,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -76,7 +75,7 @@ func volumeList(volumeNames []string) error {
 
 		volume, err := GetVolume(volumeName)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -138,7 +137,7 @@ func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return storage.VolumeExternal{}, utils.NotFoundError(errorMessage)
+			return storage.VolumeExternal{}, errors.NotFoundError(errorMessage)
 		default:
 			return storage.VolumeExternal{}, errors.New(errorMessage)
 		}

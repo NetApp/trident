@@ -4,7 +4,6 @@ package api_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -16,6 +15,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var ctx = context.Background()

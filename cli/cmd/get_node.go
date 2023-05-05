@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -16,6 +15,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func init() {
@@ -58,7 +58,7 @@ func nodeList(nodeNames []string) error {
 
 		node, err := GetNode(nodeName)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -102,7 +102,7 @@ func GetNode(nodeName string) (*utils.NodeExternal, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return nil, utils.NotFoundError(errorMessage)
+			return nil, errors.NotFoundError(errorMessage)
 		default:
 			return nil, errors.New(errorMessage)
 		}

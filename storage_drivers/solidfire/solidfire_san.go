@@ -5,7 +5,6 @@ package solidfire
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -24,6 +23,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -123,8 +123,10 @@ func (d *SANStorageDriver) Initialize(
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 	fields := LogFields{"Method": "Initialize", "Type": "SANStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	commonConfig.DriverContext = context
 
@@ -381,8 +383,10 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.SolidfireStorageDriverConfig,
 ) error {
 	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	// SF prefix is always empty
 	prefix := ""
@@ -1350,8 +1354,8 @@ func (d *SANStorageDriver) CreateSnapshot(
 
 	snapshot, err := d.Client.CreateSnapshot(ctx, &req)
 	if err != nil {
-		if utils.IsMaxLimitReachedError(err) {
-			return nil, utils.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: %+v", err))
+		if errors.IsMaxLimitReachedError(err) {
+			return nil, errors.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: %+v", err))
 		}
 		return nil, fmt.Errorf("could not create snapshot: %+v", err)
 	}
@@ -1930,7 +1934,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	volSizeBytes := uint64(volume.TotalSize)
 	if sizeBytes < volSizeBytes {
-		return utils.UnsupportedCapacityRangeError(fmt.Errorf(
+		return errors.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes))
 	}
 

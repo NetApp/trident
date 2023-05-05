@@ -9,7 +9,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,6 +23,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type ZAPIRequest interface {
@@ -390,7 +390,7 @@ func NewZapiAsyncResult(ctx context.Context, zapiResult interface{}) (result Zap
 		// Handle ZAPI result for response object that contains a list of one item with the needed job information.
 		volModifyResult, ok := val.Interface().(VolumeModifyIterAsyncResponseResult)
 		if !ok {
-			return ZapiAsyncResult{}, utils.TypeAssertionError("val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)")
+			return ZapiAsyncResult{}, errors.TypeAssertionError("val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)")
 		}
 		if volModifyResult.NumSucceededPtr != nil && *volModifyResult.NumSucceededPtr > 0 {
 			if volModifyResult.SuccessListPtr != nil && volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr != nil {

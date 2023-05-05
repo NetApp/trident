@@ -14,7 +14,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -24,6 +23,8 @@ import (
 
 	// Logrus is directly imported here because importing Trident's logging package will cause an import cycle.
 	log "github.com/sirupsen/logrus"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 type CertInfo struct {

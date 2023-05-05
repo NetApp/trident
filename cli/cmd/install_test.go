@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -15,6 +14,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	mockK8sClient "github.com/netapp/trident/mocks/mock_cli/mock_k8s_client"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (

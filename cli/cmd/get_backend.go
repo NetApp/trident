@@ -4,20 +4,19 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
+
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
-
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func init() {
@@ -59,7 +58,7 @@ func backendList(backendNames []string) error {
 
 		backend, err := GetBackend(backendName)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -103,7 +102,7 @@ func GetBackend(backendName string) (storage.BackendExternal, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return storage.BackendExternal{}, utils.NotFoundError(errorMessage)
+			return storage.BackendExternal{}, errors.NotFoundError(errorMessage)
 		default:
 			return storage.BackendExternal{}, errors.New(errorMessage)
 		}

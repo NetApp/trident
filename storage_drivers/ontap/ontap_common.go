@@ -5,7 +5,6 @@ package ontap
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math/rand"
 	"net"
@@ -31,6 +30,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -463,7 +463,7 @@ func resizeValidation(
 	volSizeBytes := uint64(volSize)
 
 	if sizeBytes < volSizeBytes {
-		return 0, utils.UnsupportedCapacityRangeError(fmt.Errorf(
+		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested size %d is less than existing volume size %d", sizeBytes, volSize))
 	}
 
@@ -1494,7 +1494,7 @@ func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
-		return 0, utils.UnsupportedCapacityRangeError(fmt.Errorf(
+		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
 			sizeBytes, MinimumVolumeSizeBytes))
 	}

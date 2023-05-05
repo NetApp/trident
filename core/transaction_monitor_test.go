@@ -16,7 +16,7 @@ import (
 	storageclass "github.com/netapp/trident/storage_class"
 	fakeDriver "github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -64,12 +64,12 @@ func TestLongRunningTransaction(t *testing.T) {
 
 	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 
 	_, err = o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 
 	volTxns, err := storeClient.GetVolumeTransactions(ctx())
@@ -80,7 +80,7 @@ func TestLongRunningTransaction(t *testing.T) {
 
 	_, err = o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 
 	vol, err := o.AddVolume(ctx(), volumeConfig)
@@ -103,7 +103,7 @@ func TestCancelledLongRunningTransaction(t *testing.T) {
 
 	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 
 	volTxns, err := storeClient.GetVolumeTransactions(ctx())
@@ -138,7 +138,7 @@ func TestUpdateVolumeCreatingTransaction(t *testing.T) {
 
 	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 
 	volTxns, err := storeClient.GetVolumeTransactions(ctx())
@@ -174,7 +174,7 @@ func TestErrorVolumeCreatingTransaction(t *testing.T) {
 
 	_, err := o.AddVolume(ctx(), volumeConfig)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 
 	// Verify transaction exists
@@ -218,7 +218,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 
 	_, err = o.CloneVolume(ctx(), cloneVolumeConfig)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 	// Verify transaction exists
 	volTxns, err := storeClient.GetVolumeTransactions(ctx())
@@ -233,7 +233,7 @@ func TestVolumeCreatingTwoTransactions(t *testing.T) {
 
 	_, err = o.AddVolume(ctx(), volumeConfig02)
 	if err != nil {
-		assert.True(t, utils.IsVolumeCreatingError(err))
+		assert.True(t, errors.IsVolumeCreatingError(err))
 	}
 
 	// Verify transactions exist

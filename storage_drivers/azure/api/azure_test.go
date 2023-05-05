@@ -3,12 +3,13 @@
 package api
 
 import (
-	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestCreateVirtualNetworkID(t *testing.T) {

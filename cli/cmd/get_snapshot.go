@@ -4,21 +4,19 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
-
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var getSnapshotVolume string
@@ -67,7 +65,7 @@ func snapshotList(snapshotIDs []string) error {
 
 		snapshot, err := GetSnapshot(snapshotID)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -106,7 +104,7 @@ func GetSnapshots(volume string) ([]string, error) {
 
 func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 	if !strings.ContainsRune(snapshotID, '/') {
-		return storage.SnapshotExternal{}, utils.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; "+
+		return storage.SnapshotExternal{}, errors.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; "+
 			"Please use the format <volume name>/<snapshot name>", snapshotID))
 	}
 
@@ -119,7 +117,7 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return storage.SnapshotExternal{}, utils.NotFoundError(errorMessage)
+			return storage.SnapshotExternal{}, errors.NotFoundError(errorMessage)
 		default:
 			return storage.SnapshotExternal{}, errors.New(errorMessage)
 		}

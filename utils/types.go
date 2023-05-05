@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/mitchellh/copystructure"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 //go:generate mockgen -destination=../mocks/mock_utils/mock_json_utils.go github.com/netapp/trident/utils JSONReaderWriter
@@ -458,7 +460,7 @@ func (l *LUNs) VolumeID(x int32) (string, error) {
 		return volId, nil
 	}
 
-	return "", NotFoundError("LUN not found")
+	return "", errors.NotFoundError("LUN not found")
 }
 
 func (l *LUNs) String() string {
@@ -577,7 +579,7 @@ func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, erro
 		return iSCSISessionData, nil
 	}
 
-	return nil, NotFoundError("portal not found")
+	return nil, errors.NotFoundError("portal not found")
 }
 
 // AddPortal creates a portal entry along with PortalInfo but without any LUNInfo

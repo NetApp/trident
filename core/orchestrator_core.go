@@ -4,7 +4,6 @@ package core
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -32,6 +31,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -113,7 +113,7 @@ func NewTridentOrchestrator(client persistentstore.Client) *TridentOrchestrator 
 		mutex:              &sync.Mutex{},
 		storeClient:        client,
 		bootstrapped:       false,
-		bootstrapError:     utils.NotReadyError(),
+		bootstrapError:     errors.NotReadyError(),
 	}
 }
 
@@ -168,20 +168,20 @@ func (o *TridentOrchestrator) Bootstrap(monitorTransactions bool) error {
 
 	// Transform persistent state, if necessary
 	if err = o.transformPersistentState(ctx); err != nil {
-		o.bootstrapError = utils.BootstrapError(err)
+		o.bootstrapError = errors.BootstrapError(err)
 		return o.bootstrapError
 	}
 
 	// Set UUID
 	o.uuid, err = o.storeClient.GetTridentUUID(ctx)
 	if err != nil {
-		o.bootstrapError = utils.BootstrapError(err)
+		o.bootstrapError = errors.BootstrapError(err)
 		return o.bootstrapError
 	}
 
 	// Bootstrap state from persistent store
 	if err = o.bootstrap(ctx); err != nil {
-		o.bootstrapError = utils.BootstrapError(err)
+		o.bootstrapError = errors.BootstrapError(err)
 		return o.bootstrapError
 	}
 
@@ -517,7 +517,7 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 			if persistentstore.MatchKeyNotFoundErr(err) {
 				keyError, ok := err.(*persistentstore.Error)
 				if !ok {
-					return utils.TypeAssertionError("err.(*persistentstore.Error)")
+					return errors.TypeAssertionError("err.(*persistentstore.Error)")
 				}
 				Logc(ctx).Warnf("Unable to find key %s.  Continuing bootstrap, but "+
 					"consider checking integrity if Trident installation is not new.", keyError.Key)
@@ -752,7 +752,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 				// Snapshot deletion is an idempotent operation, so it's safe to
 				// delete an already deleted snapshot.
 				err := backend.DeleteSnapshot(ctx, v.SnapshotConfig, v.Config)
-				if err != nil && !utils.IsUnsupportedError(err) {
+				if err != nil && !errors.IsUnsupportedError(err) {
 					return fmt.Errorf("error attempting to clean up snapshot %s from backend %s: %v",
 						v.SnapshotConfig.Name, backend.Name(), err)
 				}
@@ -773,7 +773,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 		logFields := LogFields{"volume": v.SnapshotConfig.VolumeName, "snapshot": v.SnapshotConfig.Name}
 
 		if err := o.deleteSnapshot(ctx, v.SnapshotConfig); err != nil {
-			if utils.IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Info("Snapshot for the delete transaction wasn't found.")
 			} else {
 				Logc(ctx).WithFields(logFields).Errorf("Unable to finalize deletion of the snapshot! "+
@@ -1070,7 +1070,7 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 	// For backends created using CRD Controller ensure there are no forbidden fields
 	if o.isCRDContext(ctx) {
 		if err = factory.SpecOnlyValidation(ctx, commonConfig, configInJSON); err != nil {
-			return nil, utils.UnsupportedConfigError(err)
+			return nil, errors.UnsupportedConfigError(err)
 		}
 	}
 
@@ -1186,7 +1186,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	// Check whether the backend exists.
 	originalBackend, found := o.backends[backendUUID]
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendUUID))
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %v was not found", backendUUID))
 	}
 
 	logFields := LogFields{"backendName": backendName, "backendUUID": backendUUID, "configJSON": "<suppressed>"}
@@ -1233,7 +1233,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 				"originalConfigRef": originalConfigRef,
 				"invalidConfigRef":  callingConfigRef,
 			}).Errorf("Backend update initiated using an invalid ConfigRef.")
-			return nil, utils.UnsupportedConfigError(fmt.Errorf(
+			return nil, errors.UnsupportedConfigError(fmt.Errorf(
 				"backend '%v' update initiated using an invalid configRef, it is associated with configRef "+
 					"'%v' and not '%v'", originalBackend.Name(), originalConfigRef, callingConfigRef))
 		}
@@ -1286,7 +1286,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
 	case updateCode.Contains(storage.PrefixChange):
-		err := utils.UnsupportedConfigError(errors.New("updating the storage prefix isn't currently supported"))
+		err := errors.UnsupportedConfigError(errors.New("updating the storage prefix isn't currently supported"))
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
 	case updateCode.Contains(storage.BackendRename):
@@ -1430,7 +1430,7 @@ func (o *TridentOrchestrator) updateBackendState(
 	}
 	backend, found := o.backends[backendUUID]
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
 	}
 
 	newBackendState := storage.BackendState(backendState)
@@ -1456,7 +1456,7 @@ func (o *TridentOrchestrator) getBackendUUIDByBackendName(backendName string) (s
 			return backendUUID, nil
 		}
 	}
-	return "", utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
+	return "", errors.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
 }
 
 func (o *TridentOrchestrator) getBackendByBackendName(backendName string) (storage.Backend, error) {
@@ -1465,7 +1465,7 @@ func (o *TridentOrchestrator) getBackendByBackendName(backendName string) (stora
 			return b, nil
 		}
 	}
-	return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
+	return nil, errors.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
 }
 
 func (o *TridentOrchestrator) getBackendByConfigRef(configRef string) (storage.Backend, error) {
@@ -1474,7 +1474,7 @@ func (o *TridentOrchestrator) getBackendByConfigRef(configRef string) (storage.B
 			return b, nil
 		}
 	}
-	return nil, utils.NotFoundError(fmt.Sprintf("backend based on configRef '%v' was not found", configRef))
+	return nil, errors.NotFoundError(fmt.Sprintf("backend based on configRef '%v' was not found", configRef))
 }
 
 func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (storage.Backend, error) {
@@ -1482,7 +1482,7 @@ func (o *TridentOrchestrator) getBackendByBackendUUID(backendUUID string) (stora
 	if backend != nil {
 		return backend, nil
 	}
-	return nil, utils.NotFoundError(fmt.Sprintf("backend uuid %v was not found", backendUUID))
+	return nil, errors.NotFoundError(fmt.Sprintf("backend uuid %v was not found", backendUUID))
 }
 
 func (o *TridentOrchestrator) GetBackend(
@@ -1505,7 +1505,7 @@ func (o *TridentOrchestrator) GetBackend(
 	}
 	backend, found := o.backends[backendUUID]
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %v was not found", backendName))
 	}
 
 	backendExternal = backend.ConstructExternal(ctx)
@@ -1625,7 +1625,7 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 
 	backend, found := o.backends[backendUUID]
 	if !found {
-		return utils.NotFoundError(fmt.Sprintf("backend %s not found", backendName))
+		return errors.NotFoundError(fmt.Sprintf("backend %s not found", backendName))
 	}
 
 	// Do not allow deletion of TridentBackendConfig-based backends using tridentctl
@@ -1682,7 +1682,7 @@ func (o *TridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backen
 
 	var b storage.Backend
 	if b, err = o.getBackendByBackendUUID(backendUUID); err != nil {
-		return utils.NotFoundError(fmt.Sprintf("backend with UUID '%s' not found", backendUUID))
+		return errors.NotFoundError(fmt.Sprintf("backend with UUID '%s' not found", backendUUID))
 	}
 
 	if b.ConfigRef() != "" {
@@ -1852,7 +1852,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 
 			// If the volume is still creating, don't try another pool but let the cleanup logic
 			// save the state of this operation in a transaction.
-			if utils.IsVolumeCreatingError(err) {
+			if errors.IsVolumeCreatingError(err) {
 				Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
 				return nil, err
 			}
@@ -1909,13 +1909,13 @@ func (o *TridentOrchestrator) addVolumeRetry(
 	backend, found := o.backends[txn.VolumeCreatingConfig.BackendUUID]
 	if !found {
 		// Should never get here but just to be safe
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s for volume %s not found",
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s for volume %s not found",
 			txn.VolumeCreatingConfig.BackendUUID, volumeConfig.Name))
 	}
 
 	pool, found = backend.Storage()[txn.VolumeCreatingConfig.Pool]
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("pool %s for backend %s not found",
+		return nil, errors.NotFoundError(fmt.Sprintf("pool %s for backend %s not found",
 			txn.VolumeCreatingConfig.Pool, txn.VolumeCreatingConfig.BackendUUID))
 	}
 
@@ -1940,7 +1940,7 @@ func (o *TridentOrchestrator) addVolumeRetry(
 
 		// If the volume is still creating, don't try another pool but let the cleanup logic
 		// save the state of this operation in a transaction.
-		if utils.IsVolumeCreatingError(err) {
+		if errors.IsVolumeCreatingError(err) {
 			Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
 		} else {
 			Logc(ctx).WithFields(logFields).Error("addVolumeRetry failed on this backend.")
@@ -2066,10 +2066,10 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 			"CloneSourceVolume": volumeConfig.CloneSourceVolume,
 		}).Trace("Looking for source volume in subordinate volumes cache.")
 		if _, ok := o.subordinateVolumes[volumeConfig.CloneSourceVolume]; ok {
-			return nil, utils.NotFoundError(fmt.Sprintf("cloning subordinate volume %s is not allowed",
+			return nil, errors.NotFoundError(fmt.Sprintf("cloning subordinate volume %s is not allowed",
 				volumeConfig.CloneSourceVolume))
 		}
-		return nil, utils.NotFoundError(fmt.Sprintf("source volume not found: %s", volumeConfig.CloneSourceVolume))
+		return nil, errors.NotFoundError(fmt.Sprintf("source volume not found: %s", volumeConfig.CloneSourceVolume))
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -2116,7 +2116,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		"VolumeMode":       volumeConfig.VolumeMode,
 	}).Trace("Checking if the source volume's mode is compatible with the requested clone's mode.")
 	if sourceVolumeMode != "" && sourceVolumeMode != volumeConfig.VolumeMode {
-		return nil, utils.NotFoundError(fmt.Sprintf(
+		return nil, errors.NotFoundError(fmt.Sprintf(
 			"source volume's volume-mode (%s) is incompatible with requested clone's volume-mode (%s)",
 			sourceVolume.Config.VolumeMode, volumeConfig.VolumeMode))
 	}
@@ -2127,7 +2127,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	}).Trace("Checking if the source volume's backend is in the backends cache.")
 	if backend, found = o.backends[sourceVolume.BackendUUID]; !found {
 		// Should never get here but just to be safe
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s for the source volume not found: %s",
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s for the source volume not found: %s",
 			sourceVolume.BackendUUID, volumeConfig.CloneSourceVolume))
 	}
 
@@ -2174,7 +2174,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		snapshotID := storage.MakeSnapshotID(cloneConfig.CloneSourceVolume, cloneConfig.CloneSourceSnapshot)
 		sourceSnapshot, found := o.snapshots[snapshotID]
 		if !found {
-			return nil, utils.NotFoundError("Could not find source snapshot for volume")
+			return nil, errors.NotFoundError("Could not find source snapshot for volume")
 		}
 		cloneConfig.LUKSPassphraseNames = sourceSnapshot.Config.LUKSPassphraseNames
 	}
@@ -2228,7 +2228,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 
 		// If the volume is still creating, return the error to let the cleanup logic
 		// save the state of this operation in a transaction.
-		if utils.IsVolumeCreatingError(err) {
+		if errors.IsVolumeCreatingError(err) {
 			Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
 			return nil, err
 		}
@@ -2260,13 +2260,13 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	// Get the source volume
 	sourceVolume, found := o.volumes[cloneConfig.CloneSourceVolume]
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("source volume not found: %s", cloneConfig.CloneSourceVolume))
+		return nil, errors.NotFoundError(fmt.Sprintf("source volume not found: %s", cloneConfig.CloneSourceVolume))
 	}
 
 	backend, found = o.backends[txn.VolumeCreatingConfig.BackendUUID]
 	if !found {
 		// Should never get here but just to be safe
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s for volume %s not found",
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s for volume %s not found",
 			txn.VolumeCreatingConfig.BackendUUID, cloneConfig.Name))
 	}
 
@@ -2304,7 +2304,7 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 
 		// If the volume is still creating, let the cleanup logic save the state
 		// of this operation in a transaction.
-		if utils.IsVolumeCreatingError(err) {
+		if errors.IsVolumeCreatingError(err) {
 			Logc(ctx).WithFields(logFields).Warn("Volume still creating on this backend.")
 		} else {
 			Logc(ctx).WithFields(logFields).Error("addVolumeRetry failed on this backend.")
@@ -2345,7 +2345,7 @@ func (o *TridentOrchestrator) GetVolumeExternal(
 	}
 	backend, ok := o.backends[backendUUID]
 	if !ok {
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s not found", backendName))
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s not found", backendName))
 	}
 
 	volExternal, err = backend.GetVolumeExternal(ctx, volumeName)
@@ -2372,7 +2372,7 @@ func (o *TridentOrchestrator) GetVolumeByInternalName(
 			return vol.Config.Name, nil
 		}
 	}
-	return "", utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeInternal))
+	return "", errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeInternal))
 }
 
 func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) error {
@@ -2386,7 +2386,7 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 
 	for volumeName, volume := range o.volumes {
 		if volume.Config.InternalName == originalName && volume.BackendUUID == backendUUID {
-			return utils.FoundError(fmt.Sprintf("PV %s already exists for volume %s", originalName, volumeName))
+			return errors.FoundError(fmt.Sprintf("PV %s already exists for volume %s", originalName, volumeName))
 		}
 	}
 
@@ -2401,7 +2401,7 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 	}
 
 	if backend.Driver().Get(ctx, originalName) != nil {
-		return utils.NotFoundError(fmt.Sprintf("volume %s was not found", originalName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s was not found", originalName))
 	}
 
 	// Identify the resultant protocol based on the VolumeMode, AccessMode and the Protocol. Fro a valid case
@@ -2459,7 +2459,7 @@ func (o *TridentOrchestrator) LegacyImportVolume(
 
 	backend, err := o.getBackendByBackendName(backendName)
 	if err != nil {
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s not found: %v", backendName, err))
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s not found: %v", backendName, err))
 	}
 
 	err = o.validateImportVolume(ctx, volumeConfig)
@@ -2557,7 +2557,7 @@ func (o *TridentOrchestrator) ImportVolume(
 
 	backend, ok := o.backends[volumeConfig.ImportBackendUUID]
 	if !ok {
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s not found", volumeConfig.ImportBackendUUID))
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s not found", volumeConfig.ImportBackendUUID))
 	}
 
 	err = o.validateImportVolume(ctx, volumeConfig)
@@ -2657,7 +2657,7 @@ func (o *TridentOrchestrator) AddVolumeTransaction(ctx context.Context, volTxn *
 					volTxn.Op, oldTxn.Op)
 			}
 		} else {
-			return utils.FoundError("volume transaction already exists")
+			return errors.FoundError("volume transaction already exists")
 		}
 	}
 
@@ -2710,7 +2710,7 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 	var cleanupErr, txErr error
 
 	// If in a retry situation, we already handled the error in addVolumeRetryCleanup.
-	if utils.IsVolumeCreatingError(err) {
+	if errors.IsVolumeCreatingError(err) {
 		return err
 	}
 
@@ -2767,7 +2767,7 @@ func (o *TridentOrchestrator) addVolumeRetryCleanup(
 	volTxn *storage.VolumeTransaction, volumeConfig *storage.VolumeConfig,
 ) error {
 	// If not in a retry situation, return the original error so addVolumeCleanup can do its job.
-	if err == nil || !utils.IsVolumeCreatingError(err) {
+	if err == nil || !errors.IsVolumeCreatingError(err) {
 		return err
 	}
 
@@ -2820,7 +2820,7 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 
 	backend, ok := o.backends[volumeConfig.ImportBackendUUID]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("backend %s not found", volumeConfig.ImportBackendUUID))
+		return errors.NotFoundError(fmt.Sprintf("backend %s not found", volumeConfig.ImportBackendUUID))
 	}
 
 	if err != nil {
@@ -2893,7 +2893,7 @@ func (o *TridentOrchestrator) getVolume(
 	if volume, found := o.subordinateVolumes[volumeName]; found {
 		return volume.ConstructExternal(), nil
 	}
-	return nil, utils.NotFoundError(fmt.Sprintf("volume %v was not found", volumeName))
+	return nil, errors.NotFoundError(fmt.Sprintf("volume %v was not found", volumeName))
 }
 
 // driverTypeForBackend does the necessary work to get the driver type.  It does
@@ -3062,7 +3062,7 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 	if volume.Orphaned {
 		Logc(ctx).WithFields(LogFields{
@@ -3142,15 +3142,15 @@ func (o *TridentOrchestrator) publishVolume(
 		// The inclusion of all volume publications for the source and it subordinates will produce the correct
 		// set of exported nodes.
 		if volume, ok = o.volumes[volume.Config.ShareSourceVolume]; !ok {
-			return utils.NotFoundError(fmt.Sprintf("source volume for subordinate volumes %s not found",
+			return errors.NotFoundError(fmt.Sprintf("source volume for subordinate volumes %s not found",
 				volumeName))
 		}
 	} else if volume, ok = o.volumes[volumeName]; !ok {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	if volume.State.IsDeleting() {
-		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	publishInfo.BackendUUID = volume.BackendUUID
@@ -3168,7 +3168,7 @@ func (o *TridentOrchestrator) publishVolume(
 			return fmt.Errorf("node %s not found", publishInfo.HostName)
 		}
 		if nodeInfo.PublicationState != utils.NodeClean {
-			return utils.NodeNotSafeToPublishForBackendError(publishInfo.HostName, backend.GetDriverName())
+			return errors.NodeNotSafeToPublishForBackendError(publishInfo.HostName, backend.GetDriverName())
 		}
 	}
 
@@ -3195,7 +3195,7 @@ func (o *TridentOrchestrator) publishVolume(
 			"NewReadOnly":   publishInfo.ReadOnly,
 			"NewAccessMode": publishInfo.AccessMode,
 		}).Errorf(msg)
-		return utils.FoundError(msg)
+		return errors.FoundError(msg)
 	}
 
 	publishInfo.TridentUUID = o.uuid
@@ -3220,7 +3220,7 @@ func (o *TridentOrchestrator) publishVolume(
 
 			if safeToEnable {
 				if err := backend.EnablePublishEnforcement(ctx, volume); err != nil {
-					if !utils.IsUnsupportedError(err) {
+					if !errors.IsUnsupportedError(err) {
 						Logc(ctx).WithFields(fields).WithError(err).Errorf(
 							"Failed to enable volume publish enforcement for volume.")
 						return err
@@ -3322,7 +3322,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		// If the publication couldn't be found and Trident isn't in docker mode, bail out.
 		// Otherwise, continue un-publishing. It is ok for the publication to not exist at this point for docker.
 		if config.CurrentDriverContext != config.ContextDocker {
-			Logc(ctx).WithError(utils.NotFoundError("unable to get volume publication record")).WithFields(fields).Warn("Volume is not published to node; doing nothing.")
+			Logc(ctx).WithError(errors.NotFoundError("unable to get volume publication record")).WithFields(fields).Warn("Volume is not published to node; doing nothing.")
 			return nil
 		}
 	} else if publication == nil {
@@ -3343,11 +3343,11 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		// set of exported nodes.
 		sourceVol := volume.Config.ShareSourceVolume
 		if volume, ok = o.volumes[volume.Config.ShareSourceVolume]; !ok {
-			return utils.NotFoundError(fmt.Sprintf("source volume %s for subordinate volumes %s not found",
+			return errors.NotFoundError(fmt.Sprintf("source volume %s for subordinate volumes %s not found",
 				sourceVol, volumeName))
 		}
 	} else if volume, ok = o.volumes[volumeName]; !ok {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	// Build list of nodes to which the volume remains published.
@@ -3379,7 +3379,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 
 	// Unpublish the volume.
 	if err := backend.UnpublishVolume(ctx, volume.Config, publishInfo); err != nil {
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			return err
 		}
 		Logc(ctx).Debug("Volume not found in backend during unpublish; continuing with unpublish.")
@@ -3395,7 +3395,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	// Delete the publication from memory and the persistence layer.
 	if err := o.deleteVolumePublication(ctx, volumeName, nodeName); err != nil {
 		msg := "unable to delete volume publication record"
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			Logc(ctx).WithError(err).Error(msg)
 			return fmt.Errorf(msg)
 		}
@@ -3430,10 +3430,10 @@ func (o *TridentOrchestrator) AttachVolume(
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 	if volume.State.IsDeleting() {
-		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	hostMountpoint := mountpoint
@@ -3494,7 +3494,8 @@ func (o *TridentOrchestrator) AttachVolume(
 			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)
 		}
 	} else {
-		return utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{}, AttachISCSIVolumeTimeoutLong)
+		return utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
+			AttachISCSIVolumeTimeoutLong)
 	}
 }
 
@@ -3514,10 +3515,10 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 	if volume.State.IsDeleting() {
-		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	hostMountpoint := mountpoint
@@ -3569,7 +3570,7 @@ func (o *TridentOrchestrator) SetVolumeState(
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 	// Nothing to do if the volume is already in desired state
 	if volume.State == state {
@@ -3625,10 +3626,10 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 	sourceVolume, ok = o.volumes[volumeConfig.ShareSourceVolume]
 	if !ok {
 		if _, ok = o.subordinateVolumes[volumeConfig.ShareSourceVolume]; ok {
-			return nil, utils.NotFoundError(fmt.Sprintf("creating subordinate to a subordinate volume %s is not allowed",
+			return nil, errors.NotFoundError(fmt.Sprintf("creating subordinate to a subordinate volume %s is not allowed",
 				volumeConfig.ShareSourceVolume))
 		}
-		return nil, utils.NotFoundError(fmt.Sprintf("source volume %s for subordinate volume %s not found",
+		return nil, errors.NotFoundError(fmt.Sprintf("source volume %s for subordinate volume %s not found",
 			volumeConfig.ShareSourceVolume, volumeConfig.Name))
 	} else if sourceVolume.Config.ImportNotManaged {
 		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is an unmanaged import",
@@ -3646,7 +3647,7 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 
 	// Get the backend and ensure it and the source volume are NFS
 	if backend, ok := o.backends[sourceVolume.BackendUUID]; !ok {
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s for source volume %s not found",
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s for source volume %s not found",
 			sourceVolume.BackendUUID, sourceVolume.Config.Name))
 	} else if backend.GetProtocol(ctx) != config.File || sourceVolume.Config.AccessInfo.NfsPath == "" {
 		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s must be NFS",
@@ -3694,7 +3695,7 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 func (o *TridentOrchestrator) deleteSubordinateVolume(ctx context.Context, volumeName string) (err error) {
 	volume, ok := o.subordinateVolumes[volumeName]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("subordinate volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("subordinate volume %s not found", volumeName))
 	}
 
 	// Remove volume from persistent store
@@ -3750,7 +3751,7 @@ func (o *TridentOrchestrator) ListSubordinateVolumes(
 	} else {
 		// If listing subordinate volumes for a single source volume, make a map with just the source volume
 		if sourceVolume, ok := o.volumes[sourceVolumeName]; !ok {
-			return nil, utils.NotFoundError(fmt.Sprintf("source volume %s not found", sourceVolumeName))
+			return nil, errors.NotFoundError(fmt.Sprintf("source volume %s not found", sourceVolumeName))
 		} else {
 			sourceVolumes = make(map[string]*storage.Volume)
 			sourceVolumes[sourceVolumeName] = sourceVolume
@@ -3788,11 +3789,11 @@ func (o *TridentOrchestrator) GetSubordinateSourceVolume(
 	defer o.mutex.Unlock()
 
 	if subordinateVolume, ok := o.subordinateVolumes[subordinateVolumeName]; !ok {
-		return nil, utils.NotFoundError(fmt.Sprintf("subordinate volume %s not found", subordinateVolumeName))
+		return nil, errors.NotFoundError(fmt.Sprintf("subordinate volume %s not found", subordinateVolumeName))
 	} else {
 		parentVolumeName := subordinateVolume.Config.ShareSourceVolume
 		if sourceVolume, ok := o.volumes[parentVolumeName]; !ok {
-			return nil, utils.NotFoundError(fmt.Sprintf("source volume %s not found", parentVolumeName))
+			return nil, errors.NotFoundError(fmt.Sprintf("source volume %s not found", parentVolumeName))
 		} else {
 			volume = sourceVolume.ConstructExternal()
 		}
@@ -3805,12 +3806,12 @@ func (o *TridentOrchestrator) GetSubordinateSourceVolume(
 func (o *TridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volumeName, newSize string) error {
 	volume, ok := o.subordinateVolumes[volumeName]
 	if !ok || volume == nil {
-		return utils.NotFoundError(fmt.Sprintf("subordinate volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("subordinate volume %s not found", volumeName))
 	}
 
 	sourceVolume, ok := o.volumes[volume.Config.ShareSourceVolume]
 	if !ok || sourceVolume == nil {
-		return utils.NotFoundError(fmt.Sprintf("source volume %s for subordinate volume %s not found",
+		return errors.NotFoundError(fmt.Sprintf("source volume %s for subordinate volume %s not found",
 			volume.Config.ShareSourceVolume, volumeName))
 	}
 
@@ -3886,19 +3887,19 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	if !ok {
 		if _, ok = o.subordinateVolumes[snapshotConfig.VolumeName]; ok {
 			// TODO(sphadnis): Check if this block is dead code
-			return nil, utils.NotFoundError(fmt.Sprintf("creating snapshot is not allowed on subordinate volume %s",
+			return nil, errors.NotFoundError(fmt.Sprintf("creating snapshot is not allowed on subordinate volume %s",
 				snapshotConfig.VolumeName))
 		}
-		return nil, utils.NotFoundError(fmt.Sprintf("source volume %s not found", snapshotConfig.VolumeName))
+		return nil, errors.NotFoundError(fmt.Sprintf("source volume %s not found", snapshotConfig.VolumeName))
 	}
 	if volume.State.IsDeleting() {
-		return nil, utils.VolumeStateError(fmt.Sprintf("source volume %s is deleting", snapshotConfig.VolumeName))
+		return nil, errors.VolumeStateError(fmt.Sprintf("source volume %s is deleting", snapshotConfig.VolumeName))
 	}
 
 	// Get the backend
 	if backend, ok = o.backends[volume.BackendUUID]; !ok {
 		// Should never get here but just to be safe
-		return nil, utils.NotFoundError(fmt.Sprintf("backend %s for the source volume not found: %s",
+		return nil, errors.NotFoundError(fmt.Sprintf("backend %s for the source volume not found: %s",
 			volume.BackendUUID, snapshotConfig.VolumeName))
 	}
 
@@ -3930,8 +3931,8 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	// Create the snapshot
 	snapshot, err = backend.CreateSnapshot(ctx, snapshotConfig, volume.Config)
 	if err != nil {
-		if utils.IsMaxLimitReachedError(err) {
-			return nil, utils.MaxLimitReachedError(fmt.Sprintf("failed to create snapshot %s for volume %s on backend %s: %v",
+		if errors.IsMaxLimitReachedError(err) {
+			return nil, errors.MaxLimitReachedError(fmt.Sprintf("failed to create snapshot %s for volume %s on backend %s: %v",
 				snapshotConfig.Name, snapshotConfig.VolumeName, backend.Name(), err))
 		}
 		return nil, fmt.Errorf("failed to create snapshot %s for volume %s on backend %s: %v",
@@ -4028,7 +4029,7 @@ func (o *TridentOrchestrator) getSnapshot(
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 	snapshot, found := o.snapshots[snapshotID]
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("snapshot %v was not found", snapshotName))
+		return nil, errors.NotFoundError(fmt.Sprintf("snapshot %v was not found", snapshotName))
 	} else if snapshot.State != storage.SnapshotStateCreating && snapshot.State != storage.SnapshotStateUploading {
 		return snapshot.ConstructExternal(), nil
 	}
@@ -4051,18 +4052,18 @@ func (o *TridentOrchestrator) updateSnapshot(
 	snapshotID := snapshot.Config.ID()
 	snapshot, ok := o.snapshots[snapshotID]
 	if !ok {
-		return snapshot, utils.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
+		return snapshot, errors.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
 			snapshot.Config.Name, snapshot.Config.VolumeName))
 	}
 
 	volume, ok := o.volumes[snapshot.Config.VolumeName]
 	if !ok {
-		return snapshot, utils.NotFoundError(fmt.Sprintf("volume %s not found", snapshot.Config.VolumeName))
+		return snapshot, errors.NotFoundError(fmt.Sprintf("volume %s not found", snapshot.Config.VolumeName))
 	}
 
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
-		return snapshot, utils.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+		return snapshot, errors.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
 	}
 
 	updatedSnapshot, err := backend.GetSnapshot(ctx, snapshot.Config, volume.Config)
@@ -4088,18 +4089,18 @@ func (o *TridentOrchestrator) deleteSnapshot(ctx context.Context, snapshotConfig
 	snapshotID := snapshotConfig.ID()
 	snapshot, ok := o.snapshots[snapshotID]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
+		return errors.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s",
 			snapshotConfig.Name, snapshotConfig.VolumeName))
 	}
 
 	volume, ok := o.volumes[snapshotConfig.VolumeName]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", snapshotConfig.VolumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", snapshotConfig.VolumeName))
 	}
 
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+		return errors.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
 	}
 
 	// Note that this call will only return an error if the backend actually
@@ -4151,13 +4152,13 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 	snapshot, ok := o.snapshots[snapshotID]
 	if !ok {
-		return utils.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s", snapshotName, volumeName))
+		return errors.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s", snapshotName, volumeName))
 	}
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
 		if !snapshot.State.IsMissingVolume() {
-			return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+			return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 		}
 	}
 
@@ -4175,7 +4176,7 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
 		if !snapshot.State.IsMissingBackend() {
-			return utils.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+			return errors.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
 		}
 	}
 
@@ -4294,7 +4295,7 @@ func (o *TridentOrchestrator) ListSnapshotsForVolume(
 	defer o.mutex.Unlock()
 
 	if _, ok := o.volumes[volumeName]; !ok {
-		return nil, utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return nil, errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	snapshots = make([]*storage.SnapshotExternal, 0, len(o.snapshots))
@@ -4320,7 +4321,7 @@ func (o *TridentOrchestrator) ReadSnapshotsForVolume(
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return nil, utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return nil, errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 
 	snapshots, err := o.backends[volume.BackendUUID].GetSnapshots(ctx, volume.Config)
@@ -4399,7 +4400,7 @@ func (o *TridentOrchestrator) ResizeVolume(ctx context.Context, volumeName, newS
 
 	volume, found := o.volumes[volumeName]
 	if !found {
-		return utils.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
 	}
 	if volume.Orphaned {
 		Logc(ctx).WithFields(LogFields{
@@ -4408,7 +4409,7 @@ func (o *TridentOrchestrator) ResizeVolume(ctx context.Context, volumeName, newS
 		}).Warnf("Resize operation is likely to fail with an orphaned volume.")
 	}
 	if volume.State.IsDeleting() {
-		return utils.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
 	}
 
 	// Create a new config for the volume transaction
@@ -4670,7 +4671,7 @@ func (o *TridentOrchestrator) GetStorageClass(
 
 	sc, found := o.storageClasses[scName]
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("storage class %v was not found", scName))
+		return nil, errors.NotFoundError(fmt.Sprintf("storage class %v was not found", scName))
 	}
 	// Storage classes aren't threadsafe (we modify them during runtime),
 	// so return a copy, rather than the original
@@ -4713,7 +4714,7 @@ func (o *TridentOrchestrator) DeleteStorageClass(ctx context.Context, scName str
 
 	sc, found := o.storageClasses[scName]
 	if !found {
-		return utils.NotFoundError(fmt.Sprintf("storage class %s not found", scName))
+		return errors.NotFoundError(fmt.Sprintf("storage class %s not found", scName))
 	}
 
 	// Note that we don't need a tranasaction here.  If this crashes prior
@@ -4948,7 +4949,7 @@ func (o *TridentOrchestrator) UpdateNode(
 		return o.bootstrapError
 	}
 	if !o.volumePublicationsSynced {
-		return utils.NotReadyError()
+		return errors.NotReadyError()
 	}
 
 	defer recordTiming("node_update", &err)()
@@ -4959,7 +4960,7 @@ func (o *TridentOrchestrator) UpdateNode(
 
 	node := o.nodes.Get(nodeName)
 	if node == nil {
-		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+		return errors.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
 	oldNode := node.Copy()
 
@@ -5027,7 +5028,7 @@ func (o *TridentOrchestrator) GetNode(ctx context.Context, nodeName string) (nod
 		Logc(ctx).WithField("node", nodeName).Info(
 			"There may exist a networking or DNS issue preventing this node from registering with the" +
 				" Trident controller")
-		return nil, utils.NotFoundError(fmt.Sprintf("node %v was not found", nodeName))
+		return nil, errors.NotFoundError(fmt.Sprintf("node %v was not found", nodeName))
 	}
 	return n.ConstructExternal(), nil
 }
@@ -5064,7 +5065,7 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (
 
 	node := o.nodes.Get(nodeName)
 	if node == nil {
-		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+		return errors.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
 
 	// Only retrieves the number of publications for this node.
@@ -5099,7 +5100,7 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (
 func (o *TridentOrchestrator) deleteNode(ctx context.Context, nodeName string) (err error) {
 	node := o.nodes.Get(nodeName)
 	if node == nil {
-		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+		return errors.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
 
 	if err = o.storeClient.DeleteNode(ctx, node); err != nil {
@@ -5203,7 +5204,7 @@ func (o *TridentOrchestrator) GetVolumePublication(
 
 	volumePublication, found := o.volumePublications.TryGet(volumeName, nodeName)
 	if !found {
-		return nil, utils.NotFoundError(fmt.Sprintf("volume publication %v was not found",
+		return nil, errors.NotFoundError(fmt.Sprintf("volume publication %v was not found",
 			utils.GenerateVolumePublishName(volumeName, nodeName)))
 	}
 	return volumePublication, nil
@@ -5306,7 +5307,7 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 		return nil, o.bootstrapError
 	}
 	if !o.volumePublicationsSynced {
-		return nil, utils.NotReadyError()
+		return nil, errors.NotReadyError()
 	}
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -5358,7 +5359,7 @@ func (o *TridentOrchestrator) deleteVolumePublication(ctx context.Context, volum
 
 	// DeleteVolumePublication is idempotent.
 	if err = o.storeClient.DeleteVolumePublication(ctx, publication); err != nil {
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			return err
 		}
 	}
@@ -5369,7 +5370,7 @@ func (o *TridentOrchestrator) deleteVolumePublication(ctx context.Context, volum
 
 	node := o.nodes.Get(nodeName)
 	if node == nil {
-		return utils.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+		return errors.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
 	}
 
 	// Check for publications remaining for just the node.
@@ -5433,7 +5434,10 @@ func (o *TridentOrchestrator) isCRDContext(ctx context.Context) bool {
 }
 
 // EstablishMirror creates a net-new replication mirror relationship between 2 volumes on a backend
-func (o *TridentOrchestrator) EstablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) (err error) {
+func (o *TridentOrchestrator) EstablishMirror(
+	ctx context.Context,
+	backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5457,7 +5461,10 @@ func (o *TridentOrchestrator) EstablishMirror(ctx context.Context, backendUUID, 
 }
 
 // ReestablishMirror recreates a previously existing replication mirror relationship between 2 volumes on a backend
-func (o *TridentOrchestrator) ReestablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) (err error) {
+func (o *TridentOrchestrator) ReestablishMirror(
+	ctx context.Context,
+	backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5481,7 +5488,9 @@ func (o *TridentOrchestrator) ReestablishMirror(ctx context.Context, backendUUID
 }
 
 // PromoteMirror makes the local volume the primary
-func (o *TridentOrchestrator) PromoteMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string) (waitingForSnapshot bool, err error) {
+func (o *TridentOrchestrator) PromoteMirror(
+	ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string,
+) (waitingForSnapshot bool, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5504,7 +5513,9 @@ func (o *TridentOrchestrator) PromoteMirror(ctx context.Context, backendUUID, lo
 }
 
 // GetMirrorStatus returns the current status of the mirror relationship
-func (o *TridentOrchestrator) GetMirrorStatus(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (status string, err error) {
+func (o *TridentOrchestrator) GetMirrorStatus(
+	ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string,
+) (status string, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5545,7 +5556,9 @@ func (o *TridentOrchestrator) CanBackendMirror(ctx context.Context, backendUUID 
 }
 
 // ReleaseMirror removes snapmirror relationship infromation and snapshots for a source volume in ONTAP
-func (o *TridentOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, localInternalVolumeName string) (err error) {
+func (o *TridentOrchestrator) ReleaseMirror(
+	ctx context.Context, backendUUID, localInternalVolumeName string,
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5568,7 +5581,9 @@ func (o *TridentOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, lo
 }
 
 // GetReplicationDetails returns the current replication policy and schedule of a relationship and the SVM name and UUID
-func (o *TridentOrchestrator) GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (policy, schedule, SVMName string, err error) {
+func (o *TridentOrchestrator) GetReplicationDetails(
+	ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string,
+) (policy, schedule, SVMName string, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {

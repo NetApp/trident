@@ -23,6 +23,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -111,13 +112,13 @@ func (p *Plugin) nodeUnstageVolume(
 
 	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			// If the file doesn't exist, there is nothing we can do and a retry is unlikely to help, so return success.
 			Logc(ctx).WithFields(fields).Warning("Volume tracking info file not found, returning success.")
 			return &csi.NodeUnstageVolumeResponse{}, nil
 		} else {
 			file := path.Join(tridentconfig.VolumeTrackingInfoPath, req.VolumeId+".json")
-			if utils.IsInvalidJSONError(err) {
+			if errors.IsInvalidJSONError(err) {
 				errMsgTemplate := "The volume tracking file is not readable because it was not valid JSON: %s ."
 				Logc(ctx).WithFields(fields).WithError(err).Errorf(errMsgTemplate, file)
 			} else {
@@ -180,7 +181,7 @@ func (p *Plugin) NodePublishVolume(
 	case string(tridentconfig.File):
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
 		if err != nil {
-			if utils.IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				return nil, status.Error(codes.FailedPrecondition, err.Error())
 			} else {
 				return nil, status.Error(codes.Internal, err.Error())
@@ -274,7 +275,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	if err != nil {
 		fmtStr := "could not remove published path (%s) from volume tracking file for volume %s: %s"
 
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			warnStr := fmt.Sprintf(fmtStr, targetPath, req.VolumeId, err.Error())
 			Logc(ctx).WithFields(LogFields{"targetPath": targetPath, "volumeId": req.VolumeId}).Warning(warnStr)
 			return &csi.NodeUnpublishVolumeResponse{}, nil
@@ -312,7 +313,7 @@ func (p *Plugin) NodeGetVolumeStats(
 	if req.StagingTargetPath != "" {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
 		if err != nil {
-			if utils.IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				return nil, status.Error(codes.FailedPrecondition, err.Error())
 			} else {
 				return nil, status.Error(codes.Internal, err.Error())
@@ -391,7 +392,7 @@ func (p *Plugin) NodeExpandVolume(
 	// VolumePublishInfo is stored in the volume tracking file as of Trident 23.01.
 	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeId)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			msg := fmt.Sprintf("unable to find tracking file for volume: %s ; needed it for resize", volumeId)
 			return nil, status.Error(codes.NotFound, msg)
 		}
@@ -472,7 +473,7 @@ func (p *Plugin) nodeExpandVolume(
 		}
 		err := utils.ResizeLUKSDevice(ctx, publishInfo.DevicePath, passphrase)
 		if err != nil {
-			if utils.IsIncorrectLUKSPassphraseError(err) {
+			if errors.IsIncorrectLUKSPassphraseError(err) {
 				return status.Error(codes.InvalidArgument, err.Error())
 			}
 			return status.Error(codes.Internal, err.Error())
@@ -798,7 +799,7 @@ func (p *Plugin) nodePublishNFSVolume(
 
 	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return nil, status.Error(codes.FailedPrecondition, err.Error())
 		} else {
 			return nil, status.Error(codes.Internal, err.Error())
@@ -1141,7 +1142,7 @@ func (p *Plugin) ensureAttachISCSIVolume(
 	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
 		req.GetSecrets(), attachTimeout); err != nil {
 		// Did we fail to log in?
-		if utils.IsAuthError(err) {
+		if errors.IsAuthError(err) {
 			// Update CHAP info from the controller and try one more time.
 			Logc(ctx).Warn("iSCSI login failed; will retrieve CHAP credentials from Trident controller and try again.")
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
@@ -1304,7 +1305,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 	// Read the device info from the volume tracking info path, or if that doesn't exist yet, the staging path.
 	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return nil, status.Error(codes.FailedPrecondition, err.Error())
 		} else {
 			return nil, status.Error(codes.Internal, err.Error())
@@ -1511,7 +1512,7 @@ func (p *Plugin) nodePublishNFSBlockVolume(
 
 	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return nil, status.Error(codes.FailedPrecondition, err.Error())
 		} else {
 			return nil, status.Error(codes.Internal, err.Error())
@@ -1684,13 +1685,13 @@ func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 	// Discover the desired publication state.
 	desiredPublicationState, err := p.discoverDesiredPublicationState(ctx)
 	if err != nil {
-		return utils.ReconcileFailedError(err)
+		return errors.ReconcileFailedError(err)
 	}
 
 	// Discover the actual publication state.
 	actualPublicationState, err := p.discoverActualPublicationState(ctx)
 	if err != nil {
-		return utils.ReconcileFailedError(err)
+		return errors.ReconcileFailedError(err)
 	}
 
 	// Discover and clean stale publications iff there are entries in the actual publication state.
@@ -1700,7 +1701,7 @@ func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 		err = p.cleanStalePublications(ctx, stalePublications)
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Failed to clean node publication state.")
-			return utils.ReconcileFailedError(err)
+			return errors.ReconcileFailedError(err)
 		}
 	} else {
 		Logc(ctx).Debug("No publication state found on this node.")
@@ -1737,7 +1738,7 @@ func (p *Plugin) discoverActualPublicationState(ctx context.Context) (map[string
 	defer Logc(ctx).Debug("Retrieved actual publication state.")
 
 	actualPublicationState, err := p.nodeHelper.ListVolumeTrackingInfo(ctx)
-	if err != nil && !utils.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		Logc(ctx).Debug("Failed to get actual publication state.")
 		return nil, fmt.Errorf("failed to get actual publication state")
 	}

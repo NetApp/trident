@@ -9,7 +9,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // updateSecretHandler takes a Kubernetes secret resource and converts it
@@ -82,7 +82,7 @@ func (c *TridentCrdController) handleSecret(keyItem *KeyItem) error {
 	// Get the backend configs that matches the secret namespace and secretName, i.e. the key
 	backendConfigs, err := c.getBackendConfigsWithSecret(ctx, namespace, secretName)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			Logx(ctx).Warnf("No backend config is associated with the secret update")
 		} else {
 			Logx(ctx).Errorf("unable to identify a backend config associated with the secret update")

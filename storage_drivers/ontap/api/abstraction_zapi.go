@@ -5,7 +5,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"runtime/debug"
 	"sort"
@@ -22,6 +21,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func (d OntapAPIZAPI) SVMName() string {
@@ -1770,7 +1770,7 @@ func (d OntapAPIZAPI) QuotaResize(ctx context.Context, volumeName string) error 
 	err = azgo.GetError(ctx, response, err)
 	if zerr, ok := err.(azgo.ZapiError); ok {
 		if zerr.Code() == azgo.EVOLUMEDOESNOTEXIST {
-			return utils.NotFoundError(zerr.Error())
+			return errors.NotFoundError(zerr.Error())
 		}
 	}
 	return err

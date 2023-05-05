@@ -5,7 +5,6 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -28,7 +28,8 @@ var (
 func init() {
 	importCmd.AddCommand(importVolumeCmd)
 	importVolumeCmd.Flags().StringVarP(&importFilename, "filename", "f", "", "Path to YAML or JSON PVC file")
-	importVolumeCmd.Flags().BoolVarP(&importNoManage, "no-manage", "", false, "Create PV/PVC only, don't assume volume lifecycle management")
+	importVolumeCmd.Flags().BoolVarP(&importNoManage, "no-manage", "", false,
+		"Create PV/PVC only, don't assume volume lifecycle management")
 	importVolumeCmd.Flags().StringVarP(&importBase64Data, "base64", "", "", "Base64 encoding")
 	if err := importVolumeCmd.Flags().MarkHidden("base64"); err != nil {
 		fmt.Fprintln(os.Stderr, err)

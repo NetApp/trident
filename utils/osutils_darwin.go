@@ -8,6 +8,7 @@ import (
 	"os"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // The Trident build process builds the Trident CLI client for both linux and darwin.
@@ -18,21 +19,21 @@ import (
 func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.getIPAddresses")
-	return nil, UnsupportedError("getIPAddresses is not supported for darwin")
+	return nil, errors.UnsupportedError("getIPAddresses is not supported for darwin")
 }
 
 // GetHostSystemInfo unused stub function
 func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.GetHostSystemInfo")
-	return nil, UnsupportedError("GetHostSystemInfo is not supported for darwin")
+	return nil, errors.UnsupportedError("GetHostSystemInfo is not supported for darwin")
 }
 
 // NFSActiveOnHost unused stub function
 func NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.NFSActiveOnHost")
-	return false, UnsupportedError("NFSActiveOnHost is not supported for darwin")
+	return false, errors.UnsupportedError("NFSActiveOnHost is not supported for darwin")
 }
 
 // IsLikelyDir determines if mountpoint is a directory
@@ -56,5 +57,5 @@ func GetTargetFilePath(ctx context.Context, resourcePath, arg string) string {
 func SMBActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.SMBActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.SMBActiveOnHost")
-	return false, UnsupportedError("SMBActiveOnHost is not supported for darwin")
+	return false, errors.UnsupportedError("SMBActiveOnHost is not supported for darwin")
 }

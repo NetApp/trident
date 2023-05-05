@@ -4,7 +4,6 @@ package csi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -17,6 +16,7 @@ import (
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestUpdateChapInfoFromController_Success(t *testing.T) {
@@ -705,7 +705,7 @@ func TestDiscoverActualPublicationState_FailsToFindTrackingInfo(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
-	mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(nil, utils.NotFoundError("not found"))
+	mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(nil, errors.NotFoundError("not found"))
 	nodeServer := &Plugin{
 		role:              CSINode,
 		nodeHelper:        mockHelper,

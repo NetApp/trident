@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestLUKSDeviceStruct_Positive(t *testing.T) {
@@ -705,7 +706,7 @@ func TestResize_Negative(t *testing.T) {
 	execReturnCode = 2
 	err := luksDevice.Resize(context.Background(), "testpassphrase")
 	assert.Error(t, err)
-	assert.True(t, IsIncorrectLUKSPassphraseError(err))
+	assert.True(t, errors.IsIncorrectLUKSPassphraseError(err))
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Misc error

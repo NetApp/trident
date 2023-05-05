@@ -4,7 +4,6 @@ package ontap
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -24,6 +23,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var QtreeInternalIDRegex = regexp.MustCompile(`^/svm/(?P<svm>[^/]+)/flexvol/(?P<flexvol>[^/]+)/qtree/(?P<qtree>[^/]+)$`)
@@ -651,7 +651,7 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 func (d *NASQtreeStorageDriver) CanSnapshot(
 	_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	return errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
@@ -667,7 +667,7 @@ func (d *NASQtreeStorageDriver) GetSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
-	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	return nil, errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume
@@ -699,7 +699,7 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
-	return nil, utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	return nil, errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -715,7 +715,7 @@ func (d *NASQtreeStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	return errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -731,7 +731,7 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
-	return utils.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	return errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
 }
 
 // Get tests for the existence of a volume
@@ -1151,7 +1151,7 @@ func (d *NASQtreeStorageDriver) resizeQuotas(ctx context.Context) {
 		if resize {
 			err := d.API.QuotaResize(ctx, flexvol)
 			if err != nil {
-				if utils.IsNotFoundError(err) {
+				if errors.IsNotFoundError(err) {
 					// Volume gone, so no need to try again
 					Logc(ctx).WithField("flexvol", flexvol).Debug("Volume does not exist.")
 					delete(d.quotaResizeMap, flexvol)

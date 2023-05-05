@@ -3,7 +3,6 @@ package csi
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io/fs"
 	"path"
 	"testing"
@@ -15,6 +14,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestNewVolumePublishManager(t *testing.T) {
@@ -303,7 +303,7 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 		SetArg(1, trackInfoAndPath).
 		Return(nil)
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
-		Return(utils.NotFoundError("foo"))
+		Return(errors.NotFoundError("foo"))
 	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths)
 	assert.True(t, needsDelete, "failure to upgrade should cause the tracking file to be deleted")
 	assert.NoError(t, err, "did not expect error if tracking file upgrade failed due to missing file")
@@ -313,14 +313,14 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 		SetArg(1, trackInfoAndPath).
 		Return(nil)
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
-		Return(utils.InvalidJSONError("foo"))
+		Return(errors.InvalidJSONError("foo"))
 	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths)
 	assert.True(t, needsDelete, "failure to upgrade should cause the tracking file to be deleted")
 	assert.NoError(t, err, "did not expect error if tracking file upgrade failed to find json in file")
 
 	// Legacy tracking file exists, and staging path exists, but tracking file is not valid JSON!
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
-		Return(utils.InvalidJSONError("foo"))
+		Return(errors.InvalidJSONError("foo"))
 	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths)
 	assert.True(t, needsDelete, "failure to upgrade should cause the tracking file to be deleted")
 	assert.NoError(t, err, "did not expect error if tracking file upgrade failed to find json in file")
@@ -385,7 +385,7 @@ func TestValidateTrackingFile(t *testing.T) {
 
 	// If staging path doesn't exist, and the file isn't valid JSON.
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, gomock.Any()).
-		Return(utils.InvalidJSONError("foo"))
+		Return(errors.InvalidJSONError("foo"))
 	needsDelete, err = v.ValidateTrackingFile(context.Background(), volName)
 	assert.True(t, needsDelete, "if the file is not JSON, we expect to be told to delete it")
 	assert.NoError(t, err, "we expect no error when the file is not JSON")

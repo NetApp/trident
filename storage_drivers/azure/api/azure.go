@@ -6,7 +6,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,6 +25,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -754,18 +754,18 @@ func (c Client) VolumeByCreationToken(ctx context.Context, creationToken string)
 
 	switch len(matchingFilesystems) {
 	case 0:
-		return nil, utils.NotFoundError(fmt.Sprintf("volume with creation token '%s' not found", creationToken))
+		return nil, errors.NotFoundError(fmt.Sprintf("volume with creation token '%s' not found", creationToken))
 	case 1:
 		return matchingFilesystems[0], nil
 	default:
-		return nil, utils.NotFoundError(fmt.Sprintf("multiple volumes with creation token '%s' found", creationToken))
+		return nil, errors.NotFoundError(fmt.Sprintf("multiple volumes with creation token '%s' found", creationToken))
 	}
 }
 
 // VolumeExistsByCreationToken checks whether a volume exists using its creation token as a key.
 func (c Client) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *FileSystem, error) {
 	if filesystem, err := c.VolumeByCreationToken(ctx, creationToken); err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil, nil
 		} else {
 			return false, nil, err
@@ -800,7 +800,7 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) 
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Volume not found.")
-			return nil, utils.NotFoundError(fmt.Sprintf("volume with ID '%s' not found", id))
+			return nil, errors.NotFoundError(fmt.Sprintf("volume with ID '%s' not found", id))
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching volume.")
@@ -815,7 +815,7 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) 
 // VolumeExistsByID checks whether a volume exists using its creation token as a key.
 func (c Client) VolumeExistsByID(ctx context.Context, id string) (bool, *FileSystem, error) {
 	if filesystem, err := c.VolumeByID(ctx, id); err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil, nil
 		} else {
 			return false, nil, err
@@ -839,7 +839,7 @@ func (c Client) WaitForVolumeState(
 			// There is no 'Deleted' state in Azure -- the volume just vanishes.  If we failed to query
 			// the volume info, and we're trying to transition to StateDeleted, and we get back a 404,
 			// then return success.  Otherwise, log the error as usual.
-			if desiredState == StateDeleted && utils.IsNotFoundError(err) {
+			if desiredState == StateDeleted && errors.IsNotFoundError(err) {
 				Logc(ctx).Debugf("Implied deletion for volume %s.", filesystem.Name)
 				volumeState = StateDeleted
 				return nil
@@ -856,7 +856,7 @@ func (c Client) WaitForVolumeState(
 
 		errMsg := fmt.Sprintf("volume state is %s, not %s", f.ProvisioningState, desiredState)
 		if desiredState == StateDeleted && f.ProvisioningState == StateDeleting {
-			err = utils.VolumeDeletingError(errMsg)
+			err = errors.VolumeDeletingError(errMsg)
 		} else {
 			err = errors.New(errMsg)
 		}
@@ -1254,7 +1254,7 @@ func (c Client) SnapshotForVolume(
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Snapshot not found.")
-			return nil, utils.NotFoundError(fmt.Sprintf("snapshot %s not found", snapshotName))
+			return nil, errors.NotFoundError(fmt.Sprintf("snapshot %s not found", snapshotName))
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching snapshot.")
@@ -1278,7 +1278,7 @@ func (c Client) WaitForSnapshotState(
 			// There is no 'Deleted' state in Azure -- the snapshot just vanishes.  If we failed to query
 			// the snapshot info, and we're trying to transition to StateDeleted, and we get back a 404,
 			// then return success.  Otherwise, log the error as usual.
-			if desiredState == StateDeleted && utils.IsNotFoundError(err) {
+			if desiredState == StateDeleted && errors.IsNotFoundError(err) {
 				Logc(ctx).Debugf("Implied deletion for snapshot %s.", snapshot.Name)
 				return nil
 			}
@@ -1588,7 +1588,7 @@ func (c Client) SubvolumeExistsByCreationToken(
 	ctx context.Context, creationToken string, candidateFileVolumePools []string,
 ) (bool, *Subvolume, error) {
 	if subvolume, err := c.SubvolumeByCreationToken(ctx, creationToken, candidateFileVolumePools, false); err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil, nil
 		} else {
 			return false, nil, err
@@ -1620,7 +1620,7 @@ func (c Client) SubvolumeByCreationToken(
 
 		subvolume, err := c.SubvolumeByID(ctx, subvolumeID, false)
 		if err != nil {
-			if utils.IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				continue
 			}
 
@@ -1634,7 +1634,7 @@ func (c Client) SubvolumeByCreationToken(
 
 	switch len(matchingSubvolumes) {
 	case 0:
-		return nil, utils.NotFoundError(fmt.Sprintf("subvolume with creation token '%s' not found", creationToken))
+		return nil, errors.NotFoundError(fmt.Sprintf("subvolume with creation token '%s' not found", creationToken))
 	case 1:
 		// This subvolume object does not contain metadata as it requires talking to actual storage
 		// and the delay exceeds Azure 1 second time limit.
@@ -1646,7 +1646,7 @@ func (c Client) SubvolumeByCreationToken(
 		}
 
 	default:
-		return nil, utils.NotFoundError(fmt.Sprintf("multiple subvolumes with creation token '%s' found",
+		return nil, errors.NotFoundError(fmt.Sprintf("multiple subvolumes with creation token '%s' found",
 			creationToken))
 	}
 }
@@ -1676,7 +1676,7 @@ func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMeta
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Subvolume not found.")
-			return nil, utils.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolumeID))
+			return nil, errors.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolumeID))
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume.")
@@ -1720,7 +1720,7 @@ func (c Client) SubvolumeMetadata(ctx context.Context, subvolume *Subvolume) (*S
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Subvolume not found.")
-			return nil, utils.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolume.ID))
+			return nil, errors.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolume.ID))
 		}
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume metadata.")
 		return nil, err
@@ -1748,7 +1748,7 @@ func (c Client) SubvolumeMetadata(ctx context.Context, subvolume *Subvolume) (*S
 // SubvolumeExistsByID checks whether a subvolume exists using its creation token as a key.
 func (c Client) SubvolumeExistsByID(ctx context.Context, id string) (bool, *Subvolume, error) {
 	if subvolume, err := c.SubvolumeByID(ctx, id, false); err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return false, nil, nil
 		} else {
 			return false, nil, err
@@ -1781,7 +1781,7 @@ func (c Client) WaitForSubvolumeState(
 			// to transition to StateDeleted, try a raw fetch of the volume and if we
 			// get back a 404, then call it a day.  Otherwise, log the error as usual.
 			if desiredState == StateDeleted {
-				if utils.IsNotFoundError(err) {
+				if errors.IsNotFoundError(err) {
 					// Deleted!
 					Logc(ctx).Debugf("Implied deletion for volume %s", subvolume.Name)
 					subvolumeState = StateDeleted

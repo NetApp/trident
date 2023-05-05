@@ -32,7 +32,7 @@ import (
 	tridentinformers "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions"
 	tridentinformersv1 "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/netapp/v1"
 	listers "github.com/netapp/trident/persistent_store/crd/client/listers/netapp/v1"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type (
@@ -586,7 +586,7 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 		}
 		if handleFunction != nil {
 			if err := handleFunction(&keyItem); err != nil {
-				if utils.IsUnsupportedConfigError(err) {
+				if errors.IsUnsupportedConfigError(err) {
 					errMessage := fmt.Sprintf("found unsupported backend configuration, "+
 						"needs manual intervention to fix the issue; "+
 						"error syncing '%v', not requeuing; %v", keyItem.key, err.Error())
@@ -598,15 +598,17 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 					Log().Info("-------------------------------------------------")
 
 					return fmt.Errorf(errMessage)
-				} else if utils.IsReconcileDeferredError(err) {
+				} else if errors.IsReconcileDeferredError(err) {
 					// If it is a deferred error, then do not remove the object from the queue and retry in due time
-					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key, err.Error())
+					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType,
+						keyItem.key, err.Error())
 					Logx(keyItem.ctx).Info(errMessage)
 					c.workqueue.AddRateLimited(keyItem)
 					return nil
-				} else if utils.IsReconcileIncompleteError(err) {
+				} else if errors.IsReconcileIncompleteError(err) {
 					// If it is a reconcile incomplete error, then do not remove the object from the queue and retry immediately
-					errMessage := fmt.Sprintf("error syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key, err.Error())
+					errMessage := fmt.Sprintf("error syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key,
+						err.Error())
 					Logx(keyItem.ctx).Error(errMessage)
 					c.workqueue.Add(keyItem)
 					return nil

@@ -12,6 +12,7 @@ import (
 	storagedrivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // establishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
@@ -129,7 +130,7 @@ func reestablishMirror(
 	snapmirror, err = d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		if api.IsNotFoundError(err) {
-			return utils.ReconcileIncompleteError()
+			return errors.ReconcileIncompleteError()
 		} else {
 			return err
 		}

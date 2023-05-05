@@ -3,7 +3,6 @@ package ontap
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -23,6 +22,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const flexgroupCreateTimeout = 60 * time.Second
@@ -550,7 +550,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	if sizeBytes > math.MaxInt64 {
-		return utils.UnsupportedCapacityRangeError(errors.New("invalid size requested"))
+		return errors.UnsupportedCapacityRangeError(errors.New("invalid size requested"))
 	}
 	size := int(sizeBytes)
 

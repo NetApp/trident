@@ -4,7 +4,6 @@ package ontap
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -21,6 +20,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -1037,7 +1037,7 @@ func (d *SANEconomyStorageDriver) Unpublish(
 		// If the LUN doesn't exist at this point, there's nothing left to do for unpublish at this level.
 		// However, this scenario could indicate unexpected tampering or unknown states with the backend,
 		// so log a warning and return a NotFoundError.
-		err := utils.NotFoundError(fmt.Sprintf("LUN %v does not exist", name))
+		err := errors.NotFoundError(fmt.Sprintf("LUN %v does not exist", name))
 		Logc(ctx).WithError(err).Warningf("Unable to unpublish LUN: %s.", name)
 		return err
 	}
@@ -1293,7 +1293,7 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return utils.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
 }
 
 // DeleteSnapshot deletes a LUN snapshot.
@@ -1948,7 +1948,7 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 					"lunPath":    lunPath,
 				},
 			).Error("Requested size is larger than LUN's maximum capacity.")
-			return utils.UnsupportedCapacityRangeError(fmt.Errorf(
+			return errors.UnsupportedCapacityRangeError(fmt.Errorf(
 				"volume resize failed as requested size is larger than LUN's maximum capacity"))
 		}
 	}

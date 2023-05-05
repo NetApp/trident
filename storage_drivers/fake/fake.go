@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -26,6 +25,7 @@ import (
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -944,7 +944,7 @@ func (d *StorageDriver) CreateSnapshot(
 	}
 
 	if len(snapshotList) >= maxSnapshots {
-		return nil, utils.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: too many snapshots " +
+		return nil, errors.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: too many snapshots " +
 			"created for a volume"))
 	}
 
@@ -1257,7 +1257,7 @@ func (d *StorageDriver) handleVolumeCreatingTransaction(ctx context.Context, vol
 			createVolume.Iterations++
 			d.CreatingVolumes[createVolume.Name] = createVolume
 			Logc(ctx).Debug("createVolume.Iterations: " + strconv.Itoa(createVolume.Iterations))
-			return utils.VolumeCreatingError("volume state is still creating, not available")
+			return errors.VolumeCreatingError("volume state is still creating, not available")
 		}
 	}
 	return nil

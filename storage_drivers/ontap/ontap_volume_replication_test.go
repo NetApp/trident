@@ -11,7 +11,7 @@ import (
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -731,7 +731,7 @@ func TestReestablishMirror_ReconcileIncompleteError(t *testing.T) {
 		mockAPI)
 
 	assert.Error(t, err, "reestablish mirror should return an error")
-	assert.True(t, utils.IsReconcileIncompleteError(err), "not reconcile incomplete error")
+	assert.True(t, errors.IsReconcileIncompleteError(err), "not reconcile incomplete error")
 }
 
 func TestReestablishMirror_SnapmirrorNotHealthy(t *testing.T) {

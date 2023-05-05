@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -33,6 +32,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -391,7 +391,8 @@ func main() {
 		var hybridControllerFrontend frontend.Plugin
 		var hybridNodeFrontend frontend.Plugin
 		if *k8sAPIServer != "" || *k8sPod {
-			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath, *enableForceDetach)
+			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath,
+				*enableForceDetach)
 			if err != nil {
 				Log().WithError(err).Fatal("Unable to start the K8S hybrid controller frontend.")
 			}
@@ -410,7 +411,8 @@ func main() {
 		}
 		controllerHelper, ok := hybridControllerFrontend.(controllerhelpers.ControllerHelper)
 		if !ok {
-			Log().Fatalf("%v", utils.TypeAssertionError("hybridControllerFrontend.(controllerhelpers.ControllerHelper)"))
+			Log().Fatalf("%v",
+				errors.TypeAssertionError("hybridControllerFrontend.(controllerhelpers.ControllerHelper)"))
 		}
 
 		if *csiRole == csi.CSINode || *csiRole == csi.CSIAllInOne {
@@ -419,7 +421,7 @@ func main() {
 		}
 		nodeHelper, ok := hybridNodeFrontend.(nodehelpers.NodeHelper)
 		if !ok {
-			Log().Fatalf("%v", utils.TypeAssertionError("hybridNodeFrontend.(nodehelpers.NodeHelper)"))
+			Log().Fatalf("%v", errors.TypeAssertionError("hybridNodeFrontend.(nodehelpers.NodeHelper)"))
 		}
 
 		Log().WithFields(LogFields{

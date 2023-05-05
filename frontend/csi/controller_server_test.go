@@ -4,7 +4,6 @@ package csi
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"testing"
 
@@ -17,6 +16,7 @@ import (
 	mockhelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var ctx = context.Background()
@@ -193,7 +193,7 @@ func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
 	// Create fake objects for this test
 	req := generateFakeUnpublishVolumeRequest()
 	nodeErr := errors.New("")
-	notFoundErr := utils.NotFoundError("")
+	notFoundErr := errors.NotFoundError("")
 
 	// Simulate an error during fetching node state.
 	mockHelper.EXPECT().GetNodePublicationState(gomock.Any(), req.NodeId).Return(nil, nodeErr).Times(1)
@@ -212,7 +212,7 @@ func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
 	// GetNodePublicationState and UpdateNode.
 	mockHelper.EXPECT().GetNodePublicationState(gomock.Any(), req.NodeId).Return(nil, notFoundErr).Times(1)
 	mockOrchestrator.EXPECT().UpdateNode(gomock.Any(), req.NodeId, nil).Return(notFoundErr).Times(1)
-	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, req.NodeId).Return(utils.NotFoundError("not found"))
+	mockOrchestrator.EXPECT().UnpublishVolume(gomock.Any(), req.VolumeId, req.NodeId).Return(errors.NotFoundError("not found"))
 
 	_, err = controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")

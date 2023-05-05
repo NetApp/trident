@@ -2,7 +2,6 @@ package csi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {

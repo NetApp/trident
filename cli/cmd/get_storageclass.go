@@ -4,17 +4,16 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
-	"github.com/netapp/trident/cli/api"
-	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/utils"
-
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+
+	"github.com/netapp/trident/cli/api"
+	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func init() {
@@ -56,7 +55,7 @@ func storageClassList(storageClassNames []string) error {
 
 		storageClass, err := GetStorageClass(storageClassName)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -100,7 +99,7 @@ func GetStorageClass(storageClassName string) (api.StorageClass, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return api.StorageClass{}, utils.NotFoundError(errorMessage)
+			return api.StorageClass{}, errors.NotFoundError(errorMessage)
 		default:
 			return api.StorageClass{}, errors.New(errorMessage)
 		}

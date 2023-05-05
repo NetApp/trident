@@ -5,18 +5,17 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"strings"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func (c *Client) CreateSnapshot(ctx context.Context, req *CreateSnapshotRequest) (snapshot Snapshot, err error) {
 	response, err := c.Request(ctx, "CreateSnapshot", req, NewReqID())
 	if err != nil {
 		if strings.Contains(err.Error(), "xMaxSnapshotsPerVolumeExceeded") {
-			return Snapshot{}, utils.MaxLimitReachedError(err.Error())
+			return Snapshot{}, errors.MaxLimitReachedError(err.Error())
 		} else {
 			return Snapshot{}, err
 		}

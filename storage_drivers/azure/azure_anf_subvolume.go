@@ -22,6 +22,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -933,7 +934,7 @@ func (d *NASBlockStorageDriver) waitForSubvolumeCreate(ctx context.Context, subv
 
 		case api.StateAccepted, api.StateCreating:
 			Logc(ctx).WithFields(logFields).Debugf("Subvolume is in %s state.", state)
-			return utils.VolumeCreatingError(err.Error())
+			return errors.VolumeCreatingError(err.Error())
 
 		case api.StateDeleting:
 			// Wait for deletion to complete
@@ -1036,7 +1037,7 @@ func (d *NASBlockStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 	// Delete the subvolume
 	poller, err := d.SDK.DeleteSubvolume(ctx, extantSubvolume)
 	if err != nil {
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			return fmt.Errorf("error deleting subvolume %s; %v", creationToken, err)
 		}
 	}
@@ -1377,7 +1378,7 @@ func (d *NASBlockStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return utils.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -1419,7 +1420,7 @@ func (d *NASBlockStorageDriver) DeleteSnapshot(
 	// If the specified snapshot subvolume already exists, return an error
 	poller, err := d.SDK.DeleteSubvolume(ctx, subvolume)
 	if err != nil {
-		if !utils.IsNotFoundError(err) {
+		if !errors.IsNotFoundError(err) {
 			return fmt.Errorf("error deleting snapshot %s; %v", creationToken, err)
 		}
 	}

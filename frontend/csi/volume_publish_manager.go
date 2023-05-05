@@ -4,7 +4,6 @@ package csi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const volumePublishInfoFilename = "volumePublishInfo.json"
@@ -114,7 +114,7 @@ func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[
 
 	if len(files) == 0 {
 		Logc(ctx).Debug("No tracking files found.")
-		return nil, utils.NotFoundError("no tracking files found")
+		return nil, errors.NotFoundError("no tracking files found")
 	}
 
 	// Discover the tracking files and their volume tracking info.
@@ -306,7 +306,7 @@ func clearStagedDeviceInfo(ctx context.Context, stagingTargetPath, volumeId stri
 }
 
 func isFileValidJSON(err error) bool {
-	if utils.IsInvalidJSONError(err) || utils.IsNotFoundError(err) {
+	if errors.IsInvalidJSONError(err) || errors.IsNotFoundError(err) {
 		return false
 	}
 

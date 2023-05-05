@@ -1,6 +1,6 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
-package utils
+package errors
 
 import (
 	"encoding/json"

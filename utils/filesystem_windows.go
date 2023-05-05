@@ -3,19 +3,19 @@
 package utils
 
 import (
-	"errors"
 	"os"
 	"strings"
 
 	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
 	Logc(ctx).Debug(">>>> filesystem_windows.getFilesystemSize")
 	defer Logc(ctx).Debug("<<<< filesystem_windows.getFilesystemSize")
-	return 0, UnsupportedError("getFilesystemSize is not supported for windows")
+	return 0, errors.UnsupportedError("getFilesystemSize is not supported for windows")
 }
 
 // GetDeviceFilePath returns the staging path for volume.

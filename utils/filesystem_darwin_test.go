@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetFilesystemSize(t *testing.T) {
@@ -15,7 +17,7 @@ func TestGetFilesystemSize(t *testing.T) {
 	result, err := getFilesystemSize(ctx, "")
 	assert.Equal(t, result, int64(0), "got non-zero filesystem size")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
 func TestGetFilesystemStats(t *testing.T) {
@@ -29,7 +31,7 @@ func TestGetFilesystemStats(t *testing.T) {
 	assert.Equal(t, result5, int64(0), "got non-zero inodesFree")
 	assert.Equal(t, result6, int64(0), "got non-zero inodesUsed")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
 func TestGetDeviceFilePath(t *testing.T) {
@@ -38,7 +40,7 @@ func TestGetDeviceFilePath(t *testing.T) {
 	result, err := GetDeviceFilePath(ctx, "", "")
 	assert.Equal(t, result, "", "got device file path")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
 func TestGetUnmountPath(t *testing.T) {
@@ -47,5 +49,5 @@ func TestGetUnmountPath(t *testing.T) {
 	result, err := GetUnmountPath(ctx, &VolumeTrackingInfo{})
 	assert.Equal(t, result, "", "got unmount path")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
