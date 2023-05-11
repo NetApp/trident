@@ -7,8 +7,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/netapp/trident/config"
@@ -51,7 +51,7 @@ func NewHTTPSServer(
 	}
 
 	if caCertFile != "" {
-		caCert, err := ioutil.ReadFile(caCertFile)
+		caCert, err := os.ReadFile(caCertFile)
 		if err != nil {
 			return nil, fmt.Errorf("could not read CA certificate file: %v", err)
 		}

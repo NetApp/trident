@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -809,7 +808,7 @@ func getLunSerial(ctx context.Context, path string) (string, error) {
 	// so we don't need to open the device and send the ioctl
 	// ourselves.
 	filename := path + "/vpd_pg80"
-	b, err := ioutil.ReadFile(filename)
+	b, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}
@@ -951,7 +950,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 	hostSessionMap := make(map[int]int)
 
 	sysPath := chrootPathPrefix + "/sys/class/iscsi_host/"
-	if hostDirs, err := ioutil.ReadDir(sysPath); err != nil {
+	if hostDirs, err := os.ReadDir(sysPath); err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return hostSessionMap
 	} else {
@@ -966,7 +965,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 			}
 
 			devicePath := sysPath + hostName + "/device/"
-			if deviceDirs, err := ioutil.ReadDir(devicePath); err != nil {
+			if deviceDirs, err := os.ReadDir(devicePath); err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"error":         err,
 					"rawDevicePath": devicePath,
@@ -985,7 +984,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 					}
 
 					targetNamePath := devicePath + sessionName + "/iscsi_session/" + sessionName + "/targetname"
-					if targetName, err := ioutil.ReadFile(targetNamePath); err != nil {
+					if targetName, err := os.ReadFile(targetNamePath); err != nil {
 						Logc(ctx).WithFields(LogFields{
 							"path":  targetNamePath,
 							"error": err,
@@ -1259,7 +1258,7 @@ func GetAllVolumeIDs(ctx context.Context, trackingFileDirectory string) []string
 	Logc(ctx).WithField("trackingFileDirectory", trackingFileDirectory).Debug(">>>> iscsi.GetAllVolumeIDs")
 	defer Logc(ctx).Debug("<<<< iscsi.GetAllVolumeIDs")
 
-	files, err := ioutil.ReadDir(trackingFileDirectory)
+	files, err := os.ReadDir(trackingFileDirectory)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"error": err,
@@ -1632,7 +1631,7 @@ func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 	// See drivers/scsi/scsi_scan.c in Linux
 	// We assume the channel/bus and device/controller are always zero for iSCSI
 	targetPath := devicePath + fmt.Sprintf("/session%d/target%d:0:0", sessionNumber, hostNumber)
-	dirs, err := ioutil.ReadDir(targetPath)
+	dirs, err := os.ReadDir(targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return true
@@ -1729,7 +1728,7 @@ func IsISCSISessionStale(ctx context.Context, sessionID string) bool {
 
 	// Find the session state from the session at /sys/class/iscsi_session/sessionXXX/state
 	filename := fmt.Sprintf(chrootPathPrefix+"/sys/class/iscsi_session/session%s/state", sessionID)
-	sessionStateBytes, err := ioutil.ReadFile(filename)
+	sessionStateBytes, err := os.ReadFile(filename)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"path":  filename,

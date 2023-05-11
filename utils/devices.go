@@ -5,7 +5,6 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -329,7 +328,7 @@ func listAllISCSIDevices(ctx context.Context) {
 	dmLog := make([]string, 0)
 	sdLog := make([]string, 0)
 	sysLog := make([]string, 0)
-	entries, _ := ioutil.ReadDir("/dev/")
+	entries, _ := os.ReadDir("/dev/")
 	for _, entry := range entries {
 		if strings.HasPrefix(entry.Name(), "dm-") {
 			dmLog = append(dmLog, entry.Name())
@@ -339,7 +338,7 @@ func listAllISCSIDevices(ctx context.Context) {
 		}
 	}
 
-	entries, _ = ioutil.ReadDir("/sys/block/")
+	entries, _ = os.ReadDir("/sys/block/")
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
@@ -586,7 +585,7 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 
 	// Start by reading the sessions from /sys/class/iscsi_session
 	sysPath := chrootPathPrefix + "/sys/class/iscsi_session/"
-	sessionDirs, err := ioutil.ReadDir(sysPath)
+	sessionDirs, err := os.ReadDir(sysPath)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return nil, err
@@ -619,7 +618,7 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 		sessionValues := make(map[string]string, len(sessionFiles))
 		for file, value := range sessionFiles {
 			path := sessionPath + "/" + file
-			fileBytes, err := ioutil.ReadFile(path)
+			fileBytes, err := os.ReadFile(path)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"path":  path,
@@ -660,7 +659,7 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 
 		// Find the one target at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD (host:bus:device)
 		sessionDevicePath := sessionPath + "/device/"
-		targetDirs, err := ioutil.ReadDir(sessionDevicePath)
+		targetDirs, err := os.ReadDir(sessionDevicePath)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDevicePath)
 			return nil, err
@@ -692,7 +691,7 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 		}).Debug("Found host/bus/device path.")
 
 		// Find the devices at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL (host:bus:device:lun)
-		hostBusDeviceLunDirs, err := ioutil.ReadDir(sessionDeviceHBDPath)
+		hostBusDeviceLunDirs, err := os.ReadDir(sessionDeviceHBDPath)
 		if err != nil {
 			Logc(ctx).WithField("error", err).Errorf("Could not read %s", sessionDeviceHBDPath)
 			return nil, err
@@ -726,7 +725,7 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 			blockPath := sessionDeviceHBDLPath + "/block/"
 
 			// Find the block device at /sys/class/iscsi_session/sessionXXX/device/targetHH:BB:DD/HH:BB:DD:LL/block
-			blockDeviceDirs, err := ioutil.ReadDir(blockPath)
+			blockDeviceDirs, err := os.ReadDir(blockPath)
 			if err != nil {
 				Logc(ctx).WithField("error", err).Errorf("Could not read %s", blockPath)
 				return nil, err
@@ -821,7 +820,7 @@ func findMultipathDeviceForDevice(ctx context.Context, device string) string {
 	defer Logc(ctx).WithField("device", device).Debug("<<<< devices.findMultipathDeviceForDevice")
 
 	holdersDir := chrootPathPrefix + "/sys/block/" + device + "/holders"
-	if dirs, err := ioutil.ReadDir(holdersDir); err == nil {
+	if dirs, err := os.ReadDir(holdersDir); err == nil {
 		for _, f := range dirs {
 			name := f.Name()
 			if strings.HasPrefix(name, "dm-") {
@@ -842,7 +841,7 @@ func findDevicesForMultipathDevice(ctx context.Context, device string) []string 
 	devices := make([]string, 0)
 
 	slavesDir := chrootPathPrefix + "/sys/block/" + device + "/slaves"
-	if dirs, err := ioutil.ReadDir(slavesDir); err == nil {
+	if dirs, err := os.ReadDir(slavesDir); err == nil {
 		for _, f := range dirs {
 			name := f.Name()
 			if strings.HasPrefix(name, "sd") {

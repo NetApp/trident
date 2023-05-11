@@ -4,7 +4,7 @@ package clients
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	k8sversion "k8s.io/apimachinery/pkg/version"
@@ -122,7 +122,7 @@ func createK8SClientsInCluster() (*Clients, error) {
 	}
 
 	// when running in a pod, we use the Trident pod's namespace
-	namespaceBytes, err := ioutil.ReadFile(commonconfig.NamespaceFile)
+	namespaceBytes, err := os.ReadFile(commonconfig.NamespaceFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read namespace file %s; %v", commonconfig.NamespaceFile, err)
 	}

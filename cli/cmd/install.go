@@ -5,7 +5,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -765,7 +764,7 @@ func fileExists(filePath string) bool {
 }
 
 func writeFile(filePath, data string) error {
-	return ioutil.WriteFile(filePath, []byte(data), 0o600)
+	return os.WriteFile(filePath, []byte(data), 0o600)
 }
 
 func ensureSetupDirExists() error {
@@ -1419,7 +1418,7 @@ func createAndEnsureCRDs() error {
 	var bundleCRDYAML string
 	if useYAML && fileExists(crdsPath) {
 
-		content, err := ioutil.ReadFile(crdsPath)
+		content, err := os.ReadFile(crdsPath)
 		if err != nil {
 			return err
 		}
@@ -2280,7 +2279,7 @@ func waitForRESTInterface() error {
 func readDeploymentFromFile(filePath string) (*appsv1.Deployment, error) {
 	var deployment appsv1.Deployment
 
-	yamlBytes, err := ioutil.ReadFile(filePath)
+	yamlBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -2295,7 +2294,7 @@ func readDeploymentFromFile(filePath string) (*appsv1.Deployment, error) {
 func readPodSecurityPolicyFromFile(filePath string) (*policy.PodSecurityPolicy, error) {
 	var securityPolicy policy.PodSecurityPolicy
 
-	yamlBytes, err := ioutil.ReadFile(filePath)
+	yamlBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -2310,7 +2309,7 @@ func readPodSecurityPolicyFromFile(filePath string) (*policy.PodSecurityPolicy, 
 func readServiceFromFile(filePath string) (*v1.Service, error) {
 	var service v1.Service
 
-	yamlBytes, err := ioutil.ReadFile(filePath)
+	yamlBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -2325,7 +2324,7 @@ func readServiceFromFile(filePath string) (*v1.Service, error) {
 func readDaemonSetFromFile(filePath string) (*appsv1.DaemonSet, error) {
 	var daemonset appsv1.DaemonSet
 
-	yamlBytes, err := ioutil.ReadFile(filePath)
+	yamlBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}

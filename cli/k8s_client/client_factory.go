@@ -5,7 +5,6 @@ package k8sclient
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -229,7 +228,7 @@ func createK8SClientsInCluster(ctx context.Context, overrideNamespace string) (*
 	}
 
 	// when running in a pod, we use the Trident pod's namespace
-	namespaceBytes, err := ioutil.ReadFile(config.NamespaceFile)
+	namespaceBytes, err := os.ReadFile(config.NamespaceFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read namespace file %s; %v", config.NamespaceFile, err)
 	}

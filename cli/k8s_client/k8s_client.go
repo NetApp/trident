@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -280,7 +280,7 @@ func (k *KubeClient) Exec(podName, containerName string, commandArgs []string) (
 	Logc(ctx).Debugf("Invoking tunneled command: '%v'", strings.Join(commandArgs, " "))
 
 	// Execute the request
-	err = exec.Stream(remotecommand.StreamOptions{
+	err = exec.StreamWithContext(ctx, remotecommand.StreamOptions{
 		Stdin:             stdin,
 		Stdout:            stdout,
 		Stderr:            stderr,
@@ -2433,7 +2433,7 @@ func (k *KubeClient) PatchSecretByLabel(label string, patchBytes []byte, patchTy
 
 // CreateObjectByFile creates one or more objects on the server from a YAML/JSON file at the specified path.
 func (k *KubeClient) CreateObjectByFile(filePath string) error {
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
@@ -2554,7 +2554,7 @@ func (k *KubeClient) PatchCRD(crdName string, patchBytes []byte, patchType types
 
 // DeleteObjectByFile deletes one or more objects on the server from a YAML/JSON file at the specified path.
 func (k *KubeClient) DeleteObjectByFile(filePath string, ignoreNotFound bool) error {
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}

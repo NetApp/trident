@@ -9,7 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -2066,7 +2066,7 @@ func (d RestClient) LunOptions(
 	}
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -3573,7 +3573,8 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 // ExportPolicyGetByName gets the volume with the specified name
 func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
 	result, err := c.ExportPolicyList(ctx, exportPolicyName)
-	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.ExportPolicyResponseInlineRecords != nil {
+	if err == nil && result != nil && result.Payload != nil && result.Payload.NumRecords != nil &&
+		*result.Payload.NumRecords == 1 && result.Payload.ExportPolicyResponseInlineRecords != nil {
 		return result.Payload.ExportPolicyResponseInlineRecords[0], nil
 	}
 	return nil, err

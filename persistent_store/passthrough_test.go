@@ -3,7 +3,6 @@
 package persistentstore
 
 import (
-	"io/ioutil"
 	"os"
 	"runtime"
 	"testing"
@@ -135,7 +134,7 @@ func TestPassthroughClient_NewPassthroughClientSingleFile(t *testing.T) {
 		configPath = "/tmp/fake_backend"
 	}
 	backendJSON, _ := getFakeBackend().ConstructPersistent(ctx()).MarshalConfig()
-	err := ioutil.WriteFile(configPath, []byte(backendJSON), 0o644)
+	err := os.WriteFile(configPath, []byte(backendJSON), 0o644)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -163,12 +162,12 @@ func TestPassthroughClient_NewPassthroughClientDirectory(t *testing.T) {
 		t.Errorf("Error creating dir path: %v %v", configPath, err)
 	}
 	backend1JSON, _ := getFakeBackend().ConstructPersistent(ctx()).MarshalConfig()
-	err := ioutil.WriteFile(configPath+"/backend1", []byte(backend1JSON), 0o644)
+	err := os.WriteFile(configPath+"/backend1", []byte(backend1JSON), 0o644)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	backend2JSON, _ := getFakeBackend().ConstructPersistent(ctx()).MarshalConfig()
-	err = ioutil.WriteFile(configPath+"/backend2", []byte(backend2JSON), 0o644)
+	err = os.WriteFile(configPath+"/backend2", []byte(backend2JSON), 0o644)
 	if err != nil {
 		t.Error(err.Error())
 	}

@@ -7,7 +7,6 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -984,12 +983,12 @@ func IPv6Check(ip string) bool {
 // This is useful when reading files in /proc that are larger than page size
 // and kernel may modify them between individual read() syscalls.
 func ConsistentRead(filename string, attempts int) ([]byte, error) {
-	oldContent, err := ioutil.ReadFile(filename)
+	oldContent, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 	for i := 0; i < attempts; i++ {
-		newContent, err := ioutil.ReadFile(filename)
+		newContent, err := os.ReadFile(filename)
 		if err != nil {
 			return nil, err
 		}

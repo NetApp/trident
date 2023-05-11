@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -530,7 +529,7 @@ func findNextXMLStartElement(newReader io.Reader) (string, error) {
 func getFakeResponse(ctx context.Context, requestBody io.Reader, vserverAdminHost,
 	vserverAdminPort, vserverAggrName string,
 ) ([]byte, error) {
-	requestBodyString, err := ioutil.ReadAll(requestBody)
+	requestBodyString, err := io.ReadAll(requestBody)
 	if err != nil {
 		Logc(ctx).WithField("zapi request: ", string(requestBodyString))
 		return nil, err

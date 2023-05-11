@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -78,9 +78,9 @@ func getPVCData(filename, b64Data string) ([]byte, error) {
 	if b64Data != "" {
 		rawData, err = base64.StdEncoding.DecodeString(b64Data)
 	} else if filename == "-" {
-		rawData, err = ioutil.ReadAll(os.Stdin)
+		rawData, err = io.ReadAll(os.Stdin)
 	} else {
-		rawData, err = ioutil.ReadFile(filename)
+		rawData, err = os.ReadFile(filename)
 	}
 	if err != nil {
 		return nil, err

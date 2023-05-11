@@ -372,6 +372,10 @@ func reconcileExportPolicyRules(
 
 	// first grab all existing rules
 	rules, err := clientAPI.ExportRuleList(ctx, policyName)
+	if err != nil {
+		// Could not extract rules, just log it, no action required.
+		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be extracted.")
+	}
 
 	for _, rule := range desiredPolicyRules {
 		if _, ok := rules[rule]; ok {

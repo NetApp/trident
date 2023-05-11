@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -524,7 +523,7 @@ func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
 	// Get list of all the files in NFS volumes
 	nfsFiles := make([]string, 0)
 
-	files, err := ioutil.ReadDir(nfsMountPoint)
+	files, err := os.ReadDir(nfsMountPoint)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"error": err,

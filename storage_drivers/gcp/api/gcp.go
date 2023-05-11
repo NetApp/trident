@@ -9,7 +9,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"sync"
@@ -225,7 +225,7 @@ func (d *Client) InvokeAPI(
 
 	var responseBody []byte
 
-	responseBody, err = ioutil.ReadAll(response.Body)
+	responseBody, err = io.ReadAll(response.Body)
 	utils.LogHTTPResponse(ctx, response, responseBody, "", false, d.config.DebugTraceFlags["api"])
 
 	return response, responseBody, err

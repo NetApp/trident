@@ -2412,7 +2412,8 @@ func TestReconcileExportPolicyRules(t *testing.T) {
 	ruleList := make(map[string]int)
 	ruleList["0.0.0.1/0"] = 0
 	ruleList["::/0"] = 1
-	mockAPI.EXPECT().ExportRuleList(ctx, "dummyPolicy").Return(ruleList, nil)
+	fakeError := fmt.Errorf("fake error extracting rules")
+	mockAPI.EXPECT().ExportRuleList(ctx, "dummyPolicy").Return(ruleList, fakeError)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, "dummyPolicy", desiredRules[0], config.NASType).Return(nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, "dummyPolicy", ruleList["0.0.0.1/0"]).Return(nil)
 
