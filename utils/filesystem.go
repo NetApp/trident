@@ -52,7 +52,7 @@ func GetDFOutput(ctx context.Context) ([]DFInfo, error) {
 	defer Logc(ctx).Debug("<<<< filesystem.GetDFOutput")
 
 	var result []DFInfo
-	out, err := execCommand(ctx, "df", "--output=target,source")
+	out, err := command.Execute(ctx, "df", "--output=target,source")
 	if err != nil {
 		// df returns an error if there's a stale file handle that we can
 		// safely ignore. There may be other reasons. Consider it a warning if
@@ -89,11 +89,11 @@ func formatVolume(ctx context.Context, device, fstype string) error {
 
 	switch fstype {
 	case fsXfs:
-		_, err = execCommand(ctx, "mkfs.xfs", "-f", device)
+		_, err = command.Execute(ctx, "mkfs.xfs", "-f", device)
 	case fsExt3:
-		_, err = execCommand(ctx, "mkfs.ext3", "-F", device)
+		_, err = command.Execute(ctx, "mkfs.ext3", "-F", device)
 	case fsExt4:
-		_, err = execCommand(ctx, "mkfs.ext4", "-F", device)
+		_, err = command.Execute(ctx, "mkfs.ext4", "-F", device)
 	default:
 		return fmt.Errorf("unsupported file system type: %s", fstype)
 	}
@@ -143,9 +143,9 @@ func repairVolume(ctx context.Context, device, fstype string) (err error) {
 	case "xfs":
 		break // fsck.xfs does nothing
 	case "ext3":
-		_, err = execCommand(ctx, "fsck.ext3", "-p", device)
+		_, err = command.Execute(ctx, "fsck.ext3", "-p", device)
 	case "ext4":
-		_, err = execCommand(ctx, "fsck.ext4", "-p", device)
+		_, err = command.Execute(ctx, "fsck.ext4", "-p", device)
 	default:
 		return fmt.Errorf("unsupported file system type: %s", fstype)
 	}
@@ -213,7 +213,7 @@ func expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint stri
 	if err != nil {
 		return 0, err
 	}
-	_, err = execCommand(ctx, cmd, cmdArguments)
+	_, err = command.Execute(ctx, cmd, cmdArguments)
 	if err != nil {
 		Logc(ctx).Errorf("Expanding filesystem failed; %s", err)
 		return 0, err

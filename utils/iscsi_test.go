@@ -7,9 +7,48 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
+
+	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
+	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
 )
+
+func mapCopyHelper(input map[int32]string) map[int32]string {
+	output := make(map[int32]string, len(input))
+
+	for key, value := range input {
+		output[key] = value
+	}
+
+	return output
+}
+
+func structCopyHelper(input ISCSISessionData) *ISCSISessionData {
+	clone, err := copystructure.Copy(input)
+	if err != nil {
+		return &ISCSISessionData{}
+	}
+
+	output, ok := clone.(ISCSISessionData)
+	if !ok {
+		return &ISCSISessionData{}
+	}
+
+	return &output
+}
+
+func reverseSlice(input []string) []string {
+	output := make([]string, 0)
+
+	for idx := len(input) - 1; idx >= 0; idx-- {
+		output = append(output, input[idx])
+	}
+
+	return output
+}
 
 func TestFormatPortal(t *testing.T) {
 	type IPAddresses struct {
@@ -740,36 +779,46 @@ func TestSortPortals(t *testing.T) {
 	}
 }
 
-func mapCopyHelper(input map[int32]string) map[int32]string {
-	output := make(map[int32]string, len(input))
+func TestMultipathdIsRunning(t *testing.T) {
+	// Reset exec command after tests
+	defer func(previousCommand exec.Command) {
+		command = previousCommand
+	}(command)
 
-	for key, value := range input {
-		output[key] = value
+	mockCtrl := gomock.NewController(t)
+	mockExec := mockexec.NewMockCommand(mockCtrl)
+	tests := []struct {
+		name          string
+		execOut       string
+		execErr       error
+		returnCode    int
+		expectedValue bool
+	}{
+		{name: "True", execOut: "1234", execErr: nil, expectedValue: true},
+		{name: "False", execOut: "", execErr: nil, expectedValue: false},
+		{name: "Error", execOut: "1234", execErr: errors.New("cmd error"), expectedValue: false},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 
-	return output
-}
+			// Setup mock calls.
+			mockExec.EXPECT().Execute(
+				ctx, gomock.Any(), gomock.Any(),
+			).Return([]byte(tt.execOut), tt.execErr)
 
-func structCopyHelper(input ISCSISessionData) *ISCSISessionData {
-	clone, err := copystructure.Copy(input)
-	if err != nil {
-		return &ISCSISessionData{}
+			// Only mock out the second call if the expected value isn't true.
+			if !tt.expectedValue {
+				mockExec.EXPECT().Execute(
+					ctx, gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return([]byte(tt.execOut), tt.execErr)
+			}
+
+			// Assign the shared command to the mock.
+			command = mockExec
+
+			actualValue := multipathdIsRunning(context.Background())
+			assert.Equal(t, tt.expectedValue, actualValue)
+		})
 	}
-
-	output, ok := clone.(ISCSISessionData)
-	if !ok {
-		return &ISCSISessionData{}
-	}
-
-	return &output
-}
-
-func reverseSlice(input []string) []string {
-	output := make([]string, 0)
-
-	for idx := len(input) - 1; idx >= 0; idx-- {
-		output = append(output, input[idx])
-	}
-
-	return output
 }

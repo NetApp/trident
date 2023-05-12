@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/exec"
 	"regexp"
 	"sort"
 	"strings"
@@ -16,7 +15,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
 )
 
 var (
@@ -29,7 +28,8 @@ var (
 
 	chrootPathPrefix string
 
-	execCmd = exec.CommandContext
+	// FIXME: Instead of a package-level variable, pass command into other utils once their interfaces are defined.
+	command = exec.NewCommand()
 )
 
 const devMapperRoot = "/dev/mapper/"
@@ -79,154 +79,6 @@ func GetIPAddresses(ctx context.Context) ([]string, error) {
 	}
 	sort.Strings(ipAddrs)
 	return ipAddrs, nil
-}
-
-// execCommand invokes an external process
-func execCommand(ctx context.Context, name string, args ...string) ([]byte, error) {
-	Logc(ctx).WithFields(LogFields{
-		"command": name,
-		"args":    args,
-	}).Debug(">>>> osutils.execCommand.")
-
-	// create context with a cancellation
-	cancelCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
-
-	Logc(ctx).WithFields(LogFields{
-		"command": name,
-		"output":  sanitizeExecOutput(string(out)),
-		"error":   err,
-	}).Debug("<<<< osutils.execCommand.")
-
-	return out, err
-}
-
-// execCommandRedacted invokes an external process, and redacts sensitive arguments
-func execCommandRedacted(
-	ctx context.Context, name string, args []string,
-	secretsToRedact map[string]string,
-) ([]byte, error) {
-	var sanitizedArgs []string
-	for _, arg := range args {
-		val, ok := secretsToRedact[arg]
-		var sanitizedArg string
-		if ok {
-			sanitizedArg = val
-		} else {
-			sanitizedArg = arg
-		}
-		sanitizedArgs = append(sanitizedArgs, sanitizedArg)
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"command": name,
-		"args":    sanitizedArgs,
-	}).Debug(">>>> osutils.execCommand.")
-
-	// create context with a cancellation
-	cancelCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	out, err := execCmd(cancelCtx, name, args...).CombinedOutput()
-
-	Logc(ctx).WithFields(LogFields{
-		"command": name,
-		"output":  sanitizeExecOutput(string(out)),
-		"error":   err,
-	}).Debug("<<<< osutils.execCommand.")
-
-	return out, err
-}
-
-// execCommandResult is used to return shell command results via channels between goroutines
-type execCommandResult struct {
-	Output []byte
-	Error  error
-}
-
-// execCommandWithTimeout invokes an external shell command and lets it time out if it exceeds the
-// specified interval
-func execCommandWithTimeout(
-	ctx context.Context, name string, timeout time.Duration, logOutput bool, args ...string,
-) ([]byte, error) {
-	Logc(ctx).WithFields(LogFields{
-		"command": name,
-		"timeout": timeout,
-		"args":    args,
-	}).Debug(">>>> osutils.execCommandWithTimeout.")
-
-	out, err := execCommandWithTimeoutAndInput(ctx, name, timeout, logOutput, "", args...)
-
-	Logc(ctx).Debug("<<<< osutils.execCommandWithTimeout.")
-	return out, err
-}
-
-// execCommandWithTimeoutAndInput invokes an external shell command and lets it time out if it exceeds the
-// specified interval
-func execCommandWithTimeoutAndInput(
-	ctx context.Context, name string, timeout time.Duration, logOutput bool, stdin string, args ...string,
-) ([]byte, error) {
-	Logc(ctx).WithFields(LogFields{
-		"command":        name,
-		"timeoutSeconds": timeout,
-		"args":           args,
-	}).Debug(">>>> osutils.execCommandWithTimeoutAndInput.")
-
-	// create context with a cancellation
-	cancelCtx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	cmd := execCmd(cancelCtx, name, args...)
-	cmd.Stdin = strings.NewReader(stdin)
-	done := make(chan execCommandResult, 1)
-	var result execCommandResult
-
-	go func() {
-		out, err := cmd.CombinedOutput()
-		done <- execCommandResult{Output: out, Error: err}
-	}()
-
-	select {
-	case <-cancelCtx.Done():
-		if err := cancelCtx.Err(); err == context.DeadlineExceeded {
-			Logc(ctx).WithFields(LogFields{
-				"process": name,
-			}).Error("process killed after timeout")
-			result = execCommandResult{Output: nil, Error: errors.TimeoutError("process killed after timeout")}
-		} else {
-			Logc(ctx).WithFields(LogFields{
-				"process": name,
-				"error":   err,
-			}).Error("context ended unexpectedly")
-			result = execCommandResult{Output: nil, Error: fmt.Errorf("context ended unexpectedly: %v", err)}
-		}
-	case result = <-done:
-		break
-	}
-
-	logFields := Logc(ctx).WithFields(LogFields{
-		"command": name,
-		"error":   result.Error,
-	})
-
-	if logOutput {
-		logFields.WithFields(LogFields{
-			"output": sanitizeExecOutput(string(result.Output)),
-		})
-	}
-
-	logFields.Debug("<<<< osutils.execCommandWithTimeoutAndInput.")
-
-	return result.Output, result.Error
-}
-
-func sanitizeExecOutput(s string) string {
-	// Strip xterm color & movement characters
-	s = xtermControlRegex.ReplaceAllString(s, "")
-	// Strip trailing newline
-	s = strings.TrimSuffix(s, "\n")
-	return s
 }
 
 func PathExists(path string) (bool, error) {

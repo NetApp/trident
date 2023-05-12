@@ -300,7 +300,7 @@ func GetInitiatorIqns(ctx context.Context) ([]string, error) {
 	Logc(ctx).Debug(">>>> iscsi.GetInitiatorIqns")
 	defer Logc(ctx).Debug("<<<< iscsi.GetInitiatorIqns")
 
-	out, err := execCommand(ctx, "cat", "/etc/iscsi/initiatorname.iscsi")
+	out, err := command.Execute(ctx, "cat", "/etc/iscsi/initiatorname.iscsi")
 	if err != nil {
 		Logc(ctx).WithField("Error", err).Warn("Could not read initiatorname.iscsi; perhaps iSCSI is not installed?")
 		return nil, err
@@ -425,22 +425,22 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 		Logc(ctx).Warnf("Could not find any devices ")
 
 		// log info about current status of host when no devices are found
-		if _, err := execCommand(ctx, "ls", "-al", "/dev"); err != nil {
+		if _, err := command.Execute(ctx, "ls", "-al", "/dev"); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al /dev: %v", err)
 		}
-		if _, err := execCommand(ctx, "ls", "-al", devMapperRoot); err != nil {
+		if _, err := command.Execute(ctx, "ls", "-al", devMapperRoot); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al %s: %v", devMapperRoot, err)
 		}
-		if _, err := execCommand(ctx, "ls", "-al", "/dev/disk/by-path"); err != nil {
+		if _, err := command.Execute(ctx, "ls", "-al", "/dev/disk/by-path"); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al /dev/disk/by-path: %v", err)
 		}
-		if _, err := execCommand(ctx, "lsscsi"); err != nil {
+		if _, err := command.Execute(ctx, "lsscsi"); err != nil {
 			Logc(ctx).Warnf("Could not run lsscsi: %v", err)
 		}
-		if _, err := execCommand(ctx, "lsscsi", "-t"); err != nil {
+		if _, err := command.Execute(ctx, "lsscsi", "-t"); err != nil {
 			Logc(ctx).Warnf("Could not run lsscsi -t: %v", err)
 		}
-		if _, err := execCommand(ctx, "free"); err != nil {
+		if _, err := command.Execute(ctx, "free"); err != nil {
 			Logc(ctx).Warnf("Could not run free: %v", err)
 		}
 
@@ -1028,7 +1028,7 @@ func multipathdIsRunning(ctx context.Context) bool {
 	defer Logc(ctx).Debug("<<<< iscsi.multipathdIsRunning")
 
 	// use pgrep to look for mulipathd in the list of running processes
-	out, err := execCommand(ctx, "pgrep", "multipathd")
+	out, err := command.Execute(ctx, "pgrep", "multipathd")
 	if err == nil {
 		pid := strings.TrimSpace(string(out))
 		if pidRegex.MatchString(pid) {
@@ -1039,7 +1039,7 @@ func multipathdIsRunning(ctx context.Context) bool {
 		Logc(ctx).Error(err)
 	}
 
-	out, err = execCommand(ctx, "multipathd", "show", "daemon")
+	out, err = command.Execute(ctx, "multipathd", "show", "daemon")
 	if err == nil {
 		if pidRunningOrIdleRegex.MatchString(string(out)) {
 			Logc(ctx).Debug("multipathd is running")
@@ -1080,7 +1080,7 @@ func getTargets(ctx context.Context, tp string) ([]string, error) {
 	}).Debug(">>>> iscsi.getTargets")
 	defer Logc(ctx).Debug("<<<< iscsi.getTargets")
 
-	output, err := execCommand(ctx, "iscsiadm", "-m", "node")
+	output, err := command.Execute(ctx, "iscsiadm", "-m", "node")
 	if nil != err {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
@@ -1605,17 +1605,17 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 func execIscsiadmCommandRedacted(ctx context.Context, args []string, secretsToRedact map[string]string) ([]byte,
 	error,
 ) {
-	return execCommandRedacted(ctx, "iscsiadm", args, secretsToRedact)
+	return command.ExecuteRedacted(ctx, "iscsiadm", args, secretsToRedact)
 }
 
 // execIscsiadmCommand uses the 'iscsiadm' command to perform operations
 func execIscsiadmCommand(ctx context.Context, args ...string) ([]byte, error) {
-	return execCommand(ctx, "iscsiadm", args...)
+	return command.Execute(ctx, "iscsiadm", args...)
 }
 
 // execIscsiadmCommandWithTimeout uses the 'iscsiadm' command to perform operations with timeout
 func execIscsiadmCommandWithTimeout(ctx context.Context, timeout time.Duration, args ...string) ([]byte, error) {
-	return execCommandWithTimeout(ctx, "iscsiadm", timeout, true, args...)
+	return command.ExecuteWithTimeout(ctx, "iscsiadm", timeout, true, args...)
 }
 
 // SafeToLogOut looks for remaining block devices on a given iSCSI host, and returns
@@ -1654,19 +1654,18 @@ func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 
 // identifyFindMultipathsValue reads /etc/multipath.conf and identifies find_multipaths value (if set)
 func identifyFindMultipathsValue(ctx context.Context) (string, error) {
-	if output, err := execCommandWithTimeout(ctx, "multipathd", 5*time.Second, false, "show", "config"); err != nil {
+	output, err := command.ExecuteWithTimeout(ctx, "multipathd", 5*time.Second, false, "show", "config")
+	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"error": err,
 		}).Error("Could not read multipathd configuration")
 
 		return "", fmt.Errorf("could not read multipathd configuration: %v", err)
-	} else {
-		findMultipathsValue := GetFindMultipathValue(string(output))
-
-		Logc(ctx).WithField("findMultipathsValue", findMultipathsValue).Debug("Multipath find_multipaths value found.")
-
-		return findMultipathsValue, nil
 	}
+
+	findMultipathsValue := GetFindMultipathValue(string(output))
+	Logc(ctx).WithField("findMultipathsValue", findMultipathsValue).Debug("Multipath find_multipaths value found.")
+	return findMultipathsValue, nil
 }
 
 // ISCSIPreChecks to check if all the required tools are present and configured correctly for the  volume

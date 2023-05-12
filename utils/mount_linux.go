@@ -138,11 +138,11 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (
 	}
 
 	// Create the mount point dir if necessary
-	if _, err = execCommand(ctx, "mkdir", "-p", mountpoint); err != nil {
+	if _, err = command.Execute(ctx, "mkdir", "-p", mountpoint); err != nil {
 		Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 	}
 
-	if out, err := execCommand(ctx, "mount", args...); err != nil {
+	if out, err := command.Execute(ctx, "mount", args...); err != nil {
 		Logc(ctx).WithField("output", string(out)).Debug("Mount failed.")
 		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
 	}
@@ -255,7 +255,7 @@ func MountDevice(ctx context.Context, device, mountpoint, options string, isMoun
 	}
 
 	if !mounted {
-		if _, err = execCommand(ctx, "mount", args...); err != nil {
+		if _, err = command.Execute(ctx, "mount", args...); err != nil {
 			Logc(ctx).WithField("error", err).Error("Mount failed.")
 		}
 	}
@@ -279,7 +279,7 @@ func RemountDevice(ctx context.Context, mountpoint, options string) (err error) 
 		args = []string{mountpoint}
 	}
 
-	if _, err = execCommand(ctx, "mount", args...); err != nil {
+	if _, err = command.Execute(ctx, "mount", args...); err != nil {
 		Logc(ctx).WithField("error", err).Error("Remounting failed.")
 	}
 
@@ -292,13 +292,13 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 	defer Logc(ctx).Debug("<<<< mount_linux.Umount")
 
 	var out []byte
-	if out, err = execCommandWithTimeout(ctx, "umount", umountTimeout, true, mountpoint); err != nil {
+	if out, err = command.ExecuteWithTimeout(ctx, "umount", umountTimeout, true, mountpoint); err != nil {
 		if strings.Contains(string(out), umountNotMounted) {
 			err = nil
 		}
 		if errors.IsTimeoutError(err) {
 			Logc(ctx).WithField("error", err).Error("Umount failed, attempting to force umount")
-			out, err = execCommandWithTimeout(ctx, "umount", umountTimeout, true, mountpoint, "-f")
+			out, err = command.ExecuteWithTimeout(ctx, "umount", umountTimeout, true, mountpoint, "-f")
 			if strings.Contains(string(out), umountNotMounted) {
 				err = nil
 			}

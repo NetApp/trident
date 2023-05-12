@@ -90,7 +90,7 @@ func ensureDeviceReadable(ctx context.Context, device string) error {
 	defer Logc(ctx).Debug("<<<< devices.ensureDeviceReadable")
 
 	args := []string{"if=" + device, "bs=4096", "count=1", "status=none"}
-	out, err := execCommandWithTimeout(ctx, "dd", deviceOperationsTimeout, false, args...)
+	out, err := command.ExecuteWithTimeout(ctx, "dd", deviceOperationsTimeout, false, args...)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{"error": err, "device": device}).Error("failed to read the device")
 		return err
@@ -111,7 +111,7 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	defer Logc(ctx).Debug("<<<< devices.isDeviceUnformatted")
 
 	args := []string{"if=" + device, "bs=4096", "count=512", "status=none"}
-	out, err := execCommandWithTimeout(ctx, "dd", deviceOperationsTimeout, false, args...)
+	out, err := command.ExecuteWithTimeout(ctx, "dd", deviceOperationsTimeout, false, args...)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{"error": err, "device": device}).Error("failed to read the device")
 		return false, err
@@ -224,7 +224,7 @@ func reloadMultipathDevice(ctx context.Context, multipathDevice string) error {
 		return fmt.Errorf("cannot reload an empty multipathDevice")
 	}
 
-	_, err := execCommandWithTimeout(ctx, "multipath", 30*time.Second, true, "-r", "/dev/"+multipathDevice)
+	_, err := command.ExecuteWithTimeout(ctx, "multipath", 30*time.Second, true, "-r", "/dev/"+multipathDevice)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"device": multipathDevice,
@@ -342,7 +342,7 @@ func listAllISCSIDevices(ctx context.Context) {
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
-	out1, _ := execCommandWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-ll")
+	out1, _ := command.ExecuteWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-ll")
 	out2, _ := execIscsiadmCommand(ctx, "-m", "session")
 	Logc(ctx).WithFields(LogFields{
 		"/dev/dm-*":                  dmLog,
@@ -410,7 +410,7 @@ func canFlushMultipathDevice(ctx context.Context, devicePath string) error {
 	Logc(ctx).WithField("device", devicePath).Debug(">>>> devices.canFlushMultipathDevice")
 	defer Logc(ctx).Debug("<<<< devices.canFlushMultipathDevice")
 
-	out, err := execCommandWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-C", devicePath)
+	out, err := command.ExecuteWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-C", devicePath)
 	if err == nil {
 		delete(iSCSIVolumeFlushExceptions, devicePath)
 		return nil
@@ -936,7 +936,7 @@ func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) {
 		return
 	}
 
-	out, err := execCommandWithTimeout(ctx, "multipath", 10*time.Second, false, "-f", devicePath)
+	out, err := command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, false, "-f", devicePath)
 	if err != nil {
 		// Nothing to do if it generates an error, but log it.
 		Logc(ctx).WithFields(LogFields{

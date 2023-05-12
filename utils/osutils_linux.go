@@ -38,7 +38,7 @@ func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.ServiceActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_linux.ServiceActiveOnHost")
 
-	output, err := execCommandWithTimeout(ctx, "systemctl", 30*time.Second, true, "is-active", service)
+	output, err := command.ExecuteWithTimeout(ctx, "systemctl", 30*time.Second, true, "is-active", service)
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); ok {
 			Logc(ctx).WithField("service", service).Debug("Service is not active on the host.")
@@ -70,7 +70,7 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 		// Get the hosts' info via tridentctl because the sysInfo library needs to be chrooted in order to detect
 		// the host OS and not the container's but chroot is irreversible and thus needs to run in a separate
 		// short-lived binary
-		data, err = execCommandWithTimeout(ctx, "tridentctl", 5*time.Second, true, "system", "--chroot-path", "/host")
+		data, err = command.ExecuteWithTimeout(ctx, "tridentctl", 5*time.Second, true, "system", "--chroot-path", "/host")
 		if err != nil {
 			Logc(ctx).WithField("err", err).Error(msg)
 			return nil, err
