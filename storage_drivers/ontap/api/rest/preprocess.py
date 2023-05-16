@@ -708,7 +708,7 @@ def walk(o):
 with open('swagger_full.yaml') as input_file:
     #dataMap = yaml.safe_load(input_file)
 
-    yaml = ruamel.yaml.YAML()
+    yaml = ruamel.yaml.YAML(typ='safe')
     yaml.indent(sequence=4, offset=2)
     dataMap = yaml.load(input_file)
 
