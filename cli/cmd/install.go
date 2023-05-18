@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -39,6 +39,7 @@ const (
 	DefaultPVName      = tridentconfig.OrchestratorName
 
 	// CRD names
+	ActionMirrorUpdateCRDName = "tridentactionmirrorupdates.trident.netapp.io"
 	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
 	BackendCRDName            = "tridentbackends.trident.netapp.io"
 	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
@@ -164,6 +165,7 @@ var (
 	dns1123DomainRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
 
 	CRDnames = []string{
+		ActionMirrorUpdateCRDName,
 		BackendConfigCRDName,
 		BackendCRDName,
 		MirrorRelationshipCRDName,

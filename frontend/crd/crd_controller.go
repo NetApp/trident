@@ -50,6 +50,7 @@ const (
 	ObjectTypeTridentBackend            string = "TridentBackend"
 	ObjectTypeSecret                    string = "secret"
 	ObjectTypeTridentMirrorRelationship string = "TridentMirrorRelationship"
+	ObjectTypeTridentActionMirrorUpdate string = "TridentActionMirrorUpdate"
 	ObjectTypeTridentSnapshotInfo       string = "TridentSnapshotInfo"
 
 	OperationStatusSuccess string = "Success"
@@ -67,6 +68,7 @@ type KeyItem struct {
 	objectType string
 	event      EventType
 	ctx        context.Context
+	isRetry    bool
 }
 
 var (
@@ -114,6 +116,10 @@ type TridentCrdController struct {
 	mirrorLister listers.TridentMirrorRelationshipLister
 	mirrorSynced cache.InformerSynced
 
+	// TridentActionMirrorUpdate CRD handling
+	actionMirrorUpdateLister listers.TridentActionMirrorUpdateLister
+	actionMirrorUpdateSynced cache.InformerSynced
+
 	// TridentSnapshotInfo CRD handling
 	snapshotInfoLister listers.TridentSnapshotInfoLister
 	snapshotInfoSynced cache.InformerSynced
@@ -146,7 +152,7 @@ type TridentCrdController struct {
 	snapshotsLister listers.TridentSnapshotLister
 	snapshotsSynced cache.InformerSynced
 
-	// TridentSnapshot CRD handling
+	// Secret handling
 	secretsLister v1.SecretLister
 	secretsSynced cache.InformerSynced
 
@@ -158,7 +164,8 @@ type TridentCrdController struct {
 	workqueue workqueue.RateLimitingInterface
 
 	// recorder is an event recorder for recording Event resources to the Kubernetes API.
-	recorder record.EventRecorder
+	recorder                  record.EventRecorder
+	actionMirrorUpdatesSynced func() bool
 }
 
 // NewTridentCrdController returns a new Trident CRD controller frontend
@@ -205,6 +212,7 @@ func newTridentCrdControllerImpl(
 	backendInformer := crdInformer.TridentBackends()
 	backendConfigInformer := crdInformer.TridentBackendConfigs()
 	mirrorInformer := allNSCrdInformer.TridentMirrorRelationships()
+	actionMirrorUpdateInformer := allNSCrdInformer.TridentActionMirrorUpdates()
 	snapshotInfoInformer := allNSCrdInformer.TridentSnapshotInfos()
 	nodeInformer := crdInformer.TridentNodes()
 	storageClassInformer := crdInformer.TridentStorageClasses()
@@ -224,41 +232,43 @@ func newTridentCrdControllerImpl(
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &TridentCrdController{
-		orchestrator:             orchestrator,
-		kubeClientset:            kubeClientset,
-		snapshotClientSet:        snapshotClientset,
-		crdClientset:             crdClientset,
-		crdControllerStopChan:    make(chan struct{}),
-		crdInformerFactory:       crdInformerFactory,
-		crdInformer:              crdInformer,
-		txnInformerFactory:       txnInformerFactory,
-		txnInformer:              txnInformer,
-		kubeInformerFactory:      kubeInformerFactory,
-		kubeInformer:             kubeInformer,
-		backendsLister:           backendInformer.Lister(),
-		backendsSynced:           backendInformer.Informer().HasSynced,
-		backendConfigsLister:     backendConfigInformer.Lister(),
-		backendConfigsSynced:     backendConfigInformer.Informer().HasSynced,
-		mirrorLister:             mirrorInformer.Lister(),
-		mirrorSynced:             mirrorInformer.Informer().HasSynced,
-		snapshotInfoLister:       snapshotInfoInformer.Lister(),
-		snapshotInfoSynced:       snapshotInfoInformer.Informer().HasSynced,
-		nodesLister:              nodeInformer.Lister(),
-		nodesSynced:              nodeInformer.Informer().HasSynced,
-		storageClassesLister:     storageClassInformer.Lister(),
-		storageClassesSynced:     storageClassInformer.Informer().HasSynced,
-		transactionsLister:       transactionInformer.Lister(),
-		transactionsSynced:       transactionInformer.Informer().HasSynced,
-		versionsLister:           versionInformer.Lister(),
-		versionsSynced:           versionInformer.Informer().HasSynced,
-		volumesLister:            volumeInformer.Lister(),
-		volumesSynced:            volumeInformer.Informer().HasSynced,
-		volumePublicationsLister: volumePublicationInformer.Lister(),
-		volumePublicationsSynced: volumePublicationInformer.Informer().HasSynced,
-		snapshotsLister:          snapshotInformer.Lister(),
-		snapshotsSynced:          snapshotInformer.Informer().HasSynced,
-		secretsLister:            secretInformer.Lister(),
-		secretsSynced:            secretInformer.Informer().HasSynced,
+		orchestrator:              orchestrator,
+		kubeClientset:             kubeClientset,
+		snapshotClientSet:         snapshotClientset,
+		crdClientset:              crdClientset,
+		crdControllerStopChan:     make(chan struct{}),
+		crdInformerFactory:        crdInformerFactory,
+		crdInformer:               crdInformer,
+		txnInformerFactory:        txnInformerFactory,
+		txnInformer:               txnInformer,
+		kubeInformerFactory:       kubeInformerFactory,
+		kubeInformer:              kubeInformer,
+		backendsLister:            backendInformer.Lister(),
+		backendsSynced:            backendInformer.Informer().HasSynced,
+		backendConfigsLister:      backendConfigInformer.Lister(),
+		backendConfigsSynced:      backendConfigInformer.Informer().HasSynced,
+		mirrorLister:              mirrorInformer.Lister(),
+		mirrorSynced:              mirrorInformer.Informer().HasSynced,
+		actionMirrorUpdateLister:  actionMirrorUpdateInformer.Lister(),
+		actionMirrorUpdatesSynced: actionMirrorUpdateInformer.Informer().HasSynced,
+		snapshotInfoLister:        snapshotInfoInformer.Lister(),
+		snapshotInfoSynced:        snapshotInfoInformer.Informer().HasSynced,
+		nodesLister:               nodeInformer.Lister(),
+		nodesSynced:               nodeInformer.Informer().HasSynced,
+		storageClassesLister:      storageClassInformer.Lister(),
+		storageClassesSynced:      storageClassInformer.Informer().HasSynced,
+		transactionsLister:        transactionInformer.Lister(),
+		transactionsSynced:        transactionInformer.Informer().HasSynced,
+		versionsLister:            versionInformer.Lister(),
+		versionsSynced:            versionInformer.Informer().HasSynced,
+		volumesLister:             volumeInformer.Lister(),
+		volumesSynced:             volumeInformer.Informer().HasSynced,
+		volumePublicationsLister:  volumePublicationInformer.Lister(),
+		volumePublicationsSynced:  volumePublicationInformer.Informer().HasSynced,
+		snapshotsLister:           snapshotInformer.Lister(),
+		snapshotsSynced:           snapshotInformer.Informer().HasSynced,
+		secretsLister:             secretInformer.Lister(),
+		secretsSynced:             secretInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			crdControllerQueueName),
 		recorder: recorder,
@@ -285,6 +295,10 @@ func newTridentCrdControllerImpl(
 		AddFunc:    controller.addCRHandler,
 		UpdateFunc: controller.updateTMRHandler,
 		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	_, _ = actionMirrorUpdateInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.addCRHandler,
 	})
 
 	_, _ = snapshotInfoInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -579,6 +593,8 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleTridentBackendConfig
 		case ObjectTypeTridentMirrorRelationship:
 			handleFunction = c.handleTridentMirrorRelationship
+		case ObjectTypeTridentActionMirrorUpdate:
+			handleFunction = c.handleActionMirrorUpdate
 		case ObjectTypeTridentSnapshotInfo:
 			handleFunction = c.handleTridentSnapshotInfo
 		default:
@@ -603,6 +619,7 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType,
 						keyItem.key, err.Error())
 					Logx(keyItem.ctx).Info(errMessage)
+					keyItem.isRetry = true
 					c.workqueue.AddRateLimited(keyItem)
 					return nil
 				} else if errors.IsReconcileIncompleteError(err) {
@@ -610,6 +627,7 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 					errMessage := fmt.Sprintf("error syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key,
 						err.Error())
 					Logx(keyItem.ctx).Error(errMessage)
+					keyItem.isRetry = true
 					c.workqueue.Add(keyItem)
 					return nil
 				} else {

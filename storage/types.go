@@ -6,6 +6,7 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 
@@ -71,6 +72,8 @@ type Backend interface {
 	ConstructExternal(ctx context.Context) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool
+	UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error
+	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 	ChapEnabled
 	PublishEnforceable
 }

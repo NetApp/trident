@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -7492,4 +7492,193 @@ func TestPeriodicallyReconcileBackendState(t *testing.T) {
 
 	// stop orchestrator
 	o.Stop()
+}
+
+func TestUpdateMirror_BootstrapError(t *testing.T) {
+	pvcVolumeName := "vol"
+	snapshotName := "snapshot-123"
+
+	o := getOrchestrator(t, false)
+	o.bootstrapError = errors.New("failed")
+
+	err := o.UpdateMirror(ctx(), pvcVolumeName, snapshotName)
+	assert.Error(t, err, "UpdateMirror should have failed")
+}
+
+func TestUpdateMirror_VolumeNotFound(t *testing.T) {
+	pvcVolumeName := "vol"
+	snapshotName := "snapshot-123"
+
+	o := getOrchestrator(t, false)
+
+	err := o.UpdateMirror(ctx(), pvcVolumeName, snapshotName)
+	assert.Error(t, err, "UpdateMirror should have failed")
+}
+
+func TestUpdateMirror_BackendNotFound(t *testing.T) {
+	pvcVolumeName := "vol"
+	snapshotName := ""
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: pvcVolumeName},
+		BackendUUID: "12345",
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	err := o.UpdateMirror(ctx(), pvcVolumeName, snapshotName)
+	assert.Error(t, err, "UpdateMirror should have failed")
+}
+
+func TestUpdateMirror_BackendCannotMirror(t *testing.T) {
+	pvcVolumeName := "vol"
+	snapshotName := ""
+	backendUUID := "12345"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: pvcVolumeName},
+		BackendUUID: backendUUID,
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().GetDriverName().AnyTimes()
+	mockBackend.EXPECT().State()
+	mockBackend.EXPECT().Name()
+	mockBackend.EXPECT().BackendUUID().Times(2)
+	mockBackend.EXPECT().CanMirror().Return(false)
+
+	err := o.UpdateMirror(ctx(), pvcVolumeName, snapshotName)
+	assert.Error(t, err, "UpdateMirror should have failed")
+}
+
+func TestUpdateMirror_UpdateSucceeded(t *testing.T) {
+	pvcVolumeName := "vol"
+	snapshotName := ""
+	backendUUID := "12345"
+	internalName := "pvc_123"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         pvcVolumeName,
+			InternalName: internalName,
+		},
+		BackendUUID: backendUUID,
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().GetDriverName().Times(3)
+	mockBackend.EXPECT().State()
+	mockBackend.EXPECT().Name()
+	mockBackend.EXPECT().BackendUUID().Times(2)
+	mockBackend.EXPECT().CanMirror().Return(true)
+	mockBackend.EXPECT().UpdateMirror(gomock.Any(), internalName, snapshotName)
+
+	err := o.UpdateMirror(ctx(), pvcVolumeName, snapshotName)
+	assert.NoError(t, err, "UpdateMirror should have succeeded")
+}
+
+func TestCheckMirrorTransferState_BootstrapError(t *testing.T) {
+	pvcVolumeName := "vol"
+
+	o := getOrchestrator(t, false)
+	o.bootstrapError = errors.New("failed")
+
+	_, err := o.CheckMirrorTransferState(ctx(), pvcVolumeName)
+	assert.Error(t, err, "CheckMirrorTransferState should have failed")
+}
+
+func TestCheckMirrorTransferState_VolumeNotFound(t *testing.T) {
+	pvcVolumeName := "vol"
+
+	o := getOrchestrator(t, false)
+
+	_, err := o.CheckMirrorTransferState(ctx(), pvcVolumeName)
+	assert.Error(t, err, "CheckMirrorTransferState should have failed")
+}
+
+func TestCheckMirrorTransferState_BackendNotFound(t *testing.T) {
+	pvcVolumeName := "vol"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: pvcVolumeName},
+		BackendUUID: "12345",
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	_, err := o.CheckMirrorTransferState(ctx(), pvcVolumeName)
+	assert.Error(t, err, "CheckMirrorTransferState should have failed")
+}
+
+func TestCheckMirrorTransferState_BackendCannotMirror(t *testing.T) {
+	pvcVolumeName := "vol"
+	backendUUID := "12345"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: pvcVolumeName},
+		BackendUUID: backendUUID,
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().GetDriverName().AnyTimes()
+	mockBackend.EXPECT().State()
+	mockBackend.EXPECT().Name()
+	mockBackend.EXPECT().BackendUUID().Times(2)
+	mockBackend.EXPECT().CanMirror().Return(false)
+
+	_, err := o.CheckMirrorTransferState(ctx(), pvcVolumeName)
+	assert.Error(t, err, "CheckMirrorTransferState should have failed")
+}
+
+func TestCheckMirrorTransferState_CheckSucceeded(t *testing.T) {
+	pvcVolumeName := "vol"
+	backendUUID := "12345"
+	internalName := "pvc_123"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         pvcVolumeName,
+			InternalName: internalName,
+		},
+		BackendUUID: backendUUID,
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().GetDriverName().AnyTimes()
+	mockBackend.EXPECT().State()
+	mockBackend.EXPECT().Name()
+	mockBackend.EXPECT().BackendUUID().Times(2)
+	mockBackend.EXPECT().CanMirror().Return(true)
+	mockBackend.EXPECT().CheckMirrorTransferState(gomock.Any(), internalName)
+
+	_, err := o.CheckMirrorTransferState(ctx(), pvcVolumeName)
+	assert.NoError(t, err, "CheckMirrorTransferState should have succeeded")
 }

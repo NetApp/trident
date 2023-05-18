@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -148,7 +148,8 @@ rules:
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences"]
+"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
+"tridentactionmirrorupdates", "tridentactionmirrorupdates/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -218,7 +219,8 @@ rules:
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences"]
+"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
+"tridentactionmirrorupdates", "tridentactionmirrorupdates/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -1571,6 +1573,12 @@ func GetMirrorRelationshipCRDYAML() string {
 	return tridentMirrorRelationshipCRDYAMLv1
 }
 
+func GetActionMirrorUpdateCRDYAML() string {
+	Log().Trace(">>>> GetActionMirrorUpdateCRDYAML")
+	defer func() { Log().Trace("<<<< GetActionMirrorUpdateCRDYAML") }()
+	return tridentActionMirrorUpdateCRDYAMLv1
+}
+
 func GetSnapshotInfoCRDYAML() string {
 	Log().Trace(">>>> GetSnapshotInfoCRDYAML")
 	defer func() { Log().Trace("<<<< GetSnapshotInfoCRDYAML") }()
@@ -1629,6 +1637,7 @@ func GetOrchestratorCRDYAML() string {
 kubectl delete crd tridentversions.trident.netapp.io --wait=false
 kubectl delete crd tridentbackends.trident.netapp.io --wait=false
 kubectl delete crd tridentmirrorrelationships.trident.netapp.io --wait=false
+kubectl delete crd tridentactionmirrorupdates.trident.netapp.io --wait=false
 kubectl delete crd tridentbackendconfigs.trident.netapp.io --wait=false
 kubectl delete crd tridentstorageclasses.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumes.trident.netapp.io --wait=false
@@ -1641,6 +1650,7 @@ kubectl delete crd tridentvolumereferences.trident.netapp.io --wait=false
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentmirrorrelationships.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentactionmirrorupdates.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackendconfigs.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentstorageclasses.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -1653,6 +1663,7 @@ kubectl patch crd tridentvolumereferences.trident.netapp.io -p '{"metadata":{"fi
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
 kubectl delete crd tridentmirrorrelationships.trident.netapp.io
+kubectl delete crd tridentactionmirrorupdates.trident.netapp.io
 kubectl delete crd tridentbackendconfigs.trident.netapp.io
 kubectl delete crd tridentstorageclasses.trident.netapp.io
 kubectl delete crd tridentvolumes.trident.netapp.io
@@ -1837,7 +1848,68 @@ spec:
     categories:
     - trident
     - trident-internal
-    - trident-external`
+    - trident-external
+`
+
+const tridentActionMirrorUpdateCRDYAMLv1 = `
+ apiVersion: apiextensions.k8s.io/v1
+ kind: CustomResourceDefinition
+ metadata:
+   name: tridentactionmirrorupdates.trident.netapp.io
+ spec:
+   group: trident.netapp.io
+   versions:
+     - name: v1
+       served: true
+       storage: true
+       schema:
+         openAPIV3Schema:
+           type: object
+           x-kubernetes-preserve-unknown-fields: true
+       additionalPrinterColumns:
+         - description: Namespace
+           jsonPath: .metadata.namespace
+           name: Namespace
+           type: string
+           priority: 0
+         - description: State
+           jsonPath: .status.state
+           name: State
+           type: string
+           priority: 0
+         - description: CompletionTime
+           jsonPath: .status.completionTime
+           name: CompletionTime
+           type: date
+           priority: 0
+         - description: Message
+           jsonPath: .status.message
+           name: Message
+           type: string
+           priority: 1
+         - description: LocalVolumeHandle
+           jsonPath: .status.localVolumeHandle
+           name: LocalVolumeHandle
+           type: string
+           priority: 1
+         - description: RemoteVolumeHandle
+           jsonPath: .status.remoteVolumeHandle
+           name: RemoteVolumeHandle
+           type: string
+           priority: 1
+   scope: Namespaced
+   names:
+     plural: tridentactionmirrorupdates
+     singular: tridentactionmirrorupdate
+     kind: TridentActionMirrorUpdate
+     shortNames:
+     - tamu
+     - tamupdate
+     - tamirrorupdate
+     categories:
+     - trident
+     - trident-external
+ `
 
 const tridentSnapshotInfoCRDYAMLv1 = `
 apiVersion: apiextensions.k8s.io/v1
@@ -2256,6 +2328,7 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
 	"\n---" + tridentMirrorRelationshipCRDYAMLv1 +
+	"\n---" + tridentActionMirrorUpdateCRDYAMLv1 +
 	"\n---" + tridentSnapshotInfoCRDYAMLv1 +
 	"\n---" + tridentStorageClassCRDYAMLv1 +
 	"\n---" + tridentVolumeCRDYAMLv1 +

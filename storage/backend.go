@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -91,6 +91,8 @@ type Mirrorer interface {
 	ReleaseMirror(ctx context.Context, localInternalVolumeName string) error
 	GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string,
 		string, error)
+	UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error
+	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 }
 
 // StateGetter provides a common interface for backends that support polling backend for state information.
@@ -1270,6 +1272,24 @@ func (b *StorageBackend) GetReplicationDetails(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 	return mirrorDriver.GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle)
+}
+
+func (b *StorageBackend) UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	mirrorDriver, ok := b.driver.(Mirrorer)
+	if !ok {
+		return errors.UnsupportedError(fmt.Sprintf(
+			"mirroring is not implemented by backends of type %v", b.driver.Name()))
+	}
+	return mirrorDriver.UpdateMirror(ctx, localInternalVolumeName, snapshotName)
+}
+
+func (b *StorageBackend) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time, error) {
+	mirrorDriver, ok := b.driver.(Mirrorer)
+	if !ok {
+		return nil, errors.UnsupportedError(fmt.Sprintf(
+			"mirroring is not implemented by backends of type %v", b.driver.Name()))
+	}
+	return mirrorDriver.CheckMirrorTransferState(ctx, localInternalVolumeName)
 }
 
 func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {

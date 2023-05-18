@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 
@@ -1202,7 +1203,7 @@ func (d NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorag
 	return d.Config.CommonStorageDriverConfig
 }
 
-// EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
+// EstablishMirror will create a new mirror relationship between a RW and a DP volume that have not previously
 // had a relationship
 func (d *NASStorageDriver) EstablishMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
@@ -1242,8 +1243,7 @@ func (d *NASStorageDriver) EstablishMirror(
 	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
-// ReestablishMirror will attempt to resync a snapmirror relationship,
-// if and only if the relationship existed previously
+// ReestablishMirror will attempt to resync a mirror relationship, if and only if the relationship existed previously
 func (d *NASStorageDriver) ReestablishMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
@@ -1282,7 +1282,7 @@ func (d *NASStorageDriver) ReestablishMirror(
 	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
 }
 
-// PromoteMirror will break the snapmirror and make the destination volume RW,
+// PromoteMirror will break the mirror relationship and make the destination volume RW,
 // optionally after a given snapshot has synced
 func (d *NASStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
@@ -1291,21 +1291,34 @@ func (d *NASStorageDriver) PromoteMirror(
 		d.API)
 }
 
-// GetMirrorStatus returns the current state of a snapmirror relationship
+// GetMirrorStatus returns the current state of a mirror relationship
 func (d *NASStorageDriver) GetMirrorStatus(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
 ) (string, error) {
 	return getMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
-// ReleaseMirror will release the snapmirror relationship data of the source volume
+// ReleaseMirror will release the mirror relationship data of the source volume
 func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
 	return releaseMirror(ctx, localInternalVolumeName, d.API)
 }
 
-// GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship
+// GetReplicationDetails returns the replication policy and schedule of a mirror relationship
 func (d *NASStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
 	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
+}
+
+// UpdateMirror will attempt a mirror update for the given destination volume
+func (d *NASStorageDriver) UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	return mirrorUpdate(ctx, localInternalVolumeName, snapshotName, d.API)
+}
+
+// CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
+// succeeded or in progress
+func (d *NASStorageDriver) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time,
+	error,
+) {
+	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
 }
 
 // MountVolume returns the volume mount error(if any)

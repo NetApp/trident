@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -2154,6 +2154,12 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 		snapmirror.LastTransferType = info.LastTransferType()
 	}
 
+	if info.LastTransferEndTimestampPtr != nil {
+		transferUnix := int64(uint32(info.LastTransferEndTimestamp()))
+		transferTime := time.Unix(transferUnix, 0)
+		snapmirror.EndTransferTime = &transferTime
+	}
+
 	if info.IsHealthyPtr != nil {
 		snapmirror.IsHealthy = info.IsHealthy()
 
@@ -2321,6 +2327,14 @@ func (d OntapAPIZAPI) SnapmirrorBreak(
 			return err
 		}
 	}
+	return nil
+}
+
+func (d OntapAPIZAPI) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	// TODO (victorir): implement me TRID-12901
+	Logc(ctx).Debugf("Will send update mirror with volumeName: %s and snapshotName: %s",
+		localInternalVolumeName, snapshotName)
+	// d.api.UpdateMirror(localInternalVolumeName, localasvmnamee)
 	return nil
 }
 

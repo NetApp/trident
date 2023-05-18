@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -30,6 +30,7 @@ import (
 
 const (
 	// CRD names
+	ActionMirrorUpdateCRDName = "tridentactionmirrorupdates.trident.netapp.io"
 	BackendCRDName            = "tridentbackends.trident.netapp.io"
 	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
 	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
@@ -90,6 +91,7 @@ var (
 	nodePluginTolerations        []netappv1.Toleration
 
 	CRDnames = []string{
+		ActionMirrorUpdateCRDName,
 		BackendCRDName,
 		BackendConfigCRDName,
 		MirrorRelationshipCRDName,
@@ -665,6 +667,10 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML(),
+		performOperationOnce); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(ActionMirrorUpdateCRDName, k8sclient.GetActionMirrorUpdateCRDYAML(),
 		performOperationOnce); err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -1508,8 +1508,15 @@ func (d OntapAPIREST) SnapmirrorGet(
 		snapmirror.LastTransferType = *snapmirrorResponse.LastTransferType
 	}
 
-	if snapmirrorResponse.Transfer != nil && snapmirrorResponse.Transfer.State != nil {
-		snapmirror.RelationshipStatus = SnapmirrorStatus(*snapmirrorResponse.Transfer.State)
+	if snapmirrorResponse.Transfer != nil {
+		if snapmirrorResponse.Transfer.State != nil {
+			snapmirror.RelationshipStatus = SnapmirrorStatus(*snapmirrorResponse.Transfer.State)
+		}
+		if snapmirrorResponse.Transfer.EndTime != nil {
+			transferFormat := "2006-01-02T15:04:05.000-07:00"
+			transferTime, _ := time.Parse(transferFormat, snapmirrorResponse.Transfer.EndTime.String())
+			snapmirror.EndTransferTime = &transferTime
+		}
 	}
 
 	if snapmirrorResponse.Healthy != nil {
@@ -1684,6 +1691,13 @@ func (d OntapAPIREST) SnapmirrorBreak(
 		Logc(ctx).WithError(err).Error("Error on snapmirror break")
 		return err
 	}
+	return nil
+}
+
+func (d OntapAPIREST) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	// TODO (victorir): implement me TRID-12901
+	Logc(ctx).Debugf("Will send update mirror with volumeName: %s and snapshotName: %s",
+		localInternalVolumeName, snapshotName)
 	return nil
 }
 

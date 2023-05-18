@@ -7,6 +7,7 @@ package mock_storage
 import (
 	context "context"
 	reflect "reflect"
+	"time"
 
 	roaring "github.com/RoaringBitmap/roaring"
 	gomock "github.com/golang/mock/gomock"
@@ -134,6 +135,21 @@ func (m *MockBackend) CanSnapshot(arg0 context.Context, arg1 *storage.SnapshotCo
 func (mr *MockBackendMockRecorder) CanSnapshot(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanSnapshot", reflect.TypeOf((*MockBackend)(nil).CanSnapshot), arg0, arg1, arg2)
+}
+
+// CheckMirrorTransferState mocks base method.
+func (m *MockBackend) CheckMirrorTransferState(arg0 context.Context, arg1 string) (*time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckMirrorTransferState", arg0, arg1)
+	ret0, _ := ret[0].(*time.Time)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckMirrorTransferState indicates an expected call of CheckMirrorTransferState.
+func (mr *MockBackendMockRecorder) CheckMirrorTransferState(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMirrorTransferState", reflect.TypeOf((*MockBackend)(nil).CheckMirrorTransferState), arg0, arg1)
 }
 
 // CloneVolume mocks base method.
@@ -736,6 +752,20 @@ func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.Volume
 func (mr *MockBackendMockRecorder) UnpublishVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockBackend)(nil).UnpublishVolume), arg0, arg1, arg2)
+}
+
+// UpdateMirror mocks base method.
+func (m *MockBackend) UpdateMirror(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMirror", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateMirror indicates an expected call of UpdateMirror.
+func (mr *MockBackendMockRecorder) UpdateMirror(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMirror", reflect.TypeOf((*MockBackend)(nil).UpdateMirror), arg0, arg1, arg2)
 }
 
 // Volumes mocks base method.

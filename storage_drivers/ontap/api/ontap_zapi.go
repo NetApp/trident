@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -2602,7 +2602,9 @@ func (c Client) SnapmirrorGet(
 ) (*azgo.SnapmirrorGetResponse, error) {
 	query := azgo.NewSnapmirrorGetRequest()
 	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
-	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
+	if remoteSVMName != "" && remoteFlexvolName != "" {
+		query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
+	}
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2849,6 +2851,20 @@ func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, er
 	}
 
 	return false, nil
+}
+
+func (c Client) SnapmirrorUpdate(
+	localInternalVolumeName, snapshotName string,
+) (*azgo.SnapmirrorUpdateResponse, error) {
+	// TODO (victorir): verify implementation TRID-12901
+	query := azgo.NewSnapmirrorUpdateRequest()
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+
+	if snapshotName != "" {
+		query.SetSourceSnapshot(snapshotName)
+	}
+
+	return query.ExecuteUsing(c.zr)
 }
 
 // SNAPMIRROR operations END

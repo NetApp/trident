@@ -1,10 +1,11 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
 import (
 	"context"
 	"fmt"
+	"time"
 
 	. "github.com/netapp/trident/logging"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
@@ -448,4 +449,48 @@ func getReplicationDetails(ctx context.Context, localInternalVolumeName, remoteV
 	}
 
 	return snapmirror.ReplicationPolicy, snapmirror.ReplicationSchedule, localSVMName, nil
+}
+
+// mirrorUpdate attempts a mirror update for the specified Flexvol.
+func mirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string, d api.OntapAPI) error {
+	if localInternalVolumeName == "" {
+		return fmt.Errorf("invalid volume name")
+	}
+
+	err := d.SnapmirrorUpdate(ctx, localInternalVolumeName, snapshotName)
+	if err != nil {
+		return err
+	}
+	return errors.InProgressError("mirror update started")
+}
+
+// CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
+// succeeded or in progress and return the EndTransferTime if it succeeded or failed
+func checkMirrorTransferState(ctx context.Context, localInternalVolumeName string, d api.OntapAPI) (*time.Time, error) {
+	localSVMName := d.SVMName()
+	if localInternalVolumeName == "" {
+		return nil, fmt.Errorf("invalid volume name")
+	}
+
+	mirror, err := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	// May need to add finalizing state, similar to transferring
+	switch mirror.RelationshipStatus {
+	case api.SnapmirrorStatusTransferring:
+		// return InProgressError and requeue
+		return nil, errors.InProgressError("mirror update not complete, still transferring")
+	case api.SnapmirrorStatusFailed:
+		// return failed
+		return nil, fmt.Errorf("mirror update failed, %v", mirror.UnhealthyReason)
+	case api.SnapmirrorStatusSuccess, api.SnapmirrorStatusIdle:
+		// return no error, mirror update succeeded
+		return mirror.EndTransferTime, nil
+	default:
+		// return deferred error and remain in progress to retry and recheck the state
+		return nil, errors.InProgressError(fmt.Sprintf("unexpected mirror transfer status %v for update",
+			mirror.RelationshipStatus))
+	}
 }

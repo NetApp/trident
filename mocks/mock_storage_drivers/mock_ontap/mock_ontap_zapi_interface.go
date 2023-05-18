@@ -1765,6 +1765,21 @@ func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorResync(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorResync", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorResync), arg0, arg1, arg2, arg3)
 }
 
+// SnapmirrorUpdate mocks base method.
+func (m *MockZapiClientInterface) SnapmirrorUpdate(arg0, arg1 string) (*azgo.SnapmirrorUpdateResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SnapmirrorUpdate", arg0, arg1)
+	ret0, _ := ret[0].(*azgo.SnapmirrorUpdateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SnapmirrorUpdate indicates an expected call of SnapmirrorUpdate.
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorUpdate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorUpdate", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorUpdate), arg0, arg1)
+}
+
 // SnapshotCreate mocks base method.
 func (m *MockZapiClientInterface) SnapshotCreate(arg0, arg1 string) (*azgo.SnapshotCreateResponse, error) {
 	m.ctrl.T.Helper()

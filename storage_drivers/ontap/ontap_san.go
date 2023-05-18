@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 
@@ -1294,7 +1295,7 @@ func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorag
 	return d.Config.CommonStorageDriverConfig
 }
 
-// EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
+// EstablishMirror will create a new mirror relationship between a RW and a DP volume that have not previously
 // had a relationship
 func (d *SANStorageDriver) EstablishMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
@@ -1335,8 +1336,7 @@ func (d *SANStorageDriver) EstablishMirror(
 		d.API)
 }
 
-// ReestablishMirror will attempt to resync a snapmirror relationship,
-// if and only if the relationship existed previously
+// ReestablishMirror will attempt to resync a mirror relationship, if and only if the relationship existed previously
 func (d *SANStorageDriver) ReestablishMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
@@ -1376,7 +1376,7 @@ func (d *SANStorageDriver) ReestablishMirror(
 		d.API)
 }
 
-// PromoteMirror will break the snapmirror and make the destination volume RW,
+// PromoteMirror will break the mirror relationship and make the destination volume RW,
 // optionally after a given snapshot has synced
 func (d *SANStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
@@ -1385,21 +1385,36 @@ func (d *SANStorageDriver) PromoteMirror(
 		d.GetConfig().ReplicationPolicy, d.API)
 }
 
-// GetMirrorStatus returns the current state of a snapmirror relationship
+// GetMirrorStatus returns the current state of a mirror relationship
 func (d *SANStorageDriver) GetMirrorStatus(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
 ) (string, error) {
 	return getMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
-// ReleaseMirror will release the snapmirror relationship data of the source volume
+// ReleaseMirror will release the mirror relationship data of the source volume
 func (d *SANStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
 	return releaseMirror(ctx, localInternalVolumeName, d.API)
 }
 
-// GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship
-func (d *SANStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+// GetReplicationDetails returns the replication policy and schedule of a mirror relationship
+func (d *SANStorageDriver) GetReplicationDetails(
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
+}
+
+// UpdateMirror will attempt a mirror update for the given destination volume
+func (d *SANStorageDriver) UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	return mirrorUpdate(ctx, localInternalVolumeName, snapshotName, d.API)
+}
+
+// CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
+// succeeded or in progress
+func (d *SANStorageDriver) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time,
+	error,
+) {
+	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
 }
 
 func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_rest.go -s RestClient -i RestClientInterface -p api'
 package api
@@ -314,6 +314,7 @@ type RestClientInterface interface {
 	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	// Intended to be from the destination vserver
 	SnapmirrorDelete(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error
 	IsVserverDRCapable(ctx context.Context) (bool, error)
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*snapmirror.SnapmirrorPoliciesGetOK, error)

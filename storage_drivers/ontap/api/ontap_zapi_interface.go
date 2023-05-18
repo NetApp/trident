@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_zapi.go -s Client -i ZapiClientInterface -p api > ontap_zapi_interface.go'
 
@@ -342,6 +342,7 @@ type ZapiClientInterface interface {
 	// Intended to be from the destination vserver
 	SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse,
 		error)
+	SnapmirrorUpdate(localInternalVolumeName, snapshotName string) (*azgo.SnapmirrorUpdateResponse, error)
 	IsVserverDRCapable(ctx context.Context) (bool, error)
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*azgo.SnapmirrorPolicyInfoType, error)

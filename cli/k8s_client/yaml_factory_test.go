@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -1528,6 +1528,78 @@ func TestGetCRDsYAML(t *testing.T) {
 			APIVersion: "apiextensions.k8s.io/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentactionmirrorupdates.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentactionmirrorupdates",
+				Singular:   "tridentactionmirrorupdate",
+				Kind:       "TridentActionMirrorUpdate",
+				ShortNames: []string{"tamu", "tamupdate", "tamirrorupdate"},
+				Categories: []string{"trident", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Namespace",
+							Type:        "string",
+							Description: "Namespace",
+							JSONPath:    ".metadata.namespace",
+							Priority:    0,
+						},
+						{
+							Name:        "State",
+							Type:        "string",
+							Description: "State",
+							JSONPath:    ".status.state",
+							Priority:    0,
+						},
+						{
+							Name:        "CompletionTime",
+							Type:        "date",
+							Description: "CompletionTime",
+							JSONPath:    ".status.completionTime",
+							Priority:    0,
+						},
+						{
+							Name:        "Message",
+							Type:        "string",
+							Description: "Message",
+							JSONPath:    ".status.message",
+							Priority:    1,
+						},
+						{
+							Name:        "LocalVolumeHandle",
+							Type:        "string",
+							Description: "LocalVolumeHandle",
+							JSONPath:    ".status.localVolumeHandle",
+							Priority:    1,
+						},
+						{
+							Name:        "RemoteVolumeHandle",
+							Type:        "string",
+							Description: "RemoteVolumeHandle",
+							JSONPath:    ".status.remoteVolumeHandle",
+							Priority:    1,
+						},
+					},
+				},
+			},
+		},
+	}
+	expected6 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "tridentsnapshotinfos.trident.netapp.io",
 		},
 		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
@@ -1563,7 +1635,7 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
-	expected6 := apiextensionsv1.CustomResourceDefinition{
+	expected7 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CustomResourceDefinition",
 			APIVersion: "apiextensions.k8s.io/v1",
@@ -1591,7 +1663,7 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
-	expected7 := apiextensionsv1.CustomResourceDefinition{
+	expected8 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CustomResourceDefinition",
 			APIVersion: "apiextensions.k8s.io/v1",
@@ -1670,7 +1742,7 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
-	expected8 := apiextensionsv1.CustomResourceDefinition{
+	expected9 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CustomResourceDefinition",
 			APIVersion: "apiextensions.k8s.io/v1",
@@ -1722,7 +1794,7 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
-	expected9 := apiextensionsv1.CustomResourceDefinition{
+	expected10 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CustomResourceDefinition",
 			APIVersion: "apiextensions.k8s.io/v1",
@@ -1750,7 +1822,7 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
-	expected10 := apiextensionsv1.CustomResourceDefinition{
+	expected11 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CustomResourceDefinition",
 			APIVersion: "apiextensions.k8s.io/v1",
@@ -1778,7 +1850,7 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
-	expected11 := apiextensionsv1.CustomResourceDefinition{
+	expected12 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CustomResourceDefinition",
 			APIVersion: "apiextensions.k8s.io/v1",
@@ -1815,7 +1887,7 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
-	expected12 := apiextensionsv1.CustomResourceDefinition{
+	expected13 := apiextensionsv1.CustomResourceDefinition{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "CustomResourceDefinition",
 			APIVersion: "apiextensions.k8s.io/v1",
@@ -1845,77 +1917,96 @@ func TestGetCRDsYAML(t *testing.T) {
 		},
 	}
 
+	// trident version
 	var actual1 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[0]), &actual1), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected1.TypeMeta, actual1.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected1.ObjectMeta, actual1.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected1.Spec, actual1.Spec))
 
+	// trident backends
 	var actual2 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[1]), &actual2), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected2.TypeMeta, actual2.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected2.ObjectMeta, actual2.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected2.Spec, actual2.Spec))
 
+	// trident backend configs
 	var actual3 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[2]), &actual3), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected3.TypeMeta, actual3.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected3.ObjectMeta, actual3.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected3.Spec, actual3.Spec))
 
+	// trident mirror relationships
 	var actual4 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[3]), &actual4), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected4.TypeMeta, actual4.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected4.ObjectMeta, actual4.ObjectMeta))
 	assert.Equal(t, expected4.Spec, actual4.Spec)
 
+	// trident action mirror updates
 	var actual5 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[4]), &actual5), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected5.TypeMeta, actual5.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected5.ObjectMeta, actual5.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected5.Spec, actual5.Spec))
 
+	// trident snapshot infos
 	var actual6 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[5]), &actual6), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected6.TypeMeta, actual6.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected6.ObjectMeta, actual6.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected6.Spec, actual6.Spec))
 
+	// trident storage classes
 	var actual7 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[6]), &actual7), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected7.TypeMeta, actual7.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected7.ObjectMeta, actual7.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected7.Spec, actual7.Spec))
 
+	// trident volumes
 	var actual8 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[7]), &actual8), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected8.TypeMeta, actual8.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected8.ObjectMeta, actual8.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected8.Spec, actual8.Spec))
 
+	// trident volume publications
 	var actual9 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[8]), &actual9), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected9.TypeMeta, actual9.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected9.ObjectMeta, actual9.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected9.Spec, actual9.Spec))
 
+	// trident nodes
 	var actual10 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[9]), &actual10), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected10.TypeMeta, actual10.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected10.ObjectMeta, actual10.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected10.Spec, actual10.Spec))
 
+	// trident transactions
 	var actual11 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[10]), &actual11), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected11.TypeMeta, actual11.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected11.ObjectMeta, actual11.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected11.Spec, actual11.Spec))
 
+	// trident snapshots
 	var actual12 apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(result[11]), &actual12), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected12.TypeMeta, actual12.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected12.ObjectMeta, actual12.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected12.Spec, actual12.Spec))
+
+	// trident volume references
+	var actual13 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[12]), &actual13), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected13.TypeMeta, actual13.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected13.ObjectMeta, actual13.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected13.Spec, actual13.Spec))
 }
 
 func TestGetVersionCRDYAML(t *testing.T) {
@@ -2855,6 +2946,96 @@ func TestGetOrchestratorCRDYAML(t *testing.T) {
 	}
 
 	actualYAML := GetOrchestratorCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetActionMirrorUpdateCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentactionmirrorupdates.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentactionmirrorupdates",
+				Singular:   "tridentactionmirrorupdate",
+				Kind:       "TridentActionMirrorUpdate",
+				ShortNames: []string{"tamu", "tamupdate", "tamirrorupdate"},
+				Categories: []string{"trident", "trident-external"},
+			},
+			Scope: "Namespaced",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Namespace",
+							Type:        "string",
+							Description: "Namespace",
+							JSONPath:    ".metadata.namespace",
+							Priority:    0,
+						},
+						{
+							Name:        "State",
+							Type:        "string",
+							Description: "State",
+							JSONPath:    ".status.state",
+							Priority:    0,
+						},
+						{
+							Name:        "CompletionTime",
+							Type:        "date",
+							Description: "CompletionTime",
+							JSONPath:    ".status.completionTime",
+							Priority:    0,
+						},
+						{
+							Name:        "Message",
+							Type:        "string",
+							Description: "Message",
+							JSONPath:    ".status.message",
+							Priority:    1,
+						},
+						{
+							Name:        "LocalVolumeHandle",
+							Type:        "string",
+							Description: "LocalVolumeHandle",
+							JSONPath:    ".status.localVolumeHandle",
+							Priority:    1,
+						},
+						{
+							Name:        "RemoteVolumeHandle",
+							Type:        "string",
+							Description: "RemoteVolumeHandle",
+							JSONPath:    ".status.remoteVolumeHandle",
+							Priority:    1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetActionMirrorUpdateCRDYAML()
 
 	var actual apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")

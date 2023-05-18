@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -63,7 +63,7 @@ type TridentSnapshotInfo struct {
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// Input spec for the Trident Backend
+	// Input spec for the Trident Snapshot
 	Spec   TridentSnapshotInfoSpec   `json:"spec"`
 	Status TridentSnapshotInfoStatus `json:"status"`
 }
@@ -100,7 +100,7 @@ type TridentMirrorRelationship struct {
 	// +k8s:openapi-gen=false
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// Input spec for the Trident Backend
+	// Input spec for the Trident mirror relationship
 	Spec   TridentMirrorRelationshipSpec   `json:"spec"`
 	Status TridentMirrorRelationshipStatus `json:"status"`
 }
@@ -143,6 +143,57 @@ type TridentMirrorRelationshipCondition struct {
 // TridentMirrorRelationshipStatus defines the observed state of TridentMirrorRelationship
 type TridentMirrorRelationshipStatus struct {
 	Conditions []*TridentMirrorRelationshipCondition `json:"conditions"`
+}
+
+const (
+	TridentActionStateSucceeded  = "Succeeded"
+	TridentActionStateInProgress = "In progress"
+	TridentActionStateFailed     = "Failed"
+)
+
+// TridentActionMirrorUpdate defines an imperative action to update a mirror relationship
+// on demand for a specified snapshot.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentActionMirrorUpdate struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Input spec for TridentActionMirrorUpdate
+	Spec TridentActionMirrorUpdateSpec `json:"spec"`
+
+	// Completion status for TridentActionMirrorUpdate
+	Status TridentActionMirrorUpdateStatus `json:"status"`
+}
+
+// TridentActionMirrorUpdateSpec defines the arguments of TridentActionMirrorUpdate
+type TridentActionMirrorUpdateSpec struct {
+	TMRName        string `json:"tridentMirrorRelationshipName"`
+	SnapshotHandle string `json:"snapshotHandle"`
+}
+
+// TridentActionMirrorUpdateStatus defines the result of TridentActionMirrorUpdate
+type TridentActionMirrorUpdateStatus struct {
+	LocalVolumeHandle  string       `json:"localVolumeHandle"`
+	RemoteVolumeHandle string       `json:"remoteVolumeHandle"`
+	SnapshotHandle     string       `json:"snapshotHandle,omitempty"`
+	State              string       `json:"state,omitempty"`
+	Message            string       `json:"message,omitempty"`
+	CompletionTime     *metav1.Time `json:"completionTime,omitempty"`
+	StartTime          *metav1.Time `json:"startTime,omitempty"`
+}
+
+// TridentActionMirrorUpdateList is a list of TridentActionMirrorUpdate objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentActionMirrorUpdateList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	// List of TridentActionMirrorUpdate objects
+	Items []*TridentActionMirrorUpdate `json:"items"`
 }
 
 // TridentBackendConfig defines a Trident backend.

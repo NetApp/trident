@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -22,7 +22,6 @@ import (
 	"github.com/go-openapi/runtime"
 	runtime_client "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -148,7 +147,6 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	}
 
 	if rClient, ok := result.api.Transport.(*runtime_client.Runtime); ok {
-		rClient.SetLogger(log.New())
 		rClient.SetDebug(config.DebugTraceFlags["api"])
 	}
 
@@ -5373,6 +5371,11 @@ func (c *RestClient) GetSVMState(ctx context.Context) (string, error) {
 	}
 
 	return *svmResult.Payload.State, nil
+}
+
+func (c RestClient) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	// TODO (victorir): implement me TRID-12901
+	return nil
 }
 
 // SNAPMIRROR operations END

@@ -168,6 +168,21 @@ func (mr *MockOrchestratorMockRecorder) CanBackendMirror(arg0, arg1 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanBackendMirror", reflect.TypeOf((*MockOrchestrator)(nil).CanBackendMirror), arg0, arg1)
 }
 
+// CheckMirrorTransferState mocks base method.
+func (m *MockOrchestrator) CheckMirrorTransferState(arg0 context.Context, arg1 string) (*time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckMirrorTransferState", arg0, arg1)
+	ret0, _ := ret[0].(*time.Time)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckMirrorTransferState indicates an expected call of CheckMirrorTransferState.
+func (mr *MockOrchestratorMockRecorder) CheckMirrorTransferState(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMirrorTransferState", reflect.TypeOf((*MockOrchestrator)(nil).CheckMirrorTransferState), arg0, arg1)
+}
+
 // CloneVolume mocks base method.
 func (m *MockOrchestrator) CloneVolume(arg0 context.Context, arg1 *storage.VolumeConfig) (*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()
@@ -1115,6 +1130,20 @@ func (m *MockOrchestrator) UpdateBackendState(arg0 context.Context, arg1, arg2 s
 func (mr *MockOrchestratorMockRecorder) UpdateBackendState(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockOrchestrator)(nil).UpdateBackendState), arg0, arg1, arg2)
+}
+
+// UpdateMirror mocks base method.
+func (m *MockOrchestrator) UpdateMirror(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMirror", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateMirror indicates an expected call of UpdateMirror.
+func (mr *MockOrchestratorMockRecorder) UpdateMirror(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMirror", reflect.TypeOf((*MockOrchestrator)(nil).UpdateMirror), arg0, arg1, arg2)
 }
 
 // UpdateNode mocks base method.

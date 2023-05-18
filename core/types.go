@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -107,6 +107,8 @@ type Orchestrator interface {
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
 	ReleaseMirror(ctx context.Context, backendUUID, localInternalVolumeName string) error
 	GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
+	UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) error
+	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 

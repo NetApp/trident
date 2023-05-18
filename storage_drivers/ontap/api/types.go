@@ -2,6 +2,8 @@
 
 package api
 
+import "time"
+
 //go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI,AggregateSpace,Response
 
 type Volume struct {
@@ -152,6 +154,7 @@ type Snapmirror struct {
 	UnhealthyReason     string
 	ReplicationPolicy   string
 	ReplicationSchedule string
+	EndTransferTime     *time.Time
 }
 
 type SnapmirrorPolicyType string

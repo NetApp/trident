@@ -653,3 +653,27 @@ func HasResourceExhaustedError(err error) (bool, *resourceExhaustedError) {
 	ok := errors.As(err, &resourceExhaustedErrorPtr)
 	return ok, resourceExhaustedErrorPtr
 }
+
+// ///////////////////////////////////////////////////////////////////////////
+// inProgressError
+// ///////////////////////////////////////////////////////////////////////////
+
+type inProgressError struct {
+	message string
+}
+
+func (e *inProgressError) Error() string { return e.message }
+
+func InProgressError(str string) error {
+	return &inProgressError{
+		message: fmt.Sprintf("in progress error; %s", str),
+	}
+}
+
+func IsInProgressError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*inProgressError)
+	return ok
+}

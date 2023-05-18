@@ -1640,6 +1640,20 @@ func (mr *MockRestClientInterfaceMockRecorder) SnapmirrorResync(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorResync", reflect.TypeOf((*MockRestClientInterface)(nil).SnapmirrorResync), arg0, arg1, arg2, arg3, arg4)
 }
 
+// SnapmirrorUpdate mocks base method.
+func (m *MockRestClientInterface) SnapmirrorUpdate(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SnapmirrorUpdate", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SnapmirrorUpdate indicates an expected call of SnapmirrorUpdate.
+func (mr *MockRestClientInterfaceMockRecorder) SnapmirrorUpdate(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorUpdate", reflect.TypeOf((*MockRestClientInterface)(nil).SnapmirrorUpdate), arg0, arg1, arg2)
+}
+
 // SnapshotCreate mocks base method.
 func (m *MockRestClientInterface) SnapshotCreate(arg0 context.Context, arg1, arg2 string) (*storage.SnapshotCreateAccepted, error) {
 	m.ctrl.T.Helper()

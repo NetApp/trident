@@ -4,7 +4,9 @@ package ontap
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -24,11 +26,14 @@ const (
 	remoteSVMName       = "svm-1"
 	remoteFlexvolName   = "volume-a"
 	localSVMUUID        = "f714bf7b-9357-11ed-961b-005056b36ae8"
+	transferTime        = "2023-05-15T15:06:23-04:00"
+	transferFormat      = "2006-01-02T15:04:05.000-07:00"
 )
 
 var (
-	errNotReady = api.NotReadyError("operation still in progress, fail")
-	errNotFound = api.NotFoundError("not found")
+	errNotReady        = api.NotReadyError("operation still in progress, fail")
+	errNotFound        = api.NotFoundError("not found")
+	endTransferTime, _ = time.Parse(transferFormat, transferTime)
 )
 
 func TestPromoteMirror_NoErrors(t *testing.T) {
@@ -759,4 +764,169 @@ func TestReestablishMirror_SnapmirrorNotHealthy(t *testing.T) {
 		mockAPI)
 
 	assert.Error(t, err, "reestablish mirror should return an error")
+}
+
+func TestMirrorUpdate_InProgressError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	snapName := "snapshot-123"
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SnapmirrorUpdate(ctx, localInternalVolumeName, snapName).Times(1)
+
+	err := mirrorUpdate(ctx, localInternalVolumeName, snapName, mockAPI)
+
+	assert.True(t, errors.IsInProgressError(err), "mirror update should be in progress")
+}
+
+func TestMirrorUpdate_NoVolName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	snapName := "snapshot-123"
+	localInternalVolumeName := ""
+
+	err := mirrorUpdate(ctx, localInternalVolumeName, snapName, mockAPI)
+
+	assert.False(t, errors.IsInProgressError(err), "invalid volume name expected")
+}
+
+func TestMirrorUpdate_UpdateError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	snapName := "snapshot-123"
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SnapmirrorUpdate(ctx, localInternalVolumeName, snapName).Times(1).Return(fmt.Errorf("failed"))
+
+	err := mirrorUpdate(ctx, localInternalVolumeName, snapName, mockAPI)
+
+	assert.False(t, errors.IsInProgressError(err), "mirror update failed")
+}
+
+func TestCheckMirrorTransferState_SucceededIdle(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
+		Return(&api.Snapmirror{
+			RelationshipStatus: api.SnapmirrorStatusIdle,
+			EndTransferTime:    &endTransferTime,
+		}, nil)
+
+	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
+
+	assert.NoError(t, err, "transfer status is finished")
+	assert.True(t, endTransferTime.Equal(*endTime), "transfer time should return")
+}
+
+func TestCheckMirrorTransferState_SucceededSuccess(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
+		Return(&api.Snapmirror{
+			RelationshipStatus: api.SnapmirrorStatusSuccess,
+			EndTransferTime:    &endTransferTime,
+		}, nil)
+
+	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
+
+	assert.NoError(t, err, "transfer status is finished")
+	assert.True(t, endTransferTime.Equal(*endTime), "transfer time should return")
+}
+
+func TestCheckMirrorTransferState_NoVolName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	localInternalVolumeName := ""
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+
+	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
+
+	assert.Error(t, err, "invalid volume name")
+	assert.Nil(t, endTime, "transfer time should not return")
+}
+
+func TestCheckMirrorTransferState_SnapmirrorGetError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
+		Return(nil, fmt.Errorf("failed"))
+
+	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
+
+	assert.Error(t, err, "snapmirror get failed")
+	assert.Nil(t, endTime, "transfer time should not return")
+}
+
+func TestCheckMirrorTransferState_Transferring(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
+		Return(&api.Snapmirror{
+			RelationshipStatus: api.SnapmirrorStatusTransferring,
+			EndTransferTime:    nil,
+		}, nil)
+
+	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
+
+	assert.True(t, errors.IsInProgressError(err), "transfer status is in progress")
+	assert.Nil(t, endTime, "transfer time should not return")
+}
+
+func TestCheckMirrorTransferState_TransferFailed(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
+		Return(&api.Snapmirror{
+			RelationshipStatus: api.SnapmirrorStatusFailed,
+			UnhealthyReason:    "transfer failed",
+			EndTransferTime:    nil,
+		}, nil)
+
+	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
+
+	assert.False(t, errors.IsInProgressError(err), "transfer status is not in progress, failed")
+	assert.Nil(t, endTime, "transfer time should not return")
+}
+
+func TestCheckMirrorTransferState_DefaultError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+	localInternalVolumeName := "pvc_123"
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
+		Return(&api.Snapmirror{
+			RelationshipStatus: api.SnapmirrorStatusQueued,
+		}, nil)
+
+	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
+
+	assert.True(t, errors.IsInProgressError(err), "transfer status not expected")
+	assert.Nil(t, endTime, "transfer time should not return")
 }

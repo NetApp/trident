@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -183,6 +183,7 @@ type OntapAPI interface {
 	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	SnapmirrorRelease(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	IsSVMDRCapable(ctx context.Context) (bool, error)
+	SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error
 
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error

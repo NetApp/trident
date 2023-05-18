@@ -212,6 +212,8 @@ rules:
       - tridentbackendconfigs/status
       - tridentmirrorrelationships
       - tridentmirrorrelationships/status
+      - tridentactionmirrorupdates
+      - tridentactionmirrorupdates/status
       - tridentsnapshotinfos
       - tridentsnapshotinfos/status
       - tridentprovisioners # Required for Tprov
