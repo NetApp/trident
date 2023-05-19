@@ -1335,6 +1335,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.FlexGroupAggregateList = []string{}
 	}
 
+	if config.SANType == "" {
+		config.SANType = sa.ISCSI
+	}
+
 	// If NASType is not provided in the backend config, default to NFS
 	if config.NASType == "" {
 		config.NASType = sa.NFS
@@ -1847,6 +1851,7 @@ func InitializeStoragePoolsCommon(
 
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
 		pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
+		pool.Attributes()[sa.SANType] = sa.NewStringOffer(config.SANType)
 
 		pool.InternalAttributes()[Size] = config.Size
 		pool.InternalAttributes()[Region] = config.Region
@@ -1987,8 +1992,14 @@ func InitializeStoragePoolsCommon(
 			nasType = vpool.NASType
 		}
 
+		sanType := config.SANType
+		if vpool.SANType != "" {
+			sanType = vpool.SANType
+		}
+
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
 		pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
+		pool.Attributes()[sa.SANType] = sa.NewStringOffer(sanType)
 
 		if region != "" {
 			pool.Attributes()[sa.Region] = sa.NewStringOffer(region)
@@ -2481,11 +2492,11 @@ func calculateFlexvolSizeBytes(
 	return flexvolSizeBytes
 }
 
+type GetVolumeInfoFunc func(ctx context.Context, volumeName string) (volume *api.Volume, err error)
+
 // getSnapshotReserveFromOntap takes a volume name and retrieves the snapshot policy and snapshot reserve
 func getSnapshotReserveFromOntap(
-	ctx context.Context, name string, GetVolumeInfo func(
-		ctx context.Context, volumeName string,
-	) (volume *api.Volume, err error),
+	ctx context.Context, name string, GetVolumeInfo GetVolumeInfoFunc,
 ) (int, error) {
 	snapshotPolicy := ""
 	snapshotReserveInt := 0

@@ -215,6 +215,20 @@ type OntapAPI interface {
 	SMBShareDestroy(ctx context.Context, shareName string) error
 
 	TieringPolicyValue(ctx context.Context) string
+
+	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error)
+	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
+	NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error)
+	NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error)
+	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error)
+	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
+	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
+	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
+	NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
+	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
+	NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error
+	NVMeEnsureNamespaceUnmapped(ctx context.Context, subsytemUUID, nsUUID string) error
 }
 
 type AggregateSpace interface {

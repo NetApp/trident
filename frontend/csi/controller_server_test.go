@@ -15,6 +15,7 @@ import (
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockhelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	"github.com/netapp/trident/storage"
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -121,7 +122,7 @@ func TestControllerPublishVolume(t *testing.T) {
 	assert.Equal(t, expectedPublishContext, publishContext)
 }
 
-func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
+func TestControllerPublishVolume_iSCSIProtocol(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	// Create a mocked orchestrator
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
@@ -155,8 +156,49 @@ func TestControllerPublishVolume_BlockProtocol(t *testing.T) {
 		"mountOptions":           "",
 		"p1":                     "",
 		"protocol":               "block",
+		"SANType":                sa.ISCSI,
 		"sharedTarget":           "false",
 		"useCHAP":                "false",
+	}
+	assert.Equal(t, expectedPublishContext, publishContext)
+}
+
+func TestControllerPublishVolume_NVMeProtocol(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked orchestrator
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	// Create a mocked helper
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	// Create an instance of ControllerServer for this test
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Create fake objects for this test
+	req := generateFakePublishVolumeRequest()
+	fakeNode := generateFakeNode(req.NodeId)
+	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
+	fakeVolumeExternal.Config.Protocol = tridentconfig.Block
+	volumePublishInfo := &utils.VolumePublishInfo{
+		SANType: sa.NVMe,
+	}
+
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), req.VolumeId).Return(fakeVolumeExternal, nil)
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), req.NodeId).Return(fakeNode.ConstructExternal(), nil)
+	mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), req.VolumeId, gomock.Any()).SetArg(2, *volumePublishInfo).Return(nil)
+
+	publishResponse, err := controllerServer.ControllerPublishVolume(ctx, req)
+	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
+	publishContext := publishResponse.PublishContext
+
+	expectedPublishContext := map[string]string{
+		"filesystemType":    "",
+		"LUKSEncryption":    "",
+		"mountOptions":      "",
+		"nvmeNamespacePath": "",
+		"nvmeSubsystemNqn":  "",
+		"protocol":          "block",
+		"SANType":           sa.NVMe,
+		"sharedTarget":      "false",
+		"nvmeTargetIPs":     "",
 	}
 	assert.Equal(t, expectedPublishContext, publishContext)
 }

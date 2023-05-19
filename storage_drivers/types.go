@@ -143,6 +143,7 @@ type OntapStorageDriverPool struct {
 	Zone                             string              `json:"zone"`
 	SupportedTopologies              []map[string]string `json:"supportedTopologies"`
 	NASType                          string              `json:"nasType"`
+	SANType                          string              `json:"sanType"`
 	SMBShare                         string              `json:"smbShare"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
 }

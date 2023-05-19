@@ -21,6 +21,7 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -357,6 +358,7 @@ func (p *Plugin) ControllerPublishVolume(
 	volumePublishInfo := &utils.VolumePublishInfo{
 		Localhost:      false,
 		HostIQN:        []string{nodeInfo.IQN},
+		HostNQN:        nodeInfo.NQN,
 		HostIP:         nodeInfo.IPs,
 		HostName:       nodeInfo.Name,
 		Unmanaged:      volume.Config.ImportNotManaged,
@@ -401,27 +403,39 @@ func (p *Plugin) ControllerPublishVolume(
 			publishInfo["nfsPath"] = volumePublishInfo.NfsPath
 		}
 	case tridentconfig.Block:
-		stashIscsiTargetPortals(publishInfo, volumePublishInfo)
-		publishInfo["iscsiTargetIqn"] = volumePublishInfo.IscsiTargetIQN
-		publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volumePublishInfo.IscsiLunNumber))
-		publishInfo["iscsiInterface"] = volumePublishInfo.IscsiInterface
-		publishInfo["iscsiLunSerial"] = volumePublishInfo.IscsiLunSerial
-		publishInfo["iscsiIgroup"] = volumePublishInfo.IscsiIgroup
-		// Encrypt and add CHAP credentials if they're needed
-		if volumePublishInfo.UseCHAP {
-			if p.aesKey != nil {
-				if err := encryptCHAPPublishInfo(ctx, publishInfo, volumePublishInfo, p.aesKey); err != nil {
-					return nil, status.Error(codes.Internal, err.Error())
-				}
-			} else {
-				msg := "encryption key not set; cannot encrypt CHAP credentials for transit"
-				Logc(ctx).Error(msg)
-				return nil, status.Error(codes.Internal, msg)
-			}
-		}
-		publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
 		publishInfo["LUKSEncryption"] = volumePublishInfo.LUKSEncryption
 		publishInfo["sharedTarget"] = strconv.FormatBool(volumePublishInfo.SharedTarget)
+
+		if volumePublishInfo.SANType == sa.NVMe {
+			// fill in only NVMe specific fields in publishInfo
+			publishInfo["nvmeSubsystemNqn"] = volumePublishInfo.NVMeSubsystemNQN
+			publishInfo["nvmeNamespacePath"] = volumePublishInfo.NVMeNamespacePath
+			publishInfo["nvmeTargetIPs"] = strings.Join(volumePublishInfo.NVMeTargetIPs, ",")
+			publishInfo["SANType"] = sa.NVMe
+		} else {
+			// fill in only iSCSI specific fields in publishInfo
+			stashIscsiTargetPortals(publishInfo, volumePublishInfo)
+			publishInfo["iscsiTargetIqn"] = volumePublishInfo.IscsiTargetIQN
+			publishInfo["iscsiLunNumber"] = strconv.Itoa(int(volumePublishInfo.IscsiLunNumber))
+			publishInfo["iscsiInterface"] = volumePublishInfo.IscsiInterface
+			publishInfo["iscsiLunSerial"] = volumePublishInfo.IscsiLunSerial
+			publishInfo["iscsiIgroup"] = volumePublishInfo.IscsiIgroup
+			publishInfo["useCHAP"] = strconv.FormatBool(volumePublishInfo.UseCHAP)
+			publishInfo["SANType"] = sa.ISCSI
+
+			// Encrypt and add CHAP credentials if they're needed
+			if volumePublishInfo.UseCHAP {
+				if p.aesKey != nil {
+					if err := encryptCHAPPublishInfo(ctx, publishInfo, volumePublishInfo, p.aesKey); err != nil {
+						return nil, status.Error(codes.Internal, err.Error())
+					}
+				} else {
+					msg := "encryption key not set; cannot encrypt CHAP credentials for transit"
+					Logc(ctx).Error(msg)
+					return nil, status.Error(codes.Internal, msg)
+				}
+			}
+		}
 	case tridentconfig.BlockOnFile:
 		publishInfo["subvolumeMountOptions"] = volumePublishInfo.SubvolumeMountOptions
 		publishInfo["nfsServerIp"] = volumePublishInfo.NfsServerIP

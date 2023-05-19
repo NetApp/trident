@@ -29,6 +29,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
+	nvme "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	san "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/snapmirror"
@@ -5461,6 +5462,406 @@ func (c RestClient) SMBShareDestroy(ctx context.Context, shareName string) error
 	}
 
 	return nil
+}
+
+// NVMe Namespace operations
+// NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
+func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+	params := nvme.NewNvmeNamespaceCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.ReturnRecords = utils.Ptr(true)
+
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(ns.Size)
+	sizeInBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+
+	nsInfo := &models.NvmeNamespace{
+		Name:   &ns.Name,
+		OsType: &ns.OsType,
+		Space: &models.NvmeNamespaceInlineSpace{
+			Size:      utils.Ptr(int64(sizeInBytes)),
+			BlockSize: utils.Ptr(int64(ns.BlockSize)),
+		},
+		Comment: &ns.Comment,
+		Svm:     &models.NvmeNamespaceInlineSvm{UUID: utils.Ptr(c.svmUUID)},
+	}
+
+	params.SetInfo(nsInfo)
+
+	nsCreateAccepted, err := c.api.NvMe.NvmeNamespaceCreate(params, c.authInfo)
+	if err != nil {
+		return "", err
+	}
+
+	if nsCreateAccepted.IsSuccess() {
+		nsResponse := nsCreateAccepted.GetPayload()
+		// Verify that the created namespace is the same as the one we requested.
+		if nsResponse != nil && *nsResponse.NumRecords == 1 &&
+			*nsResponse.NvmeNamespaceResponseInlineRecords[0].Name == ns.Name {
+			return *nsResponse.NvmeNamespaceResponseInlineRecords[0].UUID, nil
+		}
+		return "", fmt.Errorf("namespace create call succeeded but newly created namespace not found")
+	}
+
+	return "", fmt.Errorf("namespace create failed with error %v", nsCreateAccepted.Error())
+}
+
+// NVMeNamespaceSetSize updates the namespace size to newSize.
+func (c RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
+	params := nvme.NewNvmeNamespaceModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = nsUUID
+	params.Info = &models.NvmeNamespace{
+		Space: &models.NvmeNamespaceInlineSpace{
+			Size: utils.Ptr(newSize),
+		},
+	}
+
+	nsModify, err := c.api.NvMe.NvmeNamespaceModify(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("namespace resize failed, %v", err)
+	}
+	if nsModify == nil {
+		return fmt.Errorf("namespace resize failed")
+	}
+
+	if nsModify.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("namespace resize failed, %v", nsModify.Error())
+}
+
+// NVMeNamespaceList finds Namespaces with the specified pattern.
+func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string) (*nvme.NvmeNamespaceCollectionGetOK, error) {
+	params := nvme.NewNvmeNamespaceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SvmUUID = utils.Ptr(c.svmUUID)
+	params.SetName(utils.Ptr(pattern))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := c.api.NvMe.NvmeNamespaceCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NextLoop:
+		for !done {
+			resultNext, errNext := c.api.NvMe.NvmeNamespaceCollectionGet(params, c.authInfo, WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil || resultNext.Payload == nil || resultNext.Payload.NumRecords == nil {
+				done = true
+				continue NextLoop
+			}
+
+			if result.Payload.NumRecords == nil {
+				result.Payload.NumRecords = utils.Ptr(int64(0))
+			}
+			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
+			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords,
+				resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NextLoop
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// NVMeNamespaceGetByName gets the Namespace with the specified name.
+func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string) (*models.NvmeNamespace, error) {
+	result, err := c.NVMeNamespaceList(ctx, name)
+	if err != nil || result.Payload == nil {
+		return nil, err
+	}
+	if result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
+		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
+	}
+	return nil, fmt.Errorf("namespace not found")
+}
+
+// NVMe Subsystem operations
+// NVMeSubsystemAddNamespace adds namespace to subsystem-map
+func (c RestClient) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
+	params := nvme.NewNvmeSubsystemMapCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	subsystemMap := &models.NvmeSubsystemMap{
+		Namespace: &models.NvmeSubsystemMapInlineNamespace{UUID: utils.Ptr(nsUUID)},
+		Subsystem: &models.NvmeSubsystemMapInlineSubsystem{UUID: utils.Ptr(subsystemUUID)},
+		Svm:       &models.NvmeSubsystemMapInlineSvm{UUID: &c.svmUUID},
+	}
+
+	params.SetInfo(subsystemMap)
+
+	_, err := c.api.NvMe.NvmeSubsystemMapCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NVMeSubsystemRemoveNamespace removes a namespace from subsystem-map
+func (c RestClient) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
+	params := nvme.NewNvmeSubsystemMapDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SubsystemUUID = subsysUUID
+	params.NamespaceUUID = nsUUID
+
+	_, err := c.api.NvMe.NvmeSubsystemMapDelete(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("error while deleting namespace from subsystem map: %v", err)
+	}
+	return nil
+}
+
+// NVMeIsNamespaceMapped retrives a namespace from subsystem-map
+func (c RestClient) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string) (bool, error) {
+	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SubsystemUUID = &subsysUUID
+
+	getSubsys, err := c.api.NvMe.NvmeSubsystemMapCollectionGet(params, c.authInfo)
+	if err != nil {
+		return false, err
+	}
+	if getSubsys == nil {
+		return false, fmt.Errorf("unexpected response while getting subsystem map")
+	}
+
+	payload := getSubsys.GetPayload()
+
+	if payload != nil && *payload.NumRecords > 0 {
+		for count := 0; count < int(*payload.NumRecords); count++ {
+			if *payload.NvmeSubsystemMapResponseInlineRecords[count].Namespace.UUID == namespaceUUID {
+				return true, nil
+			} else {
+				return false, nil
+			}
+		}
+	} else {
+		// no record returned. This means the subsystem is not even in the map. return success in this case
+		return false, nil
+	}
+	return false, fmt.Errorf("could not get subsystem map collection")
+}
+
+// NVMeNamespaceCount gets the number of namespaces mapped to a subsystem
+func (c RestClient) NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
+	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SubsystemUUID = &subsysUUID
+
+	getSubsys, err := c.api.NvMe.NvmeSubsystemMapCollectionGet(params, c.authInfo)
+	if err != nil {
+		return 0, err
+	}
+	if getSubsys == nil {
+		return 0, fmt.Errorf("unexpected response while getting subsystem map")
+	}
+
+	if getSubsys.IsSuccess() {
+		return *getSubsys.GetPayload().NumRecords, nil
+	}
+
+	return 0, fmt.Errorf("failed to get subsystem map collection")
+}
+
+// Subsystem operations
+// NVMeSubsystemList returns a list of subsystems seen by the host
+func (c RestClient) NVMeSubsystemList(ctx context.Context, pattern string) (*nvme.NvmeSubsystemCollectionGetOK, error) {
+	if pattern == "" {
+		pattern = "*"
+	}
+
+	params := nvme.NewNvmeSubsystemCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SvmUUID = &c.svmUUID
+	params.SetName(utils.Ptr(pattern))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := c.api.NvMe.NvmeSubsystemCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		Logc(ctx).Debug("Result is empty")
+		return nil, nil
+	} else {
+		Logc(ctx).Debug("Result is", result.Payload)
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NextLoop:
+		for !done {
+			resultNext, errNext := c.api.NvMe.NvmeSubsystemCollectionGet(params, c.authInfo, WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NextLoop
+			}
+
+			*result.Payload.NumRecords += *resultNext.Payload.NumRecords
+			result.Payload.NvmeSubsystemResponseInlineRecords = append(result.Payload.NvmeSubsystemResponseInlineRecords, resultNext.Payload.NvmeSubsystemResponseInlineRecords...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NextLoop
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// NVMeSubsystemGetByName gets the subsystem with the specified name
+func (c RestClient) NVMeSubsystemGetByName(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error) {
+	result, err := c.NVMeSubsystemList(ctx, subsystemName)
+	if err != nil {
+		return nil, err
+	}
+
+	if result != nil && result.Payload != nil {
+		if *result.Payload.NumRecords == 1 && result.Payload.NvmeSubsystemResponseInlineRecords != nil {
+			return result.Payload.NvmeSubsystemResponseInlineRecords[0], nil
+		}
+	}
+	return nil, nil
+}
+
+// NVMeSubsystemCreate creates a new subsystem
+func (c RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error) {
+	params := nvme.NewNvmeSubsystemCreateParamsWithTimeout(c.httpClient.Timeout)
+	osType := "linux"
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.ReturnRecords = utils.Ptr(true)
+	params.Info = &models.NvmeSubsystem{
+		Name:   &subsystemName,
+		OsType: &osType,
+		Svm:    &models.NvmeSubsystemInlineSvm{Name: &c.svmName},
+	}
+
+	subsysCreated, err := c.api.NvMe.NvmeSubsystemCreate(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if subsysCreated == nil {
+		return nil, fmt.Errorf("unexpected response from subsystem create")
+	}
+
+	if subsysCreated.IsSuccess() {
+		subsPayload := subsysCreated.GetPayload()
+
+		if subsPayload != nil && *subsPayload.NumRecords == 1 &&
+			*subsPayload.NvmeSubsystemResponseInlineRecords[0].Name == subsystemName {
+			return subsPayload.NvmeSubsystemResponseInlineRecords[0], nil
+		}
+
+		return nil, fmt.Errorf("subsystem create call succeeded but newly created subsystem not found")
+	}
+
+	return nil, fmt.Errorf("subsystem create failed with error %v", subsysCreated.Error())
+}
+
+// NVMeSubsystemCreate deletes a given subsystem
+func (c RestClient) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
+	params := nvme.NewNvmeSubsystemDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.UUID = subsysUUID
+	// Set this value so that we don't need to call extra api call to unmap the hosts
+	params.AllowDeleteWithHosts = utils.Ptr(true)
+
+	subsysDeleted, err := c.api.NvMe.NvmeSubsystemDelete(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("issue while deleting the subsystem, %v", err)
+	}
+	if subsysDeleted == nil {
+		return fmt.Errorf("issue while deleting the subsystem")
+	}
+
+	if subsysDeleted.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("error while deleting subsystem")
+}
+
+// NVMeAddHostNqnToSubsystem adds the NQN of the host to the subsystem
+func (c RestClient) NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+	params := nvme.NewNvmeSubsystemHostCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SubsystemUUID = subsUUID
+	params.Info = &models.NvmeSubsystemHost{Nqn: &hostNQN}
+
+	hostAdded, err := c.api.NvMe.NvmeSubsystemHostCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if hostAdded == nil {
+		return fmt.Errorf("issue while adding host to subsystem")
+	}
+
+	if hostAdded.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("error while adding host to subsystem %v", hostAdded.Error())
+}
+
+// NVMeGetHostsOfSubsystem retuns all the hosts connected to a subsystem
+func (c RestClient) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error) {
+	params := nvme.NewNvmeSubsystemHostCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SubsystemUUID = subsUUID
+
+	hostCollection, err := c.api.NvMe.NvmeSubsystemHostCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if hostCollection == nil {
+		return nil, fmt.Errorf("issue while getting hosts of the subsystem")
+	}
+
+	if hostCollection.IsSuccess() {
+		return hostCollection.GetPayload().NvmeSubsystemHostResponseInlineRecords, nil
+	}
+
+	return nil, fmt.Errorf("get hosts of a subsystem call failed")
 }
 
 // ///////////////////////////////////////////////////////////////////////////

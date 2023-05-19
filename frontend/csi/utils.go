@@ -168,16 +168,19 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 	iqn := publishInfo.VolumeAccessInfo.IscsiTargetIQN
 	subvolName := publishInfo.VolumeAccessInfo.SubvolumeName
 	smbPath := publishInfo.SMBPath
+	nqn := publishInfo.VolumeAccessInfo.NVMeSubsystemNQN
 
 	nfsSet := nfsIP != ""
 	iqnSet := iqn != ""
 	subvolSet := subvolName != ""
 	smbSet := smbPath != ""
+	nqnSet := nqn != ""
 
 	isSmb := smbSet && !nfsSet && !iqnSet
 	isNfs := nfsSet && !iqnSet && !smbSet
 	isBof := isNfs && subvolSet
 	isIscsi := iqnSet && !nfsSet && !smbSet
+	isNVMe := nqnSet && !nfsSet && !smbSet && !iqnSet
 
 	if isSmb || (isNfs && !isBof) {
 		return config.File, nil
@@ -185,13 +188,16 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 		return config.BlockOnFile, nil
 	} else if isIscsi {
 		return config.Block, nil
+	} else if isNVMe {
+		return config.Block, nil
 	}
 
 	fields := LogFields{
-		"SMBPath":        smbPath,
-		"SubvolumeName":  subvolName,
-		"IscsiTargetIQN": iqn,
-		"NfsServerIP":    nfsIP,
+		"SMBPath":          smbPath,
+		"SubvolumeName":    subvolName,
+		"IscsiTargetIQN":   iqn,
+		"NfsServerIP":      nfsIP,
+		"NVMeSubsystemNQN": nqn,
 	}
 
 	errMsg := "unable to infer volume protocol"

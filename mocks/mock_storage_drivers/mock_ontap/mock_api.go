@@ -962,6 +962,194 @@ func (mr *MockOntapAPIMockRecorder) LunUnmap(arg0, arg1, arg2 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunUnmap", reflect.TypeOf((*MockOntapAPI)(nil).LunUnmap), arg0, arg1, arg2)
 }
 
+// NVMeAddHostToSubsystem mocks base method.
+func (m *MockOntapAPI) NVMeAddHostToSubsystem(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeAddHostToSubsystem", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NVMeAddHostToSubsystem indicates an expected call of NVMeAddHostToSubsystem.
+func (mr *MockOntapAPIMockRecorder) NVMeAddHostToSubsystem(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeAddHostToSubsystem", reflect.TypeOf((*MockOntapAPI)(nil).NVMeAddHostToSubsystem), arg0, arg1, arg2)
+}
+
+// NVMeEnsureNamespaceMapped mocks base method.
+func (m *MockOntapAPI) NVMeEnsureNamespaceMapped(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeEnsureNamespaceMapped", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NVMeEnsureNamespaceMapped indicates an expected call of NVMeEnsureNamespaceMapped.
+func (mr *MockOntapAPIMockRecorder) NVMeEnsureNamespaceMapped(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeEnsureNamespaceMapped", reflect.TypeOf((*MockOntapAPI)(nil).NVMeEnsureNamespaceMapped), arg0, arg1, arg2)
+}
+
+// NVMeEnsureNamespaceUnmapped mocks base method.
+func (m *MockOntapAPI) NVMeEnsureNamespaceUnmapped(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeEnsureNamespaceUnmapped", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NVMeEnsureNamespaceUnmapped indicates an expected call of NVMeEnsureNamespaceUnmapped.
+func (mr *MockOntapAPIMockRecorder) NVMeEnsureNamespaceUnmapped(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeEnsureNamespaceUnmapped", reflect.TypeOf((*MockOntapAPI)(nil).NVMeEnsureNamespaceUnmapped), arg0, arg1, arg2)
+}
+
+// NVMeIsNamespaceMapped mocks base method.
+func (m *MockOntapAPI) NVMeIsNamespaceMapped(arg0 context.Context, arg1, arg2 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeIsNamespaceMapped", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeIsNamespaceMapped indicates an expected call of NVMeIsNamespaceMapped.
+func (mr *MockOntapAPIMockRecorder) NVMeIsNamespaceMapped(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeIsNamespaceMapped", reflect.TypeOf((*MockOntapAPI)(nil).NVMeIsNamespaceMapped), arg0, arg1, arg2)
+}
+
+// NVMeNamespaceCreate mocks base method.
+func (m *MockOntapAPI) NVMeNamespaceCreate(arg0 context.Context, arg1 api.NVMeNamespace) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeNamespaceCreate", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeNamespaceCreate indicates an expected call of NVMeNamespaceCreate.
+func (mr *MockOntapAPIMockRecorder) NVMeNamespaceCreate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceCreate", reflect.TypeOf((*MockOntapAPI)(nil).NVMeNamespaceCreate), arg0, arg1)
+}
+
+// NVMeNamespaceGetByName mocks base method.
+func (m *MockOntapAPI) NVMeNamespaceGetByName(arg0 context.Context, arg1 string) (*api.NVMeNamespace, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeNamespaceGetByName", arg0, arg1)
+	ret0, _ := ret[0].(*api.NVMeNamespace)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeNamespaceGetByName indicates an expected call of NVMeNamespaceGetByName.
+func (mr *MockOntapAPIMockRecorder) NVMeNamespaceGetByName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceGetByName", reflect.TypeOf((*MockOntapAPI)(nil).NVMeNamespaceGetByName), arg0, arg1)
+}
+
+// NVMeNamespaceList mocks base method.
+func (m *MockOntapAPI) NVMeNamespaceList(arg0 context.Context, arg1 string) (api.NVMeNamespaces, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeNamespaceList", arg0, arg1)
+	ret0, _ := ret[0].(api.NVMeNamespaces)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeNamespaceList indicates an expected call of NVMeNamespaceList.
+func (mr *MockOntapAPIMockRecorder) NVMeNamespaceList(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceList", reflect.TypeOf((*MockOntapAPI)(nil).NVMeNamespaceList), arg0, arg1)
+}
+
+// NVMeNamespaceSetSize mocks base method.
+func (m *MockOntapAPI) NVMeNamespaceSetSize(arg0 context.Context, arg1 string, arg2 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeNamespaceSetSize", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NVMeNamespaceSetSize indicates an expected call of NVMeNamespaceSetSize.
+func (mr *MockOntapAPIMockRecorder) NVMeNamespaceSetSize(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceSetSize", reflect.TypeOf((*MockOntapAPI)(nil).NVMeNamespaceSetSize), arg0, arg1, arg2)
+}
+
+// NVMeSubsystemAddNamespace mocks base method.
+func (m *MockOntapAPI) NVMeSubsystemAddNamespace(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeSubsystemAddNamespace", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NVMeSubsystemAddNamespace indicates an expected call of NVMeSubsystemAddNamespace.
+func (mr *MockOntapAPIMockRecorder) NVMeSubsystemAddNamespace(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemAddNamespace", reflect.TypeOf((*MockOntapAPI)(nil).NVMeSubsystemAddNamespace), arg0, arg1, arg2)
+}
+
+// NVMeSubsystemCreate mocks base method.
+func (m *MockOntapAPI) NVMeSubsystemCreate(arg0 context.Context, arg1 string) (*api.NVMeSubsystem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeSubsystemCreate", arg0, arg1)
+	ret0, _ := ret[0].(*api.NVMeSubsystem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeSubsystemCreate indicates an expected call of NVMeSubsystemCreate.
+func (mr *MockOntapAPIMockRecorder) NVMeSubsystemCreate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemCreate", reflect.TypeOf((*MockOntapAPI)(nil).NVMeSubsystemCreate), arg0, arg1)
+}
+
+// NVMeSubsystemDelete mocks base method.
+func (m *MockOntapAPI) NVMeSubsystemDelete(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeSubsystemDelete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NVMeSubsystemDelete indicates an expected call of NVMeSubsystemDelete.
+func (mr *MockOntapAPIMockRecorder) NVMeSubsystemDelete(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemDelete", reflect.TypeOf((*MockOntapAPI)(nil).NVMeSubsystemDelete), arg0, arg1)
+}
+
+// NVMeSubsystemGetNamespaceCount mocks base method.
+func (m *MockOntapAPI) NVMeSubsystemGetNamespaceCount(arg0 context.Context, arg1 string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeSubsystemGetNamespaceCount", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeSubsystemGetNamespaceCount indicates an expected call of NVMeSubsystemGetNamespaceCount.
+func (mr *MockOntapAPIMockRecorder) NVMeSubsystemGetNamespaceCount(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemGetNamespaceCount", reflect.TypeOf((*MockOntapAPI)(nil).NVMeSubsystemGetNamespaceCount), arg0, arg1)
+}
+
+// NVMeSubsystemRemoveNamespace mocks base method.
+func (m *MockOntapAPI) NVMeSubsystemRemoveNamespace(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeSubsystemRemoveNamespace", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NVMeSubsystemRemoveNamespace indicates an expected call of NVMeSubsystemRemoveNamespace.
+func (mr *MockOntapAPIMockRecorder) NVMeSubsystemRemoveNamespace(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemRemoveNamespace", reflect.TypeOf((*MockOntapAPI)(nil).NVMeSubsystemRemoveNamespace), arg0, arg1, arg2)
+}
+
 // NetInterfaceGetDataLIFs mocks base method.
 func (m *MockOntapAPI) NetInterfaceGetDataLIFs(arg0 context.Context, arg1 string) ([]string, error) {
 	m.ctrl.T.Helper()

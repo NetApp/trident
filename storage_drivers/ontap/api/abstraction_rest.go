@@ -412,6 +412,61 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 	return lunInfo, nil
 }
 
+func namespaceInfoFromRestAttrsHelper(namespaceGetResponse *models.NvmeNamespace) (*NVMeNamespace, error) {
+	if namespaceGetResponse == nil {
+		return nil, fmt.Errorf("namespace response is nil")
+	}
+
+	nsUUID := ""
+	if namespaceGetResponse.UUID != nil {
+		nsUUID = *namespaceGetResponse.UUID
+	}
+
+	name := ""
+	if namespaceGetResponse.Name != nil {
+		name = *namespaceGetResponse.Name
+	}
+
+	osType := ""
+	if namespaceGetResponse.OsType != nil {
+		osType = *namespaceGetResponse.OsType
+	}
+
+	volName := ""
+	if namespaceGetResponse.Location != nil && namespaceGetResponse.Location.Volume != nil &&
+		namespaceGetResponse.Location.Volume.Name != nil {
+		volName = *namespaceGetResponse.Location.Volume.Name
+	}
+
+	size := ""
+	blockSize := 0
+	if namespaceGetResponse.Space != nil {
+		if namespaceGetResponse.Space.Size != nil {
+			size = strconv.FormatInt(*namespaceGetResponse.Space.Size, 10)
+		}
+		if namespaceGetResponse.Space.BlockSize != nil {
+			blockSize = int(*namespaceGetResponse.Space.BlockSize)
+		}
+	}
+
+	state := ""
+	if namespaceGetResponse.Status != nil && namespaceGetResponse.Status.State != nil {
+		state = *namespaceGetResponse.Status.State
+	}
+
+	nsInfo := &NVMeNamespace{
+		UUID:       nsUUID,
+		Name:       name,
+		OsType:     osType,
+		VolumeName: volName,
+		Size:       size,
+		BlockSize:  blockSize,
+		State:      state,
+	}
+
+	return nsInfo, nil
+}
+
 func (d OntapAPIREST) APIVersion(ctx context.Context) (string, error) {
 	return d.api.SystemGetOntapVersion(ctx)
 }
@@ -2525,6 +2580,302 @@ func (d OntapAPIREST) SMBShareExists(ctx context.Context, shareName string) (boo
 func (d OntapAPIREST) SMBShareDestroy(ctx context.Context, shareName string) error {
 	if err := d.api.SMBShareDestroy(ctx, shareName); err != nil {
 		return fmt.Errorf("error while deleting SMB share %v: %v", shareName, err)
+	}
+	return nil
+}
+
+// NVMeNamespaceCreate creates NVMe namespace.
+func (d OntapAPIREST) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+	fields := LogFields{
+		"Method": "NVMeNamespaceCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   ns,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceCreate")
+
+	nsUUID, creationErr := d.api.NVMeNamespaceCreate(ctx, ns)
+	if creationErr != nil {
+		return "", fmt.Errorf("failed to create NVMe namespace %s: %v", ns.Name, creationErr)
+	}
+
+	return nsUUID, nil
+}
+
+// NVMeNamespaceSetSize updates the namespace size to newSize.
+func (d OntapAPIREST) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
+	fields := LogFields{
+		"Method":    "NVMeNamespaceSetSize",
+		"Type":      "OntapAPIREST",
+		"Namespace": nsUUID,
+		"NewSize":   newSize,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceSetSize")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceSetSize")
+
+	return d.api.NVMeNamespaceSetSize(ctx, nsUUID, newSize)
+}
+
+// NVMeNamespaceGetByName returns NVMe namespace with the specified name.
+func (d OntapAPIREST) NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error) {
+	fields := LogFields{
+		"Method":  "NVMeNamespaceGetByName",
+		"Type":    "OntapAPIREST",
+		"LunPath": name,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceGetByName")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceGetByName")
+
+	nsResponse, err := d.api.NVMeNamespaceGetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	ns, err := namespaceInfoFromRestAttrsHelper(nsResponse)
+	if err != nil {
+		return nil, err
+	}
+	return ns, nil
+}
+
+// NVMeNamespaceList returns the list of NVMe namespaces with the specified pattern.
+func (d OntapAPIREST) NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error) {
+	nsResponse, err := d.api.NVMeNamespaceList(ctx, pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	namespaces := NVMeNamespaces{}
+
+	if nsResponse.Payload != nil {
+		payload := *nsResponse.Payload
+		for _, ns := range payload.NvmeNamespaceResponseInlineRecords {
+			nsInfo, err := namespaceInfoFromRestAttrsHelper(ns)
+			if err != nil {
+				return nil, err
+			}
+			namespaces = append(namespaces, nsInfo)
+		}
+	}
+
+	return namespaces, nil
+}
+
+// NVMeSubsystemAddNamespace adds a namespace to subsystem Map.
+func (d OntapAPIREST) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
+	fields := LogFields{
+		"Method":        "NVMeSubsystemAddNamespace",
+		"Type":          "OntapAPIREST",
+		"namespaceUUID": nsUUID,
+		"subsystemUUID": subsystemUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemAddNamespace")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemAddNamespace")
+
+	if err := d.api.NVMeSubsystemAddNamespace(ctx, subsystemUUID, nsUUID); err != nil {
+		return fmt.Errorf("error adding namespace to subsystem: %v", err)
+	}
+
+	return nil
+}
+
+// NVMeSubsystemRemoveNamespace removes a namespace from the subsystem map
+func (d OntapAPIREST) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeSubsystemRemoveNamespace",
+		"Type":           "OntapAPIREST",
+		"namespace uuid": nsUUID,
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemRemoveNamespace")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemRemoveNamespace")
+
+	if err := d.api.NVMeSubsystemRemoveNamespace(ctx, subsysUUID, nsUUID); err != nil {
+		return fmt.Errorf("error removing Namespace from subsystem map: %v", err)
+	}
+
+	return nil
+}
+
+// NVMeSubsystemGetNamespaceCount returns the count of namespaces mapped to a subsystem identified by UUID.
+func (d OntapAPIREST) NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
+	fields := LogFields{
+		"Method":         "NVMeSubsystemGetNamespaceCount",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemGetNamespaceCount")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemGetNamespaceCount")
+
+	count, err := d.api.NVMeNamespaceCount(ctx, subsysUUID)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (d OntapAPIREST) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string,
+) (bool, error) {
+	fields := LogFields{
+		"Method":         "NVMeIsNamespaceMapped",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+		"namespace uuid": namespaceUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeIsNamespaceMapped")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeIsNamespaceMapped")
+
+	isNameSpaceMapped, err := d.api.NVMeIsNamespaceMapped(ctx, subsysUUID, namespaceUUID)
+	if err != nil {
+		return false, err
+	}
+	return isNameSpaceMapped, err
+}
+
+// NVMeSubsystemDelete deletes a susbsystem identified by subsystem UUID.
+func (d OntapAPIREST) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeSubsystemDelete",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemDelete")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemDelete")
+
+	if err := d.api.NVMeSubsystemDelete(ctx, subsysUUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsysUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeAddHostToSubsystem",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeAddHostToSubsystem")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeAddHostToSubsystem")
+
+	hosts, err := d.api.NVMeGetHostsOfSubsystem(ctx, subsysUUID)
+	if err != nil {
+		return err
+	}
+
+	for _, host := range hosts {
+		if *host.Nqn == hostNQN {
+			// Host already part of the subsystem, no need to add it again
+			return nil
+		}
+	}
+
+	// Add new host to the subsystem
+	if err := d.api.NVMeAddHostNqnToSubsystem(ctx, hostNQN, subsysUUID); err != nil {
+		return fmt.Errorf("failed to add host nqn to subsystem, %v", err)
+	}
+	return nil
+}
+
+// NVMeSubsystemCreate Checks if the subsystem is already there or not. If not, creates a new one.
+func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
+	fields := LogFields{
+		"Method":        "SubsystemCreate",
+		"Type":          "OntapAPIREST",
+		"SubsystemName": subsystemName,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SubsystemCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SubsystemCreate")
+
+	subsystem, err := d.api.NVMeSubsystemGetByName(ctx, subsystemName)
+	if err != nil {
+		Logc(ctx).Infof("problem getting subsystem %v", err)
+		return nil, err
+	}
+	if subsystem == nil {
+		Logc(ctx).Infof("subsystem doesn't exists, creating new subsystem %v now.", subsystemName)
+		subsystem, err = d.api.NVMeSubsystemCreate(ctx, subsystemName)
+		if err != nil {
+			return nil, err
+		}
+
+		if subsystem == nil {
+			return nil, fmt.Errorf("Unable to create subsystem %v", subsystemName)
+		}
+	}
+
+	Logc(ctx).Debugf("Found subsystem %v and target nqns are %v", subsystem.Name, subsystem.TargetNqn)
+
+	return &NVMeSubsystem{UUID: *subsystem.UUID, Name: *subsystem.Name, NQN: *subsystem.TargetNqn}, nil
+}
+
+// NVMeEnsureNamespaceMapped first checks if a namespace is mapped to the subsystem and if it is mapped, it is treated as success
+// if namespace is not mapped to the susbsytem, then it adds the namespace to the subsystem
+func (d OntapAPIREST) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeEnsureNamespaceMapped",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsystemUUID,
+		"namespace uuid": nsUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeEnsureNamespaceMapped")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeEnsureNamespaceMapped")
+
+	// map namespace to the subsystem
+	isNameSpaceMapped, err := d.api.NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID)
+	if err != nil {
+		return fmt.Errorf("Unable to get namespace subsystem mapping: err:%v", err)
+	}
+
+	// check if it is mapped already or not. if not mapped, add it to subsystem, else treat it as success
+	if isNameSpaceMapped == false {
+		if err := d.api.NVMeSubsystemAddNamespace(ctx, subsystemUUID, nsUUID); err != nil {
+			Logc(ctx).Errorf("add namespace to subsystem failed, %v", err)
+			return err
+		}
+	} else {
+		Logc(ctx).Infof("Namespace %v is already mapped to subsystem %v", nsUUID, subsystemUUID)
+	}
+	return nil
+}
+
+// NVMeEnsureNamespaceUnmapped first checks if a namespace is mapped to the subsystem and if it is mapped:
+// a) removes the namespace from the subsystem
+// b) deletes the subsystem if no more namespaces are attached to it
+// If namespace is not mapped to subsystem, it is treated as success
+func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, subsystemUUID, namespaceUUID string) error {
+	// check is namespace is mapped to the subsystem before attempting to remove it
+	isNameSpaceMapped, err := d.api.NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID)
+	if err != nil {
+		return fmt.Errorf("Error getting namespace %s from subsystem %s. API returned error %v", namespaceUUID, subsystemUUID, err)
+	}
+
+	if isNameSpaceMapped == false {
+		Logc(ctx).Infof("Namespace %v is not mapped to subsystem %v", namespaceUUID, subsystemUUID)
+		return nil
+	}
+
+	// Unmap the namespace from the subsystem
+	err = d.api.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID)
+	if err != nil {
+		return fmt.Errorf("Error removing namespace %s from subsystem %s. API returned error %v", namespaceUUID, subsystemUUID, err)
+	}
+
+	// Get the number of namespaces present in the subsystem
+	count, err := d.api.NVMeNamespaceCount(ctx, subsystemUUID)
+	if err != nil {
+		return fmt.Errorf("Error getting namespace count for subsystem %s. API returned error %v", subsystemUUID, err)
+	}
+
+	// Delete the subsystem if no. of namespaces is 0
+	if count == 0 {
+		if err := d.api.NVMeSubsystemDelete(ctx, subsystemUUID); err != nil {
+			return fmt.Errorf("Error deleting subsystem %s. API returned error %v", subsystemUUID, err)
+		}
 	}
 	return nil
 }

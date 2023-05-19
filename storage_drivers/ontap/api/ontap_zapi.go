@@ -190,6 +190,7 @@ const (
 	FabricPoolForSVMDR        Feature = "FABRICPOOL_FOR_SVMDR"
 	QosPolicies               Feature = "QOS_POLICIES"
 	LIFServices               Feature = "LIF_SERVICES"
+	NVMeProtocol              Feature = "NVME_PROTOCOL"
 )
 
 // Indicate the minimum Ontapi version for each feature here
@@ -203,6 +204,8 @@ var features = map[Feature]*versionutils.Version{
 	FabricPoolForSVMDR:        versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	QosPolicies:               versionutils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
 	LIFServices:               versionutils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
+	// TODO(sphadnis): Check if all the Zapi calls work on this version once Zapi APIs for NVMe are implemented.
+	NVMeProtocol: versionutils.MustParseSemantic("1.201.0"), // cDOT 9.10.1
 }
 
 // Indicate the minimum Ontap version for each feature here (non-API specific)
@@ -216,6 +219,7 @@ var featuresByVersion = map[Feature]*versionutils.Version{
 	FabricPoolForSVMDR:        versionutils.MustParseSemantic("9.5.0"),
 	QosPolicies:               versionutils.MustParseSemantic("9.8.0"),
 	LIFServices:               versionutils.MustParseSemantic("9.6.0"),
+	NVMeProtocol:              versionutils.MustParseSemantic("9.10.1"),
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature

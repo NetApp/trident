@@ -2387,3 +2387,64 @@ func (d OntapAPIZAPI) SMBShareDestroy(ctx context.Context, shareName string) err
 	}
 	return nil
 }
+
+// NVMeNamespaceCreate creates NVMe namespace.
+func (d OntapAPIZAPI) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+	return "", fmt.Errorf("ZAPI call is not supported yet")
+}
+
+// NVMeNamespaceSetSize updates the namespace size to newSize.
+func (d OntapAPIZAPI) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
+	return fmt.Errorf("ZAPI call is not supported yet")
+}
+
+// NVMeNamespaceGetByName returns NVMe namespace with the specified name.
+func (d OntapAPIZAPI) NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error) {
+	return nil, fmt.Errorf("ZAPI call is not supported yet")
+}
+
+// NVMeNamespaceList returns the list of NVMe namespaces with the specified pattern.
+func (d OntapAPIZAPI) NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error) {
+	return nil, fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NamespaceSize(ctx context.Context, subsystemName string) (int, error) {
+	return 0, fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
+	return nil, fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
+	// TODO: Implement me!
+	return fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
+	return fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
+	return 0, fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
+	return fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+	return fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error) {
+	return false, fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error {
+	return fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeEnsureNamespaceUnmapped(ctx context.Context, subsystemUUID, namespaceUUID string) error {
+	return fmt.Errorf("ZAPI call is not supported yet")
+}

@@ -68,6 +68,8 @@ type Plugin struct {
 
 	stopNodePublicationLoop chan bool
 	nodePublicationTimer    *time.Timer
+
+	nvmeHandler utils.NVMeInterface
 }
 
 func NewControllerPlugin(
@@ -153,6 +155,7 @@ func NewNodePlugin(
 		opCache:                  sync.Map{},
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
+		nvmeHandler:              utils.NewNVMeHandler(),
 	}
 
 	if runtime.GOOS == "windows" {
@@ -235,6 +238,7 @@ func NewAllInOnePlugin(
 		opCache:                  sync.Map{},
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
+		nvmeHandler:              utils.NewNVMeHandler(),
 	}
 
 	// Define controller capabilities

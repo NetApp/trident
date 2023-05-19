@@ -22,6 +22,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -34,6 +35,7 @@ const (
 	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maxJitterValue                  = 5000
+	nvmeAttachTimeout               = 20 * time.Second
 )
 
 var (
@@ -66,7 +68,7 @@ func (p *Plugin) NodeStageVolume(
 			return p.nodeStageNFSVolume(ctx, req)
 		}
 	case string(tridentconfig.Block):
-		return p.nodeStageISCSIVolume(ctx, req)
+		return p.nodeStageSANVolume(ctx, req)
 	case string(tridentconfig.BlockOnFile):
 		return p.nodeStageNFSBlockVolume(ctx, req)
 	default:
@@ -151,6 +153,9 @@ func (p *Plugin) nodeUnstageVolume(
 			return p.nodeUnstageNFSVolume(ctx, req)
 		}
 	case tridentconfig.Block:
+		if publishInfo.SANType == sa.NVMe {
+			return p.nodeUnstageNVMeVolume(ctx, req, publishInfo, force)
+		}
 		return p.nodeUnstageISCSIVolumeRetry(ctx, req, publishInfo, force)
 	case tridentconfig.BlockOnFile:
 		if force {
@@ -193,6 +198,9 @@ func (p *Plugin) NodePublishVolume(
 			return p.nodePublishNFSVolume(ctx, req)
 		}
 	case string(tridentconfig.Block):
+		if req.PublishContext["SANType"] == sa.NVMe {
+			return p.nodePublishNVMeVolume(ctx, req)
+		}
 		return p.nodePublishISCSIVolume(ctx, req)
 	case string(tridentconfig.BlockOnFile):
 		return p.nodePublishNFSBlockVolume(ctx, req)
@@ -438,7 +446,12 @@ func (p *Plugin) nodeExpandVolume(
 		if fsType, err = utils.VerifyFilesystemSupport(publishInfo.FilesystemType); err != nil {
 			break
 		}
-		err = nodePrepareISCSIVolumeForExpansion(ctx, publishInfo, requiredBytes)
+		// We don't need to rescan mount devices for NVMe protocol backend. Automatic namespace rescanning happens
+		// everytime the NVMe controller is reset, or if the controller posts an asynchronous event indicating
+		// namespace attributes have changed.
+		if publishInfo.SANType != sa.NVMe {
+			err = nodePrepareISCSIVolumeForExpansion(ctx, publishInfo, requiredBytes)
+		}
 		mountOptions = publishInfo.MountOptions
 	case tridentconfig.BlockOnFile:
 		if fsType, err = utils.GetVerifiedBlockFsType(publishInfo.FilesystemType); err != nil {
@@ -668,12 +681,30 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 	if iscsiActive {
 		services = append(services, "iSCSI")
 	}
+
+	var nvmeNQN string
+	isNVMeActive, err := p.nvmeHandler.NVMeActiveOnHost(ctx)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn("Error discovering NVMe service on host.")
+	}
+
+	if isNVMeActive {
+		services = append(services, "nvme")
+		nvmeNQN, err = p.nvmeHandler.GetHostNqn(ctx)
+		if err != nil {
+			Logc(ctx).WithError(err).Warn("Problem getting Host NQN.")
+		}
+	} else {
+		Logc(ctx).Info("NVMe is not active on this host.")
+	}
+
 	p.hostInfo.Services = services
 
 	// Generate node object.
 	node := &utils.Node{
 		Name:     p.nodeName,
 		IQN:      iscsiWWN,
+		NQN:      nvmeNQN,
 		IPs:      ips,
 		NodePrep: nil,
 		HostInfo: p.hostInfo,
@@ -999,68 +1030,33 @@ func (p *Plugin) populatePublishedISCSISessions(ctx context.Context) {
 }
 
 func (p *Plugin) nodeStageISCSIVolume(
-	ctx context.Context, req *csi.NodeStageVolumeRequest,
-) (*csi.NodeStageVolumeResponse, error) {
-	var err error
-	var fstype string
-
-	mountCapability := req.GetVolumeCapability().GetMount()
-	blockCapability := req.GetVolumeCapability().GetBlock()
-
-	if mountCapability == nil && blockCapability == nil {
-		return nil, status.Error(codes.InvalidArgument, "mount or block capability required")
-	} else if mountCapability != nil && blockCapability != nil {
-		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
-	}
-
-	if mountCapability != nil && mountCapability.GetFsType() != "" {
-		fstype = mountCapability.GetFsType()
-	}
-
-	if fstype == "" {
-		fstype = req.PublishContext["filesystemType"]
-	}
-
-	if fstype == tridentconfig.FsRaw && mountCapability != nil {
-		return nil, status.Error(codes.InvalidArgument, "mount capability requested with raw blocks")
-	} else if fstype != tridentconfig.FsRaw && blockCapability != nil {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("block capability requested with %s", fstype))
-	}
-
+	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+) error {
 	useCHAP, err := strconv.ParseBool(req.PublishContext["useCHAP"])
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return status.Error(codes.Internal, err.Error())
 	}
-
-	sharedTarget, err := strconv.ParseBool(req.PublishContext["sharedTarget"])
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
+	publishInfo.UseCHAP = useCHAP
 
 	lunID, err := strconv.ParseInt(req.PublishContext["iscsiLunNumber"], 10, 0)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return status.Error(codes.Internal, err.Error())
 	}
 
-	publishInfo := &utils.VolumePublishInfo{
-		Localhost:      true,
-		FilesystemType: fstype,
-		SharedTarget:   sharedTarget,
-	}
-	publishInfo.UseCHAP = useCHAP
 	var isLUKS bool
 	if req.PublishContext["LUKSEncryption"] != "" {
 		isLUKS, err = strconv.ParseBool(req.PublishContext["LUKSEncryption"])
 		if err != nil {
-			return nil, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
 		}
 	}
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
 	if nil != err {
-		return nil, status.Error(codes.Internal, err.Error())
+		return status.Error(codes.Internal, err.Error())
 	}
+
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.IscsiTargetIQN = req.PublishContext["iscsiTargetIqn"]
 	publishInfo.IscsiLunNumber = int32(lunID)
@@ -1081,7 +1077,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 				Logc(ctx).WithError(err).Warn(
 					"Could not decrypt CHAP credentials; will retrieve from Trident controller.")
 				if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
-					return nil, status.Error(codes.Internal, err.Error())
+					return status.Error(codes.Internal, err.Error())
 				}
 			}
 		} else if encryptedCHAP {
@@ -1089,28 +1085,28 @@ func (p *Plugin) nodeStageISCSIVolume(
 			Logc(ctx).Warn(
 				"Encryption key not set; cannot decrypt CHAP credentials; will retrieve from Trident controller.")
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
-				return nil, status.Error(codes.Internal, err.Error())
+				return status.Error(codes.Internal, err.Error())
 			}
 		}
 	}
 
 	if err = p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort); err != nil {
-		return nil, err
+		return err
 	}
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if isLUKS {
 		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
 		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+			return status.Error(codes.Internal, err.Error())
 		}
 		// Ensure we update the passphrase incase it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
-			return nil, status.Error(codes.Internal, "could not set LUKS volume passphrase")
+			return status.Error(codes.Internal, "could not set LUKS volume passphrase")
 		}
 	}
 
@@ -1121,16 +1117,14 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 	// Save the device info to the volume tracking info path for use in the publish & unstage calls.
 	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return status.Error(codes.Internal, err.Error())
 	}
-
 	// Update in-mem map used for self-healing; do it after a volume has been staged.
 	// Beyond here if there is a problem with the session or there are missing LUNs
 	// then self-healing should be able to fix those issues.
 	newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceNodeStage)
 	utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", utils.NotInvalid)
-
-	return &csi.NodeStageVolumeResponse{}, nil
+	return nil
 }
 
 // ensureAttachISCSIVolume to ensure that iSCSI volume attachment is through.
@@ -2099,3 +2093,235 @@ func (p *Plugin) updateNodeLoggingConfig() {
 	}
 }
 */
+
+func (p *Plugin) nodeStageNVMeVolume(
+	ctx context.Context, req *csi.NodeStageVolumeRequest,
+	publishInfo *utils.VolumePublishInfo,
+) error {
+	var isLUKS bool
+	var err error
+
+	if req.PublishContext["LUKSEncryption"] != "" {
+		isLUKS, err = strconv.ParseBool(req.PublishContext["LUKSEncryption"])
+		if err != nil {
+			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+		}
+	}
+
+	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
+	publishInfo.MountOptions = req.PublishContext["mountOptions"]
+	publishInfo.NVMeSubsystemNQN = req.PublishContext["nvmeSubsystemNqn"]
+	publishInfo.NVMeNamespacePath = req.PublishContext["nvmeNamespacePath"]
+	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
+	publishInfo.SANType = req.PublishContext["SANType"]
+
+	if err := utils.AttachNVMeVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, nil, nvmeAttachTimeout); err != nil {
+		return err
+	}
+
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return err
+	}
+
+	if isLUKS {
+		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
+		if err != nil {
+			return status.Error(codes.Internal, err.Error())
+		}
+		// Ensure we update the passphrase in case it has never been set before
+		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
+		if err != nil {
+			return status.Error(codes.Internal, "could not set LUKS volume passphrase")
+		}
+	}
+
+	volTrackingInfo := &utils.VolumeTrackingInfo{
+		VolumePublishInfo: *publishInfo,
+		StagingTargetPath: stagingTargetPath,
+		PublishedPaths:    map[string]struct{}{},
+	}
+
+	// Save the device info to the volume tracking info path for use in the publish & unstage calls.
+	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	return nil
+}
+
+func (p *Plugin) nodeUnstageNVMeVolume(
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
+) (*csi.NodeUnstageVolumeResponse, error) {
+	/*
+		- Get the device from tracking info OR get it using "nvme netapp ontapdevices" (as iscsi people don't get device from tracking info and try to get the device using LUN and iscsi cmds - will check with Ravi/Vinay why is that the case?)
+		- Flush the device using "nvme flush /dev/nvme1n1"
+		- Don't delete the device like iscsi as its lifecycle is associated with the subsystem
+		- If the subsystem has 0 or 1 namespaces connected to it - disconnect it. Else more namespaces are associated with it and can be in use - so we don't disconnect it.
+		- Remove the tracking file
+	*/
+	// Get the device from tracking info using commands or from publishInfo
+	// Flush the device IOs
+
+	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespacePath)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting NVMe device, %v", err)
+	}
+
+	if err := nvmeDev.FlushDevice(ctx); err != nil {
+		return nil, fmt.Errorf("error while flushing NVMe device, %v", err)
+	}
+
+	// Get the number of namespaces associated with the subsystem
+	nvmeSubsys := p.nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
+	numNs, err := nvmeSubsys.GetNamespaceCount(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// If number of namespaces is more than 1, don't disconnect the subsystem
+	if numNs <= 1 {
+		if err := nvmeSubsys.Disconnect(ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
+	if err := utils.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
+		Logc(ctx).WithField("stagingTargetPath", stagingTargetPath).Errorf(
+			"Failed to remove directory in staging target path; %s", err)
+		errStr := fmt.Sprintf("failed to remove temporary directory in staging target path %s; %s",
+			stagingTargetPath, err)
+		return nil, status.Error(codes.Internal, errStr)
+	}
+
+	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
+	if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &csi.NodeUnstageVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodePublishNVMeVolume(
+	ctx context.Context, req *csi.NodePublishVolumeRequest,
+) (*csi.NodePublishVolumeResponse, error) {
+	var err error
+
+	// Read the device info from the volume tracking info path, or if that doesn't exist yet, the staging path.
+	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			return nil, status.Error(codes.FailedPrecondition, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+	publishInfo := &trackingInfo.VolumePublishInfo
+
+	if req.GetReadonly() {
+		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
+	}
+	if publishInfo.LUKSEncryption != "" {
+		isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+		}
+		if isLUKS {
+			// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
+			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
+			if err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
+			if err != nil {
+				Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
+			}
+		}
+	}
+	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
+	if isRawBlock {
+
+		if len(publishInfo.MountOptions) > 0 {
+			publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "bind", ",")
+		} else {
+			publishInfo.MountOptions = "bind"
+		}
+
+		// Place the block device at the target path for the raw-block.
+		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, true)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "unable to bind mount raw device; %s", err)
+		}
+	} else {
+		// Mount the device.
+		err = utils.MountDevice(ctx, publishInfo.DevicePath, req.TargetPath, publishInfo.MountOptions, false)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "unable to mount device; %s", err)
+		}
+	}
+
+	err = p.nodeHelper.AddPublishedPath(ctx, req.VolumeId, req.TargetPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return &csi.NodePublishVolumeResponse{}, nil
+}
+
+func (p *Plugin) nodeStageSANVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
+) (*csi.NodeStageVolumeResponse, error) {
+	var err error
+	var fstype string
+
+	mountCapability := req.GetVolumeCapability().GetMount()
+	blockCapability := req.GetVolumeCapability().GetBlock()
+
+	if mountCapability == nil && blockCapability == nil {
+		return nil, status.Error(codes.InvalidArgument, "mount or block capability required")
+	} else if mountCapability != nil && blockCapability != nil {
+		return nil, status.Error(codes.InvalidArgument, "mixed block and mount capabilities")
+	}
+
+	if mountCapability != nil && mountCapability.GetFsType() != "" {
+		fstype = mountCapability.GetFsType()
+	}
+
+	if fstype == "" {
+		fstype = req.PublishContext["filesystemType"]
+	}
+
+	if fstype == tridentconfig.FsRaw && mountCapability != nil {
+		return nil, status.Error(codes.InvalidArgument, "mount capability requested with raw blocks")
+	} else if fstype != tridentconfig.FsRaw && blockCapability != nil {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("block capability requested with %s", fstype))
+	}
+
+	sharedTarget, err := strconv.ParseBool(req.PublishContext["sharedTarget"])
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	publishInfo := &utils.VolumePublishInfo{
+		Localhost:      true,
+		FilesystemType: fstype,
+		SharedTarget:   sharedTarget,
+	}
+
+	if req.PublishContext["SANType"] == sa.NVMe {
+		if err := p.nodeStageNVMeVolume(ctx, req, publishInfo); err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	} else {
+		if err = p.nodeStageISCSIVolume(ctx, req, publishInfo); err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	return &csi.NodeStageVolumeResponse{}, nil
+}
