@@ -137,7 +137,7 @@ func TestNVMeInitialize_NoDataLifs(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
-	assert.ErrorContains(t, err, "no data LIFs found on SVM")
+	assert.ErrorContains(t, err, "no data LIFs with TCP protocol found on SVM")
 }
 
 func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {

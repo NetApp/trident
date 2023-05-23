@@ -95,7 +95,7 @@ func (d *NVMeStorageDriver) Initialize(
 	ctx context.Context, driverContext tridentconfig.DriverContext, configJSON string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
-	fields := LogFields{"Method": "Initialize", "Type": "NVMeStorageDriver"}
+	fields := LogFields{"method": "Initialize", "type": "NVMeStorageDriver"}
 	Logd(ctx, commonConfig.StorageDriverName,
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
 	defer Logd(ctx, commonConfig.StorageDriverName,
@@ -129,7 +129,7 @@ func (d *NVMeStorageDriver) Initialize(
 	}
 
 	if len(d.ips) == 0 {
-		return fmt.Errorf("no data LIFs found on SVM %s", d.API.SVMName())
+		return fmt.Errorf("no data LIFs with TCP protocol found on SVM %s", d.API.SVMName())
 	} else {
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found LIFs.")
 	}
@@ -161,7 +161,7 @@ func (d *NVMeStorageDriver) Initialized() bool {
 
 // Terminate stops the driver processes and updates the driver state to uninitialized.
 func (d *NVMeStorageDriver) Terminate(ctx context.Context, _ string) {
-	fields := LogFields{"Method": "Terminate", "Type": "NVMeStorageDriver"}
+	fields := LogFields{"method": "Terminate", "type": "NVMeStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
 
@@ -174,7 +174,7 @@ func (d *NVMeStorageDriver) Terminate(ctx context.Context, _ string) {
 
 // Validate the driver configuration and execution environment.
 func (d *NVMeStorageDriver) validate(ctx context.Context) error {
-	fields := LogFields{"Method": "validate", "Type": "NVMeStorageDriver"}
+	fields := LogFields{"method": "validate", "type": "NVMeStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
@@ -202,8 +202,8 @@ func (d *NVMeStorageDriver) Create(
 	name := volConfig.InternalName
 
 	fields := LogFields{
-		"Method": "Create",
-		"Type":   "NVMeStorageDriver",
+		"method": "Create",
+		"type":   "NVMeStorageDriver",
 		"name":   name,
 		"attrs":  volAttributes,
 	}
@@ -473,8 +473,8 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 // Rename changes the volume name.
 func (d *NVMeStorageDriver) Rename(ctx context.Context, name, newName string) error {
 	fields := LogFields{
-		"Method":  "Rename",
-		"Type":    "NVMeStorageDriver",
+		"method":  "Rename",
+		"type":    "NVMeStorageDriver",
 		"name":    name,
 		"newName": newName,
 	}
@@ -489,8 +489,8 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 	name := volConfig.InternalName
 
 	fields := LogFields{
-		"Method": "Destroy",
-		"Type":   "NVMeStorageDriver",
+		"method": "Destroy",
+		"type":   "NVMeStorageDriver",
 		"name":   name,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
@@ -534,8 +534,8 @@ func (d *NVMeStorageDriver) Publish(
 	name := volConfig.InternalName
 
 	fields := LogFields{
-		"Method": "Publish",
-		"Type":   "NVMeStorageDriver",
+		"method": "Publish",
+		"type":   "NVMeStorageDriver",
 		"name":   name,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
@@ -632,8 +632,8 @@ func (d *NVMeStorageDriver) Unpublish(
 	name := volConfig.InternalName
 
 	fields := LogFields{
-		"Method":            "Unpublish",
-		"Type":              "NVMeStorageDriver",
+		"method":            "Unpublish",
+		"type":              "NVMeStorageDriver",
 		"name":              name,
 		"NVMeNamespaceUUID": volConfig.AccessInfo.NVMeNamespaceUUID,
 		"NVMeSubsystemUUID": volConfig.AccessInfo.NVMeSubsystemUUID,
@@ -679,8 +679,8 @@ func (d *NVMeStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
 	fields := LogFields{
-		"Method":       "RestoreSnapshot",
-		"Type":         "NVMeStorageDriver",
+		"method":       "RestoreSnapshot",
+		"type":         "NVMeStorageDriver",
 		"snapshotName": snapConfig.InternalName,
 		"volumeName":   snapConfig.VolumeInternalName,
 	}
@@ -746,8 +746,8 @@ func (d *NVMeStorageDriver) CreatePrepare(ctx context.Context, volConfig *storag
 // CreateFollowup sets up additional attributes once a volume is created.
 func (d *NVMeStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	fields := LogFields{
-		"Method":       "CreateFollowup",
-		"Type":         "SANNVMeStorageDriver",
+		"method":       "CreateFollowup",
+		"type":         "SANNVMeStorageDriver",
 		"name":         volConfig.Name,
 		"internalName": volConfig.InternalName,
 	}
