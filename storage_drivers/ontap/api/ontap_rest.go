@@ -1121,7 +1121,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 		if vol == nil || vol.Name == nil {
 			continue
 		}
-		if vol.Clone != nil && vol.Clone.IsFlexclone != nil && *vol.Clone.IsFlexclone {
+		if vol.Clone != nil {
 			if vol.Clone.ParentSnapshot != nil && vol.Clone.ParentSnapshot.Name != nil && *vol.Clone.ParentSnapshot.Name == snapshotName &&
 				vol.Clone.ParentVolume != nil && *vol.Clone.ParentVolume.Name == volumeName {
 				volumeNames = append(volumeNames, *vol.Name)
