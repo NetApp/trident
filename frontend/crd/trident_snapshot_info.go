@@ -150,9 +150,9 @@ func (c *TridentCrdController) getSnapshotHandle(
 			"VolumeSnapshot '%v' does not exist in namespace '%v'", snapshotInfo.Spec.SnapshotName,
 			snapshotInfo.Namespace)
 		// If PVC does not yet exist, do not update the TSI and retry later
-		return "", errors.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	} else if err != nil {
-		return "", errors.ReconcileDeferredError(err)
+		return "", errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	// Check if volumeSnapshot is bound to a volumeSnapshotContent
@@ -169,7 +169,7 @@ func (c *TridentCrdController) getSnapshotHandle(
 		Logx(ctx).Debug(message)
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoUpdateFailed,
 			"VolumeSnapshot '%v' is not bound to a VolumeSnapshotContent", snapshotInfo.Spec.SnapshotName)
-		return "", errors.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	}
 	snapContent, err := c.snapshotClientSet.SnapshotV1().VolumeSnapshotContents().Get(
 		ctx, snapContentName,
@@ -184,9 +184,9 @@ func (c *TridentCrdController) getSnapshotHandle(
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoUpdateFailed,
 			"VolumeSnapshotContent '%v' does not exist", snapContentName)
 		// If VSC does not yet exist, do not update the TSI and retry later
-		return "", errors.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	} else if err != nil {
-		return "", errors.ReconcileDeferredError(err)
+		return "", errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	// Check if VolumeSnapshotContent is a Trident snapshot
@@ -204,7 +204,7 @@ func (c *TridentCrdController) getSnapshotHandle(
 		Logx(ctx).Debug(message)
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoUpdateFailed,
 			"SnapshotHandle for VolumeSnapshotContent '%v' is not set", k8sSnapshot.Name)
-		return "", errors.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	}
 
 	// Verify the snapshot is ONTAP

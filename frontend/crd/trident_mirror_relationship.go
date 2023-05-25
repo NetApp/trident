@@ -224,7 +224,7 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 		if err != nil {
 			return err
 		} else if !deleted {
-			return errors.ConvertToReconcileIncompleteError(fmt.Errorf("deleting TridentMirrorRelationship"))
+			return errors.ReconcileIncompleteError("deleting TridentMirrorRelationship")
 		}
 
 		Logx(ctx).WithFields(logFields).Tracef("Removing TridentMirrorRelationship finalizers.")
@@ -239,7 +239,7 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 		)
 		if err != nil {
 			if api.IsNotReadyError(err) {
-				return errors.ReconcileDeferredError(err)
+				return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 			}
 			return err
 		}
@@ -287,10 +287,8 @@ func (c *TridentCrdController) handleTridentMirrorRelationship(keyItem *KeyItem)
 		}
 	}
 	if utils.SliceContainsString(netappv1.GetTransitioningMirrorStatusStates(), statusCondition.MirrorState) {
-		err = errors.ConvertToReconcileIncompleteError(
-			fmt.Errorf(
-				"TridentMirrorRelationship %v in state %v", relationship.Name, statusCondition.MirrorState,
-			),
+		err = errors.ReconcileIncompleteError(
+			"TridentMirrorRelationship %v in state %v", relationship.Name, statusCondition.MirrorState,
 		)
 	}
 	return err
@@ -348,7 +346,7 @@ func (c *TridentCrdController) ensureMirrorReadyForDeletion(
 	if err != nil {
 		// If any of the snapmirror operations fail, retry
 		if api.IsNotReadyError(err) {
-			return false, errors.ReconcileDeferredError(err)
+			return false, errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 		}
 
 		// If the underlying volume does not exist, we are safe to delete the TMR
@@ -381,7 +379,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 		message := fmt.Sprintf("Local PVC for TridentMirrorRelationship does not yet exist.")
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
 		// If PVC does not yet exist, do not update the TMR and retry later
-		return nil, errors.ReconcileDeferredError(fmt.Errorf(message))
+		return nil, errors.ReconcileDeferredError(message)
 	} else if err != nil {
 		return nil, err
 	}
@@ -391,14 +389,14 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	if localPV == nil || localPV.Spec.CSI == nil || localPV.Spec.CSI.VolumeAttributes == nil {
 		message := fmt.Sprintf("PV for local PVC for TridentMirrorRelationship does not yet exist.")
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
-		return nil, errors.ReconcileDeferredError(fmt.Errorf(message))
+		return nil, errors.ReconcileDeferredError(message)
 	}
 	// Check if PV has internal name set
 	if localPV.Spec.CSI.VolumeAttributes["internalName"] == "" {
 		message := fmt.Sprintf(
 			"PV for local PVC for TridentMirrorRelationship does not yet have an internal volume name set.")
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
-		return nil, errors.ReconcileDeferredError(fmt.Errorf(message))
+		return nil, errors.ReconcileDeferredError(message)
 	}
 
 	existingVolume, err := c.orchestrator.GetVolume(ctx, localPV.Spec.CSI.VolumeHandle)
@@ -503,7 +501,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			} else if api.IsNotReadyError(err) {
 				update, _ := updateTMRConditionLocalFields(statusCondition, localPVCName,
 					volumeMapping.RemoteVolumeHandle)
-				return update, errors.ReconcileDeferredError(err)
+				return update, errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 			} else {
 				// If we performed an action, get new mirror state
 				currentMirrorState, _ = c.getCurrentMirrorState(

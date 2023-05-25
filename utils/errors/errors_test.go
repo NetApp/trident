@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/multierr"
 )
 
 func TestUnsupportedCapacityRangeError(t *testing.T) {
@@ -111,4 +113,156 @@ func TestResourceExhaustedError(t *testing.T) {
 			tt.wantErr(t, ok, "Unexpected error")
 		})
 	}
+}
+
+func TestReconcileDeferredError(t *testing.T) {
+	err := ReconcileDeferredError("deferred error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsReconcileDeferredError(err))
+
+	assert.False(t, IsReconcileDeferredError(nil))
+
+	err = ReconcileDeferredError("")
+	assert.True(t, IsReconcileDeferredError(err))
+
+	// Test wrapping
+	err = WrapWithReconcileDeferredError(fmt.Errorf("not reconcile deferred err"), "reconcile deferred")
+	assert.True(t, IsReconcileDeferredError(err))
+	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
+
+	err = WrapWithReconcileDeferredError(nil, "reconcile deferred")
+	assert.Equal(t, "reconcile deferred", err.Error())
+
+	err = WrapWithReconcileDeferredError(fmt.Errorf("not reconcile deferred err"), "")
+	assert.True(t, IsReconcileDeferredError(err))
+	assert.Equal(t, "not reconcile deferred err", err.Error())
+
+	err = WrapWithReconcileDeferredError(fmt.Errorf(""), "reconcile deferred")
+	assert.True(t, IsReconcileDeferredError(err))
+	assert.Equal(t, "reconcile deferred", err.Error())
+
+	err = ReconcileDeferredError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsReconcileDeferredError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = ReconcileDeferredError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsReconcileDeferredError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
+}
+
+func TestReconcileIncompleteError(t *testing.T) {
+	err := ReconcileIncompleteError("deferred error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsReconcileIncompleteError(err))
+
+	assert.False(t, IsReconcileIncompleteError(nil))
+
+	err = ReconcileIncompleteError("")
+	assert.True(t, IsReconcileIncompleteError(err))
+
+	// Test wrapping
+	err = WrapWithReconcileIncompleteError(fmt.Errorf("not reconcile deferred err"), "reconcile deferred")
+	assert.True(t, IsReconcileIncompleteError(err))
+	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
+
+	err = WrapWithReconcileIncompleteError(nil, "reconcile deferred")
+	assert.Equal(t, "reconcile deferred", err.Error())
+
+	err = WrapWithReconcileIncompleteError(fmt.Errorf("not reconcile deferred err"), "")
+	assert.True(t, IsReconcileIncompleteError(err))
+	assert.Equal(t, "not reconcile deferred err", err.Error())
+
+	err = WrapWithReconcileIncompleteError(fmt.Errorf(""), "reconcile deferred")
+	assert.True(t, IsReconcileIncompleteError(err))
+	assert.Equal(t, "reconcile deferred", err.Error())
+
+	err = ReconcileIncompleteError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsReconcileIncompleteError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = ReconcileIncompleteError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsReconcileIncompleteError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
+}
+
+func TestUnsupportedConfigError(t *testing.T) {
+	err := UnsupportedConfigError("error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsUnsupportedConfigError(err))
+
+	assert.False(t, IsUnsupportedConfigError(nil))
+
+	err = UnsupportedConfigError("")
+	assert.True(t, IsUnsupportedConfigError(err))
+
+	// Multierr tests
+	err = multierr.Combine(
+		fmt.Errorf("not unsupported config err"),
+		UnsupportedConfigError("is unsupported config error"),
+	)
+	assert.True(t, IsUnsupportedConfigError(err))
+
+	err = multierr.Combine(
+		fmt.Errorf("not unsupported config err"),
+		fmt.Errorf("not unsupported config err"),
+	)
+	assert.False(t, IsUnsupportedConfigError(err))
+
+	err = WrapUnsupportedConfigError(fmt.Errorf("not unsupported config err"))
+	assert.True(t, IsUnsupportedConfigError(err))
+
+	err = WrapUnsupportedConfigError(nil)
+	assert.Nil(t, err)
+}
+
+func TestReconcileFailedError(t *testing.T) {
+	err := ReconcileFailedError("deferred error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsReconcileFailedError(err))
+
+	assert.False(t, IsReconcileFailedError(nil))
+
+	err = ReconcileFailedError("")
+	assert.True(t, IsReconcileFailedError(err))
+
+	// Test wrapping
+	err = WrapWithReconcileFailedError(fmt.Errorf("not reconcile deferred err"), "reconcile deferred")
+	assert.True(t, IsReconcileFailedError(err))
+	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
+
+	err = WrapWithReconcileFailedError(nil, "reconcile deferred")
+	assert.Equal(t, "reconcile deferred", err.Error())
+
+	err = WrapWithReconcileFailedError(fmt.Errorf("not reconcile deferred err"), "")
+	assert.True(t, IsReconcileFailedError(err))
+	assert.Equal(t, "not reconcile deferred err", err.Error())
+
+	err = WrapWithReconcileFailedError(fmt.Errorf(""), "reconcile deferred")
+	assert.True(t, IsReconcileFailedError(err))
+	assert.Equal(t, "reconcile deferred", err.Error())
+
+	err = ReconcileFailedError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsReconcileFailedError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = ReconcileFailedError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsReconcileFailedError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
 }

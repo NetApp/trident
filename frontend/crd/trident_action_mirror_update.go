@@ -100,7 +100,7 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 	if actionCR.InProgress() {
 		transferEndTime, err := c.orchestrator.CheckMirrorTransferState(ctx, localPVC.Spec.VolumeName)
 		if errors.IsInProgressError(err) {
-			updateError = errors.ReconcileDeferredError(err)
+			updateError = errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 		}
 
 		// Confirm that the end transfer time is after the creation of the TAMU
@@ -110,7 +110,7 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 			}
 		}
 
-		return errors.ReconcileDeferredError(fmt.Errorf("mirror update retry"))
+		return errors.ReconcileDeferredError("mirror update retry")
 	}
 
 	// Parse snapshot name from the handle
@@ -132,7 +132,7 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 	// Invoke mirror update
 	updateError = c.orchestrator.UpdateMirror(ctx, localPVC.Spec.VolumeName, snapshotName)
 	if errors.IsInProgressError(updateError) {
-		updateError = errors.ReconcileDeferredError(updateError)
+		updateError = errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 	return
 }
@@ -149,7 +149,7 @@ func (c *TridentCrdController) validateActionMirrorUpdateCR(ctx context.Context,
 		return nil, err
 	}
 	if err != nil {
-		return nil, errors.ReconcileDeferredError(err)
+		return nil, errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	if !actionCR.IsNew() && !actionCR.InProgress() {
@@ -170,7 +170,7 @@ func (c *TridentCrdController) updateActionMirrorUpdateCRInProgress(ctx context.
 		return err
 	}
 	if err != nil {
-		return errors.ReconcileDeferredError(err)
+		return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	if !actionCR.HasTridentFinalizers() {
@@ -189,7 +189,7 @@ func (c *TridentCrdController) updateActionMirrorUpdateCRInProgress(ctx context.
 
 	_, err = c.crdClientset.TridentV1().TridentActionMirrorUpdates(namespace).Update(ctx, actionCR, updateOpts)
 	if err != nil {
-		return errors.ReconcileDeferredError(err)
+		return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	return nil
@@ -245,13 +245,13 @@ func (c *TridentCrdController) getTMR(
 		)
 		Logx(ctx).Debug(message)
 		// If TMR does not yet exist, do not update the TridentActionMirrorUpdate, no need to retry
-		return nil, errors.ReconcileFailedError(fmt.Errorf(message))
+		return nil, errors.ReconcileFailedError(message)
 	} else if err != nil {
-		return nil, errors.ReconcileFailedError(err)
+		return nil, errors.WrapWithReconcileFailedError(err, "reconcile failed")
 	}
 	if k8sTMR == nil {
-		return nil, errors.ReconcileDeferredError(fmt.Errorf("could not get TridentMirrorRelationship %s",
-			tridentActionMirrorUpdate.Spec.TMRName))
+		return nil, errors.ReconcileDeferredError("could not get TridentMirrorRelationship %s",
+			tridentActionMirrorUpdate.Spec.TMRName)
 	}
 	return k8sTMR, nil
 }

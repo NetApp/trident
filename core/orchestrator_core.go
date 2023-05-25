@@ -1070,7 +1070,7 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 	// For backends created using CRD Controller ensure there are no forbidden fields
 	if o.isCRDContext(ctx) {
 		if err = factory.SpecOnlyValidation(ctx, commonConfig, configInJSON); err != nil {
-			return nil, errors.UnsupportedConfigError(err)
+			return nil, errors.WrapUnsupportedConfigError(err)
 		}
 	}
 
@@ -1233,9 +1233,9 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 				"originalConfigRef": originalConfigRef,
 				"invalidConfigRef":  callingConfigRef,
 			}).Errorf("Backend update initiated using an invalid ConfigRef.")
-			return nil, errors.UnsupportedConfigError(fmt.Errorf(
+			return nil, errors.UnsupportedConfigError(
 				"backend '%v' update initiated using an invalid configRef, it is associated with configRef "+
-					"'%v' and not '%v'", originalBackend.Name(), originalConfigRef, callingConfigRef))
+					"'%v' and not '%v'", originalBackend.Name(), originalConfigRef, callingConfigRef)
 		}
 	}
 
@@ -1286,7 +1286,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
 	case updateCode.Contains(storage.PrefixChange):
-		err := errors.UnsupportedConfigError(errors.New("updating the storage prefix isn't currently supported"))
+		err := errors.UnsupportedConfigError("updating the storage prefix isn't currently supported")
 		Logc(ctx).WithField("error", err).Error("Backend update failed.")
 		return nil, err
 	case updateCode.Contains(storage.BackendRename):

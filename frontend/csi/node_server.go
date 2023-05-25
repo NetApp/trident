@@ -1679,13 +1679,13 @@ func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 	// Discover the desired publication state.
 	desiredPublicationState, err := p.discoverDesiredPublicationState(ctx)
 	if err != nil {
-		return errors.ReconcileFailedError(err)
+		return errors.WrapWithReconcileFailedError(err, "reconcile failed")
 	}
 
 	// Discover the actual publication state.
 	actualPublicationState, err := p.discoverActualPublicationState(ctx)
 	if err != nil {
-		return errors.ReconcileFailedError(err)
+		return errors.WrapWithReconcileFailedError(err, "reconcile failed")
 	}
 
 	// Discover and clean stale publications iff there are entries in the actual publication state.
@@ -1695,7 +1695,7 @@ func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 		err = p.cleanStalePublications(ctx, stalePublications)
 		if err != nil {
 			Logc(ctx).WithError(err).Error("Failed to clean node publication state.")
-			return errors.ReconcileFailedError(err)
+			return errors.WrapWithReconcileFailedError(err, "reconcile failed")
 		}
 	} else {
 		Logc(ctx).Debug("No publication state found on this node.")

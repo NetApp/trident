@@ -131,7 +131,7 @@ func reestablishMirror(
 	snapmirror, err = d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		if api.IsNotFoundError(err) {
-			return errors.ReconcileIncompleteError()
+			return errors.ReconcileIncompleteError("reconcile incomplete")
 		} else {
 			return err
 		}
