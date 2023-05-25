@@ -2825,7 +2825,7 @@ func (c Client) SnapmirrorPolicyGet(
 
 	switch len(policies) {
 	case 0:
-		return nil, errors.NotFoundError(fmt.Sprintf("could not find snapmirror policy %v", policyName))
+		return nil, errors.NotFoundError("could not find snapmirror policy %v", policyName)
 	case 1:
 		return &policies[0], nil
 	default:

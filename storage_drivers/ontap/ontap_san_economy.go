@@ -1037,7 +1037,7 @@ func (d *SANEconomyStorageDriver) Unpublish(
 		// If the LUN doesn't exist at this point, there's nothing left to do for unpublish at this level.
 		// However, this scenario could indicate unexpected tampering or unknown states with the backend,
 		// so log a warning and return a NotFoundError.
-		err := errors.NotFoundError(fmt.Sprintf("LUN %v does not exist", name))
+		err := errors.NotFoundError("LUN %v does not exist", name)
 		Logc(ctx).WithError(err).Warningf("Unable to unpublish LUN: %s.", name)
 		return err
 	}

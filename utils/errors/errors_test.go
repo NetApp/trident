@@ -4,6 +4,7 @@ package errors
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -16,7 +17,7 @@ import (
 
 func TestUnsupportedCapacityRangeError(t *testing.T) {
 	// test setup
-	err := fmt.Errorf("a generic error")
+	err := errors.New("a generic error")
 	unsupportedCapacityRangeErr := UnsupportedCapacityRangeError(fmt.Errorf(
 		"error wrapped within UnsupportedCapacityRange"))
 	wrappedError := fmt.Errorf("wrapping unsupportedCapacityRange; %w", unsupportedCapacityRangeErr)
@@ -36,6 +37,46 @@ func TestUnsupportedCapacityRangeError(t *testing.T) {
 		ok, _ := HasUnsupportedCapacityRangeError(wrappedError)
 		assert.Equal(t, true, ok)
 	})
+}
+
+func TestNotFoundError(t *testing.T) {
+	err := NotFoundError("not found error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("not found error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsNotFoundError(err))
+
+	assert.False(t, IsNotFoundError(nil))
+
+	err = NotFoundError("")
+	assert.True(t, IsNotFoundError(err))
+
+	// Test wrapping
+	err = WrapWithNotFoundError(fmt.Errorf("not a not found err"), "not found")
+	assert.True(t, IsNotFoundError(err))
+	assert.Equal(t, "not found; not a not found err", err.Error())
+
+	err = WrapWithNotFoundError(nil, "not found")
+	assert.Equal(t, "not found", err.Error())
+
+	err = WrapWithNotFoundError(fmt.Errorf("not a not found err"), "")
+	assert.True(t, IsNotFoundError(err))
+	assert.Equal(t, "not a not found err", err.Error())
+
+	err = WrapWithNotFoundError(fmt.Errorf(""), "not found")
+	assert.True(t, IsNotFoundError(err))
+	assert.Equal(t, "not found", err.Error())
+
+	err = NotFoundError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsNotFoundError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = NotFoundError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsNotFoundError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
 }
 
 func TestAsInvalidJSONError(t *testing.T) {

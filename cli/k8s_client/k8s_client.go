@@ -311,7 +311,7 @@ func (k *KubeClient) GetDeploymentByLabel(label string, allNamespaces bool) (*ap
 	} else if len(deployments) > 1 {
 		return nil, fmt.Errorf("multiple deployments have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no deployments have the label %s", label))
+		return nil, errors.NotFoundError("no deployments have the label %s", label)
 	}
 }
 
@@ -492,7 +492,7 @@ func (k *KubeClient) GetServiceByLabel(label string, allNamespaces bool) (*v1.Se
 	} else if len(services) > 1 {
 		return nil, fmt.Errorf("multiple services have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no services have the label %s", label))
+		return nil, errors.NotFoundError("no services have the label %s", label)
 	}
 }
 
@@ -603,7 +603,7 @@ func (k *KubeClient) GetStatefulSetByLabel(label string, allNamespaces bool) (*a
 	} else if len(statefulsets) > 1 {
 		return nil, fmt.Errorf("multiple statefulsets have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no statefulsets have the label %s", label))
+		return nil, errors.NotFoundError("no statefulsets have the label %s", label)
 	}
 }
 
@@ -693,7 +693,7 @@ func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*app
 	} else if len(daemonsets) > 1 {
 		return nil, fmt.Errorf("multiple daemonsets have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no daemonsets have the label %s", label))
+		return nil, errors.NotFoundError("no daemonsets have the label %s", label)
 	}
 }
 
@@ -939,7 +939,7 @@ func (k *KubeClient) GetConfigMapByLabel(label string, allNamespaces bool) (*v1.
 	} else if len(configMaps) > 1 {
 		return nil, fmt.Errorf("multiple configmaps have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no configmaps have the label %s", label))
+		return nil, errors.NotFoundError("no configmaps have the label %s", label)
 	}
 }
 
@@ -1018,7 +1018,7 @@ func (k *KubeClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, e
 	} else if len(pods) > 1 {
 		return nil, fmt.Errorf("multiple pods have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no pods have the label %s", label))
+		return nil, errors.NotFoundError("no pods have the label %s", label)
 	}
 }
 
@@ -1125,7 +1125,7 @@ func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.Persis
 	} else if len(pvcList.Items) > 1 {
 		return nil, fmt.Errorf("multiple PVCs have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no PVCs have the label %s", label))
+		return nil, errors.NotFoundError("no PVCs have the label %s", label)
 	}
 }
 
@@ -1188,7 +1188,7 @@ func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
 	} else if len(pvList.Items) > 1 {
 		return nil, fmt.Errorf("multiple PVs have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no PVs have the label %s", label))
+		return nil, errors.NotFoundError("no PVs have the label %s", label)
 	}
 }
 
@@ -1248,7 +1248,7 @@ func (k *KubeClient) GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecu
 	} else if len(pspList) > 1 {
 		return nil, fmt.Errorf("multiple pod security policies have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no pod security policy have the label %s", label))
+		return nil, errors.NotFoundError("no pod security policy have the label %s", label)
 	}
 }
 
@@ -1406,7 +1406,7 @@ func (k *KubeClient) GetServiceAccountByLabel(label string, allNamespaces bool) 
 	} else if len(serviceAccounts) > 1 {
 		return nil, fmt.Errorf("multiple service accounts have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no service accounts have the label %s", label))
+		return nil, errors.NotFoundError("no service accounts have the label %s", label)
 	}
 }
 
@@ -1646,7 +1646,7 @@ func (k *KubeClient) GetClusterRoleByLabel(label string) (*v13.ClusterRole, erro
 	} else if len(clusterRoles) > 1 {
 		return nil, fmt.Errorf("multiple cluster roles have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no cluster roles have the label %s", label))
+		return nil, errors.NotFoundError("no cluster roles have the label %s", label)
 	}
 }
 
@@ -1867,7 +1867,7 @@ func (k *KubeClient) GetClusterRoleBindingByLabel(label string) (*v13.ClusterRol
 	} else if len(clusterRoleBindings) > 1 {
 		return nil, fmt.Errorf("multiple cluster role bindings have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no cluster role bindings have the label %s", label))
+		return nil, errors.NotFoundError("no cluster role bindings have the label %s", label)
 	}
 }
 
@@ -2051,7 +2051,7 @@ func (k *KubeClient) GetCSIDriverByLabel(label string) (*storagev1.CSIDriver, er
 	} else if len(CSIDrivers) > 1 {
 		return nil, fmt.Errorf("multiple CSI drivers have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no CSI drivers have the label %s", label))
+		return nil, errors.NotFoundError("no CSI drivers have the label %s", label)
 	}
 }
 
@@ -2202,7 +2202,7 @@ func (k *KubeClient) GetResourceQuotaByLabel(label string) (*v1.ResourceQuota, e
 	}
 
 	if len(resourceQuotas) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("no resource quotas have the label %s", label))
+		return nil, errors.NotFoundError("no resource quotas have the label %s", label)
 	} else if len(resourceQuotas) > 1 {
 		return nil, fmt.Errorf("multiple resource quotas have the label %s", label)
 	}

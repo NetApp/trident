@@ -83,21 +83,38 @@ func IsFoundError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type notFoundError struct {
+	inner   error
 	message string
 }
 
-func (e *notFoundError) Error() string { return e.message }
+func (e *notFoundError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
 
-func NotFoundError(message string) error {
-	return &notFoundError{message}
+func (e *notFoundError) Unwrap() error { return e.inner }
+
+func NotFoundError(message string, a ...any) error {
+	return &notFoundError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithNotFoundError(err error, message string, a ...any) error {
+	return &notFoundError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
 }
 
 func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*notFoundError)
-	return ok
+	var errPtr *notFoundError
+	return errors.As(err, &errPtr)
 }
 
 // ///////////////////////////////////////////////////////////////////////////

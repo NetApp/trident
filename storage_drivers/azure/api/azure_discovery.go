@@ -924,8 +924,8 @@ func (c Client) EnsureVolumeInValidCapacityPool(ctx context.Context, volume *Fil
 		}
 	}
 
-	return errors.NotFoundError(fmt.Sprintf("volume %s is part of another capacity pool not referenced "+
-		"by this backend", volume.CreationToken))
+	return errors.NotFoundError("volume %s is part of another capacity pool not referenced "+
+		"by this backend", volume.CreationToken)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////

@@ -530,7 +530,7 @@ func (h *helper) listVolumeAttachments(ctx context.Context) ([]k8sstoragev1.Volu
 	if err != nil {
 		statusErr, ok := err.(*apierrors.StatusError)
 		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-			return nil, errors.NotFoundError(fmt.Sprintf("no volume attachments found; %s", err.Error()))
+			return nil, errors.NotFoundError("no volume attachments found; %s", err.Error())
 		}
 		return nil, err
 	}
@@ -1301,7 +1301,7 @@ func (h *helper) GetNodePublicationState(
 	if err != nil {
 		statusErr, ok := err.(*apierrors.StatusError)
 		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-			return nil, errors.NotFoundError(fmt.Sprintf("node %s not found", nodeName))
+			return nil, errors.NotFoundError("node %s not found", nodeName)
 		}
 		return nil, err
 	}

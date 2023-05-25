@@ -754,11 +754,11 @@ func (c Client) VolumeByCreationToken(ctx context.Context, creationToken string)
 
 	switch len(matchingFilesystems) {
 	case 0:
-		return nil, errors.NotFoundError(fmt.Sprintf("volume with creation token '%s' not found", creationToken))
+		return nil, errors.NotFoundError("volume with creation token '%s' not found", creationToken)
 	case 1:
 		return matchingFilesystems[0], nil
 	default:
-		return nil, errors.NotFoundError(fmt.Sprintf("multiple volumes with creation token '%s' found", creationToken))
+		return nil, errors.NotFoundError("multiple volumes with creation token '%s' found", creationToken)
 	}
 }
 
@@ -800,7 +800,7 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) 
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Volume not found.")
-			return nil, errors.NotFoundError(fmt.Sprintf("volume with ID '%s' not found", id))
+			return nil, errors.NotFoundError("volume with ID '%s' not found", id)
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching volume.")
@@ -1254,7 +1254,7 @@ func (c Client) SnapshotForVolume(
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Snapshot not found.")
-			return nil, errors.NotFoundError(fmt.Sprintf("snapshot %s not found", snapshotName))
+			return nil, errors.NotFoundError("snapshot %s not found", snapshotName)
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching snapshot.")
@@ -1634,7 +1634,7 @@ func (c Client) SubvolumeByCreationToken(
 
 	switch len(matchingSubvolumes) {
 	case 0:
-		return nil, errors.NotFoundError(fmt.Sprintf("subvolume with creation token '%s' not found", creationToken))
+		return nil, errors.NotFoundError("subvolume with creation token '%s' not found", creationToken)
 	case 1:
 		// This subvolume object does not contain metadata as it requires talking to actual storage
 		// and the delay exceeds Azure 1 second time limit.
@@ -1646,8 +1646,8 @@ func (c Client) SubvolumeByCreationToken(
 		}
 
 	default:
-		return nil, errors.NotFoundError(fmt.Sprintf("multiple subvolumes with creation token '%s' found",
-			creationToken))
+		return nil, errors.NotFoundError("multiple subvolumes with creation token '%s' found",
+			creationToken)
 	}
 }
 
@@ -1676,7 +1676,7 @@ func (c Client) SubvolumeByID(ctx context.Context, subvolumeID string, queryMeta
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Subvolume not found.")
-			return nil, errors.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolumeID))
+			return nil, errors.NotFoundError("subvolume with ID '%s' not found", subvolumeID)
 		}
 
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume.")
@@ -1720,7 +1720,7 @@ func (c Client) SubvolumeMetadata(ctx context.Context, subvolume *Subvolume) (*S
 	if err != nil {
 		if IsANFNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Debug("Subvolume not found.")
-			return nil, errors.NotFoundError(fmt.Sprintf("subvolume with ID '%s' not found", subvolume.ID))
+			return nil, errors.NotFoundError("subvolume with ID '%s' not found", subvolume.ID)
 		}
 		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching subvolume metadata.")
 		return nil, err

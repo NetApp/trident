@@ -4664,7 +4664,7 @@ func (c RestClient) QuotaGetEntry(
 		target += fmt.Sprintf("/%s", qtreeName)
 	}
 	if result.Payload == nil {
-		return nil, errors.NotFoundError(fmt.Sprintf("quota rule entries for %s not found", target))
+		return nil, errors.NotFoundError("quota rule entries for %s not found", target)
 	} else if len(result.Payload.QuotaRuleResponseInlineRecords) > 1 {
 		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
 	} else if len(result.Payload.QuotaRuleResponseInlineRecords) == 1 {
@@ -4673,7 +4673,7 @@ func (c RestClient) QuotaGetEntry(
 		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
 	}
 
-	return nil, errors.NotFoundError(fmt.Sprintf("no entries for %s", target))
+	return nil, errors.NotFoundError("no entries for %s", target)
 }
 
 // QuotaEntryList returns the disk limit quotas for a Flexvol
