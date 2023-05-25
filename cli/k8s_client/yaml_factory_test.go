@@ -100,15 +100,12 @@ func TestYAMLFactory(t *testing.T) {
 	yamlsOutputs := []string{
 		GetServiceAccountYAML(Name, nil, nil, nil),
 		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
-		GetRoleYAML(FlavorK8s, Namespace, Name, labels, ownerRef, false),
-		GetRoleYAML(FlavorOpenshift, Namespace, Name, labels, ownerRef, true),
-		GetRoleBindingYAML(FlavorK8s, Namespace, Name, labels, ownerRef, false),
-		GetRoleBindingYAML(FlavorOpenshift, Namespace, Name, labels, ownerRef, true),
-		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, false),
-		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, true),
-		GetClusterRoleYAML(FlavorOpenshift, Name, labels, ownerRef, false),
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, ownerRef, false),
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, labels, ownerRef, true),
+		GetRoleYAML(Namespace, Name, labels, ownerRef),
+		GetRoleBindingYAML(Namespace, Name, labels, ownerRef),
+		GetClusterRoleYAML(Name, nil, nil),
+		GetClusterRoleYAML(Name, labels, ownerRef),
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, ownerRef),
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, labels, ownerRef),
 		GetCSIDeploymentYAML(deploymentArgs),
 		GetCSIServiceYAML(Name, labels, ownerRef),
 		GetSecretYAML(Name, Namespace, labels, ownerRef, nil, nil),
@@ -127,18 +124,13 @@ func TestAPIVersion(t *testing.T) {
 	controllerRBACLabels := map[string]string{"app": "controller"}
 
 	yamlsOutputs := map[string]string{
-		GetClusterRoleYAML(FlavorK8s, Name, nil, nil, true):                         "rbac.authorization.k8s.io/v1",
-		GetClusterRoleYAML(FlavorOpenshift, Name, nil, nil, true):                   "rbac.authorization.k8s.io/v1",
-		GetRoleYAML(FlavorK8s, Namespace, Name, nil, nil, false):                    "rbac.authorization.k8s.io/v1",
-		GetRoleYAML(FlavorK8s, Namespace, Name, nil, nil, true):                     "rbac.authorization.k8s.io/v1",
-		GetRoleYAML(FlavorK8s, Namespace, Name, controllerRBACLabels, nil, true):    "rbac.authorization.k8s.io/v1",
-		GetRoleYAML(FlavorOpenshift, Namespace, Name, nil, nil, true):               "rbac.authorization.k8s.io/v1",
-		GetRoleBindingYAML(FlavorK8s, Namespace, Name, nil, nil, false):             "rbac.authorization.k8s.io/v1",
-		GetRoleBindingYAML(FlavorK8s, Namespace, Name, nil, nil, true):              "rbac.authorization.k8s.io/v1",
-		GetRoleBindingYAML(FlavorOpenshift, Namespace, Name, nil, nil, true):        "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, false):      "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil, true):       "rbac.authorization.k8s.io/v1",
-		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, nil, true): "rbac.authorization.k8s.io/v1",
+		GetClusterRoleYAML(Name, nil, nil):                                    "rbac.authorization.k8s.io/v1",
+		GetRoleYAML(Namespace, Name, nil, nil):                                "rbac.authorization.k8s.io/v1",
+		GetRoleYAML(Namespace, Name, controllerRBACLabels, nil):               "rbac.authorization.k8s.io/v1",
+		GetRoleBindingYAML(Namespace, Name, nil, nil):                         "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil):       "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorK8s, nil, nil):       "rbac.authorization.k8s.io/v1",
+		GetClusterRoleBindingYAML(Namespace, Name, FlavorOpenshift, nil, nil): "rbac.authorization.k8s.io/v1",
 	}
 
 	for result, value := range yamlsOutputs {
@@ -170,7 +162,6 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		ImageRegistry:           "registry.k8s.io",
 		LogFormat:               "text",
 		LogLevel:                "debug",
-		SnapshotCRDVersion:      "v1",
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    map[string]string{},
@@ -217,7 +208,6 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 		ImageRegistry:           "registry.k8s.io",
 		LogFormat:               "text",
 		LogLevel:                "debug",
-		SnapshotCRDVersion:      "v1beta1",
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    map[string]string{},
@@ -246,7 +236,7 @@ func TestGetCSIDeploymentYAML(t *testing.T) {
 
 	for _, versionString := range versions {
 		version := versionutils.MustParseSemantic(versionString)
-		deploymentArgs := &DeploymentYAMLArguments{Version: version, SnapshotCRDVersion: "v1"}
+		deploymentArgs := &DeploymentYAMLArguments{Version: version}
 
 		yamlData := GetCSIDeploymentYAML(deploymentArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))

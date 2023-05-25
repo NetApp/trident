@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -123,13 +123,8 @@ func getInstallYaml(semVersion *versionutils.Version) (string, error) {
 		return "", errors.New(versionNotSupported)
 	}
 
-	var snapshotCRDVersion string
-	if client != nil {
-		snapshotCRDVersion = client.GetSnapshotterCRDVersion()
-	}
-
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
-		DeploymentName:          getDeploymentName(true),
+		DeploymentName:          getDeploymentName(),
 		TridentImage:            tridentconfig.BuildImage,
 		AutosupportImage:        tridentconfig.DefaultAutosupportImage,
 		AutosupportProxy:        "",
@@ -139,7 +134,6 @@ func getInstallYaml(semVersion *versionutils.Version) (string, error) {
 		ImageRegistry:           "",
 		LogFormat:               "",
 		LogLevel:                "info",
-		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        []string{},
 		Labels:                  map[string]string{},
 		ControllingCRDetails:    map[string]string{},
@@ -148,7 +142,7 @@ func getInstallYaml(semVersion *versionutils.Version) (string, error) {
 		Version:                 semVersion,
 		TopologyEnabled:         false,
 		HTTPRequestTimeout:      tridentconfig.HTTPTimeoutString,
-		ServiceAccountName:      getControllerRBACResourceName(true),
+		ServiceAccountName:      getControllerRBACResourceName(),
 	}
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
 	yaml := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

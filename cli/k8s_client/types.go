@@ -16,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 
-	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -42,11 +41,6 @@ type KubernetesClient interface {
 	DeleteServiceByLabel(label string) error
 	DeleteService(name, namespace string) error
 	PatchServiceByLabel(label string, patchBytes []byte, patchType types.PatchType) error
-	GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error)
-	GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error)
-	CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error)
-	DeleteStatefulSetByLabel(label string) error
-	DeleteStatefulSet(name, namespace string) error
 	GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error)
 	GetDaemonSetByLabelAndName(label, name string, allNamespaces bool) (*appsv1.DaemonSet, error)
 	GetDaemonSetsByLabel(label string, allNamespaces bool) ([]appsv1.DaemonSet, error)
@@ -57,25 +51,11 @@ type KubernetesClient interface {
 	DeleteDaemonSet(name, namespace string, foreground bool) error
 	PatchDaemonSetByLabel(label string, patchBytes []byte, patchType types.PatchType) error
 	PatchDaemonSetByLabelAndName(label, daemonSetName string, patchBytes []byte, patchType types.PatchType) error
-	GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error)
-	GetConfigMapsByLabel(label string, allNamespaces bool) ([]v1.ConfigMap, error)
-	CheckConfigMapExistsByLabel(label string, allNamespaces bool) (bool, string, error)
-	DeleteConfigMapByLabel(label string) error
-	CreateConfigMapFromDirectory(path, name, label string) error
 	GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, error)
 	GetPodsByLabel(label string, allNamespaces bool) ([]v1.Pod, error)
 	CheckPodExistsByLabel(label string, allNamespaces bool) (bool, string, error)
 	DeletePodByLabel(label string) error
 	DeletePod(name, namespace string) error
-	GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error)
-	GetPVCByLabel(label string, allNamespaces bool) (*v1.PersistentVolumeClaim, error)
-	CheckPVCExists(pvcName string) (bool, error)
-	CheckPVCBound(pvcName string) (bool, error)
-	DeletePVCByLabel(label string) error
-	GetPV(pvName string) (*v1.PersistentVolume, error)
-	GetPVByLabel(label string) (*v1.PersistentVolume, error)
-	CheckPVExists(pvName string) (bool, error)
-	DeletePVByLabel(label string) error
 	GetCRD(crdName string) (*apiextensionv1.CustomResourceDefinition, error)
 	CheckCRDExists(crdName string) (bool, error)
 	PatchCRD(crdName string, patchBytes []byte, patchType types.PatchType) error
@@ -130,7 +110,6 @@ type KubernetesClient interface {
 	GetNamespace(namespace string) (*v1.Namespace, error)
 	CreateSecret(secret *v1.Secret) (*v1.Secret, error)
 	UpdateSecret(secret *v1.Secret) (*v1.Secret, error)
-	CreateCHAPSecret(secretName, accountName, initiatorSecret, targetSecret string) (*v1.Secret, error)
 	GetSecret(secretName string) (*v1.Secret, error)
 	GetSecretByLabel(label string, allNamespaces bool) (*v1.Secret, error)
 	GetSecretsByLabel(label string, allNamespaces bool) ([]v1.Secret, error)
@@ -152,13 +131,10 @@ type KubernetesClient interface {
 	RemoveTridentUserFromOpenShiftSCC(user, scc string) error
 	GetOpenShiftSCCByName(user, scc string) (bool, bool, []byte, error)
 	PatchOpenShiftSCC(newJSONData []byte) error
-	FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback)
 	AddFinalizerToCRD(crdName string) error
 	AddFinalizerToCRDs(CRDnames []string) error
 	RemoveFinalizerFromCRD(crdName string) error
-	GetCRDClient() (*crdclient.Clientset, error)
 	IsTopologyInUse() (bool, error)
-	GetSnapshotterCRDVersion() string
 }
 
 type DeploymentYAMLArguments struct {
@@ -174,7 +150,6 @@ type DeploymentYAMLArguments struct {
 	LogLevel                string                `json:"logLevel"`
 	LogWorkflows            string                `json:"logWorkflows"`
 	LogLayers               string                `json:"logLayers"`
-	SnapshotCRDVersion      string                `json:"snapshotCRDVersion"`
 	ImagePullSecrets        []string              `json:"imagePullSecrets"`
 	Labels                  map[string]string     `json:"labels"`
 	ControllingCRDetails    map[string]string     `json:"controllingCRDetails"`

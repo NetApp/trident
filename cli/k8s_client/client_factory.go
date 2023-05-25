@@ -20,7 +20,6 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	torc "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
-	tprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -30,7 +29,6 @@ type Clients struct {
 	KubeClient     *kubernetes.Clientset
 	SnapshotClient *k8ssnapshots.Clientset
 	K8SClient      KubernetesClient
-	TprovClient    *tprov.Clientset
 	TorcClient     *torc.Clientset
 	TridentClient  *tridentv1clientset.Clientset
 	K8SVersion     *k8sversion.Info
@@ -96,10 +94,6 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 	}
 
 	// Create the CRD clients
-	clients.TprovClient, err = tprov.NewForConfig(clients.RestConfig)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Tprov CRD client; %v", err)
-	}
 	clients.TorcClient, err = torc.NewForConfig(clients.RestConfig)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Torc CRD client; %v", err)

@@ -80,31 +80,15 @@ metadata:
 {SECRETS}
 `
 
-func GetClusterRoleYAML(
-	flavor OrchestratorFlavor, clusterRoleName string, labels, controllingCRDetails map[string]string, csi bool,
-) string {
-	var clusterRoleYAML string
+func GetClusterRoleYAML(clusterRoleName string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{
 		"ClusterRoleName":      clusterRoleName,
 		"Labels":               labels,
 		"ControllingCRDetails": controllingCRDetails,
-		"CSI":                  csi,
 	}).Trace(">>>> GetClusterRoleYAML")
 	defer func() { Log().Trace("<<<< GetClusterRoleYAML") }()
 
-	if csi {
-		clusterRoleYAML = controllerClusterRoleCSIYAMLTemplate
-	} else {
-		clusterRoleYAML = clusterRoleYAMLTemplate
-	}
-
-	// authorization.openshift.io/v1 is applicable to OCP 3.x only
-	if flavor == FlavorOpenShift && !csi {
-		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "authorization.openshift.io/v1")
-	} else {
-		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "rbac.authorization.k8s.io/v1")
-	}
-
+	clusterRoleYAML := controllerClusterRoleCSIYAMLTemplate
 	clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{CLUSTER_ROLE_NAME}", clusterRoleName)
 	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "LABELS", constructLabels(labels))
 	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
@@ -112,59 +96,13 @@ func GetClusterRoleYAML(
 	return clusterRoleYAML
 }
 
-const clusterRoleYAMLTemplate = `---
-kind: ClusterRole
-apiVersion: {API_VERSION}
-metadata:
-  name: {CLUSTER_ROLE_NAME}
-  {LABELS}
-  {OWNER_REF}
-rules:
-  - apiGroups: [""]
-    resources: ["namespaces"]
-    verbs: ["get", "list"]
-  - apiGroups: [""]
-    resources: ["persistentvolumes", "persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims/status"]
-    verbs: ["update", "patch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["resourcequotas"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
-"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
-"tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: ["policy"]
-    resources: ["podsecuritypolicies"]
-    verbs: ["use"]
-    resourceNames:
-      - tridentpods
-`
-
 // Specific permissions for sidecars
 // csi-resizer needs 'list' for pods
 // csi-snapshotter needs 'watch' for volumesnapshotclasses
 // trident-autosupport needs 'get' for namespace resource cluster-wide
 const controllerClusterRoleCSIYAMLTemplate = `---
 kind: ClusterRole
-apiVersion: {API_VERSION}
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {CLUSTER_ROLE_NAME}
   {LABELS}
@@ -229,10 +167,7 @@ rules:
       - {CLUSTER_ROLE_NAME}
 `
 
-func GetRoleYAML(
-	flavor OrchestratorFlavor, namespace, roleName string, labels, controllingCRDetails map[string]string,
-	csi bool,
-) string {
+func GetRoleYAML(namespace, roleName string, labels, controllingCRDetails map[string]string) string {
 	var roleYAML string
 
 	if isControllerRBACResource(labels) {
@@ -252,7 +187,7 @@ func GetRoleYAML(
 // trident-autosupport needs 'get' for pod/log resources in the 'trident' namespace
 const controllerRoleCSIYAMLTemplate = `---
 kind: Role
-apiVersion: "rbac.authorization.k8s.io/v1"
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: {NAMESPACE}
   name: {ROLE_NAME}
@@ -283,10 +218,7 @@ rules:
       - {ROLE_NAME}
 `
 
-func GetRoleBindingYAML(
-	flavor OrchestratorFlavor, namespace, name string,
-	labels, controllingCRDetails map[string]string, csi bool,
-) string {
+func GetRoleBindingYAML(namespace, name string, labels, controllingCRDetails map[string]string) string {
 	rbYAML := roleBindingKubernetesV1YAMLTemplate
 	rbYAML = strings.ReplaceAll(rbYAML, "{NAMESPACE}", namespace)
 	rbYAML = strings.ReplaceAll(rbYAML, "{NAME}", name)
@@ -314,26 +246,18 @@ roleRef:
 `
 
 func GetClusterRoleBindingYAML(
-	namespace, name string, flavor OrchestratorFlavor,
-	labels, controllingCRDetails map[string]string, csi bool,
+	namespace, name string, flavor OrchestratorFlavor, labels, controllingCRDetails map[string]string,
 ) string {
-	var crbYAML string
 	Log().WithFields(LogFields{
 		"Namespace":            namespace,
 		"Name":                 name,
 		"Flavor":               flavor,
 		"Labels":               labels,
 		"ControllingCRDetails": controllingCRDetails,
-		"CSI":                  csi,
 	}).Trace(">>>> GetClusterRoleBindingYAML")
 	defer func() { Log().Trace("<<<< GetClusterRoleBindingYAML") }()
 
-	// authorization.openshift.io/v1 is applicable to OCP 3.x only
-	if flavor == FlavorOpenShift && !csi {
-		crbYAML = clusterRoleBindingOpenShiftYAMLTemplate
-	} else {
-		crbYAML = clusterRoleBindingKubernetesV1YAMLTemplate
-	}
+	crbYAML := clusterRoleBindingKubernetesV1YAMLTemplate
 
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAMESPACE}", namespace)
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAME}", name)
@@ -343,21 +267,6 @@ func GetClusterRoleBindingYAML(
 	Log().WithField("yaml", crbYAML).Trace("Cluster role binding YAML.")
 	return crbYAML
 }
-
-const clusterRoleBindingOpenShiftYAMLTemplate = `---
-kind: ClusterRoleBinding
-apiVersion: authorization.openshift.io/v1
-metadata:
-  name: {NAME}
-  {LABELS}
-  {OWNER_REF}
-subjects:
-  - kind: ServiceAccount
-    name: {NAME}
-    namespace: {NAMESPACE}
-roleRef:
-  name: {NAME}
-`
 
 const clusterRoleBindingKubernetesV1YAMLTemplate = `---
 kind: ClusterRoleBinding
@@ -481,11 +390,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	deploymentYAML := csiDeployment120YAMLTemplate
 
-	csiSnapshotterVersion := "v3.0.3"
-	if args.SnapshotCRDVersion == "v1" {
-		csiSnapshotterVersion = "v6.2.1"
-	}
-
 	if args.ImageRegistry == "" {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
@@ -531,7 +435,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SNAPSHOTTER_VERSION}", csiSnapshotterVersion)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SIDECAR_LOG_LEVEL}", sideCarLogLevel)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", args.LogFormat)
@@ -705,7 +608,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:{CSI_SNAPSHOTTER_VERSION}
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v6.2.1
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"

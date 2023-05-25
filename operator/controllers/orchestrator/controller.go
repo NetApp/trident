@@ -1,10 +1,9 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package orchestrator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -13,7 +12,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -31,7 +29,6 @@ import (
 	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
 	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned/scheme"
 	"github.com/netapp/trident/operator/controllers/orchestrator/installer"
-	tprovv1 "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -62,7 +59,6 @@ const (
 	ResourceDaemonSet             ResourceType = "resourceDaemonset"
 
 	TridentOrchestratorCRDName = "tridentorchestrators.trident.netapp.io"
-	TridentProvisionersCRDName = "tridentprovisioners.trident.netapp.io"
 
 	UninstallationNote = ". NOTE: This CR has uninstalled status; delete this CR to allow new Trident installation."
 
@@ -145,11 +141,11 @@ func NewController(clients *clients.Clients) (*Controller, error) {
 	// Set up a watch for Trident Deployment
 	c.deploymentWatcher = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			options.LabelSelector = installer.LabelSelector
+			options.LabelSelector = installer.TridentCSILabel
 			return c.KubeClient.AppsV1().Deployments(corev1.NamespaceAll).List(ctx(), options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			options.LabelSelector = installer.LabelSelector
+			options.LabelSelector = installer.TridentCSILabel
 			return c.KubeClient.AppsV1().Deployments(corev1.NamespaceAll).Watch(ctx(), options)
 		},
 	}
@@ -598,158 +594,6 @@ func (c *Controller) daemonsetUpdated(_, newObj interface{}) {
 /********************************************
  * Checks pre- and post- Trident installation
  ********************************************/
-// unsupportedInstallationsPrechecks identifies the state of the Trident installation(s)
-// 1. If we are in a Greenfield scenario and come across legacy, CSI Preview or tridentctl based
-//    Trident installations we send a configuration error.
-// 2. However, if legacy, CSI Preview or tridentctl based Trident are installed after installing the
-//    operator, these will be removed eventually.
-func (c *Controller) unsupportedInstallationsPrechecks(controllingCRBasedOnStatusExists,
-	operatorCSIDeploymentFound bool,
-) error {
-	// CSI Preview Trident should not be present
-	if csiPreviewTridentInstalled, CSIPreviewNamespace, err := c.isPreviewCSITridentInstalled(); err != nil {
-		return errors.WrapWithReconcileFailedError(err, "reconcile failed")
-	} else if csiPreviewTridentInstalled {
-		if controllingCRBasedOnStatusExists || operatorCSIDeploymentFound {
-			Log().Debug("Identified that CSI Preview Trident was installed after Trident Operator created installation.")
-			if err := c.uninstallCSIPreviewTrident(CSIPreviewNamespace); err != nil {
-				Log().WithField("err", err).Error("Unable to remove CSI Preview Trident.")
-				return errors.WrapWithReconcileFailedError(err, "reconcile failed")
-			} else {
-				Log().Debug("Removed CSI Preview Trident.")
-				return errors.ReconcileIncompleteError("reconcile incomplete")
-			}
-		} else {
-			// This should have been a greenfield scenario but CSI Preview Trident already exists
-			errorMessage := fmt.Sprintf("Operator cannot proceed with the installation, "+
-				"found CSI Preview Trident already installed in namespace '%v'.", CSIPreviewNamespace)
-			Log().Error(errorMessage)
-			if crErr := c.updateAllCRs(errorMessage); crErr != nil {
-				Log().Error(crErr)
-			}
-			return errors.UnsupportedConfigError(errorMessage)
-		}
-	}
-
-	// Legacy Trident should not be present
-	legacyDeploymentFound, legacyTridentNamespace, err := c.isLegacyTridentInstalled()
-	if err != nil {
-		return errors.WrapWithReconcileFailedError(err, "reconcile failed")
-	} else if legacyDeploymentFound {
-		Log().Debug("Identified that legacy Trident was installed after Trident Operator created installation.")
-		if controllingCRBasedOnStatusExists || operatorCSIDeploymentFound {
-			if err := c.uninstallLegacyTrident(legacyTridentNamespace); err != nil {
-				Log().WithField("err", err).Error("Unable to remove legacy Trident.")
-				return errors.WrapWithReconcileFailedError(err, "reconcile failed")
-			} else {
-				Log().Debug("Removed legacy Trident.")
-				return errors.ReconcileIncompleteError("reconcile incomplete")
-			}
-		} else {
-			errorMessage := fmt.Sprintf("Operator cannot proceed with the installation, "+
-				"found non-CSI Trident already installed in namespace '%v'.", legacyTridentNamespace)
-			Log().Error(errorMessage)
-			if crErr := c.updateAllCRs(errorMessage); crErr != nil {
-				Log().Error(crErr)
-			}
-			return errors.UnsupportedConfigError(errorMessage)
-		}
-	}
-
-	return nil
-}
-
-// alphaSnapshotCRDsExist identifies if the alpha snapshot CRDs not present
-func (c *Controller) alphaSnapshotCRDsExist() (bool, []string, error) {
-	var alphaSnapshotCRDsExist bool
-	var alphaSnapshotCRDsList []string
-
-	for _, crdName := range installer.AlphaCRDNames {
-
-		// See if CRD exists
-		crdsExist, returnError := c.K8SClient.CheckCRDExists(crdName)
-		if returnError != nil {
-			return alphaSnapshotCRDsExist, alphaSnapshotCRDsList, errors.WrapWithReconcileFailedError(returnError, "reconcile failed")
-		}
-		if !crdsExist {
-			Log().WithField("CRD", crdName).Debug("Alpha snapshot CRD not present.")
-			continue
-		}
-
-		// Get the CRD and check version
-		crd, returnError := c.K8SClient.GetCRD(crdName)
-		if returnError != nil {
-			return alphaSnapshotCRDsExist, alphaSnapshotCRDsList, errors.WrapWithReconcileFailedError(returnError, "reconcile failed")
-		}
-
-		for _, version := range crd.Spec.Versions {
-			if strings.ToLower(version.Name) == "v1alpha1" {
-				alphaSnapshotCRDsExist = true
-				alphaSnapshotCRDsList = append(alphaSnapshotCRDsList, crdName)
-				Log().WithField("CRD", crdName).Debug("Alpha snapshot CRD present.")
-			}
-		}
-	}
-
-	return alphaSnapshotCRDsExist, alphaSnapshotCRDsList, nil
-}
-
-// alphaSnapshotCRDsPreinstallationCheck identifies if the alpha snapshot CRDs are present before any Trident
-// installation by the operator
-func (c *Controller) alphaSnapshotCRDsPreinstallationCheck() error {
-	alphaSnapshotCRDsExist, alphaSnapshotCRDsList, err := c.alphaSnapshotCRDsExist()
-	if err != nil {
-		return err
-	}
-
-	errorMessage := fmt.Sprintf("Operator cannot proceed with the installation due to alpha snapshot"+
-		" CRDs %v; run `tridentctl obliviate alpha-snapshot-crd` to remove previous kubernetes snapshot"+
-		" CRDs; for details, please refer to Trident's online documentation", alphaSnapshotCRDsList)
-
-	if alphaSnapshotCRDsExist {
-		Log().Error(errorMessage)
-		if crErr := c.updateAllCRs(errorMessage); crErr != nil {
-			Log().Error(crErr)
-		}
-		return errors.UnsupportedConfigError(errorMessage)
-	}
-
-	return nil
-}
-
-// alphaSnapshotCRDsPostinstallationCheck identifies if the alpha snapshot CRDs are present after any Trident
-// installation by the operator, this should only be called once controllingCR has been identified and before
-// installing, patching, updating the Trident
-func (c *Controller) alphaSnapshotCRDsPostinstallationCheck(tridentCR *netappv1.TridentOrchestrator,
-	currentInstalledTridentVersion string,
-) error {
-	alphaSnapshotCRDsExist, alphaSnapshotCRDsList, err := c.alphaSnapshotCRDsExist()
-	if err != nil {
-		return err
-	}
-
-	errorMessage := fmt.Sprintf("Operator cannot proceed with the installation due to alpha snapshot"+
-		" CRDs %v; run `tridentctl obliviate alpha-snapshot-crd` to remove previous kubernetes snapshot"+
-		" CRDs; for details, please refer to Trident's online documentation", alphaSnapshotCRDsList)
-
-	if alphaSnapshotCRDsExist {
-
-		Log().Error(errorMessage)
-
-		// Update status of the tridentCR  to `Failed`
-		debugMessage := "Updating Trident Orchestrator CR after failed alpha snapshot CRDs check."
-
-		if _, crErr := c.updateTorcEventAndStatus(tridentCR, debugMessage, errorMessage, string(AppStatusFailed),
-			currentInstalledTridentVersion, tridentCR.Status.Namespace, corev1.EventTypeWarning,
-			&tridentCR.Status.CurrentInstallationParams); crErr != nil {
-			Log().Error(crErr)
-		}
-		// Alpha snapshot CRDs check failed, so fail the reconcile loop
-		return errors.ReconcileFailedError(errorMessage)
-	}
-
-	return nil
-}
 
 // k8sVersionPreinstallationCheck identifies if K8s version is valid or not
 func (c *Controller) k8sVersionPreinstallationCheck() error {
@@ -764,98 +608,10 @@ func (c *Controller) k8sVersionPreinstallationCheck() error {
 	return nil
 }
 
-/*****************
- * Migration Logic
- *****************/
-// handleMigrationScenario identifies if there is a valid Tprov CR with `Installed` status and
-// if true then operator copies its config to a new Torc CR.
-func (c *Controller) handleMigrationScenario() error {
-	Log().Debug("Verify migration from TridentProvisioner to TridentOrchestrator required.")
-
-	// Add this sleep to ensure if both thee operator bundle and the Tprov CR were updated simultaneously,
-	// we discover and consider the latest Tprov's spec for the migration.
-	time.Sleep(5 * time.Second)
-
-	// Check if there already exists a controllingCR - if deployment is deleted it is possible that we may run
-	// into a situation where there is no deployment but there is a controlling CR
-	controllingTprovWithInstalledStatus, err := c.identifyTprovCRWithInstalledStatus()
-	if err != nil {
-		return errors.ReconcileFailedError(
-			"unable to identify if TridentProvisioner CR with Installed status exists; err: %v", err)
-	}
-
-	// If Tprov with "Installed" status exist
-	if controllingTprovWithInstalledStatus != nil {
-		name := controllingTprovWithInstalledStatus.Name
-		spec := controllingTprovWithInstalledStatus.Spec
-		namespace := controllingTprovWithInstalledStatus.Namespace
-
-		Log().WithFields(LogFields{
-			"TridentProvisionerCR":          name,
-			"TridentProvisionerCRNamespace": namespace,
-			"TridentOrchestratorCR":         name,
-		}).Infof("Found a TridentProvisioner CR with Installed status; migrating information to TridentOrchestrator CR")
-
-		specJson, err := json.Marshal(spec)
-		if err != nil {
-			msg := fmt.Sprintf("unable to convert existing TridentProvisioner(%v/%v) spec to JSON; err: %v", name,
-				namespace, err)
-			Log().Errorf(msg)
-			return errors.ReconcileFailedError(msg)
-		}
-
-		var tridentOrchestratorSpec netappv1.TridentOrchestratorSpec
-		err = json.Unmarshal(specJson, &tridentOrchestratorSpec)
-		if err != nil {
-			msg := fmt.Sprintf("unable to convert existing TridentProvisioner("+
-				"%v/%v) spec to TridentOrchestrator spec; err: %v", name, namespace, err)
-			Log().Errorf(msg)
-			return errors.ReconcileFailedError(msg)
-		}
-
-		tridentOrchestratorSpec.Namespace = namespace
-
-		torc := &netappv1.TridentOrchestrator{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "trident.netapp.io/v1",
-				Kind:       "TridentOrchestrator",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
-			},
-			Spec: tridentOrchestratorSpec,
-		}
-
-		if err = c.createTridentOrchestratorCR(torc); err != nil {
-			msg := fmt.Sprintf("unable to create existing TridentOrchestrator(%v) from TridentProvisioner("+
-				"%v/%v) spec; err: %v", name, namespace, name, err)
-			Log().Errorf(msg)
-			return errors.ReconcileFailedError(msg)
-		}
-
-		Log().WithField("TridentOrchestratorCR", name).Info("Created TridentOrchestrator CR.")
-
-		if err = c.deleteTridentTprovCR(name, namespace); err != nil {
-			msg := fmt.Sprintf("unable to delete existing TridentProvisioner(%v/%v) CR; err: %v", namespace, name, err)
-			Log().Errorf(msg)
-			return errors.ReconcileFailedError(msg)
-		}
-
-		Log().WithFields(LogFields{
-			"TridentProvisionerCR":          name,
-			"TridentProvisionerCRNamespace": namespace,
-		}).Infof("Removed TridentProvisioner CR.")
-		return errors.ReconcileIncompleteError("reconcile incomplete")
-	}
-
-	Log().Debug("Migration from TridentProvisioner to TridentOrchestrator not required.")
-
-	return nil
-}
-
 /**********************
  * Reconciliation Logic
  **********************/
+
 // reconcile runs the reconcile logic and ensures we move to the desired state and the desired state is
 // maintained
 func (c *Controller) reconcile(key KeyItem) error {
@@ -880,19 +636,8 @@ func (c *Controller) reconcile(key KeyItem) error {
 		Log().Debugf("No operator based CSI Trident deployment found.")
 	}
 
-	if err := c.unsupportedInstallationsPrechecks(controllingCRBasedOnStatusExists,
-		torcCSIDeploymentFound); err != nil {
-		return err
-	}
-
 	if torcCSIDeploymentFound || controllingCRBasedOnStatusExists {
-
-		// Always delete the TridentProvisioner CRDs and CRs
-		if err := c.cleanupTridentProvisioner(); err != nil {
-			Log().WithField("err", err).Warnf("Unable to clean TridentProvisioner objects.")
-		}
-
-		return c.reconcileTridentPresent(key, torcCSIDeployments, torcCSIDeploymentNamespace, true,
+		return c.reconcileTridentPresent(key, torcCSIDeployments, torcCSIDeploymentNamespace,
 			controllingCRBasedOnStatus)
 	} else {
 
@@ -902,23 +647,6 @@ func (c *Controller) reconcile(key KeyItem) error {
 		// Before the installation ensure K8s version is valid
 		if err := c.k8sVersionPreinstallationCheck(); err != nil {
 			return err
-		}
-
-		// Ensure no alpha-snapshot CRDs are present
-		if err := c.alphaSnapshotCRDsPreinstallationCheck(); err != nil {
-			return err
-		}
-
-		// Handle the migration scenario from tprov to torc (if applicable)
-		if exists, err := c.doesCRDExist(TridentProvisionersCRDName); err == nil && exists {
-			if err := c.handleMigrationScenario(); err != nil {
-				return err
-			}
-		}
-
-		// Always delete the TridentProvisioner CRDs and CRs
-		if err := c.cleanupTridentProvisioner(); err != nil {
-			Log().WithField("err", err).Warnf("Unable to clean TridentProvisioner objects")
 		}
 
 		return c.reconcileTridentNotPresent()
@@ -1008,8 +736,8 @@ func (c *Controller) reconcileTridentNotPresent() error {
 	return err
 }
 
-func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments []appsv1.Deployment,
-	deploymentNamespace string, isCSI bool,
+func (c *Controller) reconcileTridentPresent(
+	key KeyItem, operatorCSIDeployments []appsv1.Deployment, deploymentNamespace string,
 	controllingCRBasedOnStatus *netappv1.TridentOrchestrator,
 ) error {
 	var controllingCRBasedOnStatusName string
@@ -1044,7 +772,6 @@ func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments
 		"callingResourceType":         callingResourceType,
 		"namespace":                   deploymentNamespace,
 		"operatorBasedCSIDeployments": operatorCSIDeploymentNames,
-		"isCSI":                       isCSI,
 		"controllingCRBasedOnStatus":  controllingCRBasedOnStatusName,
 	}).Info("Reconciler found Trident installation.")
 
@@ -1134,8 +861,8 @@ func (c *Controller) reconcileTridentPresent(key KeyItem, operatorCSIDeployments
 // controllingCRBasedReconcile is the core reconciliation or in other words maintenance logic i.e.
 // we know the ControllingCR, therefore we know the Specs of the ControllingCR, use that spec to
 // ensure we are maintaining the desired state.
-func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.TridentOrchestrator,
-	deploymentExist bool,
+func (c *Controller) controllingCRBasedReconcile(
+	controllingCR *netappv1.TridentOrchestrator, deploymentExist bool,
 ) error {
 	// Check to see if controllingCR status is uninstalled, if this is the case installation/patch should not be run
 	if controllingCR.Status.Status == string(AppStatusUninstalled) {
@@ -1239,11 +966,6 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 			return errors.ReconcileFailedError(errorMessage)
 		}
 
-		// Check: Alpha-snapshot CRDs should not be present
-		if err = c.alphaSnapshotCRDsPostinstallationCheck(controllingCR, currentInstalledTridentVersion); err != nil {
-			return err
-		}
-
 		// Check: Current K8s version should be supported, if not is there a warning message to notify users
 		isCurrentK8sVersionSupported, warningMessage := c.validateCurrentK8sVersion()
 		eventType := corev1.EventTypeNormal
@@ -1290,6 +1012,7 @@ func (c *Controller) controllingCRBasedReconcile(controllingCR *netappv1.Trident
 /************************************************
  * Installer & Uninstaller based helper functions
  ************************************************/
+
 // installTridentAndUpdateStatus installs Trident and updates status of the ControllingCR accordingly
 // based on success or failure
 func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrchestrator,
@@ -1457,6 +1180,7 @@ func (c *Controller) obliviateCRDs(tridentCR netappv1.TridentOrchestrator) error
 /************************************************
  * Trident Orchestrator CRD & CR helper functions
  ************************************************/
+
 // ensureTridentOrchestratorCRDExist ensures TridentOrchestrator CRD exist
 func (c *Controller) ensureTridentOrchestratorCRDExist() error {
 	i, err := installer.NewInstaller(c.KubeConfig, metav1.NamespaceDefault, 0)
@@ -1515,10 +1239,9 @@ func (c *Controller) identifyControllingCRBasedOnStatus() (bool, *netappv1.Tride
 
 // identifyControllingCRForTridentDeployments identifies controllingCR for deployment and reports nil if length of the
 // operatorCSIDeployments is more than 1
-func (c *Controller) identifyControllingCRForTridentDeployments(operatorCSIDeployments []appsv1.Deployment) (*netappv1.
-	TridentOrchestrator,
-	error,
-) {
+func (c *Controller) identifyControllingCRForTridentDeployments(
+	operatorCSIDeployments []appsv1.Deployment,
+) (*netappv1.TridentOrchestrator, error) {
 	// If multiple Trident deployments are found, we will let self-heal logic fix it
 	if len(operatorCSIDeployments) > 1 {
 		Log().Debugf("Found multiple Trident deployments.")
@@ -1666,138 +1389,10 @@ func (c *Controller) updateTridentOrchestratorCRStatus(
 	return newTridentCR, true, err
 }
 
-/***********************************************
- * Trident Provisioner CRD & CR helper functions
- ***********************************************/
-// getTridentTprovCRsAll gets all the TridentProvisioner CRs across all namespaces
-func (c *Controller) getTridentTprovCRsAll() ([]tprovv1.TridentProvisioner, error) {
-	list, err := c.CRDTprovClient.TridentV1().TridentProvisioners(corev1.NamespaceAll).List(ctx(), listOpts)
-	if err != nil {
-		return nil, err
-	}
-	return list.Items, nil
-}
-
-// identifyTprovCRWithInstalledStatus identified the controllingCR with installed status
-func (c *Controller) identifyTprovCRWithInstalledStatus() (*tprovv1.TridentProvisioner, error) {
-	// Get all TridentOrchestrator CRs
-	tridentTprovCRs, err := c.getTridentTprovCRsAll()
-	if err != nil {
-		return nil, err
-	} else if len(tridentTprovCRs) == 0 {
-		Log().Info("Reconciler found no TridentProvisioner CRs.")
-	}
-
-	// Identify and return the CR that has status neither "Installed"
-	for _, cr := range tridentTprovCRs {
-		if cr.Status.Status == string(AppStatusInstalled) {
-			return &cr, nil
-		}
-	}
-
-	return nil, nil
-}
-
-// deleteTridentTprovCRD deletes TridentProvisioner CRD
-func (c *Controller) deleteTridentTprovCRD() error {
-	Log().Debug("Starting TridentProvisioner CRD cleanup.")
-
-	logFields := LogFields{"CRD": TridentProvisionersCRDName}
-
-	// Get the CRD and check for finalizers
-	crd, err := c.K8SClient.GetCRD(TridentProvisionersCRDName)
-	if isNotFoundError(err) {
-		Log().WithFields(logFields).Info("CRD not found.")
-		return nil
-	}
-
-	Log().WithFields(logFields).Info("CRD found; removing the CRD.")
-
-	// Remove finalizers if present
-	if len(crd.Finalizers) > 0 {
-		if err := c.K8SClient.RemoveFinalizerFromCRD(TridentProvisionersCRDName); err != nil {
-			Log().WithFields(logFields).Errorf("Could not remove finalizer from CRD; %v", err)
-			return err
-		} else {
-			Log().WithFields(logFields).Debug("Removed finalizers from CRD.")
-		}
-	} else {
-		Log().WithFields(logFields).Debug("No finalizers found on CRD.")
-	}
-
-	// Try deleting CRD
-	if crd.DeletionTimestamp.IsZero() {
-		Log().WithFields(logFields).Debug("Deleting CRD.")
-
-		err := c.K8SClient.DeleteCRD(TridentProvisionersCRDName)
-		if isNotFoundError(err) {
-			Log().WithFields(logFields).Info("CRD not found during deletion.")
-			return nil
-		} else if err != nil {
-			Log().WithFields(logFields).Errorf("Could not delete CRD; %v", err)
-			return err
-		}
-	} else {
-		Log().WithFields(logFields).Debug("CRD already has deletion timestamp.")
-	}
-
-	Log().WithFields(logFields).Info("CRD deleted.")
-
-	return nil
-}
-
-// deleteTridentTprovCR deletes TridentProvisioner CR
-func (c *Controller) deleteTridentTprovCR(name, namespace string) error {
-	return c.CRDTprovClient.TridentV1().TridentProvisioners(namespace).Delete(ctx(), name, deleteOpts)
-}
-
-// deleteTridentTprovCRAll deletes all the TridentProvisioner CRs
-func (c *Controller) deleteTridentTprovCRAll() error {
-	Log().Debug("Starting TridentProvisioner CR cleanup.")
-
-	// See if CRD exists
-	exists, err := c.doesCRDExist(TridentProvisionersCRDName)
-	if err != nil {
-		return err
-	} else if !exists {
-		Log().WithField("CRDName", TridentProvisionersCRDName).Debugf("CRD not present.")
-		return nil
-	}
-
-	tridentTprovCRs, err := c.getTridentTprovCRsAll()
-	if err != nil {
-		return err
-	} else if len(tridentTprovCRs) == 0 {
-		Log().Debug("No TridentProvisioner CRs found.")
-		return nil
-	}
-
-	for _, tridentTprovCR := range tridentTprovCRs {
-		if tridentTprovCR.DeletionTimestamp.IsZero() {
-			_ = c.CRDTprovClient.TridentV1().TridentProvisioners(tridentTprovCR.Namespace).Delete(ctx(), tridentTprovCR.Name,
-				deleteOpts)
-		}
-	}
-
-	Log().Info("TridentProvisioner CRs deleted.")
-	return nil
-}
-
-func (c *Controller) cleanupTridentProvisioner() error {
-	if err := c.deleteTridentTprovCRAll(); err != nil {
-		return err
-	}
-
-	if err := c.deleteTridentTprovCRD(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 /*************************************
  * Trident deployment helper functions
  *************************************/
+
 // getTridentOrchestratorCSIDeployments returns CSI Trident deployments (if any) created by Trident Orchestrator CR
 func (c *Controller) getTridentOrchestratorCSIDeployments() ([]appsv1.Deployment, string, error) {
 	return c.getCRDBasedCSIDeployments(CRDName)
@@ -1867,52 +1462,10 @@ func (c *Controller) matchDeploymentControllingCR(tridentCRs []*netappv1.Trident
 /**************************
  * Trident helper functions
  **************************/
-// isLegacyTridentInstalled identifies if legacy Trident is installed
-func (c *Controller) isLegacyTridentInstalled() (installed bool, namespace string, err error) {
-	return c.K8SClient.CheckDeploymentExistsByLabel(installer.TridentLegacyLabel, true)
-}
-
-// isPreviewCSITridentInstalled identifies if CSI Preview Trident is installed
-func (c *Controller) isPreviewCSITridentInstalled() (installed bool, namespace string, err error) {
-	return c.K8SClient.CheckStatefulSetExistsByLabel(installer.TridentCSILabel, true)
-}
 
 // isCSITridentInstalled identifies if CSI Trident is installed
 func (c *Controller) isCSITridentInstalled() (installed bool, namespace string, err error) {
 	return c.K8SClient.CheckDeploymentExistsByLabel(installer.TridentCSILabel, true)
-}
-
-// uninstallCSIPreviewTrident uninstalls Trident CSI Preview
-func (c *Controller) uninstallCSIPreviewTrident(namespace string) error {
-	i, err := installer.NewInstaller(c.KubeConfig, namespace, 0)
-	if err != nil {
-		return err
-	}
-
-	// Removes only the statefulset other object will be fixed or removed as part of the auto-heal code.
-	if err := i.UninstallCSIPreviewTrident(); err != nil {
-		// Uninstall failed, so fail the reconcile loop
-		return err
-	}
-
-	// Uninstall succeeded
-	return nil
-}
-
-// uninstallLegacyTrident uninstalls Trident CSI Legacy
-func (c *Controller) uninstallLegacyTrident(namespace string) error {
-	i, err := installer.NewInstaller(c.KubeConfig, namespace, 0)
-	if err != nil {
-		return err
-	}
-
-	if err := i.UninstallLegacyTrident(); err != nil {
-		// Uninstall failed, so fail the reconcile loop
-		return err
-	}
-
-	// Uninstall succeeded
-	return nil
 }
 
 // removeNonTorcBasedCSIInstallation identifies if the Tprov-based or tridentctl-based CSI Trident is installed,
@@ -1964,6 +1517,7 @@ func (c *Controller) removeNonTorcBasedCSIInstallation(tridentCR *netappv1.Tride
 /*****************************
  * Versioning helper functions
  *****************************/
+
 // getCurrentTridentAndK8sVersion reports current Trident version installed and K8s version according
 // to which Trident was installed
 func (c *Controller) getCurrentTridentAndK8sVersion(tridentCR *netappv1.TridentOrchestrator) (string, string, error) {
@@ -2059,6 +1613,7 @@ func (c *Controller) tridentUpgradeNeeded(tridentK8sConfigVersion string) bool {
 /************************
  * Misc. helper functions
  ************************/
+
 // doesCRDExist checks if the given CRD exist
 func (c *Controller) doesCRDExist(crdName string) (bool, error) {
 	// Discover CRD data
@@ -2068,13 +1623,6 @@ func (c *Controller) doesCRDExist(crdName string) (bool, error) {
 	}
 
 	return crdExist, returnError
-}
-
-func isNotFoundError(err error) bool {
-	if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-		return true
-	}
-	return false
 }
 
 // resourceTypeToK8sKind translates resources to corresponding native Kinds

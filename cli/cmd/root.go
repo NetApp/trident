@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -45,10 +45,6 @@ const (
 
 	ExitCodeSuccess = 0
 	ExitCodeFailure = 1
-
-	TridentLegacyLabelKey   = "app"
-	TridentLegacyLabelValue = "trident.netapp.io"
-	TridentLegacyLabel      = TridentLegacyLabelKey + "=" + TridentLegacyLabelValue
 
 	TridentCSILabelKey   = "app"
 	TridentCSILabelValue = "controller.csi.trident.netapp.io"
@@ -169,10 +165,7 @@ func discoverOperatingMode(_ *cobra.Command) error {
 
 	// Find the CSI Trident pod
 	if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
-		// Fall back to non-CSI Trident pod
-		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentLegacyLabel); err != nil {
-			return err
-		}
+		return err
 	}
 
 	OperatingMode = ModeTunnel
