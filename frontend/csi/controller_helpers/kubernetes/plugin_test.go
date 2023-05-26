@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
-	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -102,17 +101,6 @@ func TestAddStorageClass(t *testing.T) {
 		},
 	}
 
-	scv1Beta := &k8sstoragev1beta.StorageClass{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: FakeStorageClass,
-		},
-		Provisioner: csi.Provisioner,
-		Parameters: map[string]string{
-			"backendType":               "ontap-nas",
-			"csi.storage.k8s.io/fsType": "nfs",
-		},
-	}
-
 	scDummy := "StorageClass"
 
 	backendTypeAttr, _ := storageattribute.CreateAttributeRequestFromAttributeValue("backendType", "ontap-nas")
@@ -124,10 +112,9 @@ func TestAddStorageClass(t *testing.T) {
 		},
 	}
 
-	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(2)
+	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(1)
 
 	plugin.addStorageClass(sc)
-	plugin.addStorageClass(scv1Beta)
 	plugin.addStorageClass(scDummy)
 }
 
@@ -145,17 +132,6 @@ func TestUpdateStorageClass(t *testing.T) {
 		},
 	}
 
-	scv1Beta := &k8sstoragev1beta.StorageClass{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: FakeStorageClass,
-		},
-		Provisioner: csi.Provisioner,
-		Parameters: map[string]string{
-			"backendType":               "ontap-nas",
-			"csi.storage.k8s.io/fsType": "nfs",
-		},
-	}
-
 	scDummy := "StorageClass"
 
 	backendTypeAttr, _ := storageattribute.CreateAttributeRequestFromAttributeValue("backendType", "ontap-nas")
@@ -166,15 +142,12 @@ func TestUpdateStorageClass(t *testing.T) {
 		},
 	}
 
-	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(4)
+	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(2)
 
 	plugin.addStorageClass(sc)
-	plugin.addStorageClass(scv1Beta)
 
 	mockCore.EXPECT().GetStorageClass(gomock.Any(), sc.Name).Return(nil, nil).Times(1)
 	plugin.updateStorageClass(nil, sc)
-	mockCore.EXPECT().GetStorageClass(gomock.Any(), scv1Beta.Name).Return(nil, nil).Times(1)
-	plugin.updateStorageClass(nil, scv1Beta)
 	plugin.updateStorageClass(nil, scDummy)
 }
 
@@ -192,17 +165,6 @@ func TestDeleteStorageClass(t *testing.T) {
 		},
 	}
 
-	scv1Beta := &k8sstoragev1beta.StorageClass{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: FakeStorageClass,
-		},
-		Provisioner: csi.Provisioner,
-		Parameters: map[string]string{
-			"backendType":               "ontap-nas",
-			"csi.storage.k8s.io/fsType": "nfs",
-		},
-	}
-
 	scDummy := "StorageClass"
 
 	backendTypeAttr, _ := storageattribute.CreateAttributeRequestFromAttributeValue("backendType", "ontap-nas")
@@ -214,13 +176,11 @@ func TestDeleteStorageClass(t *testing.T) {
 		},
 	}
 
-	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(2)
+	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(1)
 	plugin.addStorageClass(sc)
-	plugin.addStorageClass(scv1Beta)
 	plugin.addStorageClass(scDummy)
-	mockCore.EXPECT().DeleteStorageClass(gomock.Any(), sc.Name).Return(nil).Times(2)
+	mockCore.EXPECT().DeleteStorageClass(gomock.Any(), sc.Name).Return(nil).Times(1)
 	plugin.deleteStorageClass(sc)
-	plugin.deleteStorageClass(scv1Beta)
 	plugin.deleteStorageClass(scDummy)
 }
 

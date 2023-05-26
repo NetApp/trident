@@ -22,7 +22,7 @@ const (
 	autoStorageClassPrefix = "auto_sc_%d"
 )
 
-// getStorageClass accepts a list of volume creation options and returns a
+// GetStorageClass accepts a list of volume creation options and returns a
 // matching storage class.  If the orchestrator already has a matching
 // storage class, that is returned; otherwise a new one is created and
 // registered with the orchestrator.

@@ -7,7 +7,7 @@ package mock_storage
 import (
 	context "context"
 	reflect "reflect"
-	"time"
+	time "time"
 
 	roaring "github.com/RoaringBitmap/roaring"
 	gomock "github.com/golang/mock/gomock"

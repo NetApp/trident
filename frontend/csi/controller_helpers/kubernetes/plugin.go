@@ -15,7 +15,6 @@ import (
 	csiaccessmodes "github.com/kubernetes-csi/csi-lib-utils/accessmodes"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
-	k8sstoragev1beta "k8s.io/api/storage/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,7 +66,6 @@ var (
 type K8SControllerHelperPlugin interface {
 	frontend.Plugin
 	ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
-	UpgradeVolume(ctx context.Context, request *storage.UpgradeVolumeRequest) (*storage.VolumeExternal, error)
 	GetNodePublicationState(ctx context.Context, nodeName string) (*utils.NodePublicationStateFlags, error)
 }
 
@@ -191,15 +189,6 @@ func NewHelper(
 		},
 	)
 
-	if !p.SupportsFeature(ctx, csi.ExpandCSIVolumes) {
-		_, _ = p.pvcController.AddEventHandlerWithResyncPeriod(
-			cache.ResourceEventHandlerFuncs{
-				UpdateFunc: p.updatePVCResize,
-			},
-			ResizeSyncPeriod,
-		)
-	}
-
 	// Set up a watch for PVs
 	p.pvSource = &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -218,13 +207,6 @@ func NewHelper(
 		cache.Indexers{uidIndex: MetaUIDKeyFunc},
 	)
 	p.pvIndexer = p.pvController.GetIndexer()
-
-	// Add handler for deleting legacy PVs
-	_, _ = p.pvController.AddEventHandler(
-		cache.ResourceEventHandlerFuncs{
-			UpdateFunc: p.updateLegacyPV,
-		},
-	)
 
 	// Set up a watch for storage classes
 	p.scSource = &cache.ListWatch{
@@ -251,15 +233,6 @@ func NewHelper(
 			AddFunc:    p.addStorageClass,
 			UpdateFunc: p.updateStorageClass,
 			DeleteFunc: p.deleteStorageClass,
-		},
-	)
-
-	// Add handler for replacing legacy storage classes
-	_, _ = p.scController.AddEventHandler(
-		cache.ResourceEventHandlerFuncs{
-			AddFunc:    p.addLegacyStorageClass,
-			UpdateFunc: p.updateLegacyStorageClass,
-			DeleteFunc: p.deleteLegacyStorageClass,
 		},
 	)
 
@@ -436,10 +409,6 @@ func (h *helper) Activate() error {
 	// Configure telemetry
 	config.OrchestratorTelemetry.Platform = string(config.PlatformKubernetes)
 	config.OrchestratorTelemetry.PlatformVersion = h.Version()
-
-	if err := h.handleFailedPVUpgrades(ctx); err != nil {
-		return fmt.Errorf("error cleaning up previously failed PV upgrades; %v", err)
-	}
 
 	Logc(ctx).Debug("Activated K8S helper frontend.")
 
@@ -948,12 +917,10 @@ func (h *helper) addStorageClass(obj interface{}) {
 	defer Logc(ctx).Trace("<<<< addStorageClass")
 
 	switch sc := obj.(type) {
-	case *k8sstoragev1beta.StorageClass:
-		h.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventAdd)
 	case *k8sstoragev1.StorageClass:
 		h.processStorageClass(ctx, sc, eventAdd)
 	default:
-		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
+		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v", obj)
 	}
 }
 
@@ -964,12 +931,10 @@ func (h *helper) updateStorageClass(_, newObj interface{}) {
 	defer Logc(ctx).Trace("<<<< updateStorageClass")
 
 	switch sc := newObj.(type) {
-	case *k8sstoragev1beta.StorageClass:
-		h.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventUpdate)
 	case *k8sstoragev1.StorageClass:
 		h.processStorageClass(ctx, sc, eventUpdate)
 	default:
-		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v",
+		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v",
 			newObj)
 	}
 }
@@ -981,12 +946,10 @@ func (h *helper) deleteStorageClass(obj interface{}) {
 	defer Logc(ctx).Trace("<<<< deleteStorageClass")
 
 	switch sc := obj.(type) {
-	case *k8sstoragev1beta.StorageClass:
-		h.processStorageClass(ctx, convertStorageClassV1BetaToV1(sc), eventDelete)
 	case *k8sstoragev1.StorageClass:
 		h.processStorageClass(ctx, sc, eventDelete)
 	default:
-		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1beta1 or storage.k8s.io/v1 storage class; got %v", obj)
+		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v", obj)
 	}
 }
 

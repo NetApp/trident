@@ -655,21 +655,6 @@ func (mr *MockOrchestratorMockRecorder) ImportVolume(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportVolume", reflect.TypeOf((*MockOrchestrator)(nil).ImportVolume), arg0, arg1)
 }
 
-// LegacyImportVolume mocks base method.
-func (m *MockOrchestrator) LegacyImportVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 string, arg3 bool, arg4 core.VolumeCallback) (*storage.VolumeExternal, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LegacyImportVolume", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(*storage.VolumeExternal)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// LegacyImportVolume indicates an expected call of LegacyImportVolume.
-func (mr *MockOrchestratorMockRecorder) LegacyImportVolume(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LegacyImportVolume", reflect.TypeOf((*MockOrchestrator)(nil).LegacyImportVolume), arg0, arg1, arg2, arg3, arg4)
-}
-
 // ListBackends mocks base method.
 func (m *MockOrchestrator) ListBackends(arg0 context.Context) ([]*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()

@@ -79,7 +79,7 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	// Negative case: Invalid response object provided
 	volume = &storage.VolumeExternal{Config: &storage.VolumeConfig{Name: "test"}}
 	writer = &http_test.TestResponseWriter{}
-	invalidResponse := &UpgradeVolumeResponse{} // Wrong type!
+	invalidResponse := &ImportVolumeResponse{} // Wrong type!
 	body = `[]`
 	request = generateHTTPRequest(http.MethodPut, body)
 

@@ -46,10 +46,6 @@ type Orchestrator interface {
 	GetVolume(ctx context.Context, volumeName string) (*storage.VolumeExternal, error)
 	GetVolumeByInternalName(ctx context.Context, volumeInternal string) (volume string, err error)
 	GetVolumeExternal(ctx context.Context, volumeName, backendName string) (*storage.VolumeExternal, error)
-	LegacyImportVolume(
-		ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
-		createPVandPVC VolumeCallback,
-	) (*storage.VolumeExternal, error)
 	ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
 	PublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error
