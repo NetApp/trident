@@ -111,10 +111,14 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriver(ctx, config)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	// Initialize ONTAP driver. Unit test uses mock driver, so initialize only if driver not already set
+	if d.API == nil {
+		d.API, err = InitializeOntapDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
 	}
+
 	d.Config = *config
 
 	// Remap driverContext for artifact naming so the names remain stable over time
@@ -437,7 +441,7 @@ func (d *NASQtreeStorageDriver) Create(
 		}
 
 		if d.Config.NASType == sa.SMB {
-			if err = d.EnsureSMBShare(ctx, name, flexvol); err != nil {
+			if err = d.EnsureSMBShare(ctx, flexvol); err != nil {
 				return err
 			}
 		}
@@ -1953,7 +1957,7 @@ func (d NASQtreeStorageDriver) SetVolumePatternToFindQtree(
 
 // EnsureSMBShare ensures that required SMB share is made available.
 func (d *NASQtreeStorageDriver) EnsureSMBShare(
-	ctx context.Context, shareName, name string,
+	ctx context.Context, name string,
 ) error {
 	if d.Config.SMBShare != "" {
 		// If user did specify SMB share, and it does not exist, create an SMB share with the specified name.

@@ -1701,7 +1701,6 @@ func TestOntapNasStorageDriverGetUpdateType(t *testing.T) {
 	newDriver.Config.StoragePrefix = &prefix2
 	newDriver.Config.Username = "user2"
 	newDriver.Config.Password = "password2"
-	newDriver.Config.StoragePrefix = &prefix2
 	newDriver.Config.Credentials = map[string]string{
 		drivers.KeyName: "secret2",
 		drivers.KeyType: string(drivers.CredentialStoreK8sSecret),

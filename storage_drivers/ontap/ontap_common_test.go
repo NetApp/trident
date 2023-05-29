@@ -4937,6 +4937,7 @@ func TestNewOntapTelemetry(t *testing.T) {
 
 func MockGetVolumeInfo(ctx context.Context, volName string) (volume *api.Volume, err error) {
 	volume = &api.Volume{
+		Name:            volName,
 		SnapshotPolicy:  "fakePolicy",
 		SnapshotReserve: 10,
 	}
