@@ -61,21 +61,38 @@ func IsBootstrapError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type foundError struct {
+	inner   error
 	message string
 }
 
-func (e *foundError) Error() string { return e.message }
+func (e *foundError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
 
-func FoundError(message string) error {
-	return &foundError{message}
+func (e *foundError) Unwrap() error { return e.inner }
+
+func FoundError(message string, a ...any) error {
+	return &foundError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithFoundError(err error, message string, a ...any) error {
+	return &foundError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
 }
 
 func IsFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*foundError)
-	return ok
+	var errPtr *foundError
+	return errors.As(err, &errPtr)
 }
 
 // ///////////////////////////////////////////////////////////////////////////

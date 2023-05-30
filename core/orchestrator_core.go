@@ -2386,7 +2386,7 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 
 	for volumeName, volume := range o.volumes {
 		if volume.Config.InternalName == originalName && volume.BackendUUID == backendUUID {
-			return errors.FoundError(fmt.Sprintf("PV %s already exists for volume %s", originalName, volumeName))
+			return errors.FoundError("PV %s already exists for volume %s", originalName, volumeName)
 		}
 	}
 

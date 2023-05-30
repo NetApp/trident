@@ -79,6 +79,46 @@ func TestNotFoundError(t *testing.T) {
 	assert.Equal(t, "outer; inner; ", err.Error())
 }
 
+func TestFoundError(t *testing.T) {
+	err := FoundError("found error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("found error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsFoundError(err))
+
+	assert.False(t, IsFoundError(nil))
+
+	err = FoundError("")
+	assert.True(t, IsFoundError(err))
+
+	// Test wrapping
+	err = WrapWithFoundError(fmt.Errorf("not a found err"), "found")
+	assert.True(t, IsFoundError(err))
+	assert.Equal(t, "found; not a found err", err.Error())
+
+	err = WrapWithFoundError(nil, "found")
+	assert.Equal(t, "found", err.Error())
+
+	err = WrapWithFoundError(fmt.Errorf("not a found err"), "")
+	assert.True(t, IsFoundError(err))
+	assert.Equal(t, "not a found err", err.Error())
+
+	err = WrapWithFoundError(fmt.Errorf(""), "found")
+	assert.True(t, IsFoundError(err))
+	assert.Equal(t, "found", err.Error())
+
+	err = FoundError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsFoundError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = FoundError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsFoundError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
+}
+
 func TestAsInvalidJSONError(t *testing.T) {
 	unmarshalTypeErr := &json.UnmarshalTypeError{
 		Value:  "",
