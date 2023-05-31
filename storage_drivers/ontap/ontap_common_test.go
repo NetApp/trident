@@ -4215,22 +4215,37 @@ func TestCloneFlexvol(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// Test5: VolumeSetComment returned error
+	// Test5: Error - NVMe clone creation returned erorr
+	config.SANType = sa.NVMe
+	snap = "fakeSnap"
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("", fmt.Errorf("error waiting for NVMe clone"))
+	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
+
+	assert.Error(t, err)
+
+	// Test6: Error - VolumeSetComment returned error
 	snap = "fakeSnap"
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(fmt.Errorf("Error creating clone"))
-
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
 	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
 
 	assert.Error(t, err)
 
-	// Test6: VolumeMount returned error
+	// Test7: Error - VolumeMount returned error
 	snap = "fakeSnap"
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, name, "/"+name).Return(fmt.Errorf("Error mounting volume"))
 
@@ -4238,11 +4253,13 @@ func TestCloneFlexvol(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// Test7: Error setting QoS Poilcy
+	// Test8: Error - Error setting QoS Poilcy
 	snap = "fakeSnap"
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, name, "/"+name).Return(nil)
 	mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, name,
@@ -4252,12 +4269,14 @@ func TestCloneFlexvol(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// Test8: error splitting clone
+	// Test9: Error - splitting clone
 	snap = "fakeSnap"
 	split = true
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, name, "/"+name).Return(nil)
 	mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, name, *qosPolicyGroup).Return(nil)

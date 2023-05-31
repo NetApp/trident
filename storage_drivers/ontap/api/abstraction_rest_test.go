@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -766,4 +767,140 @@ func TestNVMeIsNamespaceMapped(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, false, isMapped)
+}
+
+func TestVolumeWaitForStates(t *testing.T) {
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	ctrl := gomock.NewController(t)
+	mock := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+
+	volName := "fakeVolName"
+	desiredStates := []string{"online"}
+	abortStates := []string{""}
+	onlineState := "online"
+	errorState := "error"
+	volume := &models.Volume{
+		State: &onlineState,
+	}
+	maxElapsedTime := 2 * time.Second
+
+	// Test1: Error - While getting the volume
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().VolumeGetByName(ctx, volName).AnyTimes().Return(nil, fmt.Errorf("Error getting the volume"))
+
+	currentState, err := oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
+
+	assert.Error(t, err)
+	assert.Equal(t, currentState, "")
+
+	ctrl.Finish()
+
+	// Test2: Error - Volume not found
+	ctrl = gomock.NewController(t)
+	mock = mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().VolumeGetByName(ctx, volName).AnyTimes().Return(nil, nil)
+
+	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
+
+	assert.Error(t, err)
+	assert.Equal(t, currentState, "")
+
+	ctrl.Finish()
+
+	// Test3: Error - Volume state not in desired states
+	ctrl = gomock.NewController(t)
+	mock = mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
+
+	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
+
+	assert.NoError(t, err)
+	assert.Equal(t, currentState, *volume.State)
+
+	ctrl.Finish()
+
+	// Test4: Error - Volume reaches an abort state
+	ctrl = gomock.NewController(t)
+	mock = mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
+	desiredStates = []string{""}
+	abortStates = []string{"error"}
+	volume.State = &errorState
+
+	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
+
+	assert.Error(t, err)
+	assert.Equal(t, currentState, *volume.State)
+
+	ctrl.Finish()
+
+	// Test5: Error - Volume doesn't reach desired state or abort state
+	ctrl = gomock.NewController(t)
+	mock = mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
+	desiredStates = []string{""}
+	abortStates = []string{"fakeerrorState"}
+	volume.State = &errorState
+
+	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
+
+	assert.Error(t, err)
+	assert.Equal(t, currentState, *volume.State)
+
+	ctrl.Finish()
+
+	// Test6: Error - Volume is in unknown state
+	ctrl = gomock.NewController(t)
+	mock = mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
+	desiredStates = []string{""}
+	var newAbortState []string
+	volState := "unknown"
+	volume.State = &volState
+
+	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, newAbortState, maxElapsedTime)
+
+	assert.Error(t, err)
+	assert.Equal(t, currentState, *volume.State)
+
+	ctrl.Finish()
+
+	// Test7: Success - Volume is in desired state
+	ctrl = gomock.NewController(t)
+	mock = mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
+	desiredStates = []string{"online"}
+	volState = "online"
+	volume.State = &volState
+
+	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, newAbortState, maxElapsedTime)
+
+	assert.NoError(t, err)
+	assert.Equal(t, currentState, *volume.State)
+
+	ctrl.Finish()
 }

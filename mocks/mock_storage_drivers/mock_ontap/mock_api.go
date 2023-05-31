@@ -7,6 +7,7 @@ package mock_api
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/netapp/trident/storage_drivers/ontap/api"
@@ -1049,6 +1050,21 @@ func (mr *MockOntapAPIMockRecorder) NVMeNamespaceGetByName(arg0, arg1 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceGetByName", reflect.TypeOf((*MockOntapAPI)(nil).NVMeNamespaceGetByName), arg0, arg1)
 }
 
+// NVMeNamespaceGetSize mocks base method.
+func (m *MockOntapAPI) NVMeNamespaceGetSize(arg0 context.Context, arg1 string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeNamespaceGetSize", arg0, arg1)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeNamespaceGetSize indicates an expected call of NVMeNamespaceGetSize.
+func (mr *MockOntapAPIMockRecorder) NVMeNamespaceGetSize(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceGetSize", reflect.TypeOf((*MockOntapAPI)(nil).NVMeNamespaceGetSize), arg0, arg1)
+}
+
 // NVMeNamespaceList mocks base method.
 func (m *MockOntapAPI) NVMeNamespaceList(arg0 context.Context, arg1 string) (api.NVMeNamespaces, error) {
 	m.ctrl.T.Helper()
@@ -2009,6 +2025,21 @@ func (m *MockOntapAPI) VolumeUsedSize(arg0 context.Context, arg1 string) (int, e
 func (mr *MockOntapAPIMockRecorder) VolumeUsedSize(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeUsedSize", reflect.TypeOf((*MockOntapAPI)(nil).VolumeUsedSize), arg0, arg1)
+}
+
+// VolumeWaitForStates mocks base method.
+func (m *MockOntapAPI) VolumeWaitForStates(arg0 context.Context, arg1 string, arg2, arg3 []string, arg4 time.Duration) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeWaitForStates", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VolumeWaitForStates indicates an expected call of VolumeWaitForStates.
+func (mr *MockOntapAPIMockRecorder) VolumeWaitForStates(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeWaitForStates", reflect.TypeOf((*MockOntapAPI)(nil).VolumeWaitForStates), arg0, arg1, arg2, arg3, arg4)
 }
 
 // MockAggregateSpace is a mock of AggregateSpace interface.

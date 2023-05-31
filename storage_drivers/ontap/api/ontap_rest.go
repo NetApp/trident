@@ -5586,10 +5586,12 @@ func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string) (*nvm
 // NVMeNamespaceGetByName gets the Namespace with the specified name.
 func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string) (*models.NvmeNamespace, error) {
 	result, err := c.NVMeNamespaceList(ctx, name)
-	if err != nil || result.Payload == nil {
+	if err != nil {
 		return nil, err
 	}
-	if result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
+
+	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil &&
+		*result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
 		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
 	}
 	return nil, fmt.Errorf("namespace not found")
@@ -5652,19 +5654,21 @@ func (c RestClient) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, names
 
 	payload := getSubsys.GetPayload()
 
-	if payload != nil && *payload.NumRecords > 0 {
+	if payload == nil {
+		return false, fmt.Errorf("could not get subsystem map collection")
+	}
+
+	if *payload.NumRecords > 0 {
 		for count := 0; count < int(*payload.NumRecords); count++ {
-			if *payload.NvmeSubsystemMapResponseInlineRecords[count].Namespace.UUID == namespaceUUID {
+			record := payload.NvmeSubsystemMapResponseInlineRecords[count]
+			if record != nil && record.Namespace != nil && record.Namespace.UUID != nil &&
+				*record.Namespace.UUID == namespaceUUID {
 				return true, nil
-			} else {
-				return false, nil
 			}
 		}
-	} else {
-		// no record returned. This means the subsystem is not even in the map. return success in this case
-		return false, nil
 	}
-	return false, fmt.Errorf("could not get subsystem map collection")
+	// No record returned. This means the subsystem is not even in the map. Return success in this case
+	return false, nil
 }
 
 // NVMeNamespaceCount gets the number of namespaces mapped to a subsystem
@@ -5862,6 +5866,19 @@ func (c RestClient) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string
 	}
 
 	return nil, fmt.Errorf("get hosts of a subsystem call failed")
+}
+
+// NVMeNamespaceSize returns the size of the namespace
+func (c RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error) {
+	namespace, err := c.NVMeNamespaceGetByName(ctx, namespacePath)
+	if err != nil {
+		return 0, err
+	}
+	if namespace == nil {
+		return 0, fmt.Errorf("could not find namespace with name %v", namespace)
+	}
+	size := namespace.Space.Size
+	return int(*size), nil
 }
 
 // ///////////////////////////////////////////////////////////////////////////

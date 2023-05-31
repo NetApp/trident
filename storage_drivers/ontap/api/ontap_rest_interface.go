@@ -334,6 +334,12 @@ type RestClientInterface interface {
 	NVMeNamespaceGetByName(ctx context.Context, name string) (*models.NvmeNamespace, error)
 	// NVMeNamespaceList finds Namespaces with the specified pattern.
 	NVMeNamespaceList(ctx context.Context, pattern string) (*nvme.NvmeNamespaceCollectionGetOK, error)
+	// NVMeIsNamespaceMapped gets a namespace from subsystem map
+	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
+	// NVMeNamespaceCount gives the number of namespaces mapped to a Subsystem with the specified subsystem UUID.
+	NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
+	// NVMeNamespaceSize gives the size of the namespace.
+	NVMeNamespaceSize (ctx context.Context, namespacePath string) (int, error)
 	// NVMeSubsystemList finds Subsystems with the specified pattern.
 	NVMeSubsystemList(ctx context.Context, pattern string) (*nvme.NvmeSubsystemCollectionGetOK, error)
 	// NVMeSubsystemGetByName finds Subsystem with the specified subsystem name.
@@ -350,8 +356,4 @@ type RestClientInterface interface {
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
 	// NVMeSubsystemRemoveNamespace ummaps a given namespace from a Subsystem with the specified subsystem UUID.
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
-	// NVMeIsNamespaceMapped gets a namespace from subsystem map
-	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
-	// NVMeNamespaceCount gives the number of namespaces mapped to a Subsystem with the specified subsystem UUID.
-	NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
 }

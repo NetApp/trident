@@ -1331,6 +1331,85 @@ func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 	return nil
 }
 
+func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string,
+	maxElapsedTime time.Duration,
+) (string, error) {
+	fields := LogFields{
+		"method":        "VolumeWaitForStates",
+		"type":          "OntapAPIREST",
+		"volume":        volumeName,
+		"desiredStates": desiredStates,
+		"abortStates":   abortStates,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeWaitForStates")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeWaitForStates")
+
+	var volumeState string
+
+	checkVolumeState := func() error {
+		vol, err := d.api.VolumeGetByName(ctx, volumeName)
+		if err != nil {
+			volumeState = ""
+			return fmt.Errorf("error getting volume %v; %v", volumeName, err)
+		}
+
+		if vol == nil {
+			return fmt.Errorf("volume %v not found", volumeName)
+		}
+
+		Logc(ctx).Debugf("Volume %v is in state:%v", volumeName, *vol.State)
+		volumeState = *vol.State
+
+		if utils.SliceContainsString(desiredStates, volumeState) {
+			Logc(ctx).Debugf("Found volume in the desired state %v", desiredStates)
+			return nil
+		}
+
+		Logc(ctx).Debugf("Volume is not in desired states. Current State: %v, Desired States: %v", volumeState, desiredStates)
+
+		// Return a permanent error to stop retrying if we reached one of the abort states
+		for _, abortState := range abortStates {
+			if volumeState == abortState {
+				Logc(ctx).Debugf("Volume is in abort state %v. Permanently backing off", volumeState)
+				return backoff.Permanent(TerminalState(fmt.Errorf("volume is in abort state")))
+			} else {
+				return fmt.Errorf("volume is neither in desired state nor in abort state")
+			}
+		}
+
+		return fmt.Errorf("volume is in unknown state")
+	}
+
+	stateNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"increment": duration,
+			"message":   err.Error(),
+		}).Debugf("Waiting for volume state.")
+	}
+	stateBackoff := backoff.NewExponentialBackOff()
+	stateBackoff.MaxElapsedTime = maxElapsedTime
+	stateBackoff.MaxInterval = 2 * time.Second
+	stateBackoff.RandomizationFactor = 0.1
+	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
+	stateBackoff.Multiplier = 1.414
+
+	Logc(ctx).WithField("desiredStates", desiredStates).Info("Waiting for volume state.")
+
+	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
+		if terminalStateErr, ok := err.(*TerminalStateError); ok {
+			Logc(ctx).Errorf("Volume reached terminal state: %v", terminalStateErr)
+		} else {
+			Logc(ctx).Errorf("Volume state was not any of %s after %3.2f seconds.",
+				desiredStates, stateBackoff.MaxElapsedTime.Seconds())
+		}
+		return volumeState, err
+	}
+
+	Logc(ctx).WithField("desiredStates", desiredStates).Debug("Desired volume state reached.")
+	return volumeState, nil
+}
+
 func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
 	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
@@ -2878,4 +2957,23 @@ func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, subsystem
 		}
 	}
 	return nil
+}
+
+func (d OntapAPIREST) NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error) {
+	return d.api.NVMeNamespaceSize(ctx, namespacePath)
+}
+
+type TerminalStateError struct {
+	Err error
+}
+
+func (e *TerminalStateError) Error() string {
+	return e.Err.Error()
+}
+
+// TerminalState wraps the given err in a *TerminalStateError.
+func TerminalState(err error) *TerminalStateError {
+	return &TerminalStateError{
+		Err: err,
+	}
 }

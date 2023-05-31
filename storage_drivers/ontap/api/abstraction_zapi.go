@@ -2448,3 +2448,13 @@ func (d OntapAPIZAPI) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUU
 func (d OntapAPIZAPI) NVMeEnsureNamespaceUnmapped(ctx context.Context, subsystemUUID, namespaceUUID string) error {
 	return fmt.Errorf("ZAPI call is not supported yet")
 }
+
+func (d OntapAPIZAPI) NVMeNamespaceGetSize(ctx context.Context, subsystemName string) (int, error) {
+	return 0, fmt.Errorf("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates,
+	abortStates []string, maxElapsedTime time.Duration,
+) (string, error) {
+	return "", fmt.Errorf("ZAPI call is not supported yet")
+}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -210,6 +211,8 @@ type OntapAPI interface {
 	VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string,
+		maxElapsedTime time.Duration) (string, error)
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	SMBShareDestroy(ctx context.Context, shareName string) error
@@ -220,6 +223,7 @@ type OntapAPI interface {
 	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
 	NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error)
 	NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error)
+	NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error)
 	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error)
 	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error

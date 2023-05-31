@@ -1034,13 +1034,13 @@ func (p *Plugin) nodeStageISCSIVolume(
 ) error {
 	useCHAP, err := strconv.ParseBool(req.PublishContext["useCHAP"])
 	if err != nil {
-		return status.Error(codes.Internal, err.Error())
+		return err
 	}
 	publishInfo.UseCHAP = useCHAP
 
 	lunID, err := strconv.ParseInt(req.PublishContext["iscsiLunNumber"], 10, 0)
 	if err != nil {
-		return status.Error(codes.Internal, err.Error())
+		return err
 	}
 
 	var isLUKS bool
@@ -1054,7 +1054,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
 	if nil != err {
-		return status.Error(codes.Internal, err.Error())
+		return err
 	}
 
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
@@ -1077,7 +1077,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 				Logc(ctx).WithError(err).Warn(
 					"Could not decrypt CHAP credentials; will retrieve from Trident controller.")
 				if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
-					return status.Error(codes.Internal, err.Error())
+					return err
 				}
 			}
 		} else if encryptedCHAP {
@@ -1085,7 +1085,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 			Logc(ctx).Warn(
 				"Encryption key not set; cannot decrypt CHAP credentials; will retrieve from Trident controller.")
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
-				return status.Error(codes.Internal, err.Error())
+				return err
 			}
 		}
 	}
@@ -1101,12 +1101,12 @@ func (p *Plugin) nodeStageISCSIVolume(
 	if isLUKS {
 		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
 		if err != nil {
-			return status.Error(codes.Internal, err.Error())
+			return err
 		}
 		// Ensure we update the passphrase incase it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
-			return status.Error(codes.Internal, "could not set LUKS volume passphrase")
+			return fmt.Errorf("could not set LUKS volume passphrase")
 		}
 	}
 
@@ -1117,7 +1117,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 	// Save the device info to the volume tracking info path for use in the publish & unstage calls.
 	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
-		return status.Error(codes.Internal, err.Error())
+		return err
 	}
 	// Update in-mem map used for self-healing; do it after a volume has been staged.
 	// Beyond here if there is a problem with the session or there are missing LUNs
@@ -2127,12 +2127,12 @@ func (p *Plugin) nodeStageNVMeVolume(
 	if isLUKS {
 		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
 		if err != nil {
-			return status.Error(codes.Internal, err.Error())
+			return err
 		}
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
-			return status.Error(codes.Internal, "could not set LUKS volume passphrase")
+			return fmt.Errorf("could not set LUKS volume passphrase")
 		}
 	}
 
@@ -2144,7 +2144,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 
 	// Save the device info to the volume tracking info path for use in the publish & unstage calls.
 	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
-		return status.Error(codes.Internal, err.Error())
+		return err
 	}
 
 	return nil

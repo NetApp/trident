@@ -51,11 +51,6 @@ const (
 	nsAttributeDriverCtx = "driverContext"
 )
 
-// namespacePath returns the namespace path in a FlexVol.
-func namespacePath(name string) string {
-	return fmt.Sprintf("/vol/%v/namespace0", name)
-}
-
 // GetConfig is to get the driver's configuration.
 func (d *NVMeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
@@ -462,7 +457,87 @@ func (d *NVMeStorageDriver) Create(
 func (d *NVMeStorageDriver) CreateClone(
 	ctx context.Context, _, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
-	return fmt.Errorf("not yet supported")
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshot
+
+	fields := LogFields{
+		"method":      "CreateClone",
+		"type":        "NVMeStorageDriver",
+		"name":        name,
+		"source":      source,
+		"snapshot":    snapshot,
+		"storagePool": storagePool,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
+
+	opts := d.GetVolumeOpts(ctx, cloneVolConfig, make(map[string]sa.Request))
+
+	// How "splitOnClone" value gets set:
+	// In the Core we first check clone's VolumeConfig for splitOnClone value
+	// If it is not set then (again in Core) we check source PV's VolumeConfig for splitOnClone value
+	// If we still don't have splitOnClone value then HERE we check for value in the source PV's Storage/Virtual Pool
+	// If the value for "splitOnClone" is still empty then HERE we set it to backend config's SplitOnClone value
+
+	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
+	var storagePoolSplitOnCloneVal string
+	var err error
+	labels := ""
+	if storage.IsStoragePoolUnset(storagePool) {
+		// Set the base label
+		storagePoolTemp := &storage.StoragePool{}
+		storagePoolTemp.SetAttributes(map[string]sa.Offer{
+			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+		})
+		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
+
+		// Ensure the volume exists
+		flexvol, err := d.API.VolumeInfo(ctx, cloneVolConfig.CloneSourceVolumeInternal)
+		if err != nil {
+			return err
+		} else if flexvol == nil {
+			return fmt.Errorf("volume %s not found", cloneVolConfig.CloneSourceVolumeInternal)
+		}
+
+		// Get the source volume's label
+		if flexvol.Comment != "" {
+			labels = flexvol.Comment
+		}
+	}
+
+	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
+	if storagePoolSplitOnCloneVal == "" {
+		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
+	}
+
+	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
+	if err != nil {
+		return fmt.Errorf("invalid boolean value for splitOnClone: %v", err)
+	}
+
+	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
+	if err = cloneFlexvol(
+		ctx, name, source, snapshot, labels, split, &d.Config, d.API, api.QosPolicyGroup{},
+	); err != nil {
+		return err
+	}
+
+	nsPath := namespacePath(name)
+	ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+	if err != nil {
+		return fmt.Errorf("Problem fetching namespace %v. Error:%v", nsPath, err)
+	}
+	// Populate access info in the cloneVolConfig
+	cloneVolConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
+	cloneVolConfig.AccessInfo.NVMeNamespacePath = nsPath
+	return nil
 }
 
 // Import adds non managed ONTAP volume to trident.
@@ -649,7 +724,7 @@ func (d *NVMeStorageDriver) Unpublish(
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
 func (d *NVMeStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
-	return fmt.Errorf("not yet supported")
+	return nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
@@ -657,21 +732,47 @@ func (d *NVMeStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotCo
 func (d *NVMeStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	return nil, fmt.Errorf("not yet supported")
+	fields := LogFields{
+		"method":       "GetSnapshot",
+		"type":         "NVMeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
+
+	return getVolumeSnapshot(ctx, snapConfig, &d.Config, d.API, d.namespaceSize)
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume.
 func (d *NVMeStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) (
 	[]*storage.Snapshot, error,
 ) {
-	return nil, fmt.Errorf("not yet supported")
+	fields := LogFields{
+		"method":     "GetSnapshots",
+		"type":       "NVMeStorageDriver",
+		"volumeName": volConfig.InternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
+
+	return getVolumeSnapshotList(ctx, volConfig, &d.Config, d.API, d.namespaceSize)
 }
 
 // CreateSnapshot creates a snapshot for the given volume.
 func (d *NVMeStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
-	return nil, fmt.Errorf("not yet supported")
+	fields := LogFields{
+		"method":       "CreateSnapshot",
+		"type":         "NVMeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"sourceVolume": snapConfig.VolumeInternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
+
+	return createFlexvolSnapshot(ctx, snapConfig, &d.Config, d.API, d.namespaceSize)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -687,19 +788,51 @@ func (d *NVMeStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	return RestoreSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
 func (d *NVMeStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
-	return fmt.Errorf("not yet supported")
+	fields := LogFields{
+		"method":       "DeleteSnapshot",
+		"type":         "NVMeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
+
+	err := d.API.VolumeSnapshotDelete(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName)
+	if err != nil {
+		if api.IsSnapshotBusyError(err) {
+			// Start a split here before returning the error so a subsequent delete attempt may succeed.
+			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
+		}
+		// we must return the err, even if we started a split, so the snapshot delete is retried
+		return err
+	}
+
+	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
+	return nil
 }
 
 // Get tests for the existence of a volume.
 func (d *NVMeStorageDriver) Get(ctx context.Context, name string) error {
-	return fmt.Errorf("not yet supported")
+	fields := LogFields{"Method": "Get", "Type": "NVMeStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
+
+	volExists, err := d.API.VolumeExists(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		Logc(ctx).WithField("Flexvol", name).Debug("Flexvol not found.")
+		return fmt.Errorf("volume %s does not exist", name)
+	}
+	return nil
 }
 
 // GetStorageBackendSpecs retrieves storage backend capabilities.
@@ -1216,4 +1349,14 @@ func getNodeSpecificSubsystemName(nodeName, tridentUUID string) string {
 // getNamespaceSpecificSubsystemName constructs the subsystem name using the name passed.
 func getNamespaceSpecificSubsystemName(name string) string {
 	return fmt.Sprintf("s_%v", name)
+}
+
+// namespacePath returns the namespace path in a FlexVol.
+func namespacePath(name string) string {
+	return fmt.Sprintf("/vol/%v/namespace0", name)
+}
+
+func (d *NVMeStorageDriver) namespaceSize(ctx context.Context, name string) (int, error) {
+	nsPath := namespacePath(name)
+	return d.API.NVMeNamespaceGetSize(ctx, nsPath)
 }

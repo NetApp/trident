@@ -1141,6 +1141,21 @@ func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceSetSize(arg0, arg1, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceSetSize", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceSetSize), arg0, arg1, arg2)
 }
 
+// NVMeNamespaceSize mocks base method.
+func (m *MockRestClientInterface) NVMeNamespaceSize(arg0 context.Context, arg1 string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeNamespaceSize", arg0, arg1)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeNamespaceSize indicates an expected call of NVMeNamespaceSize.
+func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceSize(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceSize", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceSize), arg0, arg1)
+}
+
 // NVMeSubsystemAddNamespace mocks base method.
 func (m *MockRestClientInterface) NVMeSubsystemAddNamespace(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()

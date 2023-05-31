@@ -69,15 +69,18 @@ func TestNVMeBackendName(t *testing.T) {
 
 	// Backend name non-empty.
 	d.Config.BackendName = "san-nvme-backend"
+
 	assert.Equal(t, d.BackendName(), "san-nvme-backend", "Backend name is not correct.")
 
 	// Empty backend name and no dataLIFs.
 	d.Config.BackendName = ""
 	d.ips = []string{}
+
 	assert.Equal(t, d.BackendName(), "ontapsan_noLIFs", "Backend name is not correct.")
 
 	// Empty backend name with dataLIFs.
 	d.ips = mockIPs
+
 	assert.Equal(t, d.BackendName(), "ontapsan_0.0.0.0", "Backend name is not correct.")
 }
 
@@ -92,6 +95,7 @@ func TestNVMeInitialize_ConfigUnmarshalError(t *testing.T) {
 	configJSON := `{"SANType": }`
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
 	assert.ErrorContains(t, err, "could not decode JSON configuration")
 }
 
@@ -102,10 +106,10 @@ func TestNVMeInitialize_NVMeNotSupported(t *testing.T) {
 		DriverContext:     tridentconfig.ContextCSI,
 	}
 	configJSON := `{"SANType": "nvme"}`
-
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(false)
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
 	assert.ErrorContains(t, err, "ontap doesn't support NVMe")
 }
 
@@ -116,11 +120,11 @@ func TestNVMeInitialize_GetDataLifError(t *testing.T) {
 		DriverContext:     tridentconfig.ContextCSI,
 	}
 	configJSON := `{"SANType": "nvme"}`
-
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(nil, fmt.Errorf("error getting dataLifs"))
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
 	assert.ErrorContains(t, err, "error getting dataLifs")
 }
 
@@ -131,12 +135,12 @@ func TestNVMeInitialize_NoDataLifs(t *testing.T) {
 		DriverContext:     tridentconfig.ContextCSI,
 	}
 	configJSON := `{"SANType": "nvme"}`
-
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return([]string{}, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
 	assert.ErrorContains(t, err, "no data LIFs with TCP protocol found on SVM")
 }
 
@@ -147,13 +151,13 @@ func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
 		DriverContext:     tridentconfig.ContextCSI,
 	}
 	configJSON := `{"SANType": "nvme"}`
-
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, fmt.Errorf("failed to get aggrs"))
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
 	assert.ErrorContains(t, err, "failed to get aggrs")
 }
 
@@ -166,7 +170,6 @@ func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 		StoragePrefix:     &badStoragePrefix,
 	}
 	configJSON := `{"SANType": "nvme"}`
-
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
@@ -175,6 +178,7 @@ func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
 	assert.ErrorContains(t, err, "storage prefix may only contain letters/digits/underscore/dash")
 }
 
@@ -185,7 +189,6 @@ func TestNVMeInitialize_Success(t *testing.T) {
 		DriverContext:     tridentconfig.ContextCSI,
 	}
 	configJSON := `{"SANType": "nvme"}`
-
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
@@ -196,6 +199,7 @@ func TestNVMeInitialize_Success(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
+
 	assert.NoError(t, err, "Failed to initialize NVMe driver.")
 	assert.True(t, d.Initialized(), "NVMe driver is not initialized.")
 }
@@ -212,28 +216,30 @@ func TestNVMeTerminate_Success(t *testing.T) {
 func TestNVMeValidate_ReplicationValidationError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	d.Config.ReplicationPolicy = "pol1"
-
 	mAPI.EXPECT().SnapmirrorPolicyGet(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get policy"))
 
 	err := d.validate(ctx)
+
 	assert.ErrorContains(t, err, "replication validation failed")
 }
 
 func TestNVMeValidate_StoragePoolError(t *testing.T) {
 	d := newNVMeDriver(nil)
-
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.InternalAttributes()[SnapshotPolicy] = ""
 	d.virtualPools = map[string]storage.Pool{"pool1": pool1}
 
 	err := d.validate(ctx)
+
 	assert.ErrorContains(t, err, "storage pool validation failed")
 }
 
 func TestNVMeGetStorageBackendSpecs(t *testing.T) {
 	d := newNVMeDriver(nil)
 	backend := storage.StorageBackend{}
+
 	backend.SetStorage(map[string]storage.Pool{})
+
 	assert.NoError(t, d.GetStorageBackendSpecs(ctx, &backend), "Backend specs not updated.")
 }
 
@@ -274,6 +280,7 @@ func TestNVMeGetUpdateType_InvalidUpdate(t *testing.T) {
 	_, d2 := newMockOntapNASDriver(t)
 
 	bMap := d1.GetUpdateType(ctx, d2)
+
 	assert.True(t, bMap.Contains(storage.InvalidUpdate), "Valid driver update.")
 }
 
@@ -313,6 +320,7 @@ func TestNVMeEstablishMirror_Errors(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err := d.EstablishMirror(ctx, "vol1", "vol1", "", "")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 
 	// Empty replication policy and schedule trying out synchronously.
@@ -323,6 +331,7 @@ func TestNVMeEstablishMirror_Errors(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err = d.EstablishMirror(ctx, "vol1", "vol1", "", "")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 
 	// Empty replication policy and schedule trying out asynchronously.
@@ -330,6 +339,7 @@ func TestNVMeEstablishMirror_Errors(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err = d.EstablishMirror(ctx, "vol1", "vol1", "", "")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 
 	// Non-empty replication schedule trying out asynchronously.
@@ -338,6 +348,7 @@ func TestNVMeEstablishMirror_Errors(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err = d.EstablishMirror(ctx, "vol1", "vol1", "", "sch1")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 }
 
@@ -348,6 +359,7 @@ func TestNVMeReestablishMirror_Errors(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err := d.ReestablishMirror(ctx, "vol1", "vol1", "", "")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 
 	// Empty replication policy and schedule trying out synchronously.
@@ -356,12 +368,12 @@ func TestNVMeReestablishMirror_Errors(t *testing.T) {
 		Type:             "async",
 		CopyAllSnapshots: true,
 	}
-
 	mAPI.EXPECT().SnapmirrorPolicyGet(ctx, "pol1").Return(snapmirrorPolicy,
 		fmt.Errorf("failed to get policy")).Times(2)
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err = d.ReestablishMirror(ctx, "vol1", "vol1", "", "")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 
 	// Empty replication policy and schedule trying out asynchronously.
@@ -369,6 +381,7 @@ func TestNVMeReestablishMirror_Errors(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err = d.ReestablishMirror(ctx, "vol1", "vol1", "", "")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 
 	// Non-empty replication schedule trying out asynchronously.
@@ -377,33 +390,42 @@ func TestNVMeReestablishMirror_Errors(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err = d.ReestablishMirror(ctx, "vol1", "vol1", "", "sch1")
+
 	assert.ErrorContains(t, err, "could not parse remoteVolumeHandle")
 }
 
 func TestNVMePromoteMirror_Error(t *testing.T) {
 	d := newNVMeDriver(nil)
+
 	promote, err := d.PromoteMirror(ctx, "", "remoteHandle", "")
+
 	assert.False(t, promote, "Mirror promotion succeeded.")
 	assert.ErrorContains(t, err, "invalid volume name")
 }
 
 func TestNVMeGetMirrorStatus_Error(t *testing.T) {
 	d := newNVMeDriver(nil)
+
 	status, err := d.GetMirrorStatus(ctx, "", "remoteHandle")
+
 	assert.Empty(t, status, "Mirror status non-empty.")
 	assert.ErrorContains(t, err, "invalid volume name")
 }
 
 func TestNVMeReleaseMirror_Error(t *testing.T) {
 	d := newNVMeDriver(nil)
+
 	err := d.ReleaseMirror(ctx, "")
+
 	assert.ErrorContains(t, err, "invalid volume name")
 }
 
 func TestNVMeGetReplicationDetails_Error(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	mAPI.EXPECT().SVMName().Return("svm")
+
 	_, _, _, err := d.GetReplicationDetails(ctx, "", "remoteHandle")
+
 	assert.ErrorContains(t, err, "invalid volume name")
 }
 
@@ -421,12 +443,16 @@ func TestNVMeCreate_VolumeExists(t *testing.T) {
 
 	// Volume exists API error test case.
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, fmt.Errorf("api invocation error"))
+
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.ErrorContains(t, err, "api invocation error")
 
 	// Volume exists test case.
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.True(t, drivers.IsVolumeExistsError(err), "Volume doesn't exist.")
 }
 
@@ -475,25 +501,33 @@ func TestNVMeCreate_VolSizeErrors(t *testing.T) {
 
 	// Convert volume size error.
 	volConfig.Size = "convert-size"
+
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.ErrorContains(t, err, "could not convert volume size")
 
 	// Invalid volume size error.
 	volConfig.Size = "-100"
+
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.ErrorContains(t, err, "invalid size")
 
 	// Unsupported capacity error; size < 20 MiB.
 	volConfig.Size = "10"
+
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
 	isUnsupportedErr, _ := errors.HasUnsupportedCapacityRangeError(err)
+
 	assert.True(t, isUnsupportedErr, "Volume size supported.")
 
 	// Required volume size more than backend config volume size.
 	volConfig.Size = "200000000"
 	d.Config.LimitVolumeSize = "2000"
+
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
 	isUnsupportedErr, _ = errors.HasUnsupportedCapacityRangeError(err)
+
 	assert.True(t, isUnsupportedErr, "Volume size as per backend config.")
 }
 
@@ -602,15 +636,18 @@ func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).
 		Return("", fmt.Errorf("failed to create namespace")).
 		Times(2)
-
 	// Volume destroy error test case.
 	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("failed to delete volume"))
+
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.ErrorContains(t, err, "failed to create namespace")
 
 	// Volume destroy success test case.
 	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
+
 	assert.ErrorContains(t, err, "failed to create namespace")
 }
 
@@ -634,12 +671,16 @@ func TestNVMeDestroy_VolumeExists(t *testing.T) {
 
 	// Volume exist api call error.
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, fmt.Errorf("api call failed"))
+
 	err := d.Destroy(ctx, volConfig)
+
 	assert.ErrorContains(t, err, "api call failed")
 
 	// Volume doesn't exist to delete.
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+
 	err = d.Destroy(ctx, volConfig)
+
 	assert.NoError(t, err, "Volume exists.")
 }
 
@@ -669,19 +710,25 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 
 	// Volume destroy API call failed.
 	mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(fmt.Errorf("destroy volume failed"))
+
 	err := d.Destroy(ctx, volConfig)
+
 	assert.ErrorContains(t, err, "destroy volume failed")
 
 	// Volume destroy success.
 	mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
+
 	err = d.Destroy(ctx, volConfig)
+
 	assert.NoError(t, err, "Failed to destroy volume.")
 }
 
 func TestNVMeGetVolumeExternal_GetVolumeError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
+
 	_, err := d.GetVolumeExternal(ctx, "vol")
+
 	assert.ErrorContains(t, err, "failed to get volume")
 }
 
@@ -776,11 +823,14 @@ func TestNVMeCreateNVMeNamespaceCommentString(t *testing.T) {
 
 	// Comment string exceeds max length
 	nsComment, err := d.createNVMeNamespaceCommentString(ctx, nsAttr, 10)
+
 	assert.ErrorContains(t, err, "exceeds the character limit")
+
 	assert.Equal(t, "", nsComment, "Comment has garbage string.")
 
 	// Success case
 	nsComment, err = d.createNVMeNamespaceCommentString(ctx, nsAttr, nsMaxCommentLength)
+
 	assert.NoError(t, err, "Failed to get namespace comment.")
 	assert.Equal(t, nsCommentString, nsComment, "Incorrect namespace comment.")
 }
@@ -791,6 +841,7 @@ func TestNVMeParseNVMeNamespaceCommentString(t *testing.T) {
 	nsCommentString := `{"nsAttribute":{"LUKS":"luks","com.netapp.ndvp.fstype":"ext4","driverContext":"docker"}}`
 
 	nsComment, err := d.ParseNVMeNamespaceCommentString(ctx, nsCommentString)
+
 	assert.NoError(t, err)
 	assert.Equal(t, "ext4", nsComment[nsAttributeFSType])
 	assert.Equal(t, "luks", nsComment[nsAttributeLUKS])
@@ -800,7 +851,9 @@ func TestNVMeParseNVMeNamespaceCommentString(t *testing.T) {
 func TestGetNamespaceSpecificSubsystemName(t *testing.T) {
 	name := "fakeName"
 	expected_name := "s_fakeName"
+
 	got_name := getNamespaceSpecificSubsystemName(name)
+
 	assert.Equal(t, got_name, expected_name)
 }
 
@@ -809,12 +862,16 @@ func TestGetNodeSpecificSubsystemName(t *testing.T) {
 	nodeName := "fakeNodeName"
 	tridentUUID := "fakeUUID"
 	expected := "fakeNodeName-fakeUUID"
+
 	got := getNodeSpecificSubsystemName(nodeName, tridentUUID)
+
 	assert.Equal(t, got, expected)
 
 	// case 2: subsystem name is longer than 96 char
 	nodeName = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeName"
+
 	expected = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefak-fakeUUID"
+
 	got = getNodeSpecificSubsystemName(nodeName, tridentUUID)
 	assert.Equal(t, got, expected)
 }
@@ -1141,4 +1198,61 @@ func TestNVMeResize_Success(t *testing.T) {
 
 	assert.NoError(t, err, "Volume resize failed.")
 	assert.Equal(t, "50000200", volConfig.Size, "Incorrect namespace size after resize.")
+}
+
+func TestCreateClone(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	cloneConfig := &storage.VolumeConfig{
+		InternalName:              "cloneVol1",
+		Size:                      "200000000",
+		CloneSourceVolumeInternal: "fakeSource",
+		CloneSourceSnapshot:       "fakeSourceSnapshot",
+	}
+	vol := &api.Volume{Aggregates: []string{"data"}}
+	pool := storage.NewStoragePool(nil, "fakepool")
+	pool.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	pool.InternalAttributes()[SplitOnClone] = "true"
+	ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+
+	// Test1: Success - creating clone
+	mAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+	mAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+	mAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+
+	err := d.CreateClone(ctx, volConfig, cloneConfig, pool)
+
+	assert.NoError(t, err)
+
+	// Test2: Error - Not able to check the volume
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("unable to get volume Info"))
+
+	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
+
+	assert.Error(t, err)
+
+	// Test3: Error - Flexvol not found
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, nil)
+
+	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
+
+	assert.Error(t, err)
+
+	// Test4: Success - Setting comment
+	vol.Comment = "fakeComment"
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+
+	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
+
+	assert.NoError(t, err)
+
+	// Test5: Error - Storage pool name not set
+	pool.SetName("")
+
+	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
+
+	assert.Error(t, err)
 }
