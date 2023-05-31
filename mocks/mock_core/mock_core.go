@@ -1002,6 +1002,20 @@ func (mr *MockOrchestratorMockRecorder) ResizeVolume(arg0, arg1, arg2 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockOrchestrator)(nil).ResizeVolume), arg0, arg1, arg2)
 }
 
+// RestoreSnapshot mocks base method.
+func (m *MockOrchestrator) RestoreSnapshot(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreSnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RestoreSnapshot indicates an expected call of RestoreSnapshot.
+func (mr *MockOrchestratorMockRecorder) RestoreSnapshot(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).RestoreSnapshot), arg0, arg1, arg2)
+}
+
 // SetLogLayers mocks base method.
 func (m *MockOrchestrator) SetLogLayers(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()

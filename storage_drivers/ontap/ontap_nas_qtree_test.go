@@ -3461,3 +3461,23 @@ func TestGetCommonConfig_Success(t *testing.T) {
 
 	assert.NotNil(t, result, "Expected not nil config, got nil")
 }
+
+func TestNASQtreeStorageDriver_RestoreSnapshot(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Error(t, result)
+}

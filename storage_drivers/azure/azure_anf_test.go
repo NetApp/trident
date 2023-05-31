@@ -3922,16 +3922,136 @@ func TestCreateSnapshot_SnapshotWaitFailed(t *testing.T) {
 }
 
 func TestRestoreSnapshot(t *testing.T) {
-	_, driver := newMockANFDriver(t)
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, filesystem, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, snapConfig.InternalName).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().RestoreSnapshot(ctx, filesystem, snapshot).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable,
+		[]string{api.StateError, api.StateDeleting, api.StateDeleted}, api.DefaultSDKTimeout).
+		Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, result, "not nil")
+}
+
+func TestRestoreSnapshot_DiscoveryFailed(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
 	snapTime := time.Now()
 	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
 
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
+
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
 
-	assert.Error(t, result, "expected error")
-	assert.IsType(t, errors.UnsupportedError(""), result, "not UnsupportedError")
+	assert.NotNil(t, result, "expected error")
+}
+
+func TestRestoreSnapshot_VolumeExistsCheckFailed(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errFailed).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "expected error")
+}
+
+func TestRestoreSnapshot_NonexistentVolume(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, _, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errors.NotFoundError("not found")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "expected error")
+}
+
+func TestRestoreSnapshot_NonexistentSnapshot(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, filesystem, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, "snap1").Return(nil, errors.NotFoundError("not found")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "expected error")
+}
+
+func TestRestoreSnapshot_GetSnapshotFailed(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, filesystem, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, "snap1").Return(nil, errFailed).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "expected error")
+}
+
+func TestRestoreSnapshot_SnapshotRestoreFailed(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, filesystem, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, "snap1").Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().RestoreSnapshot(ctx, filesystem, snapshot).Return(errFailed).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "expected error")
+}
+
+func TestRestoreSnapshot_VolumeWaitFailed(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, filesystem, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, "snap1").Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().RestoreSnapshot(ctx, filesystem, snapshot).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable,
+		[]string{api.StateError, api.StateDeleting, api.StateDeleted},
+		api.DefaultSDKTimeout).Return("", errFailed).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "expected error")
 }
 
 func TestDeleteSnapshot(t *testing.T) {
@@ -4472,7 +4592,8 @@ func TestCreateFollowup_NonexistentVolume(t *testing.T) {
 
 func TestCreateFollowup_VolumeNotAvailable(t *testing.T) {
 	nonAvailableStates := []string{
-		api.StateAccepted, api.StateCreating, api.StateDeleting, api.StateDeleted, api.StateMoving, api.StateError,
+		api.StateAccepted, api.StateCreating, api.StateDeleting, api.StateDeleted,
+		api.StateMoving, api.StateError, api.StateReverting,
 	}
 
 	for _, state := range nonAvailableStates {

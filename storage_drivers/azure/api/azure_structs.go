@@ -16,6 +16,7 @@ const (
 	StateDeleted   = "NoSuchState"
 	StateMoving    = "Moving" // Currently unused by ANF
 	StateError     = "Failed"
+	StateReverting = "Reverting"
 
 	ProtocolTypeNFSPrefix = "NFSv"
 	ProtocolTypeNFSv3     = ProtocolTypeNFSPrefix + "3"

@@ -1223,7 +1223,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 				Logc(ctx).WithField("volume", volume.Name).Info("Volume deleted.")
 			}
 
-		case api.StateMoving:
+		case api.StateMoving, api.StateReverting:
 			fallthrough
 
 		default:
@@ -1509,9 +1509,9 @@ func (d *NASStorageDriver) CreateSnapshot(
 	}, nil
 }
 
-// RestoreSnapshot restores a volume (in place) from a snapshot.  Not supported by this driver.
+// RestoreSnapshot restores a volume (in place) from a snapshot.
 func (d *NASStorageDriver) RestoreSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) error {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1524,7 +1524,33 @@ func (d *NASStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	// Update resource cache as needed
+	if err := d.SDK.RefreshAzureResources(ctx); err != nil {
+		return fmt.Errorf("could not update ANF resource cache; %v", err)
+	}
+
+	// Get the volume
+	volume, err := d.SDK.Volume(ctx, volConfig)
+	if err != nil {
+		return fmt.Errorf("could not find volume %s; %v", internalVolName, err)
+	}
+
+	// Get the snapshot
+	snapshot, err := d.SDK.SnapshotForVolume(ctx, volume, internalSnapName)
+	if err != nil {
+		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
+	}
+
+	// Do the restore
+	if err = d.SDK.RestoreSnapshot(ctx, volume, snapshot); err != nil {
+		return err
+	}
+
+	// Wait for snapshot deletion to complete
+	_, err = d.SDK.WaitForVolumeState(ctx, volume, api.StateAvailable,
+		[]string{api.StateError, api.StateDeleting, api.StateDeleted}, api.DefaultSDKTimeout,
+	)
+	return err
 }
 
 // DeleteSnapshot deletes a snapshot of a volume.

@@ -30,20 +30,20 @@ import (
 
 const (
 	// CRD names
-
-	ActionMirrorUpdateCRDName = "tridentactionmirrorupdates.trident.netapp.io"
-	BackendCRDName            = "tridentbackends.trident.netapp.io"
-	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
-	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
-	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
-	NodeCRDName               = "tridentnodes.trident.netapp.io"
-	StorageClassCRDName       = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
-	VersionCRDName            = "tridentversions.trident.netapp.io"
-	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
-	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
-	VolumeReferenceCRDName    = "tridentvolumereferences.trident.netapp.io"
+	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendCRDName               = "tridentbackends.trident.netapp.io"
+	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
+	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
+	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
+	NodeCRDName                  = "tridentnodes.trident.netapp.io"
+	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
+	VersionCRDName               = "tridentversions.trident.netapp.io"
+	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
+	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
+	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
 
 	DefaultTimeout = 30
 )
@@ -89,16 +89,17 @@ var (
 
 	CRDnames = []string{
 		ActionMirrorUpdateCRDName,
+		ActionSnapshotRestoreCRDName,
 		BackendCRDName,
 		BackendConfigCRDName,
 		MirrorRelationshipCRDName,
-		SnapshotInfoCRDName,
 		NodeCRDName,
+		SnapshotCRDName,
+		SnapshotInfoCRDName,
 		StorageClassCRDName,
 		TransactionCRDName,
 		VersionCRDName,
 		VolumeCRDName,
-		SnapshotCRDName,
 		VolumeReferenceCRDName,
 		VolumePublicationCRDName,
 	}
@@ -662,6 +663,10 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 	}
 	if err = i.CreateOrPatchCRD(ActionMirrorUpdateCRDName, k8sclient.GetActionMirrorUpdateCRDYAML(),
 		performOperationOnce); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(ActionSnapshotRestoreCRDName, k8sclient.GetActionSnapshotRestoreCRDYAML(),
+		false); err != nil {
 		return err
 	}
 

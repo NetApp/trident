@@ -58,5 +58,6 @@ type Azure interface {
 	SnapshotForVolume(context.Context, *FileSystem, string) (*Snapshot, error)
 	WaitForSnapshotState(context.Context, *Snapshot, *FileSystem, string, []string, time.Duration) error
 	CreateSnapshot(context.Context, *FileSystem, string) (*Snapshot, error)
+	RestoreSnapshot(context.Context, *FileSystem, *Snapshot) error
 	DeleteSnapshot(context.Context, *FileSystem, *Snapshot) error
 }

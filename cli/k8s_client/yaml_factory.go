@@ -158,7 +158,8 @@ rules:
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
 "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status"]
+"tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
+"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -1530,6 +1531,12 @@ func GetVolumeReferenceCRDYAML() string {
 	return tridentVolumeReferenceCRDYAMLv1
 }
 
+func GetActionSnapshotRestoreCRDYAML() string {
+	Log().Trace(">>>> GetActionSnapshotRestoreCRDYAML")
+	defer func() { Log().Trace("<<<< GetActionSnapshotRestoreCRDYAML") }()
+	return tridentActionSnapshotRestoreCRDYAMLv1
+}
+
 func GetOrchestratorCRDYAML() string {
 	Log().Trace(">>>> GetOrchestratorCRDYAML")
 	defer func() { Log().Trace("<<<< GetOrchestratorCRDYAML") }()
@@ -1549,6 +1556,7 @@ kubectl delete crd tridentnodes.trident.netapp.io --wait=false
 kubectl delete crd tridenttransactions.trident.netapp.io --wait=false
 kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumereferences.trident.netapp.io --wait=false
+kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io --wait=false
 
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -1562,6 +1570,7 @@ kubectl patch crd tridentnodes.trident.netapp.io -p '{"metadata":{"finalizers": 
 kubectl patch crd tridenttransactions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumereferences.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentactionsnapshotrestores.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
@@ -1575,6 +1584,7 @@ kubectl delete crd tridentnodes.trident.netapp.io
 kubectl delete crd tridenttransactions.trident.netapp.io
 kubectl delete crd tridentsnapshots.trident.netapp.io
 kubectl delete crd tridentvolumereferences.trident.netapp.io
+kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io
 */
 
 const tridentVersionCRDYAMLv1 = `
@@ -2227,6 +2237,63 @@ spec:
     - trident-external
     - trident-internal`
 
+const tridentActionSnapshotRestoreCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentactionsnapshotrestores.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - description: Namespace
+        jsonPath: .metadata.namespace
+        name: Namespace
+        type: string
+        priority: 0
+      - description: PVC
+        jsonPath: .spec.pvcName
+        name: PVC
+        type: string
+        priority: 0
+      - description: Snapshot
+        jsonPath: .spec.volumeSnapshotName
+        name: Snapshot
+        type: string
+        priority: 0
+      - description: State
+        jsonPath: .status.state
+        name: State
+        type: string
+        priority: 0
+      - description: CompletionTime
+        jsonPath: .status.completionTime
+        name: CompletionTime
+        type: date
+        priority: 0
+      - description: Message
+        jsonPath: .status.message
+        name: Message
+        type: string
+        priority: 1
+  scope: Namespaced
+  names:
+    plural: tridentactionsnapshotrestores
+    singular: tridentactionsnapshotrestore
+    kind: TridentActionSnapshotRestore
+    shortNames:
+    - tasr
+    categories:
+    - trident
+    - trident-external`
+
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
@@ -2239,7 +2306,8 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 +
-	"\n---" + tridentVolumeReferenceCRDYAMLv1 + "\n"
+	"\n---" + tridentVolumeReferenceCRDYAMLv1 +
+	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{

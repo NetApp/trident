@@ -33,8 +33,8 @@ const (
 	MinimumVolumeSizeBytes       = uint64(1073741824)   // 1 GiB
 	MinimumCVSVolumeSizeBytesHW  = uint64(107374182400) // 100 GiB
 	MaximumVolumesPerStoragePool = 50
-	MinimumAPIVersion            = "1.1.26"
-	MinimumSDEVersion            = "2022.9.0"
+	MinimumAPIVersion            = "1.4.0"
+	MinimumSDEVersion            = "2023.1.2"
 
 	defaultHWServiceLevel  = api.UserServiceLevel1
 	defaultSWServiceLevel  = api.PoolServiceLevel1
@@ -1627,15 +1627,13 @@ func (d *NFSStorageDriver) RestoreSnapshot(
 		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
 	}
 
-	if volume.StorageClass == api.StorageClassSoftware {
-		return errors.New("software volumes do not support snapshot restore")
-	}
-
+	// Get the snapshot
 	snapshot, err := d.API.GetSnapshotForVolume(ctx, volume, internalSnapName)
 	if err != nil {
 		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
 	}
 
+	// Do the restore
 	return d.API.RestoreSnapshot(ctx, volume, snapshot)
 }
 

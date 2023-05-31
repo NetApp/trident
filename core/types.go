@@ -63,6 +63,7 @@ type Orchestrator interface {
 	ListSnapshotsByName(ctx context.Context, snapshotName string) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
 	ReadSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
+	RestoreSnapshot(ctx context.Context, volumeName, snapshotName string) error
 	DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error
 
 	AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)

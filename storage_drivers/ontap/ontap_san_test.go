@@ -3670,3 +3670,46 @@ func TestOntapSanVolumeValidate_ValidateStoragePools(t *testing.T) {
 	err := driver.validate(ctx)
 	assert.Error(t, err, "Unexpected error")
 }
+
+func TestOntapSanStorageDriverVolumeRestoreSnapshot(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SnapshotRestoreVolume(ctx, "snap1", "vol1").Return(nil)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapSanStorageDriverVolumeRestoreSnapshot_Failure(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SnapshotRestoreVolume(ctx, "snap1", "vol1").Return(fmt.Errorf("failed to restore volume"))
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Error(t, result)
+}

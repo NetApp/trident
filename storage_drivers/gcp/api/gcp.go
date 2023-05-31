@@ -951,8 +951,7 @@ func (d *Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *
 	resourcePath := fmt.Sprintf("/Volumes/%s/Revert", volume.VolumeID)
 
 	snapshotRevertRequest := &SnapshotRevertRequest{
-		Name:   snapshot.Name,
-		Region: volume.Region,
+		SnapshotID: snapshot.SnapshotID,
 	}
 
 	jsonRequest, err := json.Marshal(snapshotRevertRequest)

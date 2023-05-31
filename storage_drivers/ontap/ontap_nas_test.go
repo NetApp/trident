@@ -1305,7 +1305,6 @@ func TestOntapNasStorageDriverVolumeRestoreSnapshot(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().SnapshotRestoreVolume(ctx, "snap1", "vol1").Return(nil)
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
@@ -1328,7 +1327,6 @@ func TestOntapNasStorageDriverVolumeRestoreSnapshot_Failure(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().SnapshotRestoreVolume(ctx, "snap1", "vol1").Return(fmt.Errorf("failed to restore volume"))
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
