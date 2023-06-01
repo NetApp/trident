@@ -97,11 +97,21 @@ func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string) err
 		if err := s.updatePaths(ctx); err != nil {
 			return err
 		}
-	} else {
-		return errors
+
+		return nil
 	}
 
-	return nil
+	if s.GetConnectionStatus() != NVMeSubsystemDisconnected {
+		// We can arrive in this case for the below use case -
+		// LIF1 is up and LIF2 is down. After creating first pod, we connect a path for subsystem using
+		// LIF1 successfully while for LIF2 it fails. So updatePaths will update the new path for the
+		// subsystem. When we create the second pod, we don't create a path for LIF1 as it is already
+		// present while we try to create for LIF2 which fails again. So updatePaths will remain false.
+		// Since at least one path is present, we should not return error.
+		return nil
+	}
+
+	return errors
 }
 
 // Disconnect removes the subsystem and its corresponding paths/sessions from the k8s node.
