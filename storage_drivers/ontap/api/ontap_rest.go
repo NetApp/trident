@@ -5594,7 +5594,7 @@ func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string) (*m
 		*result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
 		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
 	}
-	return nil, fmt.Errorf("namespace not found")
+	return nil, fmt.Errorf("namespace %s not found", name)
 }
 
 // NVMe Subsystem operations

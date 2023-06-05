@@ -193,7 +193,7 @@ func TestControllerPublishVolume_NVMeProtocol(t *testing.T) {
 		"filesystemType":    "",
 		"LUKSEncryption":    "",
 		"mountOptions":      "",
-		"nvmeNamespacePath": "",
+		"nvmeNamespaceUUID": "",
 		"nvmeSubsystemNqn":  "",
 		"protocol":          "block",
 		"SANType":           sa.NVMe,

@@ -409,7 +409,7 @@ func (p *Plugin) ControllerPublishVolume(
 		if volumePublishInfo.SANType == sa.NVMe {
 			// fill in only NVMe specific fields in publishInfo
 			publishInfo["nvmeSubsystemNqn"] = volumePublishInfo.NVMeSubsystemNQN
-			publishInfo["nvmeNamespacePath"] = volumePublishInfo.NVMeNamespacePath
+			publishInfo["nvmeNamespaceUUID"] = volumePublishInfo.NVMeNamespaceUUID
 			publishInfo["nvmeTargetIPs"] = strings.Join(volumePublishInfo.NVMeTargetIPs, ",")
 			publishInfo["SANType"] = sa.NVMe
 		} else {

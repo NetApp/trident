@@ -146,12 +146,12 @@ func getNVMeDevice(ctx context.Context, nsPath string) (*NVMeDevice, error) {
 	}
 
 	for _, dev := range dList.Devices {
-		if dev.NamespacePath == nsPath {
+		if dev.UUID == nsPath {
 			return &dev, nil
 		}
 	}
 
-	return nil, fmt.Errorf("no device found for the given namespace")
+	return nil, fmt.Errorf("no device found for the given namespace %v", nsPath)
 }
 
 // GetPath returns the device path where we mount the filesystem in NodePublish.
@@ -245,7 +245,7 @@ func AttachNVMeVolume(ctx context.Context, name, mountpoint string, publishInfo 
 		}
 	}
 
-	nvmeDev, err := nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespacePath)
+	nvmeDev, err := nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil {
 		return err
 	}
