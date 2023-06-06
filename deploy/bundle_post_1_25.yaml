@@ -457,6 +457,10 @@ spec:
           image: docker.io/netapp/trident-operator:23.04.0
           imagePullPolicy: IfNotPresent
           name: trident-operator
+          securityContext:
+            capabilities:
+              drop:
+                - all
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

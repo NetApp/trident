@@ -495,6 +495,10 @@ spec:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         ports:
         - containerPort: 8443
         - containerPort: 8001
@@ -548,6 +552,10 @@ spec:
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -568,6 +576,10 @@ spec:
       - name: csi-provisioner
         image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.4.1
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=600s"
@@ -584,6 +596,10 @@ spec:
       - name: csi-attacher
         image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.2.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=60s"
@@ -611,6 +627,10 @@ spec:
       - name: csi-snapshotter
         image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v6.2.1
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
@@ -836,6 +856,11 @@ spec:
         securityContext:
           privileged: true
           allowPrivilegeEscalation: true
+          capabilities:
+            drop:
+            - all
+            add:
+            - SYS_ADMIN
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         command:
@@ -1266,6 +1291,10 @@ spec:
     image: {TRIDENT_IMAGE}
     command: ["tridentctl"]
     args: ["pause"]
+    securityContext:
+      capabilities:
+        drop:
+        - all
   {IMAGE_PULL_SECRETS}
   affinity:
         nodeAffinity:

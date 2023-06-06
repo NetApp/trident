@@ -869,6 +869,13 @@ func TestGetTridentVersionPodYAML(t *testing.T) {
 					Image:           "trident-csi-image",
 					Command:         []string{"tridentctl"},
 					Args:            []string{"pause"},
+					SecurityContext: &v1.SecurityContext{
+						Capabilities: &v1.Capabilities{
+							Drop: []v1.Capability{
+								"all",
+							},
+						},
+					},
 				},
 			},
 			ImagePullSecrets: []v1.LocalObjectReference{
@@ -904,9 +911,7 @@ func TestGetTridentVersionPodYAML(t *testing.T) {
 	var actual v1.Pod
 	actualYAML := GetTridentVersionPodYAML(name, image, "service", "IfNotPresent", secrets, labels, crdDetails)
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
-	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
-	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
-	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+	assert.Equal(t, expected, actual)
 }
 
 func TestGetOpenShiftSCCYAML(t *testing.T) {

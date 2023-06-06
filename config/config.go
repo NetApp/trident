@@ -45,8 +45,10 @@ const (
 	PersistentStoreTimeout           = 10 * time.Second
 	DockerCreateTimeout              = 115 * time.Second
 	DockerDefaultTimeout             = 55 * time.Second
-	CSIUnixSocketPermissions         = 0o600
-	CSISocketDirPermissions          = 0o600
+	// CSIUnixSocketPermissions CSI socket file needs rw access only for user
+	CSIUnixSocketPermissions = 0o600
+	// CSISocketDirPermissions CSI socket directory needs rwx access only for user
+	CSISocketDirPermissions = 0o700
 
 	/* REST/HTTP constants */
 	HTTPTimeout       = 90 * time.Second
