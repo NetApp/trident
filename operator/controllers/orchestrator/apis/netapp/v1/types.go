@@ -62,6 +62,7 @@ type TridentOrchestratorSpec struct {
 	NodePluginTolerations        []Toleration      `json:"nodePluginTolerations,omitempty"`
 	Windows                      bool              `json:"windows,omitempty"`
 	ImagePullPolicy              string            `json:"imagePullPolicy,omitempty"`
+	CloudProvider                string            `json:"cloudProvider,omitempty"`
 }
 
 // Toleration

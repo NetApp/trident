@@ -59,6 +59,8 @@ const (
 
 	// CRD Finalizer name
 	TridentFinalizer = "trident.netapp.io"
+
+	CloudProviderAzure = "Azure"
 )
 
 type LogLineCallback func(string)

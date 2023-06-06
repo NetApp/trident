@@ -538,7 +538,7 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 		}
 	}
 
-	client, err := api.NewDriver(api.ClientConfig{
+	client, err := api.NewDriver(ctx, api.ClientConfig{
 		SubscriptionID:    config.SubscriptionID,
 		TenantID:          config.TenantID,
 		ClientID:          config.ClientID,

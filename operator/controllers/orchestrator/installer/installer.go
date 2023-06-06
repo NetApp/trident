@@ -67,6 +67,7 @@ var (
 	imageRegistry   string
 	kubeletDir      string
 	imagePullPolicy string
+	cloudProvider   string
 
 	autosupportImage        string
 	autosupportProxy        string
@@ -388,6 +389,7 @@ func (i *Installer) setInstallationParams(
 	if cr.Spec.ImagePullPolicy != "" {
 		imagePullPolicy = cr.Spec.ImagePullPolicy
 	}
+	cloudProvider = cr.Spec.CloudProvider
 
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
@@ -1397,6 +1399,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		ServiceAccountName:      serviceAccName,
 		ImagePullPolicy:         imagePullPolicy,
 		EnableForceDetach:       enableForceDetach,
+		CloudProvider:           cloudProvider,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

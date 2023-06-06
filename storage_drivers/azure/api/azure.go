@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
 
@@ -21,6 +22,7 @@ import (
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
+	azure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -68,7 +70,7 @@ type ClientConfig struct {
 
 // AzureClient holds operational Azure SDK objects.
 type AzureClient struct {
-	Credential       *azidentity.ClientSecretCredential
+	Credential       azcore.TokenCredential
 	FeaturesClient   *features.Client
 	GraphClient      *resourcegraph.Client
 	VolumesClient    *netapp.VolumesClient
@@ -129,7 +131,7 @@ type Client struct {
 }
 
 // NewDriver is a factory method for creating a new SDK interface.
-func NewDriver(config ClientConfig) (Azure, error) {
+func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 	var err error
 	var credential azcore.TokenCredential
 
@@ -138,18 +140,39 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		return nil, errors.New("location must be specified in the config")
 	}
 
-	if config.ClientSecret == "" {
-		// use managed identity credentials
-		opts := azidentity.ManagedIdentityCredentialOptions{ID: azidentity.ClientID(config.ClientID)}
+	if credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE"); credFilePath != "" {
+		Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credentials from file.")
+		var azureConfig *azure.Config
+		credFile, err := os.Open(credFilePath)
+		if err != nil {
+			return nil, errors.New("error opening azure config file: " + err.Error())
+		}
+		defer credFile.Close()
+		if azureConfig, err = azure.ParseConfig(credFile); err != nil {
+			return nil, errors.New("error parsing azure config file: " + err.Error())
+		}
+		// use managed identity credential
+		opts := azidentity.ManagedIdentityCredentialOptions{ID: azidentity.ClientID(azureConfig.UserAssignedIdentityID)}
 		credential, err = azidentity.NewManagedIdentityCredential(&opts)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		// use service principal credentials
-		credential, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, nil)
-		if err != nil {
-			return nil, err
+		if config.ClientSecret == "" {
+			// use managed identity credential
+			Logc(ctx).Infof("use managed identity credential, client id %s", config.ClientID)
+			opts := azidentity.ManagedIdentityCredentialOptions{ID: azidentity.ClientID(config.ClientID)}
+			credential, err = azidentity.NewManagedIdentityCredential(&opts)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			// use service principal credential
+			Logc(ctx).Infof("use service principal credential, client id %s", config.ClientID)
+			credential, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, nil)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

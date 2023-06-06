@@ -11,6 +11,7 @@ import (
 	"github.com/ghodss/yaml"
 	scc "github.com/openshift/api/security/v1"
 	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	pspv1beta1 "k8s.io/api/policy/v1beta1"
 	csiv1 "k8s.io/api/storage/v1"
@@ -435,6 +436,40 @@ func TestGetCSIDeploymentYAMLImagePullPolicy(t *testing.T) {
 			assert.Contains(t, yamlData, args.Expected, failMsg)
 		}
 	}
+}
+
+func TestGetCSIDeploymentYAMLAzure(t *testing.T) {
+	args := &DeploymentYAMLArguments{
+		CloudProvider: CloudProviderAzure,
+	}
+
+	yamlData := GetCSIDeploymentYAML(args)
+	deployment := appsv1.Deployment{}
+	err := yaml.Unmarshal([]byte(yamlData), &deployment)
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+
+	var envExist, volumeExist, volumeMountExist bool
+	for _, env := range deployment.Spec.Template.Spec.Containers[0].Env {
+		if env.Name == "AZURE_CREDENTIAL_FILE" {
+			envExist = true
+			break
+		}
+	}
+	for _, volumeMount := range deployment.Spec.Template.Spec.Containers[0].VolumeMounts {
+		if volumeMount.Name == "azure-cred" {
+			volumeMountExist = true
+			break
+		}
+	}
+	for _, volume := range deployment.Spec.Template.Spec.Volumes {
+		if volume.Name == "azure-cred" {
+			volumeExist = true
+			break
+		}
+	}
+	assert.True(t, envExist && volumeExist && volumeMountExist, "expected env var AZURE_CREDENTIAL_FILE to exist")
 }
 
 func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {
