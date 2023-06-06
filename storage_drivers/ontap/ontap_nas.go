@@ -1315,10 +1315,17 @@ func (d *NASStorageDriver) UpdateMirror(ctx context.Context, localInternalVolume
 
 // CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
 // succeeded or in progress
-func (d *NASStorageDriver) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time,
-	error,
-) {
+func (d *NASStorageDriver) CheckMirrorTransferState(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
 	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
+}
+
+// GetMirrorTransferTime will return the transfer time of the mirror relationship
+func (d *NASStorageDriver) GetMirrorTransferTime(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return getMirrorTransferTime(ctx, localInternalVolumeName, d.API)
 }
 
 // MountVolume returns the volume mount error(if any)

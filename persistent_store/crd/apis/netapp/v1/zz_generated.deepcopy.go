@@ -99,8 +99,8 @@ func (in *TridentActionMirrorUpdateStatus) DeepCopyInto(out *TridentActionMirror
 		in, out := &in.CompletionTime, &out.CompletionTime
 		*out = (*in).DeepCopy()
 	}
-	if in.StartTime != nil {
-		in, out := &in.StartTime, &out.StartTime
+	if in.PreviousTransferTime != nil {
+		in, out := &in.PreviousTransferTime, &out.PreviousTransferTime
 		*out = (*in).DeepCopy()
 	}
 	return

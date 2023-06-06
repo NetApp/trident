@@ -1383,7 +1383,7 @@ func (d *NASStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("snapshot %s state is %s", internalSnapName, snapshot.ProvisioningState)
 	}
 
-	created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
+	created := snapshot.Created.UTC().Format(utils.TimestampFormat)
 
 	Logc(ctx).WithFields(LogFields{
 		"snapshotName": internalSnapName,
@@ -1445,7 +1445,7 @@ func (d *NASStorageDriver) GetSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat),
+			Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
 			SizeBytes: 0,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1503,7 +1503,7 @@ func (d *NASStorageDriver) CreateSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil

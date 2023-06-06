@@ -5,6 +5,7 @@ package crd
 import (
 	"context"
 	"fmt"
+	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,11 +71,15 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 	// Get TMR. All of the work of this method constitutes pre-checks and should be quick,
 	// so we do this before setting the CR to in-progress. Any error other than ReconciledDeferred
 	// will update the CR with a failed status and the operation will not be retried.
-	tmr, tmrError := c.getTMR(ctx, actionCR)
-	if tmrError != nil {
+	tmr, updateError := c.getTMR(ctx, actionCR)
+	if updateError != nil {
 		return
 	}
 
+	if tmr.Status.Conditions[0].ReplicationPolicy == "Sync" {
+		return fmt.Errorf("TAMU %s cannot be executed for TMR %s is a synchronous relationship", actionCR.Name,
+			actionCR.Spec.TMRName)
+	}
 	// Check the state of the TMR to determine if it is ready to be updated or not.
 	// A TMR in the process of establishing or reestablishing will be retried.
 	// A TMR that is in any other state than established or reestablished will return an error and not be retried.
@@ -100,17 +105,30 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 	if actionCR.InProgress() {
 		transferEndTime, err := c.orchestrator.CheckMirrorTransferState(ctx, localPVC.Spec.VolumeName)
 		if errors.IsInProgressError(err) {
-			updateError = errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
+			return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
+		}
+
+		if err != nil {
+			return err
 		}
 
 		// Confirm that the end transfer time is after the creation of the TAMU
-		if transferEndTime != nil && updateError == nil {
-			if transferEndTime.After(actionCR.Status.StartTime.Time) {
-				return
+		if transferEndTime != nil {
+			if actionCR.Status.PreviousTransferTime == nil {
+				return nil
+			}
+			if transferEndTime.After(actionCR.Status.PreviousTransferTime.Time) {
+				return nil
 			}
 		}
 
 		return errors.ReconcileDeferredError("mirror update retry")
+	}
+
+	// Get the last transfer time of the relationship
+	previousTransferTime, err := c.orchestrator.GetMirrorTransferTime(ctx, localPVC.Spec.VolumeName)
+	if err != nil {
+		return fmt.Errorf("could not get previous mirror transfer time; %v", err)
 	}
 
 	// Parse snapshot name from the handle
@@ -124,7 +142,7 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 
 	// Update CR with finalizers and in-progress status
 	updateError = c.updateActionMirrorUpdateCRInProgress(ctx, namespace, name, localVolumeHandle,
-		remoteVolumeHandle, actionCR.Spec.SnapshotHandle)
+		remoteVolumeHandle, actionCR.Spec.SnapshotHandle, previousTransferTime)
 	if updateError != nil {
 		return updateError
 	}
@@ -161,7 +179,7 @@ func (c *TridentCrdController) validateActionMirrorUpdateCR(ctx context.Context,
 
 // updateActionMirrorUpdateCRInProgress updates the action CR to an in progress state and adds finalizers
 func (c *TridentCrdController) updateActionMirrorUpdateCRInProgress(ctx context.Context, namespace,
-	name, localVolumeHandle, remoteVolumeHandle, snapshotHandle string,
+	name, localVolumeHandle, remoteVolumeHandle, snapshotHandle string, previousTransferTime *time.Time,
 ) error {
 	// Get the resource with the namespace/name
 	actionCR, err := c.crdClientset.TridentV1().TridentActionMirrorUpdates(namespace).Get(ctx, name, getOpts)
@@ -180,8 +198,11 @@ func (c *TridentCrdController) updateActionMirrorUpdateCRInProgress(ctx context.
 	actionCR.Status.Message = ""
 	actionCR.Status.LocalVolumeHandle = localVolumeHandle
 	actionCR.Status.RemoteVolumeHandle = remoteVolumeHandle
-	startTime := metav1.Now()
-	actionCR.Status.StartTime = &startTime
+
+	if previousTransferTime != nil {
+		transferTime := metav1.NewTime(*previousTransferTime)
+		actionCR.Status.PreviousTransferTime = &transferTime
+	}
 
 	if snapshotHandle != "" {
 		actionCR.Status.SnapshotHandle = snapshotHandle

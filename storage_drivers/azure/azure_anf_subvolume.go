@@ -1184,7 +1184,7 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   time.Time{}.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   time.Time{}.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -1249,7 +1249,7 @@ func (d *NASBlockStorageDriver) GetSnapshots(
 				VolumeName:         externalVolName,
 				VolumeInternalName: internalVolName,
 			},
-			Created:   time.Time{}.UTC().Format(storage.SnapshotTimestampFormat),
+			Created:   time.Time{}.UTC().Format(utils.TimestampFormat),
 			SizeBytes: 0,
 			State:     storage.SnapshotStateOnline,
 		}
@@ -1365,7 +1365,7 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   createdAt.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   createdAt.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil

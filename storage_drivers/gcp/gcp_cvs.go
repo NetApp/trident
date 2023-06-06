@@ -1451,7 +1451,7 @@ func (d *NFSStorageDriver) getSnapshot(
 	for _, snapshot := range *snapshots {
 		if snapshot.Name == internalSnapName {
 
-			created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
+			created := snapshot.Created.UTC().Format(utils.TimestampFormat)
 
 			Logc(ctx).WithFields(LogFields{
 				"snapshotName": internalSnapName,
@@ -1521,7 +1521,7 @@ func (d *NFSStorageDriver) getSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+			Created:   snapshot.Created.Format(utils.TimestampFormat),
 			SizeBytes: volume.QuotaInBytes,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1597,7 +1597,7 @@ func (d *NFSStorageDriver) createSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+		Created:   snapshot.Created.Format(utils.TimestampFormat),
 		SizeBytes: sourceVolume.QuotaInBytes,
 		State:     storage.SnapshotStateOnline,
 	}, nil

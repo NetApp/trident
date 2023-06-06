@@ -5591,9 +5591,7 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, s
 	if err != nil {
 		return fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
 	}
-
-	ok := backend.CanMirror()
-	if !ok {
+	if !backend.CanMirror() {
 		return fmt.Errorf("backend does not support mirroring")
 	}
 
@@ -5609,9 +5607,9 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, s
 
 // CheckMirrorTransferState returns the last completed transfer time and an error if mirror relationship transfer
 // is failed or in progress
-func (o *TridentOrchestrator) CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (endTime *time.Time,
-	err error,
-) {
+func (o *TridentOrchestrator) CheckMirrorTransferState(
+	ctx context.Context, pvcVolumeName string,
+) (endTime *time.Time, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5633,14 +5631,45 @@ func (o *TridentOrchestrator) CheckMirrorTransferState(ctx context.Context, pvcV
 	if err != nil {
 		return nil, fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
 	}
-
-	ok := backend.CanMirror()
-	if !ok {
+	if !backend.CanMirror() {
 		return nil, fmt.Errorf("backend does not support mirroring")
 	}
 
 	// Check transfer state of mirror relationship
 	return backend.CheckMirrorTransferState(ctx, tridentVolume.Config.InternalName)
+}
+
+// GetMirrorTransferTime returns the last completed transfer time
+func (o *TridentOrchestrator) GetMirrorTransferTime(
+	ctx context.Context, pvcVolumeName string,
+) (endTime *time.Time, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+	defer recordTiming("check_mirror_transfer_state", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	// Get volume
+	tridentVolume, err := o.getVolume(ctx, pvcVolumeName)
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", pvcVolumeName, err)
+	}
+
+	// Get backend to ensure it can mirror
+	backend, err := o.getBackendByBackendUUID(tridentVolume.BackendUUID)
+	if err != nil {
+		return nil, fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
+	}
+	if !backend.CanMirror() {
+		return nil, fmt.Errorf("backend does not support mirroring")
+	}
+
+	// Get last transfer time of mirror relationship
+	return backend.GetMirrorTransferTime(ctx, tridentVolume.Config.InternalName)
 }
 
 func (o *TridentOrchestrator) GetCHAP(

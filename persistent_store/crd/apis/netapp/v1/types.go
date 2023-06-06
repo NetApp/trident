@@ -176,13 +176,13 @@ type TridentActionMirrorUpdateSpec struct {
 
 // TridentActionMirrorUpdateStatus defines the result of TridentActionMirrorUpdate
 type TridentActionMirrorUpdateStatus struct {
-	LocalVolumeHandle  string       `json:"localVolumeHandle"`
-	RemoteVolumeHandle string       `json:"remoteVolumeHandle"`
-	SnapshotHandle     string       `json:"snapshotHandle,omitempty"`
-	State              string       `json:"state,omitempty"`
-	Message            string       `json:"message,omitempty"`
-	CompletionTime     *metav1.Time `json:"completionTime,omitempty"`
-	StartTime          *metav1.Time `json:"startTime,omitempty"`
+	LocalVolumeHandle    string       `json:"localVolumeHandle"`
+	RemoteVolumeHandle   string       `json:"remoteVolumeHandle"`
+	SnapshotHandle       string       `json:"snapshotHandle,omitempty"`
+	State                string       `json:"state,omitempty"`
+	Message              string       `json:"message,omitempty"`
+	CompletionTime       *metav1.Time `json:"completionTime,omitempty"`
+	PreviousTransferTime *metav1.Time `json:"previousTransferTime,omitempty"`
 }
 
 // TridentActionMirrorUpdateList is a list of TridentActionMirrorUpdate objects.

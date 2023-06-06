@@ -324,6 +324,21 @@ func (mr *MockBackendMockRecorder) GetDriverName() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDriverName", reflect.TypeOf((*MockBackend)(nil).GetDriverName))
 }
 
+// GetMirrorTransferTime mocks base method.
+func (m *MockBackend) GetMirrorTransferTime(arg0 context.Context, arg1 string) (*time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMirrorTransferTime", arg0, arg1)
+	ret0, _ := ret[0].(*time.Time)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMirrorTransferTime indicates an expected call of GetMirrorTransferTime.
+func (mr *MockBackendMockRecorder) GetMirrorTransferTime(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorTransferTime", reflect.TypeOf((*MockBackend)(nil).GetMirrorTransferTime), arg0, arg1)
+}
+
 // GetPhysicalPoolNames mocks base method.
 func (m *MockBackend) GetPhysicalPoolNames(arg0 context.Context) []string {
 	m.ctrl.T.Helper()

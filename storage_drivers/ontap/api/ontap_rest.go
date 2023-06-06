@@ -5375,7 +5375,36 @@ func (c *RestClient) GetSVMState(ctx context.Context) (string, error) {
 }
 
 func (c RestClient) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
-	// TODO (victorir): implement me TRID-12901
+	// first, find the relationship so we can then use the UUID to update
+	relationship, err := c.SnapmirrorGet(ctx, localInternalVolumeName, c.SVMName(), "", "")
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+	if relationship.UUID == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipTransferCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetRelationshipUUID(string(*relationship.UUID))
+
+	params.Info = &models.SnapmirrorTransfer{}
+	if snapshotName != "" {
+		params.Info.SourceSnapshot = &snapshotName
+	}
+
+	snapmirrorRelationshipTransferCreateAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipTransferCreate(params,
+		c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipTransferCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship transfer update")
+	}
 	return nil
 }
 

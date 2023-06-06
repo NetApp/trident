@@ -106,6 +106,7 @@ type Orchestrator interface {
 	GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
 	UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) error
 	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 

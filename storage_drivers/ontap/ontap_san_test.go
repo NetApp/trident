@@ -3342,9 +3342,10 @@ func TestOntapSANStorageDriverCheckMirrorTransferState(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	ctx := context.Background()
 
-	transferTime := "2023-05-15T15:06:23-04:00"
-	transferFormat := "2006-01-02T15:04:05.000-07:00"
-	endTransferTime, _ = time.Parse(transferFormat, transferTime)
+	transferTime := "2023-06-01T10:15:36-04:00"
+	transferFormat := "2006-01-02T15:04:05-07:00"
+	endTime, _ := time.Parse(transferFormat, transferTime)
+	endTransferTime = endTime.UTC()
 
 	tests := []struct {
 		name          string
@@ -3359,6 +3360,7 @@ func TestOntapSANStorageDriverCheckMirrorTransferState(t *testing.T) {
 				mockAPI.EXPECT().SnapmirrorGet(ctx, "trident-pvc-1234", "SVM1", "", "").
 					Return(&api.Snapmirror{
 						RelationshipStatus: api.SnapmirrorStatusSuccess,
+						IsHealthy:          true,
 						EndTransferTime:    &endTransferTime,
 					}, nil)
 			},

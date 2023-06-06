@@ -464,7 +464,7 @@ func mirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName str
 	return errors.InProgressError("mirror update started")
 }
 
-// CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
+// checkMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
 // succeeded or in progress and return the EndTransferTime if it succeeded or failed
 func checkMirrorTransferState(ctx context.Context, localInternalVolumeName string, d api.OntapAPI) (*time.Time, error) {
 	localSVMName := d.SVMName()
@@ -476,6 +476,9 @@ func checkMirrorTransferState(ctx context.Context, localInternalVolumeName strin
 	if err != nil {
 		return nil, err
 	}
+	if mirror == nil {
+		return nil, fmt.Errorf("could not get mirror")
+	}
 
 	// May need to add finalizing state, similar to transferring
 	switch mirror.RelationshipStatus {
@@ -486,6 +489,13 @@ func checkMirrorTransferState(ctx context.Context, localInternalVolumeName strin
 		// return failed
 		return nil, fmt.Errorf("mirror update failed, %v", mirror.UnhealthyReason)
 	case api.SnapmirrorStatusSuccess, api.SnapmirrorStatusIdle:
+		// If mirror is not healthy return error
+		if !mirror.IsHealthy {
+			return nil, fmt.Errorf("mirror update failed, %v", mirror.UnhealthyReason)
+		}
+		if mirror.EndTransferTime == nil {
+			return nil, fmt.Errorf("mirror does not have a transfer time")
+		}
 		// return no error, mirror update succeeded
 		return mirror.EndTransferTime, nil
 	default:
@@ -493,4 +503,25 @@ func checkMirrorTransferState(ctx context.Context, localInternalVolumeName strin
 		return nil, errors.InProgressError(fmt.Sprintf("unexpected mirror transfer status %v for update",
 			mirror.RelationshipStatus))
 	}
+}
+
+// getMirrorTransferTime returns the transfer time of the mirror relationship
+func getMirrorTransferTime(ctx context.Context, localInternalVolumeName string, d api.OntapAPI) (*time.Time, error) {
+	localSVMName := d.SVMName()
+	if localInternalVolumeName == "" {
+		return nil, fmt.Errorf("invalid volume name")
+	}
+
+	mirror, err := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "")
+	if err != nil {
+		return nil, err
+	}
+	if mirror == nil {
+		return nil, fmt.Errorf("could not get mirror")
+	}
+	if mirror.EndTransferTime == nil {
+		return nil, nil
+	}
+
+	return mirror.EndTransferTime, nil
 }

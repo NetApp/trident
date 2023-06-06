@@ -3739,7 +3739,7 @@ func TestGetSnapshots(t *testing.T) {
 			VolumeName:         "testvol1",
 			VolumeInternalName: "trident-testvol1",
 		},
-		Created:   snapTime.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   snapTime.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
@@ -3752,7 +3752,7 @@ func TestGetSnapshots(t *testing.T) {
 			VolumeName:         "testvol1",
 			VolumeInternalName: "trident-testvol1",
 		},
-		Created:   snapTime.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   snapTime.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
@@ -3829,7 +3829,7 @@ func TestCreateSnapshot(t *testing.T) {
 
 	expectedSnapshot := &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapTime.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   snapTime.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}
