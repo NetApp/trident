@@ -456,9 +456,7 @@ func (d *AzureNASStorageDriverConfig) InjectSecrets(secretMap map[string]string)
 	if d.ClientID, ok = secretMap[strings.ToLower("ClientID")]; !ok {
 		return injectionError("ClientID")
 	}
-	if d.ClientSecret, ok = secretMap[strings.ToLower("ClientSecret")]; !ok {
-		return injectionError("ClientSecret")
-	}
+	d.ClientSecret, _ = secretMap[strings.ToLower("ClientSecret")]
 
 	return nil
 }
