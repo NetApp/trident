@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -22,7 +23,8 @@ import (
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
-	azure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
+	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -41,6 +43,7 @@ const (
 	SDKMaxRetryDelay           = 15 * time.Second
 	CorrelationIDHeader        = "X-Ms-Correlation-Request-Id"
 	SubvolumeNameSeparator     = "-file-"
+	DefaultCredentialFilePath  = "/etc/kubernetes/azure.json"
 )
 
 var (
@@ -140,20 +143,13 @@ func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 		return nil, errors.New("location must be specified in the config")
 	}
 
-	if credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE"); credFilePath != "" {
+	if config.ClientSecret == "" && config.ClientID == "" {
+		credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
+		if credFilePath == "" {
+			credFilePath = DefaultCredentialFilePath
+		}
 		Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credentials from file.")
-		var azureConfig *azure.Config
-		credFile, err := os.Open(credFilePath)
-		if err != nil {
-			return nil, errors.New("error opening azure config file: " + err.Error())
-		}
-		defer credFile.Close()
-		if azureConfig, err = azure.ParseConfig(credFile); err != nil {
-			return nil, errors.New("error parsing azure config file: " + err.Error())
-		}
-		// use managed identity credential
-		opts := azidentity.ManagedIdentityCredentialOptions{ID: azidentity.ClientID(azureConfig.UserAssignedIdentityID)}
-		credential, err = azidentity.NewManagedIdentityCredential(&opts)
+		credential, err = GetAzureCredential(credFilePath)
 		if err != nil {
 			return nil, err
 		}
@@ -231,6 +227,31 @@ func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 		config:    &config,
 		sdkClient: sdkClient,
 	}, nil
+}
+
+func GetAzureCredential(credFilePath string) (credential azcore.TokenCredential, err error) {
+	var azureAuthConfig azclient.AzureAuthConfig
+	var armClientConfig azclient.ARMClientConfig
+	credFile, err := ioutil.ReadFile(credFilePath)
+	if err != nil {
+		return nil, errors.New("error reading from azure config file: " + err.Error())
+	}
+	if err = yaml.Unmarshal(credFile, &azureAuthConfig); err != nil {
+		return nil, errors.New("error parsing azureAuthConfig: " + err.Error())
+	}
+	if err = yaml.Unmarshal(credFile, &armClientConfig); err != nil {
+		return nil, errors.New("error parsing armClientConfig: " + err.Error())
+	}
+	authProvider, err := azclient.NewAuthProvider(azureAuthConfig, armClientConfig)
+	if err != nil {
+		return nil, errors.New("error creating azure auth provider: " + err.Error())
+	}
+	credential, err = authProvider.GetAzIdentity()
+	if err != nil {
+		return nil, errors.New("error getting azure identity: " + err.Error())
+	}
+
+	return credential, nil
 }
 
 // Init runs startup logic after allocating the driver resources.
