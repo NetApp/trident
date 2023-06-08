@@ -4526,27 +4526,19 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(*quotaRule.UUID)
 
-	quotaRuleInfo := &models.QuotaRule{
-		Qtree: &models.QuotaRuleInlineQtree{
-			Name: utils.Ptr(qtreeName),
-		},
-		Volume: &models.QuotaRuleInlineVolume{
-			Name: utils.Ptr(volumeName),
-		},
-		Type: utils.Ptr(quotaType),
+	// determine the new hard disk limit value
+	if diskLimit == "" {
+		return fmt.Errorf("invalid hard disk limit value '%s' for quota modify", diskLimit)
+	}
+	hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
+	if parseErr != nil {
+		return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
 	}
 
-	quotaRuleInfo.Svm = &models.QuotaRuleInlineSvm{UUID: utils.Ptr(c.svmUUID)}
-
-	// handle options
-	if diskLimit != "" {
-		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
-		if parseErr != nil {
-			return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
-		}
-		quotaRuleInfo.Space = &models.QuotaRuleInlineSpace{
+	quotaRuleInfo := &models.QuotaRule{
+		Space: &models.QuotaRuleInlineSpace{
 			HardLimit: utils.Ptr(hardLimit),
-		}
+		},
 	}
 	params.SetInfo(quotaRuleInfo)
 
