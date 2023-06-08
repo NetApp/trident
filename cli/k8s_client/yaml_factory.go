@@ -977,6 +977,15 @@ spec:
                     values:
                     - linux
                   {NODE_SELECTOR}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - node.csi.trident.netapp.io
+              topologyKey: kubernetes.io/hostname
       {NODE_TOLERATIONS}
       volumes:
       - name: plugin-dir
@@ -1203,6 +1212,15 @@ spec:
                     values:
                     - windows
                   {NODE_SELECTOR}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - node.csi.trident.netapp.io
+              topologyKey: kubernetes.io/hostname
       volumes:
         - name: trident-tracking-dir
           hostPath:

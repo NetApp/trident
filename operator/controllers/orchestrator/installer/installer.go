@@ -1443,7 +1443,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		createDaemonSet = true
 	}
 
-	if err = i.client.RemoveMultipleDaemonSets(unwantedDaemonSets); err != nil {
+	if err = i.client.RemoveMultipleDaemonSets(unwantedDaemonSets, true); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident daemonsets; %v", err)
 	}
 

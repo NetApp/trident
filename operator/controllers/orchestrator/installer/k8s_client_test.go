@@ -3395,7 +3395,7 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetDaemonSetsByLabel(nodeLabel, true).Return(unwantedDaemonSets, nil)
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					namespace, true).Return(fmt.Errorf("")).
+					namespace, false).Return(fmt.Errorf("")).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3405,7 +3405,7 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetDaemonSetsByLabel(nodeLabel, true).Return(unwantedDaemonSets, nil)
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					namespace, true).Return(nil).
+					namespace, false).Return(nil).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3414,8 +3414,8 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetDaemonSetsByLabel(nodeLabel, true).Return(unwantedDaemonSets2, nil)
-				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName, namespace, true).Return(nil)
-				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName2, namespace, true).Return(nil)
+				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName, namespace, false).Return(nil)
+				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName2, namespace, false).Return(nil)
 			},
 		},
 	}
@@ -3483,7 +3483,7 @@ func TestRemoveMultipleDaemonSets(t *testing.T) {
 			output: fmt.Errorf("unable to delete daemonset(s): %v", undeletedDaemonSets),
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					daemonSetNamespace, true).Return(deleteDaemonSetErr).
+					daemonSetNamespace, false).Return(deleteDaemonSetErr).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3492,7 +3492,7 @@ func TestRemoveMultipleDaemonSets(t *testing.T) {
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					daemonSetNamespace, true).Return(nil).
+					daemonSetNamespace, false).Return(nil).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3508,7 +3508,7 @@ func TestRemoveMultipleDaemonSets(t *testing.T) {
 				// mock out the k8s client calls needed to test this
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
-				err := extendedK8sClient.RemoveMultipleDaemonSets(test.input)
+				err := extendedK8sClient.RemoveMultipleDaemonSets(test.input, false)
 				assert.Equal(t, test.output, err)
 			},
 		)

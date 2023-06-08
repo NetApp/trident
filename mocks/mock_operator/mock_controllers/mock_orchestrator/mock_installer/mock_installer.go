@@ -2465,17 +2465,17 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleClusterRoles(arg0 int
 }
 
 // RemoveMultipleDaemonSets mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleDaemonSets(arg0 []v10.DaemonSet) error {
+func (m *MockExtendedK8sClient) RemoveMultipleDaemonSets(arg0 []v10.DaemonSet, arg1 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveMultipleDaemonSets", arg0)
+	ret := m.ctrl.Call(m, "RemoveMultipleDaemonSets", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveMultipleDaemonSets indicates an expected call of RemoveMultipleDaemonSets.
-func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleDaemonSets(arg0 interface{}) *gomock.Call {
+func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleDaemonSets(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleDaemonSets", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleDaemonSets), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMultipleDaemonSets", reflect.TypeOf((*MockExtendedK8sClient)(nil).RemoveMultipleDaemonSets), arg0, arg1)
 }
 
 // RemoveMultipleDeployments mocks base method.
