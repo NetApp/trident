@@ -3,7 +3,7 @@ module github.com/netapp/trident
 go 1.19
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.0
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4 v4.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.7.0
@@ -59,7 +59,7 @@ require (
 
 require (
 	gopkg.in/yaml.v3 v3.0.1
-	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230607033427-470a363a5dbb
+	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230609015212-d630eda20a6e
 )
 
 require (

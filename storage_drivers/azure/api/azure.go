@@ -231,7 +231,6 @@ func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 
 func GetAzureCredential(credFilePath string) (credential azcore.TokenCredential, err error) {
 	var azureAuthConfig azclient.AzureAuthConfig
-	var armClientConfig azclient.ARMClientConfig
 	credFile, err := ioutil.ReadFile(credFilePath)
 	if err != nil {
 		return nil, errors.New("error reading from azure config file: " + err.Error())
@@ -239,10 +238,11 @@ func GetAzureCredential(credFilePath string) (credential azcore.TokenCredential,
 	if err = yaml.Unmarshal(credFile, &azureAuthConfig); err != nil {
 		return nil, errors.New("error parsing azureAuthConfig: " + err.Error())
 	}
-	if err = yaml.Unmarshal(credFile, &armClientConfig); err != nil {
-		return nil, errors.New("error parsing armClientConfig: " + err.Error())
+	clientOptions, err := azclient.GetDefaultAuthClientOption(nil)
+	if err != nil {
+		return nil, errors.New("error getting default auth client option: " + err.Error())
 	}
-	authProvider, err := azclient.NewAuthProvider(azureAuthConfig, armClientConfig)
+	authProvider, err := azclient.NewAuthProvider(azureAuthConfig, clientOptions)
 	if err != nil {
 		return nil, errors.New("error creating azure auth provider: " + err.Error())
 	}
