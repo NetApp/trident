@@ -143,6 +143,7 @@ func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 		return nil, errors.New("location must be specified in the config")
 	}
 
+	// if client id and secret are not provided in tbc, use azure config file
 	if config.ClientSecret == "" && config.ClientID == "" {
 		credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
 		if credFilePath == "" {
@@ -155,7 +156,7 @@ func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 		}
 	} else {
 		if config.ClientSecret == "" {
-			// use managed identity credential
+			// use managed identity credential: ClientID is the managed identity ID
 			Logc(ctx).Infof("use managed identity credential, client id %s", config.ClientID)
 			opts := azidentity.ManagedIdentityCredentialOptions{ID: azidentity.ClientID(config.ClientID)}
 			credential, err = azidentity.NewManagedIdentityCredential(&opts)
