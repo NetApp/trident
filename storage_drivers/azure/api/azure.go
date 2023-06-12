@@ -8,9 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"time"
 
@@ -18,12 +16,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4"
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
-	"gopkg.in/yaml.v3"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	. "github.com/netapp/trident/logging"
@@ -58,11 +54,9 @@ var (
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
 	// Azure API authentication parameters
-	SubscriptionID    string
-	TenantID          string
-	ClientID          string
-	ClientSecret      string
-	Location          string
+	azclient.AzureAuthConfig
+	SubscriptionID    string `json:"subscriptionId"`
+	Location          string `json:"location"`
 	StorageDriverName string
 
 	// Options
@@ -134,7 +128,7 @@ type Client struct {
 }
 
 // NewDriver is a factory method for creating a new SDK interface.
-func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
+func NewDriver(config ClientConfig) (Azure, error) {
 	var err error
 	var credential azcore.TokenCredential
 
@@ -143,34 +137,9 @@ func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 		return nil, errors.New("location must be specified in the config")
 	}
 
-	// if client id and secret are not provided in tbc, use azure config file
-	if config.ClientSecret == "" && config.ClientID == "" {
-		credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
-		if credFilePath == "" {
-			credFilePath = DefaultCredentialFilePath
-		}
-		Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credentials from file.")
-		credential, err = GetAzureCredential(credFilePath)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		if config.ClientSecret == "" {
-			// use managed identity credential: ClientID is the managed identity ID
-			Logc(ctx).Infof("use managed identity credential, client id %s", config.ClientID)
-			opts := azidentity.ManagedIdentityCredentialOptions{ID: azidentity.ClientID(config.ClientID)}
-			credential, err = azidentity.NewManagedIdentityCredential(&opts)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			// use service principal credential
-			Logc(ctx).Infof("use service principal credential, client id %s", config.ClientID)
-			credential, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, nil)
-			if err != nil {
-				return nil, err
-			}
-		}
+	credential, err = GetAzureCredential(config)
+	if err != nil {
+		return nil, err
 	}
 
 	clientOptions := &arm.ClientOptions{
@@ -230,20 +199,12 @@ func NewDriver(ctx context.Context, config ClientConfig) (Azure, error) {
 	}, nil
 }
 
-func GetAzureCredential(credFilePath string) (credential azcore.TokenCredential, err error) {
-	var azureAuthConfig azclient.AzureAuthConfig
-	credFile, err := ioutil.ReadFile(credFilePath)
-	if err != nil {
-		return nil, errors.New("error reading from azure config file: " + err.Error())
-	}
-	if err = yaml.Unmarshal(credFile, &azureAuthConfig); err != nil {
-		return nil, errors.New("error parsing azureAuthConfig: " + err.Error())
-	}
+func GetAzureCredential(config ClientConfig) (credential azcore.TokenCredential, err error) {
 	clientOptions, err := azclient.GetDefaultAuthClientOption(nil)
 	if err != nil {
 		return nil, errors.New("error getting default auth client option: " + err.Error())
 	}
-	authProvider, err := azclient.NewAuthProvider(azureAuthConfig, clientOptions)
+	authProvider, err := azclient.NewAuthProvider(config.AzureAuthConfig, clientOptions)
 	if err != nil {
 		return nil, errors.New("error creating azure auth provider: " + err.Error())
 	}

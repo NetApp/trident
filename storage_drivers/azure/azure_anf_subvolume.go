@@ -7,6 +7,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -14,6 +16,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -538,17 +541,36 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 		}
 	}
 
-	client, err := api.NewDriver(ctx, api.ClientConfig{
-		SubscriptionID:    config.SubscriptionID,
-		TenantID:          config.TenantID,
-		ClientID:          config.ClientID,
-		ClientSecret:      config.ClientSecret,
+	var clientConfig = api.ClientConfig{
+		SubscriptionID: config.SubscriptionID,
+		AzureAuthConfig: azclient.AzureAuthConfig{
+			TenantID:        config.TenantID,
+			AADClientID:     config.ClientID,
+			AADClientSecret: config.ClientSecret,
+		},
 		Location:          config.Location,
 		StorageDriverName: config.StorageDriverName,
 		DebugTraceFlags:   config.DebugTraceFlags,
 		SDKTimeout:        sdkTimeout,
 		MaxCacheAge:       maxCacheAge,
-	})
+	}
+
+	if config.UseAzureAuthConfig {
+		credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
+		if credFilePath == "" {
+			credFilePath = DefaultCredentialFilePath
+		}
+		Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credential config file.")
+		credFile, err := ioutil.ReadFile(credFilePath)
+		if err != nil {
+			return errors.New("error reading from azure config file: " + err.Error())
+		}
+		if err = json.Unmarshal(credFile, &clientConfig); err != nil {
+			return errors.New("error parsing azureAuthConfig: " + err.Error())
+		}
+	}
+
+	client, err := api.NewDriver(clientConfig)
 	if err != nil {
 		return err
 	}

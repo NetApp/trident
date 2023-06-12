@@ -399,6 +399,7 @@ func (d SolidfireStorageDriverConfig) SpecOnlyValidation() error {
 
 type AzureNASStorageDriverConfig struct {
 	*CommonStorageDriverConfig
+	UseAzureAuthConfig  bool   `json:"useAzureAuthConfig"`
 	SubscriptionID      string `json:"subscriptionID"`
 	TenantID            string `json:"tenantID"`
 	ClientID            string `json:"clientID"`
@@ -456,7 +457,9 @@ func (d *AzureNASStorageDriverConfig) InjectSecrets(secretMap map[string]string)
 	if d.ClientID, ok = secretMap[strings.ToLower("ClientID")]; !ok {
 		return injectionError("ClientID")
 	}
-	d.ClientSecret, _ = secretMap[strings.ToLower("ClientSecret")]
+	if d.ClientSecret, ok = secretMap[strings.ToLower("ClientSecret")]; !ok {
+		return injectionError("ClientSecret")
+	}
 
 	return nil
 }
@@ -502,6 +505,10 @@ func (d AzureNASStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() 
 func (d AzureNASStorageDriverConfig) SpecOnlyValidation() error {
 	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() && !d.UseAzureAuthConfig {
+		return fmt.Errorf("input is missing the credentials field")
 	}
 
 	return nil

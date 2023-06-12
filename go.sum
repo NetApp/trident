@@ -530,6 +530,7 @@ go.opentelemetry.io/otel/sdk v1.11.1 h1:F7KmQgoHljhUuJyA+9BiU+EkJfyX5nVVF4wyzWZp
 go.opentelemetry.io/otel/trace v1.16.0 h1:8JRpaObFoW0pxuVPapkgH8UhHQj+bJW8jJsCZEu5MQs=
 go.opentelemetry.io/otel/trace v1.16.0/go.mod h1:Yt9vYq1SdNz3xdjZZK7wcXv1qv2pwLkqr2QVwea0ef0=
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=
+go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
 go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
@@ -949,6 +950,8 @@ sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230607033427-470a363a5dbb
 sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230607033427-470a363a5dbb/go.mod h1:Mt9nJZTa8ZwDnFSEIvx51fFGNmmgUhTYHAQA/s45iJs=
 sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230609015212-d630eda20a6e h1:o520pt/2ZIP9YWBB3mjOQdJo9+Te/emf4VKIpOqiP8c=
 sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230609015212-d630eda20a6e/go.mod h1:wGJF9KtrLNnEn87rKc/KqS3phwFSQLhLqpprJXVIZuQ=
+sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230612064547-97ff51966a48 h1:JPTRnll9wGWxdJxx0Z4/kFjKMeDLfESO3cjm6R83js8=
+sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230612064547-97ff51966a48/go.mod h1:dlFa1ItQ3bzf4DFPBTBQEsqo6Zs+SYoXzGpdfhzz2LM=
 sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd h1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=
 sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd/go.mod h1:B8JuhiUyNFVKdsE8h686QcCxMaH6HrOAZj4vswFpcB0=
 sigs.k8s.io/structured-merge-diff/v4 v4.2.3 h1:PRbqxJClWWYMNV1dhaG4NsibJbArud9kFxnAMREiWFE=

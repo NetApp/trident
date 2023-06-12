@@ -59,7 +59,7 @@ require (
 
 require (
 	gopkg.in/yaml.v3 v3.0.1
-	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230609015212-d630eda20a6e
+	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230612064547-97ff51966a48
 )
 
 require (
