@@ -130,14 +130,13 @@ type Client struct {
 // NewDriver is a factory method for creating a new SDK interface.
 func NewDriver(config ClientConfig) (Azure, error) {
 	var err error
-	var credential azcore.TokenCredential
 
 	// Ensure we got a location
 	if config.Location == "" {
 		return nil, errors.New("location must be specified in the config")
 	}
 
-	credential, err = GetAzureCredential(config)
+	credential, err := GetAzureCredential(config)
 	if err != nil {
 		return nil, err
 	}
