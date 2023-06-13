@@ -555,7 +555,7 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 		MaxCacheAge:       maxCacheAge,
 	}
 
-	if config.UseAzureAuthConfig {
+	if config.ClientSecret == "" && config.ClientID == "" {
 		credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
 		if credFilePath == "" {
 			credFilePath = DefaultCredentialFilePath
