@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"regexp"
 	"time"
@@ -16,11 +17,14 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v2"
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/nodeipam/ipam/cidrset"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -40,6 +44,12 @@ const (
 	CorrelationIDHeader        = "X-Ms-Correlation-Request-Id"
 	SubvolumeNameSeparator     = "-file-"
 	DefaultCredentialFilePath  = "/etc/kubernetes/azure.json"
+	DefaultAccountNamePrefix   = "anf-"
+	DefaultPoolNamePrefix      = "anf-pool-"
+	DefaultSubnetNamePrefix    = "anf-subnet-"
+	DefaultServiceLevel        = netapp.ServiceLevelStandard
+	DefaultPoolSize            = 10 * 1099511627776 // 10 TiB
+	DefaultSubnetMaskSize      = 24
 )
 
 var (
@@ -57,6 +67,9 @@ type ClientConfig struct {
 	azclient.AzureAuthConfig
 	SubscriptionID    string `json:"subscriptionId"`
 	Location          string `json:"location"`
+	ResourceGroup     string `json:"resourceGroup"`
+	VnetName          string `json:"vnetName"`
+	VnetResourceGroup string `json:"vnetResourceGroup"`
 	StorageDriverName string
 
 	// Options
@@ -73,6 +86,10 @@ type AzureClient struct {
 	VolumesClient    *netapp.VolumesClient
 	SnapshotsClient  *netapp.SnapshotsClient
 	SubvolumesClient *netapp.SubvolumesClient
+	AccountClient    *netapp.AccountsClient
+	PoolsClient      *netapp.PoolsClient
+	SubnetsClient    *armnetwork.SubnetsClient
+	VnetClient       *armnetwork.VirtualNetworksClient
 	AzureResources
 }
 
@@ -182,6 +199,20 @@ func NewDriver(config ClientConfig) (Azure, error) {
 	if err != nil {
 		return nil, err
 	}
+	accountClient, err := netapp.NewAccountsClient(config.SubscriptionID, credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	poolsClient, err := netapp.NewPoolsClient(config.SubscriptionID, credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	networkClientFactory, err := armnetwork.NewClientFactory(config.SubscriptionID, credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	subnetsClient := networkClientFactory.NewSubnetsClient()
+	vnetClient := networkClientFactory.NewVirtualNetworksClient()
 
 	sdkClient := &AzureClient{
 		Credential:       credential,
@@ -190,6 +221,10 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		VolumesClient:    volumesClient,
 		SnapshotsClient:  snapshotsClient,
 		SubvolumesClient: subvolumesClient,
+		AccountClient:    accountClient,
+		PoolsClient:      poolsClient,
+		SubnetsClient:    subnetsClient,
+		VnetClient:       vnetClient,
 	}
 
 	return Client{
@@ -216,7 +251,136 @@ func (c Client) Init(ctx context.Context, pools map[string]storage.Pool) error {
 	c.registerStoragePools(pools)
 
 	// Find out what we have to work with in Azure
-	return c.RefreshAzureResources(ctx)
+	err := c.RefreshAzureResources(ctx)
+	if errors.IsNotFoundError(err) && shouldGenerateAzureResources(ctx, pools) {
+		Logc(ctx).WithError(err).Info("Generate Azure resources when not found.")
+		if err := c.GenerateAzureResources(ctx, pools); err != nil {
+			return err
+		}
+		Logc(ctx).Info("Azure resources has been generated, refresh again.")
+		return c.RefreshAzureResources(ctx)
+	}
+
+	return err
+}
+
+func shouldGenerateAzureResources(ctx context.Context, pools map[string]storage.Pool) bool {
+	for _, pool := range pools {
+		if pool.InternalAttributes()[PVirtualNetwork] != "" ||
+			pool.InternalAttributes()[PSubnet] != "" ||
+			pool.InternalAttributes()[PResourceGroups] != "" ||
+			pool.InternalAttributes()[PCapacityPools] != "" ||
+			pool.InternalAttributes()[PNetappAccounts] != "" {
+			return false
+		}
+	}
+	return true
+}
+
+// GenerateAzureResources creates the Azure resources needed by Trident.
+func (c Client) GenerateAzureResources(ctx context.Context, pools map[string]storage.Pool) error {
+	Logc(ctx).Info("Creating Azure NetApp Account")
+	accountName := DefaultAccountNamePrefix + utils.RandomNumber(8)
+	accountPollerResp, err := c.sdkClient.AccountClient.BeginCreateOrUpdate(
+		ctx,
+		c.config.ResourceGroup,
+		accountName,
+		netapp.Account{
+			Location: to.Ptr(c.config.Location),
+		}, nil)
+
+	_, err = accountPollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	Logc(ctx).Info("Creating Azure NetApp Capacity Pools")
+	poolName := DefaultPoolNamePrefix + utils.RandomNumber(8)
+	poolPollerResp, err := c.sdkClient.PoolsClient.BeginCreateOrUpdate(
+		ctx,
+		c.config.ResourceGroup,
+		accountName,
+		poolName,
+		netapp.CapacityPool{
+			Location: to.Ptr(c.config.Location),
+			Properties: &netapp.PoolProperties{
+				ServiceLevel: to.Ptr(DefaultServiceLevel),
+				Size:         to.Ptr[int64](DefaultPoolSize),
+			},
+		}, nil)
+	_, err = poolPollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	Logc(ctx).Info("Get Available Subnet address ange")
+	vnetGetResp, err := c.sdkClient.VnetClient.Get(ctx, c.config.ResourceGroup, c.config.VnetName, nil)
+	if err != nil {
+		return err
+	}
+	vnetAddressSpace := vnetGetResp.Properties.AddressSpace.AddressPrefixes[0]
+	var existingSubnetAddressSpaces []*string
+	for _, subnet := range vnetGetResp.Properties.Subnets {
+		existingSubnetAddressSpaces = append(existingSubnetAddressSpaces, subnet.Properties.AddressPrefix)
+		existingSubnetAddressSpaces = append(existingSubnetAddressSpaces, subnet.Properties.AddressPrefixes...)
+	}
+	availableSubnetAddressRange, err := getAvailableSubnetAddressRange(vnetAddressSpace, existingSubnetAddressSpaces, DefaultSubnetMaskSize)
+	if err != nil {
+		return err
+	}
+
+	Logc(ctx).Info("Creating and delegating subnet")
+	subnetName := DefaultSubnetNamePrefix + utils.RandomNumber(8)
+	subnetPollerResp, err := c.sdkClient.SubnetsClient.BeginCreateOrUpdate(
+		ctx,
+		c.config.ResourceGroup,
+		c.config.VnetName,
+		subnetName,
+		armnetwork.Subnet{
+			Properties: &armnetwork.SubnetPropertiesFormat{
+				Delegations: to.SliceOfPtrs(armnetwork.Delegation{
+					Name: to.Ptr("Microsoft.Netapp/volumes"),
+					Properties: &armnetwork.ServiceDelegationPropertiesFormat{
+						ServiceName: to.Ptr("Microsoft.Netapp/volumes"),
+					},
+				}),
+				AddressPrefix: to.Ptr(availableSubnetAddressRange),
+			},
+		}, nil)
+	_, err = subnetPollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// getAvailableSubnetAddressRange returns an available subnet address range, which must be unique within the VNet address space
+// and can't overlap with other subnet address ranges in the virtual network.
+func getAvailableSubnetAddressRange(vnetAddressSpace *string, existingSubnetAddressSpaces []*string, maskSize int) (string, error) {
+	_, vnetCIDR, _ := net.ParseCIDR(*vnetAddressSpace)
+	cidrSet, err := cidrset.NewCIDRSet(vnetCIDR, maskSize)
+	if err != nil {
+		return "", err
+	}
+
+	var cidrIntersect = func(cidr1, cidr2 *net.IPNet) bool {
+		return cidr1.Contains(cidr2.IP) || cidr2.Contains(cidr1.IP)
+	}
+
+	var cidr *net.IPNet
+	for cidr, err = cidrSet.AllocateNext(); err == nil; cidr, err = cidrSet.AllocateNext() {
+		for _, subnetAddressSpace := range existingSubnetAddressSpaces {
+			_, subnetCIDR, _ := net.ParseCIDR(*subnetAddressSpace)
+			if cidrIntersect(cidr, subnetCIDR) {
+				goto CONTINUE
+			}
+		}
+		return cidr.String(), nil
+	CONTINUE:
+	}
+
+	return "", err
 }
 
 // RegisterStoragePool makes a note of pools defined by the driver for later mapping.
