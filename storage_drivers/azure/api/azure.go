@@ -207,12 +207,7 @@ func GetAzureCredential(config ClientConfig) (credential azcore.TokenCredential,
 	if err != nil {
 		return nil, errors.New("error creating azure auth provider: " + err.Error())
 	}
-	credential, err = authProvider.GetAzIdentity()
-	if err != nil {
-		return nil, errors.New("error getting azure identity: " + err.Error())
-	}
-
-	return credential, nil
+	return authProvider.GetAzIdentity()
 }
 
 // Init runs startup logic after allocating the driver resources.
