@@ -1361,3 +1361,48 @@ func TestImport(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+func TestExtractNamespaceName(t *testing.T) {
+	var nsStr, nsNameGot, nsNameExpected string
+	// Test 1 : Empty String
+	nsStr = ""
+	nsNameExpected = "namespace0"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+
+	// Test 2 : Success - Namespace Name in proper format
+	nsStr = "/vol/fakeFlexVolName/fakeNamespaceName"
+	nsNameExpected = "fakeNamespaceName"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+
+	// Test 3 : Namespace Name has more length
+	nsStr = "/vol/fakeFlexVolName/hasMoreLength/fakeNamespaceName"
+	nsNameExpected = "MalformedNamespace"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+
+	// Test 4 : Namespace Name doesn't match the format
+	nsStr = "/vol/fakeFlexVolName"
+	nsNameExpected = "MalformedNamespace"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+}
+
+func TestCreateNamespacePath(t *testing.T) {
+	nsNameExpected := "/vol/fakeFlexVolName/fakeNamespaceName"
+	flexVolName := "fakeFlexVolName"
+	nsName := "fakeNamespaceName"
+
+	nsNameGot := createNamespacePath(flexVolName, nsName)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+}

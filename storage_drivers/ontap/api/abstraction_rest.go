@@ -2892,7 +2892,7 @@ func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName str
 		}
 	}
 
-	Logc(ctx).Debugf("Found subsystem %v and target nqns are %v", subsystem.Name, subsystem.TargetNqn)
+	Logc(ctx).Debugf("Found subsystem %v and target nqns are %v", *subsystem.Name, *subsystem.TargetNqn)
 
 	return &NVMeSubsystem{UUID: *subsystem.UUID, Name: *subsystem.Name, NQN: *subsystem.TargetNqn}, nil
 }

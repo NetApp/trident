@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -22,6 +23,10 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
+
+// RegExp to match the namespace path either empty string or
+// string of the form /vol/<flexVolName>/<Namespacename>
+var NVMeNamespaceRegExp = regexp.MustCompile(`[^(\/vol\/.+\/.+)?$]`)
 
 // NVMeStorageDriver is for NVMe storage provisioning.
 type NVMeStorageDriver struct {
@@ -397,7 +402,9 @@ func (d *NVMeStorageDriver) Create(
 		}
 
 		osType := "linux"
-		nsPath := namespacePath(volConfig)
+		flexVolName := volConfig.InternalName
+		namespaceName := extractNamespaceName(volConfig.InternalID)
+		nsPath := createNamespacePath(flexVolName, namespaceName)
 
 		// If a DP volume, do not create the Namespace, it will be copied over by snapmirror.
 		if !volConfig.IsMirrorDestination {
@@ -533,7 +540,9 @@ func (d *NVMeStorageDriver) CreateClone(
 
 	// Extract the namespace name from volConfig.InternalID because
 	// Namespace name for clone is going to be the same as parent volume
-	nsPath := namespacePath(volConfig)
+	cloneFlexVolName := cloneVolConfig.InternalName
+	cloneNamespaceName := extractNamespaceName(volConfig.InternalID)
+	nsPath := createNamespacePath(cloneFlexVolName, cloneNamespaceName)
 
 	ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
 	if err != nil {
@@ -616,8 +625,10 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 			}
 		}
 	}
+	importedFlexVolName := volConfig.InternalName
+	importedNamespaceName := extractNamespaceName(nsInfo.Name)
+	volConfig.InternalID = createNamespacePath(importedFlexVolName, importedNamespaceName)
 	volConfig.AccessInfo.NVMeNamespaceUUID = nsInfo.UUID
-	volConfig.InternalID = "/vol/" + volConfig.InternalName + "/" + volConfig.ImportOriginalName
 	return nil
 }
 
@@ -1025,7 +1036,9 @@ func (d *NVMeStorageDriver) GetVolumeExternalWrappers(ctx context.Context, chann
 		InternalName: *d.Config.StoragePrefix + "*",
 	}
 	// Get all namespaces in volumes matching the storage prefix.
-	nsPathPattern := namespacePath(volConfig)
+	flexvolName := volConfig.InternalName
+	namespaceName := extractNamespaceName(volConfig.InternalID)
+	nsPathPattern := createNamespacePath(flexvolName, namespaceName)
 	namespaces, err := d.API.NVMeNamespaceList(ctx, nsPathPattern)
 	if err != nil {
 		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
@@ -1431,14 +1444,26 @@ func getNamespaceSpecificSubsystemName(name string) string {
 	return fmt.Sprintf("s_%v", name)
 }
 
-// namespacePath returns the namespace path in a FlexVol.
-func namespacePath(volConfig *storage.VolumeConfig) string {
-	if volConfig.InternalID != "" {
-		// Extract the namespace name from volConfig.AccessInfo.NamespacePath
-		namespaceName := strings.Split(volConfig.InternalID, "/")
-		return ("/vol/" + volConfig.InternalName + "/" + namespaceName[3])
+// extractNamespaceName extracts the namespace name from the given string if nsStr is set
+// if nsStr is not set, return default namespace name "namespace0"
+// if nsStr has malformed namespacePath, return "MalformedNamespace"
+func extractNamespaceName(nsStr string) string {
+	if nsStr == "" {
+		return "namespace0"
+	} else if NVMeNamespaceRegExp.MatchString(nsStr) {
+		namespaceName := strings.Split(nsStr, "/")
+		if len(namespaceName) == 4 {
+			return namespaceName[3]
+		}
 	}
-	return ("/vol/" + volConfig.InternalName + "/namespace0")
+	// If we end up here, the namespace Path in nsStr is malformed.
+	// return a string that will cause the operation to fail
+	return "MalformedNamespace"
+}
+
+// createNamespacePath returns the namespace path in a FlexVol.
+func createNamespacePath(flexvolName, namespaceName string) string {
+	return ("/vol/" + flexvolName + "/" + namespaceName)
 }
 
 func (d *NVMeStorageDriver) namespaceSize(ctx context.Context, name string) (int, error) {

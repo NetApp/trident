@@ -136,7 +136,7 @@ func (s *NVMeSubsystem) GetNamespaceCount(ctx context.Context) (int, error) {
 }
 
 // getNVMeDevice returns the NVMe device corresponding to nsPath namespace.
-func getNVMeDevice(ctx context.Context, nsPath string) (*NVMeDevice, error) {
+func getNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 	Logc(ctx).Debug(">>>> nvme.getNVMeDevice")
 	defer Logc(ctx).Debug("<<<< nvme.getNVMeDevice")
 
@@ -146,12 +146,12 @@ func getNVMeDevice(ctx context.Context, nsPath string) (*NVMeDevice, error) {
 	}
 
 	for _, dev := range dList.Devices {
-		if dev.UUID == nsPath {
+		if dev.UUID == nsUUID {
 			return &dev, nil
 		}
 	}
 
-	return nil, fmt.Errorf("no device found for the given namespace %v", nsPath)
+	return nil, fmt.Errorf("no device found for the given namespace %v", nsUUID)
 }
 
 // GetPath returns the device path where we mount the filesystem in NodePublish.
@@ -170,8 +170,8 @@ func NewNVMeHandler() NVMeInterface {
 }
 
 // NewNVMeDevice returns new NVMe device
-func (nh *NVMeHandler) NewNVMeDevice(ctx context.Context, nsPath string) (NVMeDeviceInterface, error) {
-	return getNVMeDevice(ctx, nsPath)
+func (nh *NVMeHandler) NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
+	return getNVMeDevice(ctx, nsUUID)
 }
 
 // NewNVMeSubsystem returns NVMe subsystem object. Even if a subsystem is not connected to the k8s node,
