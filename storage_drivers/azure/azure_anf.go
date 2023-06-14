@@ -183,7 +183,7 @@ func (d *NASStorageDriver) Initialize(
 	d.initializeTelemetry(ctx, backendUUID)
 
 	if err = d.initializeAzureSDKClient(ctx, &d.Config); err != nil {
-		return fmt.Errorf("error initializing %s SDK client. %v", d.Name(), err)
+		return fmt.Errorf("error initializing %s SDK client. %w", d.Name(), err)
 	}
 
 	if err = d.validate(ctx); err != nil {

@@ -44,9 +44,9 @@ const (
 	CorrelationIDHeader        = "X-Ms-Correlation-Request-Id"
 	SubvolumeNameSeparator     = "-file-"
 	DefaultCredentialFilePath  = "/etc/kubernetes/azure.json"
-	DefaultAccountNamePrefix   = "anf-"
-	DefaultPoolNamePrefix      = "anf-pool-"
-	DefaultSubnetNamePrefix    = "anf-subnet-"
+	DefaultAccountNamePrefix   = "aks-anf-account-"
+	DefaultPoolNamePrefix      = "aks-anf-pool-"
+	DefaultSubnetNamePrefix    = "aks-anf-subnet-"
 	DefaultServiceLevel        = netapp.ServiceLevelStandard
 	DefaultPoolSize            = 10 * 1099511627776 // 10 TiB
 	DefaultSubnetMaskSize      = 24
@@ -152,7 +152,6 @@ func NewDriver(config ClientConfig) (Azure, error) {
 	if config.Location == "" {
 		return nil, errors.New("location must be specified in the config")
 	}
-
 	credential, err := GetAzureCredential(config)
 	if err != nil {
 		return nil, err
@@ -252,19 +251,20 @@ func (c Client) Init(ctx context.Context, pools map[string]storage.Pool) error {
 
 	// Find out what we have to work with in Azure
 	err := c.RefreshAzureResources(ctx)
-	if errors.IsNotFoundError(err) && shouldGenerateAzureResources(ctx, pools) {
+	if errors.IsNotFoundError(err) && shouldGenerateAzureResources(pools) {
 		Logc(ctx).WithError(err).Info("Generate Azure resources when not found.")
-		if err := c.GenerateAzureResources(ctx, pools); err != nil {
+		if err := c.GenerateAzureResources(ctx); err != nil {
 			return err
 		}
-		Logc(ctx).Info("Azure resources has been generated, refresh again.")
-		return c.RefreshAzureResources(ctx)
+		message := "Azure resources generated successfully, reconcile again to update cache."
+		Logc(ctx).Info(message)
+		return errors.ReconcileDeferredError(message)
 	}
 
 	return err
 }
 
-func shouldGenerateAzureResources(ctx context.Context, pools map[string]storage.Pool) bool {
+func shouldGenerateAzureResources(pools map[string]storage.Pool) bool {
 	for _, pool := range pools {
 		if pool.InternalAttributes()[PVirtualNetwork] != "" ||
 			pool.InternalAttributes()[PSubnet] != "" ||
@@ -278,81 +278,148 @@ func shouldGenerateAzureResources(ctx context.Context, pools map[string]storage.
 }
 
 // GenerateAzureResources creates the Azure resources needed by Trident.
-func (c Client) GenerateAzureResources(ctx context.Context, pools map[string]storage.Pool) error {
-	Logc(ctx).Info("Creating Azure NetApp Account")
-	accountName := DefaultAccountNamePrefix + utils.RandomNumber(8)
-	accountPollerResp, err := c.sdkClient.AccountClient.BeginCreateOrUpdate(
-		ctx,
-		c.config.ResourceGroup,
-		accountName,
-		netapp.Account{
-			Location: to.Ptr(c.config.Location),
-		}, nil)
-
-	_, err = accountPollerResp.PollUntilDone(ctx, nil)
+func (c Client) GenerateAzureResources(ctx context.Context) error {
+	accountName, exist, err := c.accountExists(ctx)
 	if err != nil {
 		return err
+	}
+	if !exist {
+		Logc(ctx).Info("Creating Azure NetApp Account")
+		accountName = DefaultAccountNamePrefix + utils.RandomNumber(8)
+		accountPollerResp, err := c.sdkClient.AccountClient.BeginCreateOrUpdate(
+			ctx,
+			c.config.ResourceGroup,
+			accountName,
+			netapp.Account{
+				Location: to.Ptr(c.config.Location),
+			}, nil)
+		if err != nil {
+			return err
+		}
+		_, err = accountPollerResp.PollUntilDone(ctx, nil)
+		if err != nil {
+			return err
+		}
 	}
 
-	Logc(ctx).Info("Creating Azure NetApp Capacity Pools")
-	poolName := DefaultPoolNamePrefix + utils.RandomNumber(8)
-	poolPollerResp, err := c.sdkClient.PoolsClient.BeginCreateOrUpdate(
-		ctx,
-		c.config.ResourceGroup,
-		accountName,
-		poolName,
-		netapp.CapacityPool{
-			Location: to.Ptr(c.config.Location),
-			Properties: &netapp.PoolProperties{
-				ServiceLevel: to.Ptr(DefaultServiceLevel),
-				Size:         to.Ptr[int64](DefaultPoolSize),
-			},
-		}, nil)
-	_, err = poolPollerResp.PollUntilDone(ctx, nil)
+	exist, err = c.poolExists(ctx, accountName)
 	if err != nil {
 		return err
+	}
+	if !exist {
+		Logc(ctx).Info("Creating Azure NetApp Capacity Pools")
+		poolName := DefaultPoolNamePrefix + utils.RandomNumber(8)
+		poolPollerResp, err := c.sdkClient.PoolsClient.BeginCreateOrUpdate(
+			ctx,
+			c.config.ResourceGroup,
+			accountName,
+			poolName,
+			netapp.CapacityPool{
+				Location: to.Ptr(c.config.Location),
+				Properties: &netapp.PoolProperties{
+					ServiceLevel: to.Ptr(DefaultServiceLevel),
+					Size:         to.Ptr[int64](DefaultPoolSize),
+				},
+			}, nil)
+		if err != nil {
+			return err
+		}
+		_, err = poolPollerResp.PollUntilDone(ctx, nil)
+		if err != nil {
+			return err
+		}
 	}
 
-	Logc(ctx).Info("Get Available Subnet address ange")
-	vnetGetResp, err := c.sdkClient.VnetClient.Get(ctx, c.config.ResourceGroup, c.config.VnetName, nil)
+	vnetGetResp, exist, err := c.subnetExists(ctx)
 	if err != nil {
 		return err
 	}
-	vnetAddressSpace := vnetGetResp.Properties.AddressSpace.AddressPrefixes[0]
-	var existingSubnetAddressSpaces []*string
-	for _, subnet := range vnetGetResp.Properties.Subnets {
-		existingSubnetAddressSpaces = append(existingSubnetAddressSpaces, subnet.Properties.AddressPrefix)
-		existingSubnetAddressSpaces = append(existingSubnetAddressSpaces, subnet.Properties.AddressPrefixes...)
-	}
-	availableSubnetAddressRange, err := getAvailableSubnetAddressRange(vnetAddressSpace, existingSubnetAddressSpaces, DefaultSubnetMaskSize)
-	if err != nil {
-		return err
-	}
+	if !exist {
+		Logc(ctx).Info("Get Available Subnet address range")
+		vnetAddressSpace := vnetGetResp.Properties.AddressSpace.AddressPrefixes[0]
+		var existingSubnetAddressSpaces []*string
+		for _, subnet := range vnetGetResp.Properties.Subnets {
+			existingSubnetAddressSpaces = append(existingSubnetAddressSpaces, subnet.Properties.AddressPrefix)
+			existingSubnetAddressSpaces = append(existingSubnetAddressSpaces, subnet.Properties.AddressPrefixes...)
+		}
+		availableSubnetAddressRange, err := getAvailableSubnetAddressRange(vnetAddressSpace, existingSubnetAddressSpaces, DefaultSubnetMaskSize)
+		if err != nil {
+			return err
+		}
 
-	Logc(ctx).Info("Creating and delegating subnet")
-	subnetName := DefaultSubnetNamePrefix + utils.RandomNumber(8)
-	subnetPollerResp, err := c.sdkClient.SubnetsClient.BeginCreateOrUpdate(
-		ctx,
-		c.config.ResourceGroup,
-		c.config.VnetName,
-		subnetName,
-		armnetwork.Subnet{
-			Properties: &armnetwork.SubnetPropertiesFormat{
-				Delegations: to.SliceOfPtrs(armnetwork.Delegation{
-					Name: to.Ptr("Microsoft.Netapp/volumes"),
-					Properties: &armnetwork.ServiceDelegationPropertiesFormat{
-						ServiceName: to.Ptr("Microsoft.Netapp/volumes"),
-					},
-				}),
-				AddressPrefix: to.Ptr(availableSubnetAddressRange),
-			},
-		}, nil)
-	_, err = subnetPollerResp.PollUntilDone(ctx, nil)
-	if err != nil {
-		return err
+		Logc(ctx).Info("Creating and delegating subnet")
+		subnetName := DefaultSubnetNamePrefix + utils.RandomNumber(8)
+		subnetPollerResp, err := c.sdkClient.SubnetsClient.BeginCreateOrUpdate(
+			ctx,
+			c.config.ResourceGroup,
+			c.config.VnetName,
+			subnetName,
+			armnetwork.Subnet{
+				Properties: &armnetwork.SubnetPropertiesFormat{
+					Delegations: to.SliceOfPtrs(armnetwork.Delegation{
+						Name: to.Ptr("Microsoft.Netapp/volumes"),
+						Properties: &armnetwork.ServiceDelegationPropertiesFormat{
+							ServiceName: to.Ptr("Microsoft.Netapp/volumes"),
+						},
+					}),
+					AddressPrefix: to.Ptr(availableSubnetAddressRange),
+				},
+			}, nil)
+		if err != nil {
+			return err
+		}
+		_, err = subnetPollerResp.PollUntilDone(ctx, nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func (c Client) accountExists(ctx context.Context) (string, bool, error) {
+	pager := c.sdkClient.AccountClient.NewListPager(c.config.ResourceGroup, nil)
+	accounts := make([]*netapp.Account, 0)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
+		if err != nil {
+			return "", false, err
+		}
+		accounts = append(accounts, resp.Value...)
+	}
+	if len(accounts) == 0 {
+		return "", false, nil
+	}
+	return *accounts[0].Name, true, nil
+}
+
+func (c Client) poolExists(ctx context.Context, accountName string) (bool, error) {
+	pager := c.sdkClient.PoolsClient.NewListPager(c.config.ResourceGroup, accountName, nil)
+	pools := make([]*netapp.CapacityPool, 0)
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
+		if err != nil {
+			return false, err
+		}
+		pools = append(pools, resp.Value...)
+	}
+	return len(pools) > 0, nil
+}
+
+func (c Client) subnetExists(ctx context.Context) (*armnetwork.VirtualNetworksClientGetResponse, bool, error) {
+	vnetGetResp, err := c.sdkClient.VnetClient.Get(ctx, c.config.ResourceGroup, c.config.VnetName, nil)
+	if err != nil {
+		return nil, false, err
+	}
+	for _, subnet := range vnetGetResp.Properties.Subnets {
+		for _, delegation := range subnet.Properties.Delegations {
+			if *delegation.Properties.ServiceName == "Microsoft.Netapp/volumes" {
+				Logc(ctx).Infof("The 'Microsoft.NetApp/volumes' delegation can only exist on one subnet within a VNet. There is already a delegation on subnet %s, skip creating subnet", *subnet.Name)
+				return nil, true, nil
+			}
+		}
+	}
+	return &vnetGetResp, false, nil
 }
 
 // getAvailableSubnetAddressRange returns an available subnet address range, which must be unique within the VNet address space

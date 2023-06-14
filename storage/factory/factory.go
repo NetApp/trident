@@ -99,7 +99,7 @@ func NewStorageBackendForConfig(
 		Logc(ctx).WithField("error", err).Error("Could not initialize storage driver.")
 
 		sb = storage.NewFailedStorageBackend(ctx, storageDriver)
-		err = fmt.Errorf("problem initializing storage driver '%s': %v", commonConfig.StorageDriverName, err)
+		err = fmt.Errorf("problem initializing storage driver '%s': %w", commonConfig.StorageDriverName, err)
 	} else {
 		Logc(ctx).WithField("driver", commonConfig.StorageDriverName).Info("Storage driver initialized.")
 
