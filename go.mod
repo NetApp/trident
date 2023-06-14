@@ -43,11 +43,11 @@ require (
 	github.com/vishvananda/netlink v1.1.0
 	github.com/zcalusic/sysinfo v0.9.6-0.20220805135214-99e836ba64f2
 	go.uber.org/multierr v1.11.0 // github.com/uber-go/multierr
-	golang.org/x/crypto v0.9.0 // github.com/golang/crypto
+	golang.org/x/crypto v0.10.0 // github.com/golang/crypto
 	golang.org/x/net v0.10.0 // github.com/golang/net
 	golang.org/x/oauth2 v0.7.0 // github.com/golang/oauth2
-	golang.org/x/sys v0.8.0 // github.com/golang/sys
-	golang.org/x/text v0.9.0 // github.com/golang/text
+	golang.org/x/sys v0.9.0 // github.com/golang/sys
+	golang.org/x/text v0.10.0 // github.com/golang/text
 	golang.org/x/time v0.3.0 // github.com/golang/time
 	google.golang.org/grpc v1.54.0 // github.com/grpc/grpc-go
 	k8s.io/api v0.27.1 // github.com/kubernetes/api
@@ -60,7 +60,7 @@ require (
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v2 v2.2.1
 	sigs.k8s.io/cloud-provider-azure v1.27.5
-	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230613061957-d0cd51201edc
+	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230614113418-76168d52887e
 )
 
 require (
@@ -128,7 +128,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
+	golang.org/x/term v0.9.0 // indirect
 	golang.org/x/tools v0.9.3 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
