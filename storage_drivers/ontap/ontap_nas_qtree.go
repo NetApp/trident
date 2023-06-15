@@ -98,8 +98,10 @@ func (d *NASQtreeStorageDriver) Initialize(
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 	fields := LogFields{"Method": "Initialize", "Type": "NASQtreeStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	// Initialize the driver's CommonStorageDriverConfig
 	d.Config.CommonStorageDriverConfig = commonConfig
@@ -653,14 +655,76 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
 func (d *NASQtreeStorageDriver) CanSnapshot(
-	_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) error {
-	return errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	fields := LogFields{
+		"Method":       "CanSnapshot",
+		"Type":         "NASQtreeStorageDriver",
+		"snapshotName": snapConfig.InternalName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CanSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CanSnapshot")
+
+	snapshotDirBool, err := strconv.ParseBool(volConfig.SnapshotDir)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotDir; %v", err)
+	}
+	if !snapshotDirBool {
+		return errors.UnsupportedError(fmt.Sprintf("snapshots cannot be taken if snapdir access is disabled"))
+	}
+
+	return nil
+}
+
+// getQtreeSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func getQtreeSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, flexvol string,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+) (*storage.Snapshot, error) {
+	internalSnapName := snapConfig.InternalName
+
+	fields := LogFields{
+		"Method":       "getQtreeSnapshot",
+		"Type":         "NASQtreeStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   snapConfig.VolumeInternalName,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getQtreeSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getQtreeSnapshot")
+
+	snapshots, err := client.VolumeSnapshotList(ctx, flexvol)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshotName": snap.Name,
+			"volumeName":   snapConfig.VolumeInternalName,
+			"created":      snap.CreateTime,
+		}).Debug("Found snapshot.")
+
+		if snap.Name == internalSnapName {
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(0),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+
+	return nil, nil
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
 func (d *NASQtreeStorageDriver) GetSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	fields := LogFields{
 		"Method":       "GetSnapshot",
@@ -671,7 +735,68 @@ func (d *NASQtreeStorageDriver) GetSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
-	return nil, errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	var err error
+	var flexvol string
+
+	if _, flexvol, _, err = d.ParseQtreeInternalID(volConfig.InternalID); err != nil {
+		return nil, errors.WrapWithNotFoundError(err, "error while getting flexvol")
+	}
+
+	return getQtreeSnapshot(ctx, snapConfig, flexvol, &d.Config, d.API)
+}
+
+// getQtreeSnapshotList returns the list of snapshots associated with the named volume.
+func getQtreeSnapshotList(
+	ctx context.Context, volConfig *storage.VolumeConfig, flexvol string,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+) ([]*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method":     "getQtreeSnapshotList",
+		"Type":       "NASQtreeStorageDriver",
+		"volumeName": flexvol,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getQtreeSnapshotList")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getQtreeSnapshotList")
+
+	// In the Docker context, Trident does not maintain a snapshot to qtree association.
+	// Hence, in the Docker context, we should not return any qtree snapshots.
+	if config.DriverContext == tridentconfig.ContextDocker {
+		return nil, nil
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, flexvol)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*storage.Snapshot, 0)
+
+	for _, snap := range snapshots {
+
+		Logc(ctx).WithFields(LogFields{
+			"name":       snap.Name,
+			"accessTime": snap.CreateTime,
+		}).Debug("Found snapshot.")
+
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snap.Name,
+				InternalName:       snap.Name,
+				VolumeName:         volConfig.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snap.CreateTime,
+			SizeBytes: int64(0),
+			State:     storage.SnapshotStateOnline,
+		}
+
+		result = append(result, snapshot)
+	}
+
+	return result, nil
 }
 
 // GetSnapshots returns the list of snapshots associated with the specified volume
@@ -686,13 +811,73 @@ func (d *NASQtreeStorageDriver) GetSnapshots(ctx context.Context, volConfig *sto
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
-	// Qtrees can't have snapshots, so return an empty list
-	return []*storage.Snapshot{}, nil
+	var err error
+	var flexvol string
+
+	if _, flexvol, _, err = d.ParseQtreeInternalID(volConfig.InternalID); err != nil {
+		return nil, errors.WrapWithNotFoundError(err, "error while getting flexvol")
+	}
+
+	return getQtreeSnapshotList(ctx, volConfig, flexvol, &d.Config, d.API)
+}
+
+// createQtreeSnapshot creates a snapshot for the given volume.
+func createQtreeSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, flexvol string,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
+) (*storage.Snapshot, error) {
+	internalSnapName := snapConfig.InternalName
+	fields := LogFields{
+		"Method":       "createQtreeSnapshot",
+		"Type":         "NASQtreeStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   flexvol,
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createQtreeSnapshot")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createQtreeSnapshot")
+
+	// If the specified volume doesn't exist, return error
+	volExists, err := client.VolumeExists(ctx, flexvol)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		return nil, fmt.Errorf("volume %s does not exist", flexvol)
+	}
+
+	if err = client.VolumeSnapshotCreate(ctx, internalSnapName, flexvol); err != nil {
+		return nil, err
+	}
+
+	snapshots, err := client.VolumeSnapshotList(ctx, flexvol)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, snap := range snapshots {
+		if snap.Name == internalSnapName {
+			Logc(ctx).WithFields(LogFields{
+				"snapshotName": snapConfig.InternalName,
+				"volumeName":   snapConfig.VolumeInternalName,
+			}).Info("Snapshot created.")
+
+			return &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(0),
+				State:     storage.SnapshotStateOnline,
+			}, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, flexvol)
 }
 
 // CreateSnapshot creates a snapshot for the given volume
 func (d *NASQtreeStorageDriver) CreateSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	fields := LogFields{
 		"Method":       "CreateSnapshot",
@@ -703,7 +888,14 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
-	return nil, errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	var err error
+	var flexvol string
+
+	if _, flexvol, _, err = d.ParseQtreeInternalID(volConfig.InternalID); err != nil {
+		return nil, errors.WrapWithNotFoundError(err, "error while getting flexvol")
+	}
+
+	return createQtreeSnapshot(ctx, snapConfig, flexvol, &d.Config, d.API)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -719,12 +911,12 @@ func (d *NASQtreeStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	return errors.UnsupportedError(fmt.Sprintf("snapshot restore is not supported by backend type %s", d.Name()))
 }
 
-// DeleteSnapshot creates a snapshot of a volume.
+// DeleteSnapshot deletes a snapshot of a volume.
 func (d *NASQtreeStorageDriver) DeleteSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) error {
 	fields := LogFields{
 		"Method":       "DeleteSnapshot",
@@ -735,7 +927,24 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	var err error
+	var flexvol string
+
+	if _, flexvol, _, err = d.ParseQtreeInternalID(volConfig.InternalID); err != nil {
+		return errors.WrapWithNotFoundError(err, "error while getting flexvol")
+	}
+
+	if err = d.API.VolumeSnapshotDelete(ctx, snapConfig.InternalName, flexvol); err != nil {
+		if api.IsSnapshotBusyError(err) {
+			// Start a split here before returning the error so a subsequent delete attempt may succeed.
+			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
+		}
+		// We must return the err, even if we started a split, so the snapshot delete is retried
+		return err
+	}
+
+	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
+	return nil
 }
 
 // Get tests for the existence of a volume
@@ -793,7 +1002,7 @@ func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	}
 
 	// Check if a suitable Flexvol already exists
-	flexvol, err := d.getFlexvolForQtree(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve,
+	flexvol, err := d.findFlexvolForQtree(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve,
 		enableSnapshotDir, enableEncryption, shouldLimitVolumeSize, sizeBytes, flexvolQuotaSizeLimit)
 	if err != nil {
 		return "", fmt.Errorf("error finding Flexvol for qtree: %v", err)
@@ -917,12 +1126,12 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	return flexvol, nil
 }
 
-// getFlexvolForQtree returns a Flexvol (from the set of existing Flexvols) that
+// findFlexvolForQtree returns a Flexvol (from the set of existing Flexvols) that
 // matches the specified Flexvol attributes and does not already contain more
 // than the maximum configured number of qtrees.  No matching Flexvols is not
 // considered an error.  If more than one matching Flexvol is found, one of those
 // is returned at random.
-func (d *NASQtreeStorageDriver) getFlexvolForQtree(
+func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve string,
 	enableSnapshotDir bool, enableEncryption *bool, shouldLimitFlexvolQuotaSize bool,
 	sizeBytes, flexvolQuotaSizeLimit uint64,
@@ -1578,6 +1787,7 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 		AccessInfo:      utils.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
+		InternalID:      d.CreateQtreeInternalID(d.Config.SVM, qtree.Volume, qtree.Name),
 	}
 
 	return &storage.VolumeExternal{
