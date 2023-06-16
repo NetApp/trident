@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -1060,6 +1060,41 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 	return volConfig, capacityPool, subnet, createRequest, filesystem
 }
 
+func getMultipleCapacityPoolsForCreateVolume() []*api.CapacityPool {
+	return []*api.CapacityPool{
+		{
+			ResourceGroup:     "RG1",
+			NetAppAccount:     "NA1",
+			Name:              "CP1",
+			FullName:          "RG1/NA1/CP1",
+			Location:          Location,
+			ServiceLevel:      api.ServiceLevelUltra,
+			ProvisioningState: api.StateAvailable,
+			QosType:           "Auto",
+		},
+		{
+			ResourceGroup:     "RG1",
+			NetAppAccount:     "NA1",
+			Name:              "CP2",
+			FullName:          "RG1/NA1/CP2",
+			Location:          Location,
+			ServiceLevel:      api.ServiceLevelUltra,
+			ProvisioningState: api.StateAvailable,
+			QosType:           "Auto",
+		},
+		{
+			ResourceGroup:     "RG1",
+			NetAppAccount:     "NA1",
+			Name:              "CP3",
+			FullName:          "RG1/NA1/CP3",
+			Location:          Location,
+			ServiceLevel:      api.ServiceLevelUltra,
+			ProvisioningState: api.StateAvailable,
+			QosType:           "Auto",
+		},
+	}
+}
+
 func TestCreate_NFSVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
@@ -1082,9 +1117,9 @@ func TestCreate_NFSVolume(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
@@ -1098,6 +1133,161 @@ func TestCreate_NFSVolume(t *testing.T) {
 	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
 	assert.Equal(t, "false", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	capacityPools := getMultipleCapacityPoolsForCreateVolume()
+
+	createRequest.ResourceGroup = capacityPools[0].ResourceGroup
+	createRequest.NetAppAccount = capacityPools[0].NetAppAccount
+	createRequest.CapacityPool = capacityPools[0].Name
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_MultipleCapacityPools_SecondSucceeds(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	capacityPools := getMultipleCapacityPoolsForCreateVolume()
+
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	createRequest1 := *createRequest
+	createRequest1.ResourceGroup = capacityPools[0].ResourceGroup
+	createRequest1.NetAppAccount = capacityPools[0].NetAppAccount
+	createRequest1.CapacityPool = capacityPools[0].Name
+	createRequest2 := *createRequest
+	createRequest2.ResourceGroup = capacityPools[1].ResourceGroup
+	createRequest2.NetAppAccount = capacityPools[1].NetAppAccount
+	createRequest2.CapacityPool = capacityPools[1].Name
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.ResourceGroup = capacityPools[1].ResourceGroup
+	filesystem.NetAppAccount = capacityPools[1].NetAppAccount
+	filesystem.CapacityPool = capacityPools[1].Name
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	capacityPools := getMultipleCapacityPoolsForCreateVolume()
+
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	createRequest1 := *createRequest
+	createRequest1.ResourceGroup = capacityPools[0].ResourceGroup
+	createRequest1.NetAppAccount = capacityPools[0].NetAppAccount
+	createRequest1.CapacityPool = capacityPools[0].Name
+	createRequest2 := *createRequest
+	createRequest2.ResourceGroup = capacityPools[1].ResourceGroup
+	createRequest2.NetAppAccount = capacityPools[1].NetAppAccount
+	createRequest2.CapacityPool = capacityPools[1].Name
+	createRequest3 := *createRequest
+	createRequest3.ResourceGroup = capacityPools[2].ResourceGroup
+	createRequest3.NetAppAccount = capacityPools[2].NetAppAccount
+	createRequest3.CapacityPool = capacityPools[2].Name
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.ResourceGroup = capacityPools[1].ResourceGroup
+	filesystem.NetAppAccount = capacityPools[1].NetAppAccount
+	filesystem.CapacityPool = capacityPools[1].Name
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return(capacityPools).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(nil, errFailed).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, &createRequest3).Return(nil, errFailed).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create failed")
+	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
 func TestCreate_DiscoveryFailed(t *testing.T) {
@@ -1342,9 +1532,9 @@ func TestCreate_ZeroSize(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
@@ -1466,12 +1656,14 @@ func TestCreate_NoCapacityPool(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	volConfig, _, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig, _, subnet, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool, api.ServiceLevelUltra).Return(nil).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{}).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1490,13 +1682,11 @@ func TestCreate_NoSubnet(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	volConfig, capacityPool, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig, _, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -1547,9 +1737,9 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
@@ -1582,9 +1772,9 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
@@ -1612,9 +1802,9 @@ func TestCreate_NFSVolume_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -1641,9 +1831,9 @@ func TestCreate_NFSVolume_BelowANFMinimumSize(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
@@ -1744,9 +1934,9 @@ func TestCreate_SMBVolume(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
@@ -1779,9 +1969,9 @@ func TestCreate_SMBVolume_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -1808,9 +1998,9 @@ func TestCreate_SMBVolume_BelowANFMinimumSize(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
@@ -1841,9 +2031,9 @@ func TestCreate_NFSVolumeOnSMBPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -1871,9 +2061,9 @@ func TestCreate_SMBVolumeOnNFSPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
-	mockAPI.EXPECT().RandomCapacityPoolForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPool).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)

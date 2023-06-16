@@ -1,10 +1,12 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
 import (
 	"context"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -14,6 +16,9 @@ import (
 var ctx = context.TODO()
 
 func getFakeSDK() *Client {
+	// Enable tests with randomness
+	rand.Seed(time.Now().UnixNano())
+
 	sdk := &Client{
 		config: &ClientConfig{
 			SubscriptionID:  "mySubscription",
@@ -809,15 +814,8 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 		sPool.InternalAttributes()[PCapacityPools] = test.capacityPools
 
 		cPools := sdk.CapacityPoolsForStoragePool(context.TODO(), sPool, test.serviceLevel)
-		cPool := sdk.RandomCapacityPoolForStoragePool(context.TODO(), sPool, test.serviceLevel)
 
 		assert.ElementsMatch(t, test.expected, cPools)
-
-		if len(test.expected) > 0 {
-			assert.Contains(t, test.expected, cPool)
-		} else {
-			assert.Nil(t, cPool)
-		}
 	}
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -15,6 +15,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/google/uuid"
+	"go.uber.org/multierr"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -783,11 +784,11 @@ func (d *NASStorageDriver) Create(
 
 	networkFeatures := pool.InternalAttributes()[NetworkFeatures]
 
-	// Find a capacity pool
-	cPool := d.SDK.RandomCapacityPoolForStoragePool(ctx, pool, serviceLevel)
-	if cPool == nil {
-		return fmt.Errorf("no capacity pools found for storage pool %s", pool.Name())
-	}
+	// Update config to reflect values used to create volume
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.ServiceLevel = serviceLevel
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.UnixPermissions = unixPermissions
 
 	// Find a subnet
 	subnet := d.SDK.RandomSubnetForStoragePool(ctx, pool)
@@ -795,65 +796,78 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("no subnets found for storage pool %s", pool.Name())
 	}
 
-	// Update config to reflect values used to create volume
-	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
-	volConfig.ServiceLevel = serviceLevel
-	volConfig.SnapshotDir = snapshotDir
-	volConfig.UnixPermissions = unixPermissions
-
-	if d.Config.NASType == sa.SMB {
-		Logc(ctx).WithFields(LogFields{
-			"creationToken":   name,
-			"size":            sizeBytes,
-			"serviceLevel":    serviceLevel,
-			"snapshotDir":     snapshotDirBool,
-			"protocolTypes":   protocolTypes,
-			"networkFeatures": networkFeatures,
-		}).Debug("Creating volume.")
-	} else {
-		Logc(ctx).WithFields(LogFields{
-			"creationToken":   name,
-			"size":            sizeBytes,
-			"unixPermissions": unixPermissions,
-			"serviceLevel":    serviceLevel,
-			"snapshotDir":     snapshotDirBool,
-			"protocolTypes":   protocolTypes,
-			"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
-			"networkFeatures": networkFeatures,
-		}).Debug("Creating volume.")
+	// Find matching capacity pools
+	cPools := d.SDK.CapacityPoolsForStoragePool(ctx, pool, serviceLevel)
+	if len(cPools) == 0 {
+		return fmt.Errorf("no capacity pools found for storage pool %s", pool.Name())
 	}
 
-	createRequest := &api.FilesystemCreateRequest{
-		ResourceGroup:     cPool.ResourceGroup,
-		NetAppAccount:     cPool.NetAppAccount,
-		CapacityPool:      cPool.Name,
-		Name:              volConfig.Name,
-		SubnetID:          subnet.ID,
-		CreationToken:     name,
-		Labels:            labels,
-		ProtocolTypes:     protocolTypes,
-		QuotaInBytes:      int64(sizeBytes),
-		SnapshotDirectory: snapshotDirBool,
-		NetworkFeatures:   networkFeatures,
+	createErrors := multierr.Combine()
+
+	// Try each capacity pool until one works
+	for _, cPool := range cPools {
+
+		if d.Config.NASType == sa.SMB {
+			Logc(ctx).WithFields(LogFields{
+				"capacityPool":    cPool.Name,
+				"creationToken":   name,
+				"size":            sizeBytes,
+				"serviceLevel":    serviceLevel,
+				"snapshotDir":     snapshotDirBool,
+				"protocolTypes":   protocolTypes,
+				"networkFeatures": networkFeatures,
+			}).Debug("Creating volume.")
+		} else {
+			Logc(ctx).WithFields(LogFields{
+				"capacityPool":    cPool.Name,
+				"creationToken":   name,
+				"size":            sizeBytes,
+				"unixPermissions": unixPermissions,
+				"serviceLevel":    serviceLevel,
+				"snapshotDir":     snapshotDirBool,
+				"protocolTypes":   protocolTypes,
+				"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
+				"networkFeatures": networkFeatures,
+			}).Debug("Creating volume.")
+		}
+
+		createRequest := &api.FilesystemCreateRequest{
+			ResourceGroup:     cPool.ResourceGroup,
+			NetAppAccount:     cPool.NetAppAccount,
+			CapacityPool:      cPool.Name,
+			Name:              volConfig.Name,
+			SubnetID:          subnet.ID,
+			CreationToken:     name,
+			Labels:            labels,
+			ProtocolTypes:     protocolTypes,
+			QuotaInBytes:      int64(sizeBytes),
+			SnapshotDirectory: snapshotDirBool,
+			NetworkFeatures:   networkFeatures,
+		}
+
+		// Add unix permissions and export policy fields only to NFS volume
+		if d.Config.NASType == sa.NFS {
+			createRequest.UnixPermissions = unixPermissions
+			createRequest.ExportPolicy = exportPolicy
+		}
+
+		// Create the volume
+		volume, createErr := d.SDK.CreateVolume(ctx, createRequest)
+		if createErr != nil {
+			errMessage := fmt.Sprintf("ANF pool %s; error creating volume %s: %v", cPool.Name, name, createErr)
+			Logc(ctx).Error(errMessage)
+			createErrors = multierr.Combine(createErrors, fmt.Errorf(errMessage))
+			continue
+		}
+
+		// Always save the ID so we can find the volume efficiently later
+		volConfig.InternalID = volume.ID
+
+		// Wait for creation to complete so that the mount targets are available
+		return d.waitForVolumeCreate(ctx, volume)
 	}
 
-	// Add unix permissions and export policy fields only to NFS volume
-	if d.Config.NASType == sa.NFS {
-		createRequest.UnixPermissions = unixPermissions
-		createRequest.ExportPolicy = exportPolicy
-	}
-
-	// Create the volume
-	volume, err := d.SDK.CreateVolume(ctx, createRequest)
-	if err != nil {
-		return err
-	}
-
-	// Always save the ID so we can find the volume efficiently later
-	volConfig.InternalID = volume.ID
-
-	// Wait for creation to complete so that the mount targets are available
-	return d.waitForVolumeCreate(ctx, volume)
+	return createErrors
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
