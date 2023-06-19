@@ -74,6 +74,7 @@ type Backend interface {
 	CanMirror() bool
 	UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error
 	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 	ChapEnabled
 	PublishEnforceable
 }

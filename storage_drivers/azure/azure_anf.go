@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -17,6 +17,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/google/uuid"
+	"go.uber.org/multierr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -807,11 +808,11 @@ func (d *NASStorageDriver) Create(
 
 	networkFeatures := pool.InternalAttributes()[NetworkFeatures]
 
-	// Find a capacity pool
-	cPool := d.SDK.RandomCapacityPoolForStoragePool(ctx, pool, serviceLevel)
-	if cPool == nil {
-		return fmt.Errorf("no capacity pools found for storage pool %s", pool.Name())
-	}
+	// Update config to reflect values used to create volume
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.ServiceLevel = serviceLevel
+	volConfig.SnapshotDir = snapshotDir
+	volConfig.UnixPermissions = unixPermissions
 
 	// Find a subnet
 	subnet := d.SDK.RandomSubnetForStoragePool(ctx, pool)
@@ -819,65 +820,78 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("no subnets found for storage pool %s", pool.Name())
 	}
 
-	// Update config to reflect values used to create volume
-	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
-	volConfig.ServiceLevel = serviceLevel
-	volConfig.SnapshotDir = snapshotDir
-	volConfig.UnixPermissions = unixPermissions
-
-	if d.Config.NASType == sa.SMB {
-		Logc(ctx).WithFields(LogFields{
-			"creationToken":   name,
-			"size":            sizeBytes,
-			"serviceLevel":    serviceLevel,
-			"snapshotDir":     snapshotDirBool,
-			"protocolTypes":   protocolTypes,
-			"networkFeatures": networkFeatures,
-		}).Debug("Creating volume.")
-	} else {
-		Logc(ctx).WithFields(LogFields{
-			"creationToken":   name,
-			"size":            sizeBytes,
-			"unixPermissions": unixPermissions,
-			"serviceLevel":    serviceLevel,
-			"snapshotDir":     snapshotDirBool,
-			"protocolTypes":   protocolTypes,
-			"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
-			"networkFeatures": networkFeatures,
-		}).Debug("Creating volume.")
+	// Find matching capacity pools
+	cPools := d.SDK.CapacityPoolsForStoragePool(ctx, pool, serviceLevel)
+	if len(cPools) == 0 {
+		return fmt.Errorf("no capacity pools found for storage pool %s", pool.Name())
 	}
 
-	createRequest := &api.FilesystemCreateRequest{
-		ResourceGroup:     cPool.ResourceGroup,
-		NetAppAccount:     cPool.NetAppAccount,
-		CapacityPool:      cPool.Name,
-		Name:              volConfig.Name,
-		SubnetID:          subnet.ID,
-		CreationToken:     name,
-		Labels:            labels,
-		ProtocolTypes:     protocolTypes,
-		QuotaInBytes:      int64(sizeBytes),
-		SnapshotDirectory: snapshotDirBool,
-		NetworkFeatures:   networkFeatures,
+	createErrors := multierr.Combine()
+
+	// Try each capacity pool until one works
+	for _, cPool := range cPools {
+
+		if d.Config.NASType == sa.SMB {
+			Logc(ctx).WithFields(LogFields{
+				"capacityPool":    cPool.Name,
+				"creationToken":   name,
+				"size":            sizeBytes,
+				"serviceLevel":    serviceLevel,
+				"snapshotDir":     snapshotDirBool,
+				"protocolTypes":   protocolTypes,
+				"networkFeatures": networkFeatures,
+			}).Debug("Creating volume.")
+		} else {
+			Logc(ctx).WithFields(LogFields{
+				"capacityPool":    cPool.Name,
+				"creationToken":   name,
+				"size":            sizeBytes,
+				"unixPermissions": unixPermissions,
+				"serviceLevel":    serviceLevel,
+				"snapshotDir":     snapshotDirBool,
+				"protocolTypes":   protocolTypes,
+				"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
+				"networkFeatures": networkFeatures,
+			}).Debug("Creating volume.")
+		}
+
+		createRequest := &api.FilesystemCreateRequest{
+			ResourceGroup:     cPool.ResourceGroup,
+			NetAppAccount:     cPool.NetAppAccount,
+			CapacityPool:      cPool.Name,
+			Name:              volConfig.Name,
+			SubnetID:          subnet.ID,
+			CreationToken:     name,
+			Labels:            labels,
+			ProtocolTypes:     protocolTypes,
+			QuotaInBytes:      int64(sizeBytes),
+			SnapshotDirectory: snapshotDirBool,
+			NetworkFeatures:   networkFeatures,
+		}
+
+		// Add unix permissions and export policy fields only to NFS volume
+		if d.Config.NASType == sa.NFS {
+			createRequest.UnixPermissions = unixPermissions
+			createRequest.ExportPolicy = exportPolicy
+		}
+
+		// Create the volume
+		volume, createErr := d.SDK.CreateVolume(ctx, createRequest)
+		if createErr != nil {
+			errMessage := fmt.Sprintf("ANF pool %s; error creating volume %s: %v", cPool.Name, name, createErr)
+			Logc(ctx).Error(errMessage)
+			createErrors = multierr.Combine(createErrors, fmt.Errorf(errMessage))
+			continue
+		}
+
+		// Always save the ID so we can find the volume efficiently later
+		volConfig.InternalID = volume.ID
+
+		// Wait for creation to complete so that the mount targets are available
+		return d.waitForVolumeCreate(ctx, volume)
 	}
 
-	// Add unix permissions and export policy fields only to NFS volume
-	if d.Config.NASType == sa.NFS {
-		createRequest.UnixPermissions = unixPermissions
-		createRequest.ExportPolicy = exportPolicy
-	}
-
-	// Create the volume
-	volume, err := d.SDK.CreateVolume(ctx, createRequest)
-	if err != nil {
-		return err
-	}
-
-	// Always save the ID so we can find the volume efficiently later
-	volConfig.InternalID = volume.ID
-
-	// Wait for creation to complete so that the mount targets are available
-	return d.waitForVolumeCreate(ctx, volume)
+	return createErrors
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
@@ -1247,7 +1261,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 				Logc(ctx).WithField("volume", volume.Name).Info("Volume deleted.")
 			}
 
-		case api.StateMoving:
+		case api.StateMoving, api.StateReverting:
 			fallthrough
 
 		default:
@@ -1407,7 +1421,7 @@ func (d *NASStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("snapshot %s state is %s", internalSnapName, snapshot.ProvisioningState)
 	}
 
-	created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
+	created := snapshot.Created.UTC().Format(utils.TimestampFormat)
 
 	Logc(ctx).WithFields(LogFields{
 		"snapshotName": internalSnapName,
@@ -1469,7 +1483,7 @@ func (d *NASStorageDriver) GetSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat),
+			Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
 			SizeBytes: 0,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1527,15 +1541,15 @@ func (d *NASStorageDriver) CreateSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   snapshot.Created.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil
 }
 
-// RestoreSnapshot restores a volume (in place) from a snapshot.  Not supported by this driver.
+// RestoreSnapshot restores a volume (in place) from a snapshot.
 func (d *NASStorageDriver) RestoreSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) error {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -1548,7 +1562,33 @@ func (d *NASStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	// Update resource cache as needed
+	if err := d.SDK.RefreshAzureResources(ctx); err != nil {
+		return fmt.Errorf("could not update ANF resource cache; %v", err)
+	}
+
+	// Get the volume
+	volume, err := d.SDK.Volume(ctx, volConfig)
+	if err != nil {
+		return fmt.Errorf("could not find volume %s; %v", internalVolName, err)
+	}
+
+	// Get the snapshot
+	snapshot, err := d.SDK.SnapshotForVolume(ctx, volume, internalSnapName)
+	if err != nil {
+		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
+	}
+
+	// Do the restore
+	if err = d.SDK.RestoreSnapshot(ctx, volume, snapshot); err != nil {
+		return err
+	}
+
+	// Wait for snapshot deletion to complete
+	_, err = d.SDK.WaitForVolumeState(ctx, volume, api.StateAvailable,
+		[]string{api.StateError, api.StateDeleting, api.StateDeleted}, api.DefaultSDKTimeout,
+	)
+	return err
 }
 
 // DeleteSnapshot deletes a snapshot of a volume.

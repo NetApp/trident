@@ -3342,9 +3342,10 @@ func TestOntapSANStorageDriverCheckMirrorTransferState(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	ctx := context.Background()
 
-	transferTime := "2023-05-15T15:06:23-04:00"
-	transferFormat := "2006-01-02T15:04:05.000-07:00"
-	endTransferTime, _ = time.Parse(transferFormat, transferTime)
+	transferTime := "2023-06-01T10:15:36-04:00"
+	transferFormat := "2006-01-02T15:04:05-07:00"
+	endTime, _ := time.Parse(transferFormat, transferTime)
+	endTransferTime = endTime.UTC()
 
 	tests := []struct {
 		name          string
@@ -3359,6 +3360,7 @@ func TestOntapSANStorageDriverCheckMirrorTransferState(t *testing.T) {
 				mockAPI.EXPECT().SnapmirrorGet(ctx, "trident-pvc-1234", "SVM1", "", "").
 					Return(&api.Snapmirror{
 						RelationshipStatus: api.SnapmirrorStatusSuccess,
+						IsHealthy:          true,
 						EndTransferTime:    &endTransferTime,
 					}, nil)
 			},
@@ -3669,4 +3671,47 @@ func TestOntapSanVolumeValidate_ValidateStoragePools(t *testing.T) {
 
 	err := driver.validate(ctx)
 	assert.Error(t, err, "Unexpected error")
+}
+
+func TestOntapSanStorageDriverVolumeRestoreSnapshot(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SnapshotRestoreVolume(ctx, "snap1", "vol1").Return(nil)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapSanStorageDriverVolumeRestoreSnapshot_Failure(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SnapshotRestoreVolume(ctx, "snap1", "vol1").Return(fmt.Errorf("failed to restore volume"))
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Error(t, result)
 }

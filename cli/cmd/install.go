@@ -35,20 +35,20 @@ const (
 	PreferredNamespace = tridentconfig.OrchestratorName
 
 	// CRD names
-
-	ActionMirrorUpdateCRDName = "tridentactionmirrorupdates.trident.netapp.io"
-	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
-	BackendCRDName            = "tridentbackends.trident.netapp.io"
-	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
-	NodeCRDName               = "tridentnodes.trident.netapp.io"
-	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
-	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
-	StorageClassCRDName       = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
-	VersionCRDName            = "tridentversions.trident.netapp.io"
-	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
-	VolumeReferenceCRDName    = "tridentvolumereferences.trident.netapp.io"
+	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
+	BackendCRDName               = "tridentbackends.trident.netapp.io"
+	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
+	NodeCRDName                  = "tridentnodes.trident.netapp.io"
+	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
+	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
+	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
+	VersionCRDName               = "tridentversions.trident.netapp.io"
+	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
+	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -168,6 +168,7 @@ var (
 		VersionCRDName,
 		VolumeCRDName,
 		VolumePublicationCRDName,
+		ActionSnapshotRestoreCRDName,
 	}
 )
 

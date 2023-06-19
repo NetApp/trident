@@ -1309,7 +1309,7 @@ func (k *K8sClient) DeleteTridentDaemonSet(nodeLabel string) error {
 			Log().WithField("label", nodeLabel).Warnf("Multiple daemonSets found matching label; removing all.")
 		}
 
-		if err = k.RemoveMultipleDaemonSets(daemonSets); err != nil {
+		if err = k.RemoveMultipleDaemonSets(daemonSets, false); err != nil {
 			return err
 		}
 	}
@@ -1317,8 +1317,8 @@ func (k *K8sClient) DeleteTridentDaemonSet(nodeLabel string) error {
 	return nil
 }
 
-// RemoveMultipleDaemonSets removes a list of unwanted beta CSI drivers in a namespace
-func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonSet) error {
+// RemoveMultipleDaemonSets removes a list of Trident DaemonSet.
+func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonSet, foreground bool) error {
 	var err error
 	var anyError bool
 	var undeletedDaemonSets []string
@@ -1326,7 +1326,7 @@ func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonS
 	if len(unwantedDaemonSets) > 0 {
 		for _, daemonSetToRemove := range unwantedDaemonSets {
 			// Delete the daemonset
-			if err = k.DeleteDaemonSet(daemonSetToRemove.Name, daemonSetToRemove.Namespace, true); err != nil {
+			if err = k.DeleteDaemonSet(daemonSetToRemove.Name, daemonSetToRemove.Namespace, foreground); err != nil {
 				Log().WithFields(LogFields{
 					"deployment": daemonSetToRemove.Name,
 					"namespace":  daemonSetToRemove.Namespace,

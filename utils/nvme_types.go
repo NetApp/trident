@@ -77,5 +77,5 @@ type NVMeInterface interface {
 	NVMeActiveOnHost(ctx context.Context) (bool, error)
 	GetHostNqn(ctx context.Context) (string, error)
 	NewNVMeSubsystem(ctx context.Context, subsNqn string) NVMeSubsystemInterface
-	NewNVMeDevice(ctx context.Context, nsPath string) (NVMeDeviceInterface, error)
+	NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
 }

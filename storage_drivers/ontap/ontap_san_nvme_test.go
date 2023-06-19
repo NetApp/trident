@@ -1214,6 +1214,7 @@ func TestCreateClone(t *testing.T) {
 	pool.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
 	pool.InternalAttributes()[SplitOnClone] = "true"
 	ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+	volConfig.InternalID = "/vol/cloneVol1/namespace0"
 
 	// Test1: Success - creating clone
 	mAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
@@ -1255,4 +1256,153 @@ func TestCreateClone(t *testing.T) {
 	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
 
 	assert.Error(t, err)
+}
+
+func TestImport(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	originalName := "fakeOriginalName"
+	vol := &api.Volume{Aggregates: []string{"data"}}
+	type error struct {
+		err     string
+		message string
+	}
+	ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100", UUID: "fakeUUID"}
+
+	// Test1: Error - Error getting volume info
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("Error getting volume info"))
+
+	err := d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test2: Error - Failed to get the volume info
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, nil)
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test3: Error - volume is not read-write
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	vol.AccessType = "dp"
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test4: Error - Error getting namespace
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(nil,
+		fmt.Errorf("error getting namespace info"))
+	vol.AccessType = "rw"
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test5: Error - Failed to get namespace
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(nil, nil)
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test6: Error - Namespace not online
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	ns.State = "offline"
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test7: Error - Namespace mapped to subsystem
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(true, nil)
+	ns.State = "online"
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test8: Error - Checking if namespace is mapped returns error
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false,
+		fmt.Errorf("error while checking namespace mapped"))
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test9: Error - while renaming the volume
+	volConfig.ImportNotManaged = false
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
+	mAPI.EXPECT().VolumeRename(ctx, originalName,
+		volConfig.InternalName).Return(fmt.Errorf("error renaming volume"))
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, err)
+
+	// Test10: Success
+	vol.Comment = "fakeComment"
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
+	mAPI.EXPECT().VolumeRename(ctx, originalName, volConfig.InternalName).Return(nil)
+
+	err = d.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, err)
+}
+
+func TestExtractNamespaceName(t *testing.T) {
+	var nsStr, nsNameGot, nsNameExpected string
+	// Test 1 : Empty String
+	nsStr = ""
+	nsNameExpected = "namespace0"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+
+	// Test 2 : Success - Namespace Name in proper format
+	nsStr = "/vol/fakeFlexVolName/fakeNamespaceName"
+	nsNameExpected = "fakeNamespaceName"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+
+	// Test 3 : Namespace Name has more length
+	nsStr = "/vol/fakeFlexVolName/hasMoreLength/fakeNamespaceName"
+	nsNameExpected = "MalformedNamespace"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+
+	// Test 4 : Namespace Name doesn't match the format
+	nsStr = "/vol/fakeFlexVolName"
+	nsNameExpected = "MalformedNamespace"
+
+	nsNameGot = extractNamespaceName(nsStr)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
+}
+
+func TestCreateNamespacePath(t *testing.T) {
+	nsNameExpected := "/vol/fakeFlexVolName/fakeNamespaceName"
+	flexVolName := "fakeFlexVolName"
+	nsName := "fakeNamespaceName"
+
+	nsNameGot := createNamespacePath(flexVolName, nsName)
+
+	assert.Equal(t, nsNameExpected, nsNameGot)
 }

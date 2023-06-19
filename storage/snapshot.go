@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	SnapshotTimestampFormat = "2006-01-02T15:04:05Z"
-	SnapshotNameFormat      = "20060102T150405Z"
+	SnapshotNameFormat = "20060102T150405Z"
 )
 
 var snapshotIDRegex = regexp.MustCompile(`^(?P<volume>[^\s/]+)/(?P<snapshot>[^\s/]+)$`)

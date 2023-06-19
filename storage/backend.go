@@ -93,6 +93,7 @@ type Mirrorer interface {
 		string, error)
 	UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error
 	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 }
 
 // StateGetter provides a common interface for backends that support polling backend for state information.
@@ -1290,6 +1291,17 @@ func (b *StorageBackend) CheckMirrorTransferState(ctx context.Context, localInte
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 	return mirrorDriver.CheckMirrorTransferState(ctx, localInternalVolumeName)
+}
+
+func (b *StorageBackend) GetMirrorTransferTime(ctx context.Context, localInternalVolumeName string) (*time.Time,
+	error,
+) {
+	mirrorDriver, ok := b.driver.(Mirrorer)
+	if !ok {
+		return nil, errors.UnsupportedError(fmt.Sprintf(
+			"mirroring is not implemented by backends of type %v", b.driver.Name()))
+	}
+	return mirrorDriver.GetMirrorTransferTime(ctx, localInternalVolumeName)
 }
 
 func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {

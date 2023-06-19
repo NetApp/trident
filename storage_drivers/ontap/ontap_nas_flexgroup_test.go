@@ -523,7 +523,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 					map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 				)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(nil,
-					fmt.Errorf("Failed to get data Lifs")) // failed to get network interface
+					fmt.Errorf("failed to get data LIFs")) // failed to get network interface
 				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
 				assert.Error(t, result, "FlexGroup driver initialization succeeded even with failed to get data lifs")

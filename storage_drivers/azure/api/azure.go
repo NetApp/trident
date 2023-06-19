@@ -1612,6 +1612,37 @@ func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name
 	return c.newSnapshotFromANFSnapshot(ctx, &anfSnapshot)
 }
 
+// RestoreSnapshot restores a volume to a snapshot.
+func (c Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
+	logFields := LogFields{
+		"API":      "SnapshotsClient.BeginRevert",
+		"volume":   filesystem.FullName,
+		"snapshot": snapshot.Name,
+	}
+
+	var rawResponse *http.Response
+	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+	revertBody := netapp.VolumeRevert{
+		SnapshotID: utils.Ptr(snapshot.SnapshotID),
+	}
+
+	_, err := c.sdkClient.VolumesClient.BeginRevert(responseCtx,
+		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool,
+		filesystem.Name, revertBody, nil)
+
+	logFields["correlationID"] = GetCorrelationID(rawResponse)
+
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error reverting snapshot.")
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Volume reverted to snapshot.")
+
+	return nil
+}
+
 // DeleteSnapshot deletes a snapshot.
 func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snapshot *Snapshot) error {
 	logFields := LogFields{

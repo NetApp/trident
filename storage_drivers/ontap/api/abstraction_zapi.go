@@ -16,7 +16,6 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -1954,7 +1953,7 @@ func (d OntapAPIZAPI) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 	if snapListResponse.Result.AttributesListPtr != nil {
 		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
 			snapshots = append(snapshots, Snapshot{
-				CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
+				CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(utils.TimestampFormat),
 				Name:       snap.Name(),
 			})
 		}
@@ -2157,6 +2156,7 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 	if info.LastTransferEndTimestampPtr != nil {
 		transferUnix := int64(uint32(info.LastTransferEndTimestamp()))
 		transferTime := time.Unix(transferUnix, 0)
+		transferTime = transferTime.UTC()
 		snapmirror.EndTransferTime = &transferTime
 	}
 
@@ -2331,11 +2331,8 @@ func (d OntapAPIZAPI) SnapmirrorBreak(
 }
 
 func (d OntapAPIZAPI) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
-	// TODO (victorir): implement me TRID-12901
-	Logc(ctx).Debugf("Will send update mirror with volumeName: %s and snapshotName: %s",
-		localInternalVolumeName, snapshotName)
-	// d.api.UpdateMirror(localInternalVolumeName, localasvmnamee)
-	return nil
+	mirrorUpdate, err := d.api.SnapmirrorUpdate(localInternalVolumeName, snapshotName)
+	return azgo.GetError(ctx, mirrorUpdate, err)
 }
 
 func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {

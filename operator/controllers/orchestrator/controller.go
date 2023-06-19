@@ -1034,7 +1034,7 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 		statusMessage := fmt.Sprintf("Failed to install Trident; err: %s", err.Error())
 
 		if warningMessage != "" {
-			statusMessage = statusMessage + "; " + warningMessage
+			statusMessage = fmt.Sprintf("%s; %s", statusMessage, warningMessage)
 		}
 
 		if _, crErr := c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage,
@@ -1055,7 +1055,7 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 
 	eventType := corev1.EventTypeNormal
 	if warningMessage != "" {
-		statusMessage = statusMessage + "; " + warningMessage
+		statusMessage = fmt.Sprintf("%s; %s", statusMessage, warningMessage)
 		eventType = corev1.EventTypeWarning
 	}
 

@@ -1188,7 +1188,7 @@ func createFlexgroupSnapshot(
 			}, nil
 		}
 	}
-	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
+	return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, internalVolName)
 }
 
 // CreateSnapshot creates a snapshot for the given volume

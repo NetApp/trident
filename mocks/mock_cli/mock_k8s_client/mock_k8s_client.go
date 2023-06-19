@@ -10,7 +10,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	versioned "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	version "github.com/netapp/trident/utils/version"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
@@ -797,21 +796,6 @@ func (m *MockKubernetesClient) GetCRD(arg0 string) (*v13.CustomResourceDefinitio
 func (mr *MockKubernetesClientMockRecorder) GetCRD(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCRD", reflect.TypeOf((*MockKubernetesClient)(nil).GetCRD), arg0)
-}
-
-// GetCRDClient mocks base method.
-func (m *MockKubernetesClient) GetCRDClient() (*versioned.Clientset, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCRDClient")
-	ret0, _ := ret[0].(*versioned.Clientset)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetCRDClient indicates an expected call of GetCRDClient.
-func (mr *MockKubernetesClientMockRecorder) GetCRDClient() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCRDClient", reflect.TypeOf((*MockKubernetesClient)(nil).GetCRDClient))
 }
 
 // GetCSIDriverByLabel mocks base method.

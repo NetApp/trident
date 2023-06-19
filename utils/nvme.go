@@ -97,11 +97,21 @@ func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string) err
 		if err := s.updatePaths(ctx); err != nil {
 			return err
 		}
-	} else {
-		return errors
+
+		return nil
 	}
 
-	return nil
+	if s.GetConnectionStatus() != NVMeSubsystemDisconnected {
+		// We can arrive in this case for the below use case -
+		// LIF1 is up and LIF2 is down. After creating first pod, we connect a path for subsystem using
+		// LIF1 successfully while for LIF2 it fails. So updatePaths will update the new path for the
+		// subsystem. When we create the second pod, we don't create a path for LIF1 as it is already
+		// present while we try to create for LIF2 which fails again. So updatePaths will remain false.
+		// Since at least one path is present, we should not return error.
+		return nil
+	}
+
+	return errors
 }
 
 // Disconnect removes the subsystem and its corresponding paths/sessions from the k8s node.
@@ -126,7 +136,7 @@ func (s *NVMeSubsystem) GetNamespaceCount(ctx context.Context) (int, error) {
 }
 
 // getNVMeDevice returns the NVMe device corresponding to nsPath namespace.
-func getNVMeDevice(ctx context.Context, nsPath string) (*NVMeDevice, error) {
+func getNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 	Logc(ctx).Debug(">>>> nvme.getNVMeDevice")
 	defer Logc(ctx).Debug("<<<< nvme.getNVMeDevice")
 
@@ -136,12 +146,12 @@ func getNVMeDevice(ctx context.Context, nsPath string) (*NVMeDevice, error) {
 	}
 
 	for _, dev := range dList.Devices {
-		if dev.NamespacePath == nsPath {
+		if dev.UUID == nsUUID {
 			return &dev, nil
 		}
 	}
 
-	return nil, fmt.Errorf("no device found for the given namespace")
+	return nil, fmt.Errorf("no device found for the given namespace %v", nsUUID)
 }
 
 // GetPath returns the device path where we mount the filesystem in NodePublish.
@@ -160,8 +170,8 @@ func NewNVMeHandler() NVMeInterface {
 }
 
 // NewNVMeDevice returns new NVMe device
-func (nh *NVMeHandler) NewNVMeDevice(ctx context.Context, nsPath string) (NVMeDeviceInterface, error) {
-	return getNVMeDevice(ctx, nsPath)
+func (nh *NVMeHandler) NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
+	return getNVMeDevice(ctx, nsUUID)
 }
 
 // NewNVMeSubsystem returns NVMe subsystem object. Even if a subsystem is not connected to the k8s node,
@@ -235,7 +245,7 @@ func AttachNVMeVolume(ctx context.Context, name, mountpoint string, publishInfo 
 		}
 	}
 
-	nvmeDev, err := nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespacePath)
+	nvmeDev, err := nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil {
 		return err
 	}

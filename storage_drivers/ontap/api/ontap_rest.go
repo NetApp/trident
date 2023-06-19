@@ -4526,27 +4526,19 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(*quotaRule.UUID)
 
-	quotaRuleInfo := &models.QuotaRule{
-		Qtree: &models.QuotaRuleInlineQtree{
-			Name: utils.Ptr(qtreeName),
-		},
-		Volume: &models.QuotaRuleInlineVolume{
-			Name: utils.Ptr(volumeName),
-		},
-		Type: utils.Ptr(quotaType),
+	// determine the new hard disk limit value
+	if diskLimit == "" {
+		return fmt.Errorf("invalid hard disk limit value '%s' for quota modify", diskLimit)
+	}
+	hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
+	if parseErr != nil {
+		return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
 	}
 
-	quotaRuleInfo.Svm = &models.QuotaRuleInlineSvm{UUID: utils.Ptr(c.svmUUID)}
-
-	// handle options
-	if diskLimit != "" {
-		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
-		if parseErr != nil {
-			return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
-		}
-		quotaRuleInfo.Space = &models.QuotaRuleInlineSpace{
+	quotaRuleInfo := &models.QuotaRule{
+		Space: &models.QuotaRuleInlineSpace{
 			HardLimit: utils.Ptr(hardLimit),
-		}
+		},
 	}
 	params.SetInfo(quotaRuleInfo)
 
@@ -5375,7 +5367,36 @@ func (c *RestClient) GetSVMState(ctx context.Context) (string, error) {
 }
 
 func (c RestClient) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
-	// TODO (victorir): implement me TRID-12901
+	// first, find the relationship so we can then use the UUID to update
+	relationship, err := c.SnapmirrorGet(ctx, localInternalVolumeName, c.SVMName(), "", "")
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+	if relationship.UUID == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipTransferCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetRelationshipUUID(string(*relationship.UUID))
+
+	params.Info = &models.SnapmirrorTransfer{}
+	if snapshotName != "" {
+		params.Info.SourceSnapshot = &snapshotName
+	}
+
+	snapmirrorRelationshipTransferCreateAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipTransferCreate(params,
+		c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipTransferCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship transfer update")
+	}
 	return nil
 }
 
@@ -5594,7 +5615,7 @@ func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string) (*m
 		*result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
 		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
 	}
-	return nil, fmt.Errorf("namespace not found")
+	return nil, fmt.Errorf("namespace %s not found", name)
 }
 
 // NVMe Subsystem operations

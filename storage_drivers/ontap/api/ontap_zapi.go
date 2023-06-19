@@ -2860,7 +2860,6 @@ func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, er
 func (c Client) SnapmirrorUpdate(
 	localInternalVolumeName, snapshotName string,
 ) (*azgo.SnapmirrorUpdateResponse, error) {
-	// TODO (victorir): verify implementation TRID-12901
 	query := azgo.NewSnapmirrorUpdateRequest()
 	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
 

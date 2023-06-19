@@ -2111,7 +2111,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.NVMeSubsystemNQN = req.PublishContext["nvmeSubsystemNqn"]
-	publishInfo.NVMeNamespacePath = req.PublishContext["nvmeNamespacePath"]
+	publishInfo.NVMeNamespaceUUID = req.PublishContext["nvmeNamespaceUUID"]
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
 
@@ -2163,7 +2163,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	// Get the device from tracking info using commands or from publishInfo
 	// Flush the device IOs
 
-	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespacePath)
+	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting NVMe device, %v", err)
 	}

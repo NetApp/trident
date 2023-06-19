@@ -271,20 +271,6 @@ func (mr *MockAzureMockRecorder) ModifyVolume(arg0, arg1, arg2, arg3 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ModifyVolume", reflect.TypeOf((*MockAzure)(nil).ModifyVolume), arg0, arg1, arg2, arg3)
 }
 
-// RandomCapacityPoolForStoragePool mocks base method.
-func (m *MockAzure) RandomCapacityPoolForStoragePool(arg0 context.Context, arg1 storage.Pool, arg2 string) *api.CapacityPool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RandomCapacityPoolForStoragePool", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*api.CapacityPool)
-	return ret0
-}
-
-// RandomCapacityPoolForStoragePool indicates an expected call of RandomCapacityPoolForStoragePool.
-func (mr *MockAzureMockRecorder) RandomCapacityPoolForStoragePool(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RandomCapacityPoolForStoragePool", reflect.TypeOf((*MockAzure)(nil).RandomCapacityPoolForStoragePool), arg0, arg1, arg2)
-}
-
 // RandomSubnetForStoragePool mocks base method.
 func (m *MockAzure) RandomSubnetForStoragePool(arg0 context.Context, arg1 storage.Pool) *api.Subnet {
 	m.ctrl.T.Helper()
@@ -339,6 +325,20 @@ func (m *MockAzure) ResizeVolume(arg0 context.Context, arg1 *api.FileSystem, arg
 func (mr *MockAzureMockRecorder) ResizeVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockAzure)(nil).ResizeVolume), arg0, arg1, arg2)
+}
+
+// RestoreSnapshot mocks base method.
+func (m *MockAzure) RestoreSnapshot(arg0 context.Context, arg1 *api.FileSystem, arg2 *api.Snapshot) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreSnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RestoreSnapshot indicates an expected call of RestoreSnapshot.
+func (mr *MockAzureMockRecorder) RestoreSnapshot(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockAzure)(nil).RestoreSnapshot), arg0, arg1, arg2)
 }
 
 // SnapshotForVolume mocks base method.

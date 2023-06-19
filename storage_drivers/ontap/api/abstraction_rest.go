@@ -1649,6 +1649,7 @@ func (d OntapAPIREST) SnapmirrorGet(
 		if snapmirrorResponse.Transfer.EndTime != nil {
 			transferFormat := "2006-01-02T15:04:05.000-07:00"
 			transferTime, _ := time.Parse(transferFormat, snapmirrorResponse.Transfer.EndTime.String())
+			transferTime = transferTime.UTC()
 			snapmirror.EndTransferTime = &transferTime
 		}
 	}
@@ -1829,9 +1830,13 @@ func (d OntapAPIREST) SnapmirrorBreak(
 }
 
 func (d OntapAPIREST) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
-	// TODO (victorir): implement me TRID-12901
-	Logc(ctx).Debugf("Will send update mirror with volumeName: %s and snapshotName: %s",
-		localInternalVolumeName, snapshotName)
+	err := d.api.SnapmirrorUpdate(ctx, localInternalVolumeName, snapshotName)
+	if err != nil {
+		if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
+			return fmt.Errorf(*restErr.Error.Message)
+		}
+		return err
+	}
 	return nil
 }
 
@@ -2887,7 +2892,7 @@ func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName str
 		}
 	}
 
-	Logc(ctx).Debugf("Found subsystem %v and target nqns are %v", subsystem.Name, subsystem.TargetNqn)
+	Logc(ctx).Debugf("Found subsystem %v and target nqns are %v", *subsystem.Name, *subsystem.TargetNqn)
 
 	return &NVMeSubsystem{UUID: *subsystem.UUID, Name: *subsystem.Name, NQN: *subsystem.TargetNqn}, nil
 }

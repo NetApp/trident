@@ -6388,6 +6388,162 @@ func TestCreateSnapshotError(t *testing.T) {
 	}
 }
 
+func TestRestoreSnapshot_BootstrapError(t *testing.T) {
+	snapName := "snap"
+	volName := "vol"
+
+	o := getOrchestrator(t, false)
+	o.bootstrapError = errors.New("failed")
+
+	err := o.RestoreSnapshot(ctx(), volName, snapName)
+
+	assert.Error(t, err, "RestoreSnapshot should have failed")
+}
+
+func TestRestoreSnapshot_VolumeNotFound(t *testing.T) {
+	snapName := "snap"
+	volName := "vol"
+
+	o := getOrchestrator(t, false)
+
+	err := o.RestoreSnapshot(ctx(), volName, snapName)
+
+	assert.Error(t, err, "RestoreSnapshot should have failed")
+}
+
+func TestRestoreSnapshot_SnapshotNotFound(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	backendUUID := "abcd"
+	snapName := "snap"
+	volName := "vol"
+	volConfig := &storage.VolumeConfig{Name: volName}
+
+	o.volumes[volName] = &storage.Volume{Config: volConfig, BackendUUID: backendUUID}
+
+	err := o.RestoreSnapshot(ctx(), volName, snapName)
+
+	assert.Error(t, err, "RestoreSnapshot should have failed")
+}
+
+func TestRestoreSnapshot_BackendNotFound(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	backendUUID := "abcd"
+	snapName := "snap"
+	volName := "vol"
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	snapConfig := &storage.SnapshotConfig{Name: snapName, VolumeName: volName}
+	volConfig := &storage.VolumeConfig{Name: volName}
+
+	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
+	o.volumes[volName] = &storage.Volume{Config: volConfig, BackendUUID: backendUUID}
+
+	err := o.RestoreSnapshot(ctx(), volName, snapName)
+
+	assert.Error(t, err, "RestoreSnapshot should have failed")
+}
+
+func TestRestoreSnapshot_VolumeHasPublications(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	backendUUID := "abcd"
+	backendName := "xyz"
+	snapName := "snap"
+	volName := "vol"
+	nodeName := "node"
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	snapConfig := &storage.SnapshotConfig{Name: snapName, VolumeName: volName}
+	volConfig := &storage.VolumeConfig{Name: volName}
+	node := &utils.Node{Name: nodeName}
+	publication := &utils.VolumePublication{
+		Name:       volName + "/" + nodeName,
+		NodeName:   nodeName,
+		VolumeName: volName,
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	mockBackend.EXPECT().Name().Return(backendName).AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("driverName").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
+	o.volumes[volName] = &storage.Volume{Config: volConfig, BackendUUID: backendUUID}
+	o.backends[backendUUID] = mockBackend
+	o.nodes.Set(nodeName, node)
+	_ = o.volumePublications.Set(volName, nodeName, publication)
+
+	err := o.RestoreSnapshot(ctx(), volName, snapName)
+
+	assert.Error(t, err, "RestoreSnapshot should have failed")
+}
+
+func TestRestoreSnapshot_RestoreFailed(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	backendUUID := "abcd"
+	backendName := "xyz"
+	snapName := "snap"
+	volName := "vol"
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	snapConfig := &storage.SnapshotConfig{Name: snapName, VolumeName: volName}
+	volConfig := &storage.VolumeConfig{Name: volName}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	mockBackend.EXPECT().Name().Return(backendName).AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("driverName").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().RestoreSnapshot(coreCtx, snapConfig, volConfig).Return(errors.New("failed"))
+
+	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
+	o.volumes[volName] = &storage.Volume{Config: volConfig, BackendUUID: backendUUID}
+	o.backends[backendUUID] = mockBackend
+
+	err := o.RestoreSnapshot(ctx(), volName, snapName)
+
+	assert.Error(t, err, "RestoreSnapshot should have failed")
+}
+
+func TestRestoreSnapshot(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	backendUUID := "abcd"
+	backendName := "xyz"
+	snapName := "snap"
+	volName := "vol"
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	snapConfig := &storage.SnapshotConfig{Name: snapName, VolumeName: volName}
+	volConfig := &storage.VolumeConfig{Name: volName}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	mockBackend.EXPECT().Name().Return(backendName).AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("driverName").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().RestoreSnapshot(coreCtx, snapConfig, volConfig).Return(nil)
+
+	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
+	o.volumes[volName] = &storage.Volume{Config: volConfig, BackendUUID: backendUUID}
+	o.backends[backendUUID] = mockBackend
+
+	err := o.RestoreSnapshot(ctx(), volName, snapName)
+
+	assert.NoError(t, err, "RestoreSnapshot should not have failed")
+}
+
 func TestDeleteSnapshotError(t *testing.T) {
 	backendUUID := "abcd"
 	volName := "vol"
@@ -7565,4 +7721,96 @@ func TestCheckMirrorTransferState_CheckSucceeded(t *testing.T) {
 
 	_, err := o.CheckMirrorTransferState(ctx(), pvcVolumeName)
 	assert.NoError(t, err, "CheckMirrorTransferState should have succeeded")
+}
+
+func TestGetMirrorTransferTime_BootstrapError(t *testing.T) {
+	pvcVolumeName := "vol"
+
+	o := getOrchestrator(t, false)
+	o.bootstrapError = errors.New("failed")
+
+	_, err := o.GetMirrorTransferTime(ctx(), pvcVolumeName)
+	assert.Error(t, err, "GetMirrorTransferTime should have failed")
+}
+
+func TestGetMirrorTransferTime_VolumeNotFound(t *testing.T) {
+	pvcVolumeName := "vol"
+
+	o := getOrchestrator(t, false)
+
+	_, err := o.GetMirrorTransferTime(ctx(), pvcVolumeName)
+	assert.Error(t, err, "GetMirrorTransferTime should have failed")
+}
+
+func TestGetMirrorTransferTime_BackendNotFound(t *testing.T) {
+	pvcVolumeName := "vol"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: pvcVolumeName},
+		BackendUUID: "12345",
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	_, err := o.GetMirrorTransferTime(ctx(), pvcVolumeName)
+	assert.Error(t, err, "GetMirrorTransferTime should have failed")
+}
+
+func TestGetMirrorTransferTime_BackendCannotMirror(t *testing.T) {
+	pvcVolumeName := "vol"
+	backendUUID := "12345"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: pvcVolumeName},
+		BackendUUID: backendUUID,
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().GetDriverName().AnyTimes()
+	mockBackend.EXPECT().State()
+	mockBackend.EXPECT().Name()
+	mockBackend.EXPECT().BackendUUID().Times(2)
+	mockBackend.EXPECT().CanMirror().Return(false)
+
+	_, err := o.GetMirrorTransferTime(ctx(), pvcVolumeName)
+	assert.Error(t, err, "GetMirrorTransferTime should have failed")
+}
+
+func TestGetMirrorTransferTime_CheckSucceeded(t *testing.T) {
+	pvcVolumeName := "vol"
+	backendUUID := "12345"
+	internalName := "pvc_123"
+
+	o := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         pvcVolumeName,
+			InternalName: internalName,
+		},
+		BackendUUID: backendUUID,
+	}
+	o.volumes[pvcVolumeName] = vol
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().GetDriverName().AnyTimes()
+	mockBackend.EXPECT().State()
+	mockBackend.EXPECT().Name()
+	mockBackend.EXPECT().BackendUUID().Times(2)
+	mockBackend.EXPECT().CanMirror().Return(true)
+	mockBackend.EXPECT().GetMirrorTransferTime(gomock.Any(), internalName)
+
+	_, err := o.GetMirrorTransferTime(ctx(), pvcVolumeName)
+	assert.NoError(t, err, "GetMirrorTransferTime should have succeeded")
 }

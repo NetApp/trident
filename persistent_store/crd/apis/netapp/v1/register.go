@@ -60,6 +60,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&TridentSnapshotList{},
 		&TridentVolumeReference{},
 		&TridentVolumeReferenceList{},
+		&TridentActionSnapshotRestore{},
+		&TridentActionSnapshotRestoreList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

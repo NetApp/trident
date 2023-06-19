@@ -670,8 +670,8 @@ func TestInitialize(t *testing.T) {
 
 	gcpClient, d := newMockGCPDriver(t)
 
-	apiVersion, _ := versionutils.ParseSemantic("1.1.26")
-	sdeVersion, _ := versionutils.ParseSemantic("2022.9.0")
+	apiVersion, _ := versionutils.ParseSemantic("1.4.0")
+	sdeVersion, _ := versionutils.ParseSemantic("2023.1.2")
 	gcpClient.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
 	gcpClient.EXPECT().GetVolumes(gomock.Any()).Return(nil, nil)
 	gcpClient.EXPECT().GetServiceLevels(gomock.Any()).Return(nil, nil)
@@ -716,8 +716,8 @@ func TestInitialize_MultipleVPools(t *testing.T) {
 
 	gcpClient, d := newMockGCPDriver(t)
 
-	apiVersion, _ := versionutils.ParseSemantic("1.1.26")
-	sdeVersion, _ := versionutils.ParseSemantic("2022.9.0")
+	apiVersion, _ := versionutils.ParseSemantic("1.4.0")
+	sdeVersion, _ := versionutils.ParseSemantic("2023.1.2")
 	gcpClient.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
 	gcpClient.EXPECT().GetVolumes(gomock.Any()).Return(nil, nil)
 	gcpClient.EXPECT().GetServiceLevels(gomock.Any()).Return(nil, nil)
@@ -2002,18 +2002,6 @@ func TestRestoreSnapshot_GetVolumeError(t *testing.T) {
 
 	err := d.RestoreSnapshot(ctx(), snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
-}
-
-func TestRestoreSnapshot_SOVolumeError(t *testing.T) {
-	snapConfig, _ := getSnapshotVolumeStructs()
-	gcpClient, d := newMockGCPDriver(t)
-
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).
-		Return(&api.Volume{StorageClass: api.StorageClassSoftware}, nil)
-
-	err := d.RestoreSnapshot(ctx(), snapConfig, nil)
-	assert.ErrorContains(t, err, "software volumes do not support snapshot restore",
-		"Volume belongs to hardware storage class")
 }
 
 func TestRestoreSnapshot_GetSnapshotError(t *testing.T) {

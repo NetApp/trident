@@ -3989,6 +3989,61 @@ func (o *TridentOrchestrator) updateSnapshot(
 	return updatedSnapshot, nil
 }
 
+// RestoreSnapshot restores a volume to the specified snapshot.  The caller is responsible for ensuring this is
+// the newest snapshot known to the container orchestrator.  Any other snapshots that are newer than the specified
+// one that are not known to the container orchestrator may be lost.
+func (o *TridentOrchestrator) RestoreSnapshot(ctx context.Context, volumeName, snapshotName string) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("snapshot_restore", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	volume, ok := o.volumes[volumeName]
+	if !ok {
+		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+	}
+
+	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
+	snapshot, ok := o.snapshots[snapshotID]
+	if !ok {
+		return errors.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s", snapshotName, volumeName))
+	}
+
+	backend, ok := o.backends[volume.BackendUUID]
+	if !ok {
+		return errors.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+	}
+
+	logFields := LogFields{
+		"volume":   snapshot.Config.VolumeName,
+		"snapshot": snapshot.Config.Name,
+		"backend":  backend.Name(),
+	}
+
+	// Ensure volume is not attached to any containers
+	if len(o.volumePublications.ListPublicationsForVolume(volumeName)) > 0 {
+		err = errors.New("cannot restore attached volume to snapshot")
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Unable to restore volume to snapshot.")
+		return err
+	}
+
+	// Restore the snapshot
+	if err = backend.RestoreSnapshot(ctx, snapshot.Config, volume.Config); err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Unable to restore volume to snapshot.")
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Restored volume to snapshot.")
+	return nil
+}
+
 // deleteSnapshot does the necessary work to delete a snapshot entirely.  It does
 // not construct a transaction, nor does it take locks; it assumes that the caller will
 // take care of both of these.
@@ -5536,9 +5591,7 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, s
 	if err != nil {
 		return fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
 	}
-
-	ok := backend.CanMirror()
-	if !ok {
+	if !backend.CanMirror() {
 		return fmt.Errorf("backend does not support mirroring")
 	}
 
@@ -5554,9 +5607,9 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, s
 
 // CheckMirrorTransferState returns the last completed transfer time and an error if mirror relationship transfer
 // is failed or in progress
-func (o *TridentOrchestrator) CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (endTime *time.Time,
-	err error,
-) {
+func (o *TridentOrchestrator) CheckMirrorTransferState(
+	ctx context.Context, pvcVolumeName string,
+) (endTime *time.Time, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5578,14 +5631,45 @@ func (o *TridentOrchestrator) CheckMirrorTransferState(ctx context.Context, pvcV
 	if err != nil {
 		return nil, fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
 	}
-
-	ok := backend.CanMirror()
-	if !ok {
+	if !backend.CanMirror() {
 		return nil, fmt.Errorf("backend does not support mirroring")
 	}
 
 	// Check transfer state of mirror relationship
 	return backend.CheckMirrorTransferState(ctx, tridentVolume.Config.InternalName)
+}
+
+// GetMirrorTransferTime returns the last completed transfer time
+func (o *TridentOrchestrator) GetMirrorTransferTime(
+	ctx context.Context, pvcVolumeName string,
+) (endTime *time.Time, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+	defer recordTiming("check_mirror_transfer_state", &err)()
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	// Get volume
+	tridentVolume, err := o.getVolume(ctx, pvcVolumeName)
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", pvcVolumeName, err)
+	}
+
+	// Get backend to ensure it can mirror
+	backend, err := o.getBackendByBackendUUID(tridentVolume.BackendUUID)
+	if err != nil {
+		return nil, fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
+	}
+	if !backend.CanMirror() {
+		return nil, fmt.Errorf("backend does not support mirroring")
+	}
+
+	// Get last transfer time of mirror relationship
+	return backend.GetMirrorTransferTime(ctx, tridentVolume.Config.InternalName)
 }
 
 func (o *TridentOrchestrator) GetCHAP(
