@@ -2222,7 +2222,7 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 		Size:             "1g",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	sb := &storage.StorageBackend{}
@@ -2258,7 +2258,7 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 			driver.Config.SMBShare = test.smbShare
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
@@ -2361,7 +2361,7 @@ func TestOntapNasStorageDriverVolumeCreate_NoPhysicalPool(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2373,7 +2373,7 @@ func TestOntapNasStorageDriverVolumeCreate_NoPhysicalPool(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -2387,7 +2387,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidSnapshotReserve(t *testing.T) 
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2402,7 +2402,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidSnapshotReserve(t *testing.T) 
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -2429,7 +2429,7 @@ func TestOntapNasStorageDriverVolumeCreate_VolumeSize(t *testing.T) {
 				Encryption:       "false",
 				FileSystem:       "nfs",
 				InternalName:     "vol1",
-				PeerVolumeHandle: "fakesvm:vol1",
+				PeerVolumeHandle: "fakesvm2:vol1",
 			}
 
 			pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2442,7 +2442,7 @@ func TestOntapNasStorageDriverVolumeCreate_VolumeSize(t *testing.T) {
 			volAttrs := map[string]sa.Request{}
 
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 			if test.valid {
 				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
@@ -2466,7 +2466,7 @@ func TestOntapNasStorageDriverVolumeCreate_LimitVolumeSize(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2480,7 +2480,7 @@ func TestOntapNasStorageDriverVolumeCreate_LimitVolumeSize(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -2494,7 +2494,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidSnapshotDir(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2507,7 +2507,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidSnapshotDir(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -2521,7 +2521,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidEncryptionValue(t *testing.T) 
 		Encryption:       "invalid", // invalid bool value
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2534,7 +2534,7 @@ func TestOntapNasStorageDriverVolumeCreate_InvalidEncryptionValue(t *testing.T) 
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -2548,7 +2548,7 @@ func TestOntapNasStorageDriverVolumeCreate_BothQosPolicies(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2563,7 +2563,7 @@ func TestOntapNasStorageDriverVolumeCreate_BothQosPolicies(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -2578,7 +2578,7 @@ func TestOntapNasStorageDriverVolumeCreate_NoAggregate(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -2596,7 +2596,7 @@ func TestOntapNasStorageDriverVolumeCreate_NoAggregate(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateSpace(ctx, "pool1").Return(svmAggregateSpaceList, nil)
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
@@ -2613,7 +2613,7 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailed(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	sb := &storage.StorageBackend{}
@@ -2637,7 +2637,7 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailed(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 			if test.expectError {
 				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(fmt.Errorf(test.message))
@@ -2659,7 +2659,7 @@ func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	sb := &storage.StorageBackend{}
@@ -2675,7 +2675,7 @@ func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx,
@@ -2693,7 +2693,7 @@ func TestOntapNasStorageDriverVolumeCreate_IsMirrorDestination(t *testing.T) {
 		Encryption:          "false",
 		FileSystem:          "nfs",
 		InternalName:        "vol1",
-		PeerVolumeHandle:    "fakesvm:vol1",
+		PeerVolumeHandle:    "fakesvm2:vol1",
 		IsMirrorDestination: true,
 	}
 
@@ -2710,7 +2710,7 @@ func TestOntapNasStorageDriverVolumeCreate_IsMirrorDestination(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 
@@ -2726,7 +2726,7 @@ func TestOntapNasStorageDriverVolumeCreate_MountFailed(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	sb := &storage.StorageBackend{}
@@ -2742,7 +2742,7 @@ func TestOntapNasStorageDriverVolumeCreate_MountFailed(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(fmt.Errorf("failed to mount volume"))
@@ -2759,7 +2759,7 @@ func TestOntapNasStorageDriverVolumeCreate_LabelLengthExceeding(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	sb := &storage.StorageBackend{}
@@ -2795,7 +2795,7 @@ func TestOntapNasStorageDriverVolumeCreate_LabelLengthExceeding(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
@@ -2810,7 +2810,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareCreatefail(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	sb := &storage.StorageBackend{}
@@ -2837,7 +2837,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareCreatefail(t *testing.T) {
 			driver.Config.SMBShare = test.smbShare
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
@@ -2863,7 +2863,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareExistsfail(t *testing.T) {
 		Encryption:       "false",
 		FileSystem:       "nfs",
 		InternalName:     "vol1",
-		PeerVolumeHandle: "fakesvm:vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
 	sb := &storage.StorageBackend{}
@@ -2891,7 +2891,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareExistsfail(t *testing.T) {
 			driver.Config.SMBShare = test.smbShare
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm"}, nil)
+			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)

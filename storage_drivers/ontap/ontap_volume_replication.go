@@ -339,6 +339,10 @@ func checkSVMPeered(
 		err = fmt.Errorf("could not determine required peer SVM; %v", err)
 		return storagedrivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
 	}
+	if remoteSVM == svm {
+		Logc(ctx).Info("TMR is in single SVM peer mode. Both source and destination volumes are on a single SVM.")
+		return nil
+	}
 	peeredVservers, _ := d.GetSVMPeers(ctx)
 	if !utils.SliceContainsString(peeredVservers, remoteSVM) {
 		err = fmt.Errorf("backend SVM %v is not peered with required SVM %v", svm, remoteSVM)
