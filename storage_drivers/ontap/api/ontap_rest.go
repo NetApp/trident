@@ -1215,7 +1215,72 @@ func (c RestClient) createVolumeByStyle(ctx context.Context, name string, sizeIn
 		return fmt.Errorf("unexpected response from volume create")
 	}
 
-	return c.PollJobStatus(ctx, volumeCreateAccepted.Payload)
+	if pollErr := c.PollJobStatus(ctx, volumeCreateAccepted.Payload); pollErr != nil {
+		return pollErr
+	}
+
+	switch style {
+	case models.VolumeStyleFlexgroup:
+		return c.waitForFlexgroup(ctx, name)
+	default:
+		return c.waitForVolume(ctx, name)
+	}
+}
+
+// waitForVolume polls for the ONTAP volume to exist, with backoff retry logic
+func (c RestClient) waitForVolume(ctx context.Context, volumeName string) error {
+	checkStatus := func() error {
+		exists, err := c.VolumeExists(ctx, volumeName)
+		if !exists {
+			return fmt.Errorf("volume '%v' does not exit, will continue checking", volumeName)
+		}
+		return err
+	}
+	statusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Volume not found, waiting.")
+	}
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 1 * time.Minute
+
+	// Run the existence check using an exponential backoff
+	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithField("name", volumeName).Warnf("Volume not found after %3.2f seconds.",
+			statusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
+}
+
+// waitForFlexgroup polls for the ONTAP flexgroup to exist, with backoff retry logic
+func (c RestClient) waitForFlexgroup(ctx context.Context, volumeName string) error {
+	checkStatus := func() error {
+		exists, err := c.FlexGroupExists(ctx, volumeName)
+		if !exists {
+			return fmt.Errorf("FlexGroup '%v' does not exit, will continue checking", volumeName)
+		}
+		return err
+	}
+	statusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("FlexGroup not found, waiting.")
+	}
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 1 * time.Minute
+
+	// Run the existence check using an exponential backoff
+	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithField("name", volumeName).Warnf("FlexGroup not found after %3.2f seconds.",
+			statusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -1648,7 +1713,12 @@ func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 		return fmt.Errorf("could not create clone: %v", "unexpected result")
 	}
 
-	return c.PollJobStatus(ctx, cloneCreateResult.Payload)
+	if pollErr := c.PollJobStatus(ctx, cloneCreateResult.Payload); pollErr != nil {
+		return pollErr
+	}
+
+	// ontap_common has something similar, but only for NVMe?, in cloneFlexvol there
+	return c.waitForVolume(ctx, cloneName)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -3961,7 +4031,39 @@ func (c RestClient) QtreeCreate(
 		return fmt.Errorf("unexpected response from qtree create")
 	}
 
-	return c.PollJobStatus(ctx, createAccepted.Payload)
+	if pollErr := c.PollJobStatus(ctx, createAccepted.Payload); pollErr != nil {
+		return pollErr
+	}
+
+	return c.waitForQtree(ctx, volumeName, name)
+}
+
+// waitForQtree polls for the ONTAP qtree to exist, with backoff retry logic
+func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName string) error {
+	checkStatus := func() error {
+		qtree, err := c.QtreeGetByName(ctx, qtreeName, volumeName)
+		if qtree == nil {
+			return fmt.Errorf("Qtree '%v' does not exit within volume '%v', will continue checking", qtreeName, volumeName)
+		}
+		return err
+	}
+	statusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Qtree not found, waiting.")
+	}
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 1 * time.Minute
+
+	// Run the existence check using an exponential backoff
+	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.",
+			statusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
 }
 
 // QtreeRename renames a qtree
