@@ -14,7 +14,7 @@ REGISTRY ?= $(DEFAULT_REGISTRY)
 BUILDX_OUTPUT ?= load
 
 # GO_IMAGE golang image used in default GO_SHELL
-GO_IMAGE ?= golang:1.19
+GO_IMAGE ?= golang:1.20
 
 # GO_CMD go command used for go build
 GO_CMD ?= go
