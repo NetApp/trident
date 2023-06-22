@@ -732,7 +732,7 @@ func (d *StorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	// Ensure source volume exists
 	sourceVolume, ok := d.Volumes[source]

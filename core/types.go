@@ -58,6 +58,9 @@ type Orchestrator interface {
 	GetSubordinateSourceVolume(ctx context.Context, subordinateVolumeName string) (*storage.VolumeExternal, error)
 
 	CreateSnapshot(ctx context.Context, snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
+	ImportSnapshot(
+		ctx context.Context, snapshotConfig *storage.SnapshotConfig,
+	) (*storage.SnapshotExternal, error)
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotExternal, error)
 	ListSnapshots(ctx context.Context) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsByName(ctx context.Context, snapshotName string) ([]*storage.SnapshotExternal, error)

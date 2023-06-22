@@ -823,7 +823,7 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 	}
 
 	if err := cloneFlexgroup(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), true,
+		cloneVolConfig.CloneSourceSnapshotInternal, labels, split, d.GetConfig(), d.GetAPI(), true,
 		qosPolicyGroup); err != nil {
 		return err
 	}

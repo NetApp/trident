@@ -1643,12 +1643,12 @@ func TestOntapNasSFlexgrouptorageDriverVolumeClone_BothQosPolicy(t *testing.T) {
 	driver.Config.SplitOnClone = "false"
 
 	volConfig := &storage.VolumeConfig{
-		Size:                "400g",
-		Encryption:          "false",
-		FileSystem:          "nfs",
-		CloneSourceSnapshot: "flexgroup",
-		QosPolicy:           "fake",
-		AdaptiveQosPolicy:   "fake",
+		Size:                        "400g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexgroup",
+		QosPolicy:                   "fake",
+		AdaptiveQosPolicy:           "fake",
 	}
 
 	flexgroup := api.Volume{
@@ -1696,10 +1696,10 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_LabelLengthExceeding(t *testi
 	}
 
 	volConfig := &storage.VolumeConfig{
-		Size:                "400g",
-		Encryption:          "false",
-		FileSystem:          "nfs",
-		CloneSourceSnapshot: "flexgroup",
+		Size:                        "400g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexgroup",
 	}
 	flexgroup := api.Volume{
 		Name:    "flexgroup",
@@ -1728,10 +1728,10 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateFail(t *testing.T) {
 	driver.Config.NASType = sa.SMB
 
 	volConfig := &storage.VolumeConfig{
-		Size:                "400g",
-		Encryption:          "false",
-		FileSystem:          "nfs",
-		CloneSourceSnapshot: "flexgroup",
+		Size:                        "400g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexgroup",
 	}
 
 	flexgroup := api.Volume{
@@ -1744,7 +1744,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateFail(t *testing.T) {
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
-		volConfig.CloneSourceSnapshot, true).Return(fmt.Errorf("create clone fail"))
+		volConfig.CloneSourceSnapshotInternal, true).Return(fmt.Errorf("create clone fail"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1763,10 +1763,10 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_SMBShareCreateFail(t *testing
 	driver.Config.NASType = sa.SMB
 
 	volConfig := &storage.VolumeConfig{
-		Size:                "400g",
-		Encryption:          "false",
-		FileSystem:          "nfs",
-		CloneSourceSnapshot: "flexgroup",
+		Size:                        "400g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexgroup",
 	}
 
 	flexgroup := api.Volume{
@@ -1779,7 +1779,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_SMBShareCreateFail(t *testing
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
-		volConfig.CloneSourceSnapshot, true).Return(nil)
+		volConfig.CloneSourceSnapshotInternal, true).Return(nil)
 	mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)

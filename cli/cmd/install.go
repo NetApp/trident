@@ -152,8 +152,6 @@ var (
 	persistentObjectLabelKey   string
 	persistentObjectLabelValue string
 
-	dns1123LabelRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
-
 	CRDnames = []string{
 		ActionMirrorUpdateCRDName,
 		BackendConfigCRDName,
@@ -404,7 +402,7 @@ func validateInstallationArguments() error {
 	labelFormat := "a DNS-1123 label must consist of lower case alphanumeric characters or '-', " +
 		"and must start and end with an alphanumeric character"
 
-	if !dns1123LabelRegex.MatchString(TridentPodNamespace) {
+	if !utils.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("'%s' is not a valid namespace name; %s", TridentPodNamespace, labelFormat)
 	}
 

@@ -1204,10 +1204,10 @@ func TestCreateClone(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)
 	cloneConfig := &storage.VolumeConfig{
-		InternalName:              "cloneVol1",
-		Size:                      "200000000",
-		CloneSourceVolumeInternal: "fakeSource",
-		CloneSourceSnapshot:       "fakeSourceSnapshot",
+		InternalName:                "cloneVol1",
+		Size:                        "200000000",
+		CloneSourceVolumeInternal:   "fakeSource",
+		CloneSourceSnapshotInternal: "fakeSourceSnapshot",
 	}
 	vol := &api.Volume{Aggregates: []string{"data"}}
 	pool := storage.NewStoragePool(nil, "fakepool")

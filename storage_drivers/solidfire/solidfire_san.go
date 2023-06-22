@@ -914,7 +914,7 @@ func (d *SANStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	sourceName := cloneVolConfig.CloneSourceVolumeInternal
-	snapshotName := cloneVolConfig.CloneSourceSnapshot
+	snapshotName := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":      "CreateClone",

@@ -910,6 +910,12 @@ func TestCloneVolume_SnapshotDataSource_LUKS(t *testing.T) {
 	mockPools := tu.GetFakePools()
 	orchestrator := getOrchestrator(t, false)
 
+	// Cloning a volume from a snapshot with LUKS is only supported with CSI.
+	defer func(context config.DriverContext) {
+		config.CurrentDriverContext = context
+	}(config.CurrentDriverContext)
+	config.CurrentDriverContext = config.ContextCSI
+
 	// Make a backend
 	poolNames := []string{tu.SlowSnapshots}
 	pools := make(map[string]*fake.StoragePool, len(poolNames))
@@ -1019,6 +1025,86 @@ func TestCloneVolume_VolumeDataSource_LUKS(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"A", "B"}, cloneResult.Config.LUKSPassphraseNames)
 	defer orchestrator.DeleteVolume(ctx(), cloneResult.Config.Name)
+}
+
+func TestCloneVolume_WithImportNotManaged(t *testing.T) {
+	orchestrator := getOrchestrator(t, false)
+	defer cleanup(t, orchestrator)
+
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("storageDriver", "block", tu.GenerateFakePools(1), nil)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	storageClass := &storageclass.Config{Name: "sc"}
+	_, err = orchestrator.AddStorageClass(ctx(), storageClass)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	volConfig := tu.GenerateVolumeConfig("sourceVolume", 1, "sc", config.Block)
+	volConfig.ImportNotManaged = true
+	_, err = orchestrator.AddVolume(ctx(), volConfig)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	testCases := []struct {
+		name string
+		err  error
+	}{
+		{"Success", nil},
+		{"Fail", fmt.Errorf("cannot clone an unmanaged volume without a snapshot")},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			cloneConfig := &storage.VolumeConfig{
+				Name:              "clonedVolume",
+				StorageClass:      volConfig.StorageClass,
+				CloneSourceVolume: volConfig.Name,
+				VolumeMode:        volConfig.VolumeMode,
+			}
+
+			if tt.name == "Fail" {
+				config.CurrentDriverContext = config.ContextDocker
+				defer func() { config.CurrentDriverContext = "" }()
+			}
+
+			if tt.name == "Success" {
+				config.CurrentDriverContext = config.ContextCSI
+				defer func() { config.CurrentDriverContext = "" }()
+
+				// If the source is a snapshot, inject a snapshot into the core.
+				cloneConfig.CloneSourceSnapshot = "sourceSnap"
+				snapshot := &storage.Snapshot{
+					Config: generateSnapshotConfig(
+						cloneConfig.CloneSourceSnapshot, volConfig.Name, volConfig.InternalName,
+					),
+				}
+				snapshot.Config.InternalName = "sourceSnap"
+				orchestrator.snapshots[snapshot.ID()] = snapshot
+			}
+
+			cloneResult, err := orchestrator.CloneVolume(ctx(), cloneConfig)
+			assert.Equal(t, tt.err, err)
+
+			if tt.name == "Success" && assert.NotNil(t, cloneResult) && assert.NotNil(t, cloneResult.Config) {
+				assert.False(t, cloneResult.Config.ImportNotManaged)
+			}
+
+			if tt.name != "Success" {
+				assert.Nil(t, cloneResult)
+			}
+
+			_ = orchestrator.DeleteVolume(ctx(), cloneConfig.Name)
+		})
+	}
 }
 
 // This test is modeled after TestAddStorageClassVolumes, but we don't need all the
@@ -6208,7 +6294,7 @@ func TestDeleteVolume(t *testing.T) {
 				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
 			}
 			if tt.name == "DeleteFromPersistentStoreError" {
-				mockBackend.EXPECT().RemoveVolume(coreCtx, gomock.Any()).Return(&storage.NotManagedError{})
+				mockBackend.EXPECT().RemoveVolume(coreCtx, gomock.Any()).Return(errors.NotManagedError("not managed"))
 			} else {
 				mockBackend.EXPECT().RemoveVolume(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
@@ -6542,6 +6628,381 @@ func TestRestoreSnapshot(t *testing.T) {
 	err := o.RestoreSnapshot(ctx(), volName, snapName)
 
 	assert.NoError(t, err, "RestoreSnapshot should not have failed")
+}
+
+func TestImportSnapshot_SnapshotAlreadyExists(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	o.snapshots[snapConfig.ID()] = snapshot
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.Error(t, err)
+	assert.True(t, errors.IsFoundError(err))
+	assert.Nil(t, importedSnap)
+}
+
+func TestImportSnapshot_SourceVolumeNotFound(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:             "",
+			Name:                volumeName,
+			InternalName:        volumeInternalName,
+			ImportOriginalName:  "import-" + volumeName,
+			ImportBackendUUID:   "import-" + backendUUID,
+			ImportNotManaged:    false,
+			LUKSPassphraseNames: nil,
+		},
+		BackendUUID: backendUUID,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	o.backends[volume.BackendUUID] = mockBackend
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+	assert.Nil(t, importedSnap)
+}
+
+func TestImportSnapshot_BackendNotfound(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	// Initialize variables used in all subtests.
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:             "",
+			Name:                volumeName,
+			InternalName:        volumeInternalName,
+			ImportOriginalName:  "import-" + volumeName,
+			ImportBackendUUID:   "import-" + backendUUID,
+			ImportNotManaged:    false,
+			LUKSPassphraseNames: nil,
+		},
+		BackendUUID: backendUUID,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	o.volumes[snapConfig.VolumeName] = volume
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+	assert.Nil(t, importedSnap)
+}
+
+func TestImportSnapshot_SnapshotNotFound(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	// Initialize variables used in all subtests.
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:             "",
+			Name:                volumeName,
+			InternalName:        volumeInternalName,
+			ImportOriginalName:  "import-" + volumeName,
+			ImportBackendUUID:   "import-" + backendUUID,
+			ImportNotManaged:    false,
+			LUKSPassphraseNames: nil,
+		},
+		BackendUUID: backendUUID,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	mockBackend.EXPECT().GetSnapshot(
+		gomock.Any(), snapConfig, volume.Config,
+	).Return(nil, errors.NotFoundError("not found"))
+
+	o.backends[volume.BackendUUID] = mockBackend
+	o.volumes[snapConfig.VolumeName] = volume
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+	assert.Nil(t, importedSnap)
+}
+
+func TestImportSnapshot_FailToGetBackendSnapshot(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	// Initialize variables used in all subtests.
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:             "",
+			Name:                volumeName,
+			InternalName:        volumeInternalName,
+			ImportOriginalName:  "import-" + volumeName,
+			ImportBackendUUID:   "import-" + backendUUID,
+			ImportNotManaged:    false,
+			LUKSPassphraseNames: nil,
+		},
+		BackendUUID: backendUUID,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	mockBackend.EXPECT().GetSnapshot(
+		gomock.Any(), snapConfig, volume.Config,
+	).Return(nil, errors.New("backend error"))
+
+	o.backends[volume.BackendUUID] = mockBackend
+	o.volumes[snapConfig.VolumeName] = volume
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.Error(t, err)
+	assert.Nil(t, importedSnap)
+}
+
+func TestImportSnapshot_FailToAddSnapshot(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	// Initialize variables used in all subtests.
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:             "",
+			Name:                volumeName,
+			InternalName:        volumeInternalName,
+			ImportOriginalName:  "import-" + volumeName,
+			ImportBackendUUID:   "import-" + backendUUID,
+			ImportNotManaged:    false,
+			LUKSPassphraseNames: nil,
+		},
+		BackendUUID: backendUUID,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	mockBackend.EXPECT().GetSnapshot(
+		gomock.Any(), snapConfig, volume.Config,
+	).Return(snapshot, nil)
+	mockStore.EXPECT().AddSnapshot(gomock.Any(), snapshot).Return(fmt.Errorf("store error"))
+
+	o.storeClient = mockStore
+	o.backends[volume.BackendUUID] = mockBackend
+	o.volumes[snapConfig.VolumeName] = volume
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.Error(t, err)
+	assert.Nil(t, importedSnap)
+}
+
+func TestImportSnapshot(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	// Initialize variables used in all subtests.
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:             "",
+			Name:                volumeName,
+			InternalName:        volumeInternalName,
+			ImportOriginalName:  "import-" + volumeName,
+			ImportBackendUUID:   "import-" + backendUUID,
+			ImportNotManaged:    false,
+			LUKSPassphraseNames: nil,
+		},
+		BackendUUID: backendUUID,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	mockBackend.EXPECT().GetSnapshot(
+		gomock.Any(), snapConfig, volume.Config,
+	).Return(snapshot, nil)
+	mockStore.EXPECT().AddSnapshot(gomock.Any(), snapshot).Return(nil)
+
+	o.storeClient = mockStore
+	o.backends[volume.BackendUUID] = mockBackend
+	o.volumes[snapConfig.VolumeName] = volume
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.NoError(t, err)
+	assert.NotNil(t, importedSnap)
+	assert.EqualValues(t, snapshot.ConstructExternal(), importedSnap)
 }
 
 func TestDeleteSnapshotError(t *testing.T) {

@@ -655,6 +655,21 @@ func (mr *MockOrchestratorMockRecorder) GetVolumeTransaction(arg0, arg1 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransaction", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeTransaction), arg0, arg1)
 }
 
+// ImportSnapshot mocks base method.
+func (m *MockOrchestrator) ImportSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig) (*storage.SnapshotExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ImportSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(*storage.SnapshotExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ImportSnapshot indicates an expected call of ImportSnapshot.
+func (mr *MockOrchestratorMockRecorder) ImportSnapshot(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).ImportSnapshot), arg0, arg1)
+}
+
 // ImportVolume mocks base method.
 func (m *MockOrchestrator) ImportVolume(arg0 context.Context, arg1 *storage.VolumeConfig) (*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()

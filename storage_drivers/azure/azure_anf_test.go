@@ -2239,7 +2239,7 @@ func TestCreateClone_Snapshot(t *testing.T) {
 
 	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
 		driver, storagePool)
-	cloneVolConfig.CloneSourceSnapshot = "snap1"
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
 	sourceVolConfig.SnapshotDir = "false"
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -2270,7 +2270,7 @@ func TestCreateClone_ROClone(t *testing.T) {
 
 	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
 		driver, storagePool)
-	cloneVolConfig.CloneSourceSnapshot = "snap1"
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
 	sourceFilesystem.SnapshotDirectory = true
 	cloneVolConfig.ReadOnlyClone = true
 
@@ -2299,7 +2299,7 @@ func TestCreateClone_ROCloneFailed(t *testing.T) {
 
 	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
 		driver, storagePool)
-	cloneVolConfig.CloneSourceSnapshot = "snap1"
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
 	sourceVolConfig.SnapshotDir = "false"
 	cloneVolConfig.ReadOnlyClone = true
 
@@ -2491,7 +2491,7 @@ func TestCreateClone_SnapshotNotFound(t *testing.T) {
 
 	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
 		storagePool)
-	cloneVolConfig.CloneSourceSnapshot = "snap1"
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -2517,7 +2517,7 @@ func TestCreateClone_SnapshotNotAvailable(t *testing.T) {
 
 	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
 		driver, storagePool)
-	cloneVolConfig.CloneSourceSnapshot = "snap1"
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
 	snapshot.ProvisioningState = api.StateError
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)

@@ -419,7 +419,7 @@ func (d *NASStorageDriver) CreateClone(
 		"Type":        "NASStorageDriver",
 		"name":        cloneVolConfig.InternalName,
 		"source":      cloneVolConfig.CloneSourceVolumeInternal,
-		"snapshot":    cloneVolConfig.CloneSourceSnapshot,
+		"snapshot":    cloneVolConfig.CloneSourceSnapshotInternal,
 		"storagePool": storagePool,
 	}
 	Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
@@ -472,8 +472,10 @@ func (d *NASStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	if err := cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup); err != nil {
+
+	if err = cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
+		cloneVolConfig.CloneSourceSnapshotInternal, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup,
+	); err != nil {
 		return err
 	}
 

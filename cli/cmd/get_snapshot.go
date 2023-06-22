@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/dustin/go-humanize"
@@ -153,12 +154,13 @@ func WriteSnapshots(snapshots []storage.SnapshotExternal) {
 
 func writeSnapshotTable(snapshots []storage.SnapshotExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Volume"})
+	table.SetHeader([]string{"Name", "Volume", "Managed"})
 
 	for _, snapshot := range snapshots {
 		table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,
+			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 		})
 	}
 
@@ -173,6 +175,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 		"Created",
 		"Size",
 		"State",
+		"Managed",
 	}
 	table.SetHeader(header)
 
@@ -183,6 +186,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 			snapshot.Created,
 			humanize.IBytes(uint64(snapshot.SizeBytes)),
 			string(snapshot.State),
+			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 		})
 	}
 

@@ -8,9 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
 	frontendcommon "github.com/netapp/trident/frontend/common"
@@ -19,6 +22,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -383,14 +387,97 @@ func (h *helper) matchNamespaceToAnnotation(namespace, shareToAnnotation string)
 	return false
 }
 
-// GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI
+// GetSnapshotConfigForCreate accepts the attributes of a snapshot being requested by the CSI
 // provisioner and returns a SnapshotConfig structure as needed by Trident to create a new snapshot.
-func (h *helper) GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
+func (h *helper) GetSnapshotConfigForCreate(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
+	// Fill in what we already know about the snapshot config.
 	return &storage.SnapshotConfig{
 		Version:    config.OrchestratorAPIVersion,
 		Name:       snapshotName,
 		VolumeName: volumeName,
 	}, nil
+}
+
+// GetSnapshotConfigForImport accepts the attributes of a snapshot being imported by the CSI
+// provisioner, gathers additional information from Kubernetes, and returns a SnapshotConfig
+// structure as needed by Trident to import a snapshot.
+func (h *helper) GetSnapshotConfigForImport(
+	ctx context.Context, volumeName, snapshotContentName string,
+) (*storage.SnapshotConfig, error) {
+	if volumeName == "" || snapshotContentName == "" {
+		return nil, fmt.Errorf("invalid volume or snapshot name supplied")
+	}
+
+	fields := LogFields{
+		"volumeName":          volumeName,
+		"snapshotContentName": snapshotContentName,
+	}
+
+	// Get any additional information required for import.
+	var internalName string
+	snapshotContent, err := h.getSnapshotContentByName(ctx, snapshotContentName)
+	if err != nil || snapshotContent == nil {
+		Logc(ctx).WithFields(fields).WithError(err).Trace("Failed to get snapshot content by name.")
+		return nil, err
+	}
+
+	// Get the snapshot internal name from the snap content.
+	internalName, err = h.getSnapshotInternalNameFromAnnotation(ctx, snapshotContent)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get internal name from snapshot content.")
+		return nil, err
+	}
+
+	return &storage.SnapshotConfig{
+		Version:      config.OrchestratorAPIVersion,
+		Name:         snapshotContentName,
+		VolumeName:   volumeName,
+		InternalName: internalName,
+	}, nil
+}
+
+// getSnapshotContentByName returns a VolumeSnapshotContent by name if it exists.
+func (h *helper) getSnapshotContentByName(ctx context.Context, name string) (*vsv1.VolumeSnapshotContent, error) {
+	fields := LogFields{"snapshotContentName": name}
+	Logc(ctx).WithFields(fields).Trace(">>>> getSnapshotContentByName")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< getSnapshotContentByName")
+
+	vsc, err := h.snapClient.SnapshotV1().VolumeSnapshotContents().Get(ctx, name, getOpts)
+	if err != nil || vsc == nil {
+		statusErr, ok := err.(*apierrors.StatusError)
+		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return nil, errors.NotFoundError("snapshot content %s not found; %v", name, statusErr)
+		}
+		return nil, err
+	}
+
+	return vsc, nil
+}
+
+// getSnapshotInternalNameFromAnnotation gets the snapshotInternalName from an annotation on a VolumeSnapshotContent
+// for snapshot import.
+func (h *helper) getSnapshotInternalNameFromAnnotation(
+	ctx context.Context, vsc *vsv1.VolumeSnapshotContent,
+) (string, error) {
+	if vsc == nil {
+		return "", fmt.Errorf("cannot get snapshot internal name")
+	}
+
+	fields := LogFields{"snapshotContentName": vsc.Name}
+	Logc(ctx).WithFields(fields).Trace(">>>> getSnapshotInternalNameFromAnnotation")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< getSnapshotInternalNameFromAnnotation")
+
+	// If the internal name annotation is not present, fail.
+	internalName, ok := vsc.Annotations[AnnInternalSnapshotName]
+	if !ok || internalName == "" {
+		return "", errors.NotFoundError(
+			fmt.Sprintf("internal snapshot name not present on snapshot content %s", vsc.Name),
+		)
+	}
+
+	fields["internalName"] = internalName
+	Logc(ctx).WithFields(fields).Debug("Discovered snapshot internal name.")
+	return internalName, nil
 }
 
 // RecordVolumeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
@@ -425,6 +512,14 @@ func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 	} else {
 		h.eventRecorder.Event(node, mapEventType(eventType), reason, message)
 	}
+}
+
+// IsValidResourceName determines if a string meets the Kubernetes requirements for object names.
+func (h *helper) IsValidResourceName(name string) bool {
+	if len(name) > maxResourceNameLength {
+		return false
+	}
+	return utils.DNS1123DomainRegex.MatchString(name)
 }
 
 // mapEventType maps between K8S API event types and Trident CSI helper event types.  The

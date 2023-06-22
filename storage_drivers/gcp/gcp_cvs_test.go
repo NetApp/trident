@@ -1525,7 +1525,7 @@ func TestCreateClone_NoSnapshot_CreateSnapshotErrors(t *testing.T) {
 }
 
 func TestCreateClone_ExistingSnapshot_GetSnapshotErrors(t *testing.T) {
-	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshot: "present"}
+	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshotInternal: "present"}
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 	srcVol := &api.Volume{Region: d.Config.Region, Name: "vol-name"}
@@ -1549,7 +1549,7 @@ func TestCreateClone_ExistingSnapshot_GetSnapshotErrors(t *testing.T) {
 }
 
 func TestCreateClone_UnsetPool(t *testing.T) {
-	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshot: "present"}
+	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshotInternal: "present"}
 	volConfig, _ := getCreateVolumeStructs()
 
 	gcpClient, d := newMockGCPDriver(t)

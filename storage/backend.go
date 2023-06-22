@@ -192,14 +192,6 @@ type UpdateBackendStateRequest struct {
 	State string `json:"state"`
 }
 
-type NotManagedError struct {
-	volumeName string
-}
-
-func (e *NotManagedError) Error() string {
-	return fmt.Sprintf("volume %s is not managed by Trident", e.volumeName)
-}
-
 type BackendState string
 
 const (
@@ -418,17 +410,18 @@ func (b *StorageBackend) CloneVolume(
 	Logc(ctx).WithFields(LogFields{
 		"backend":                cloneVolConfig.Name,
 		"backendUUID":            b.backendUUID,
-		"storage_class":          cloneVolConfig.StorageClass,
-		"source_volume":          cloneVolConfig.CloneSourceVolume,
-		"source_volume_internal": cloneVolConfig.CloneSourceVolumeInternal,
-		"source_snapshot":        cloneVolConfig.CloneSourceSnapshot,
-		"clone_volume":           cloneVolConfig.Name,
-		"clone_volume_internal":  cloneVolConfig.InternalName,
+		"storageClass":           cloneVolConfig.StorageClass,
+		"sourceVolume":           cloneVolConfig.CloneSourceVolume,
+		"sourceVolumeInternal":   cloneVolConfig.CloneSourceVolumeInternal,
+		"sourceSnapshot":         cloneVolConfig.CloneSourceSnapshot,
+		"sourceSnapshotInternal": cloneVolConfig.CloneSourceSnapshotInternal,
+		"cloneVolume":            cloneVolConfig.Name,
+		"cloneVolumeInternal":    cloneVolConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
 	// Ensure volume is managed
 	if cloneVolConfig.ImportNotManaged {
-		return nil, &NotManagedError{cloneVolConfig.InternalName}
+		return nil, errors.NotManagedError("volume %s is not managed by Trident", cloneVolConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -626,7 +619,7 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error {
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -657,7 +650,7 @@ func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConf
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{oldName}
+		return errors.NotManagedError("volume %s is not managed by Trident", oldName)
 	}
 
 	if b.state != Online {
@@ -687,7 +680,7 @@ func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConf
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
 		b.RemoveCachedVolume(volConfig.Name)
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -720,12 +713,13 @@ func (b *StorageBackend) CanSnapshot(ctx context.Context, snapConfig *SnapshotCo
 func (b *StorageBackend) GetSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) (*Snapshot, error) {
-	Logc(ctx).WithFields(LogFields{
-		"backend":        b.name,
-		"volume":         snapConfig.Name,
-		"volumeInternal": snapConfig.InternalName,
-		"snapshotName":   snapConfig.Name,
-	}).Debug("GetSnapshot.")
+	fields := LogFields{
+		"backend":              b.name,
+		"volumeName":           snapConfig.VolumeName,
+		"snapshotName":         snapConfig.Name,
+		"snapshotInternalName": snapConfig.InternalName,
+	}
+	Logc(ctx).WithFields(fields).Debug("GetSnapshot.")
 
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
@@ -737,13 +731,11 @@ func (b *StorageBackend) GetSnapshot(
 		return nil, err
 	} else if snapshot == nil {
 		// No error and no snapshot means the snapshot doesn't exist.
+		Logc(ctx).WithFields(fields).Debug("Snapshot not found.")
 
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": snapConfig.Name,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}).Debug("Snapshot not found.")
-
-		return nil, fmt.Errorf("snapshot %s on volume %s not found", snapConfig.Name, snapConfig.VolumeName)
+		return nil, errors.NotFoundError(
+			fmt.Sprintf("snapshot %s of volume %s not found", snapConfig.Name, snapConfig.VolumeName),
+		)
 	} else {
 		return snapshot, nil
 	}
@@ -776,7 +768,7 @@ func (b *StorageBackend) CreateSnapshot(
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return nil, &NotManagedError{volConfig.InternalName}
+		return nil, errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -820,7 +812,7 @@ func (b *StorageBackend) RestoreSnapshot(
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -836,15 +828,20 @@ func (b *StorageBackend) DeleteSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) error {
 	Logc(ctx).WithFields(LogFields{
-		"backend":        b.name,
-		"volume":         snapConfig.Name,
-		"volumeInternal": snapConfig.InternalName,
-		"snapshot":       snapConfig.Name,
+		"backend":          b.name,
+		"volumeName":       snapConfig.VolumeName,
+		"snapInternalName": snapConfig.InternalName,
+		"snapshotName":     snapConfig.Name,
 	}).Debug("Attempting snapshot delete.")
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
+	}
+
+	// Ensure snapshot is managed
+	if snapConfig.ImportNotManaged {
+		return errors.NotManagedError("source volume %s is not managed by Trident", snapConfig.InternalName)
 	}
 
 	// Ensure backend is ready

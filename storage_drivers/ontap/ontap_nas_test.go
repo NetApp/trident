@@ -647,10 +647,10 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 	driver.Config.SplitOnClone = "false"
 
 	volConfig := &storage.VolumeConfig{
-		Size:                "1g",
-		Encryption:          "false",
-		FileSystem:          "nfs",
-		CloneSourceSnapshot: "flexvol",
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
 	}
 
 	flexVol := api.Volume{
@@ -671,7 +671,7 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 			mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
 			mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
-				volConfig.CloneSourceSnapshot, false).Return(nil)
+				volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 
@@ -824,10 +824,10 @@ func TestOntapNasStorageDriverVolumeClone_CreateFail(t *testing.T) {
 	driver.Config.NASType = sa.SMB
 
 	volConfig := &storage.VolumeConfig{
-		Size:                "1g",
-		Encryption:          "false",
-		FileSystem:          "nfs",
-		CloneSourceSnapshot: "flexvol",
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
 	}
 
 	flexVol := api.Volume{
@@ -839,7 +839,7 @@ func TestOntapNasStorageDriverVolumeClone_CreateFail(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
-		volConfig.CloneSourceSnapshot, false).Return(fmt.Errorf("create clone fail"))
+		volConfig.CloneSourceSnapshotInternal, false).Return(fmt.Errorf("create clone fail"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -858,10 +858,10 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	driver.Config.NASType = sa.SMB
 
 	volConfig := &storage.VolumeConfig{
-		Size:                "1g",
-		Encryption:          "false",
-		FileSystem:          "nfs",
-		CloneSourceSnapshot: "flexvol",
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
 	}
 
 	flexVol := api.Volume{
@@ -873,7 +873,7 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
-		volConfig.CloneSourceSnapshot, false).Return(nil)
+		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)

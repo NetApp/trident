@@ -956,7 +956,7 @@ func (d *NFSStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":   "CreateClone",

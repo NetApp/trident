@@ -65,6 +65,9 @@ var (
 	NFSVersionMajorRegex      = regexp.MustCompile(`^(nfsvers|vers)=(?P<major>\d)$`)
 	NFSVersionMajorMinorRegex = regexp.MustCompile(`^(nfsvers|vers)=(?P<major>\d)\.(?P<minor>\d)$`)
 	NFSVersionMinorRegex      = regexp.MustCompile(`^minorversion=(?P<minor>\d)$`)
+
+	DNS1123LabelRegex  = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
+	DNS1123DomainRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
 )
 
 // ///////////////////////////////////////////////////////////////////////////
