@@ -52,6 +52,7 @@ const (
 	AnnMirrorRelationship = annPrefix + "/mirrorRelationship"
 	AnnVolumeShareFromPVC = annPrefix + "/shareFromPVC"
 	AnnVolumeShareToNS    = annPrefix + "/shareToNamespace"
+	AnnReadOnlyClone      = annPrefix + "/readOnlyClone"
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{

@@ -2163,6 +2163,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	if volumeConfig.SplitOnClone != "" {
 		cloneConfig.SplitOnClone = volumeConfig.SplitOnClone
 	}
+	cloneConfig.ReadOnlyClone = volumeConfig.ReadOnlyClone
 
 	// If it's from snapshot, we need the LUKS passphrases value from the snapshot
 	isLUKS, err := strconv.ParseBool(cloneConfig.LUKSEncryption)
@@ -4869,7 +4870,9 @@ func (o *TridentOrchestrator) PeriodicallyReconcileBackendState(pollInterval tim
 	}
 }
 
-func (o *TridentOrchestrator) AddNode(ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback) (err error) {
+func (o *TridentOrchestrator) AddNode(
+	ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback,
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {

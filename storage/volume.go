@@ -39,6 +39,7 @@ type VolumeConfig struct {
 	CloneSourceVolumeInternal string                 `json:"cloneSourceVolumeInternal"`
 	CloneSourceSnapshot       string                 `json:"cloneSourceSnapshot"`
 	SplitOnClone              string                 `json:"splitOnClone"`
+	ReadOnlyClone             bool                   `json:"readOnlyClone"`
 	QosPolicy                 string                 `json:"qosPolicy,omitempty"`
 	AdaptiveQosPolicy         string                 `json:"adaptiveQosPolicy,omitempty"`
 	Qos                       string                 `json:"qos,omitempty"`

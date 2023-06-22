@@ -461,6 +461,15 @@ func getVolumeConfig(
 		volumeMode = &volumeModeVal
 	}
 
+	if getAnnotation(annotations, AnnReadOnlyClone) == "" {
+		annotations[AnnReadOnlyClone] = "false"
+	}
+
+	readOnlyClone, err := strconv.ParseBool(getAnnotation(annotations, AnnReadOnlyClone))
+	if err != nil {
+		Logc(ctx).WithError(err).Warning("Unable to parse readOnlyClone annotation into bool.")
+	}
+
 	if getAnnotation(annotations, AnnFileSystem) == "" {
 		annotations[AnnFileSystem] = "ext4"
 	}
@@ -486,6 +495,7 @@ func getVolumeConfig(
 		BlockSize:           getAnnotation(annotations, AnnBlockSize),
 		FileSystem:          getAnnotation(annotations, AnnFileSystem),
 		SplitOnClone:        getAnnotation(annotations, AnnSplitOnClone),
+		ReadOnlyClone:       readOnlyClone,
 		VolumeMode:          config.VolumeMode(*volumeMode),
 		AccessMode:          accessMode,
 		ImportOriginalName:  getAnnotation(annotations, AnnImportOriginalName),
