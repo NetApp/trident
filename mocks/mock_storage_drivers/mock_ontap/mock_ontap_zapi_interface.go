@@ -1810,6 +1810,21 @@ func (mr *MockZapiClientInterfaceMockRecorder) SnapshotDelete(arg0, arg1 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotDelete), arg0, arg1)
 }
 
+// SnapshotInfo mocks base method.
+func (m *MockZapiClientInterface) SnapshotInfo(arg0, arg1 string) (*azgo.SnapshotGetIterResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SnapshotInfo", arg0, arg1)
+	ret0, _ := ret[0].(*azgo.SnapshotGetIterResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SnapshotInfo indicates an expected call of SnapshotInfo.
+func (mr *MockZapiClientInterfaceMockRecorder) SnapshotInfo(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotInfo", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotInfo), arg0, arg1)
+}
+
 // SnapshotList mocks base method.
 func (m *MockZapiClientInterface) SnapshotList(arg0 string) (*azgo.SnapshotGetIterResponse, error) {
 	m.ctrl.T.Helper()

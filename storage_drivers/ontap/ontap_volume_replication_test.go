@@ -174,9 +174,14 @@ func TestPromoteMirror_WaitForSnapshot(t *testing.T) {
 		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
 		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyZAPITypeAsync}, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, localFlexvolName).Times(1).Return(api.Snapshots{
-		api.Snapshot{Name: "snapshot-1", CreateTime: "1"},
-	}, nil)
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		"snapshot-a", localFlexvolName).Return(
+		api.Snapshot{
+			CreateTime: "1",
+			Name:       "snapshot-1",
+		},
+		nil)
 
 	wait, err := promoteMirror(ctx, localFlexvolName, remoteVolumeHandle, "volume-a/snapshot-a", replicationPolicy,
 		mockAPI)
@@ -195,9 +200,15 @@ func TestPromoteMirror_FoundSnapshot(t *testing.T) {
 		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
 		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyZAPITypeAsync}, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, localFlexvolName).Times(1).Return(api.Snapshots{
-		api.Snapshot{Name: "snapshot-a", CreateTime: "1"},
-	}, nil)
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		"snapshot-a", localFlexvolName).Return(
+		api.Snapshot{
+			CreateTime: "1",
+			Name:       "snapshot-a",
+		},
+		nil)
+
 	mockAPI.EXPECT().SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
 		remoteSVMName).Times(1)
 	mockAPI.EXPECT().SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
@@ -255,7 +266,10 @@ func TestPromoteMirror_SnapshotPresentError(t *testing.T) {
 		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
 		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyZAPITypeAsync}, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, localFlexvolName).Times(1).Return(nil,
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		"snapshot-a", localFlexvolName).Return(
+		api.Snapshot{},
 		api.ApiError("snapshot present error"))
 
 	wait, err := promoteMirror(ctx, localFlexvolName, remoteVolumeHandle, "volume-a/snapshot-a",

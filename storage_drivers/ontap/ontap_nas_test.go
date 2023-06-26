@@ -21,6 +21,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -1104,15 +1105,14 @@ func TestOntapNasStorageDriverVolumeGetSnapshot(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeUsedSize(ctx, "vol1").Return(1, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, "vol1").Return(snapshots, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		nil)
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -1157,15 +1157,11 @@ func TestOntapNasStorageDriverVolumeGetSnapshot_NoSnapshot(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeUsedSize(ctx, "vol1").Return(1, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, "vol1").Return(nil, fmt.Errorf("no snapshots found"))
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(
+		api.Snapshot{},
+		mockError)
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -1189,7 +1185,9 @@ func TestOntapNasStorageDriverVolumeGetSnapshot_NoError(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeUsedSize(ctx, "vol1").Return(0, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, "vol1").Return(nil, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(
+		api.Snapshot{},
+		errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapConfig.InternalName, snapConfig.VolumeInternalName)))
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -1273,17 +1271,17 @@ func TestOntapNasStorageDriverVolumeCreateSnapshot(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(true, nil)
 	mockAPI.EXPECT().VolumeUsedSize(ctx, "vol1").Return(1, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", "vol1").Return(nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, "vol1").Return(snapshots, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		snapConfig.InternalName, snapConfig.VolumeInternalName).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		nil)
 
 	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 

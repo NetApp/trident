@@ -2555,28 +2555,26 @@ func getVolumeSnapshot(
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-			"created":      snap.CreateTime,
-		}).Debug("Found snapshot.")
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
+		if errors.IsNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, err
 		}
 	}
 
-	return nil, nil
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(size),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // getVolumeSnapshotList returns the list of snapshots associated with the named volume.
@@ -2671,27 +2669,22 @@ func createFlexvolSnapshot(
 		return nil, err
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, snap := range snapshots {
-		if snap.Name == internalSnapName {
-			Logc(ctx).WithFields(LogFields{
-				"snapshotName": snapConfig.InternalName,
-				"volumeName":   snapConfig.VolumeInternalName,
-			}).Info("Snapshot created.")
-
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
-		}
-	}
-	return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, internalVolName)
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(size),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // cloneFlexvol creates a volume clone

@@ -3547,16 +3547,16 @@ func TestCreateSnapshot_Success(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		nil,
+	)
 
 	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -3578,11 +3578,6 @@ func TestCreateSnapshot_FailureErrorCheckingVolume(t *testing.T) {
 		InternalName:       "snap1",
 		VolumeInternalName: flexvol,
 	}
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
 
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, mockError)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -3607,11 +3602,6 @@ func TestCreateSnapshot_FailureNoVolumeExists(t *testing.T) {
 		InternalName:       "snap1",
 		VolumeInternalName: flexvol,
 	}
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
 
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(false, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -3637,12 +3627,6 @@ func TestCreateSnapshot_FailureSnapshotCreateFailed(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(mockError)
@@ -3653,7 +3637,7 @@ func TestCreateSnapshot_FailureSnapshotCreateFailed(t *testing.T) {
 	assert.Error(t, err, "expecting an error")
 }
 
-func TestCreateSnapshot_FailureSnapshotListFailed(t *testing.T) {
+func TestCreateSnapshot_FailureSnapshotInfoFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	volConfig := &storage.VolumeConfig{
 		Size:         "1g",
@@ -3668,16 +3652,16 @@ func TestCreateSnapshot_FailureSnapshotListFailed(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, mockError)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		mockError,
+	)
 
 	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -3700,13 +3684,13 @@ func TestCreateSnapshot_FailureNoSnapshots(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, nil)
-
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{},
+		mockError,
+	)
 	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Nil(t, snap, "result not nil")
@@ -3751,14 +3735,14 @@ func TestGetSnapshot_Success(t *testing.T) {
 		VolumeInternalName: "vol1",
 	}
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "snap1",
-	})
-
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		nil,
+	)
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -3779,10 +3763,11 @@ func TestGetSnapshot_FailureNoSnapshotReturned(t *testing.T) {
 		InternalName:       "snap1",
 		VolumeInternalName: flexvol,
 	}
-	snapshots := api.Snapshots{}
 
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{},
+		errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapConfig.InternalName, snapConfig.VolumeInternalName)))
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -3803,10 +3788,11 @@ func TestGetSnapshot_FailureErrorFetchingSnapshots(t *testing.T) {
 		InternalName:       "snap1",
 		VolumeInternalName: flexvol,
 	}
-	snapshots := api.Snapshots{}
 
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, mockError)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{},
+		mockError)
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 

@@ -2158,6 +2158,21 @@ func (c Client) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, 
 	return response, err
 }
 
+// SnapshotInfo returns a snapshot by name for a volume
+func (c Client) SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error) {
+	query := &azgo.SnapshotGetIterRequestQuery{}
+	snapshotInfo := azgo.NewSnapshotInfoType().
+		SetVolume(volumeName).
+		SetName(snapshotName)
+	query.SetSnapshotInfo(*snapshotInfo)
+
+	response, err := azgo.NewSnapshotGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
 // SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 func (c Client) SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error) {
 	response, err := azgo.NewSnapshotRestoreVolumeRequest().

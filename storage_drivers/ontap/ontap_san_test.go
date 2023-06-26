@@ -22,6 +22,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func getCommonConfig() *drivers.CommonStorageDriverConfig {
@@ -1878,11 +1879,13 @@ func TestOntapSanVolumeSnapshot(t *testing.T) {
 
 	mockAPI.EXPECT().LunSize(ctx, gomock.Any()).Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, snapshotConfig.InternalName, snapshotConfig.VolumeInternalName).Return(nil)
-	snapshot := api.Snapshot{
-		CreateTime: "",
-		Name:       snapshotConfig.InternalName,
-	}
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, snapshotConfig.VolumeInternalName).Return([]api.Snapshot{snapshot}, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		snapshotConfig.InternalName, snapshotConfig.VolumeInternalName).Return(
+		api.Snapshot{
+			CreateTime: "",
+			Name:       snapshotConfig.InternalName,
+		},
+		nil)
 
 	snap, err := driver.CreateSnapshot(ctx, snapshotConfig, volConfig)
 
@@ -1916,11 +1919,13 @@ func TestOntapSanVolumeSnapshot_SnapshotNotFound(t *testing.T) {
 
 	mockAPI.EXPECT().LunSize(ctx, gomock.Any()).Return(1073741824, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, snapshotConfig.InternalName, snapshotConfig.VolumeInternalName).Return(nil)
-	snapshot := api.Snapshot{
-		CreateTime: "",
-		Name:       snapshotConfig.Name,
-	}
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, snapshotConfig.VolumeInternalName).Return([]api.Snapshot{snapshot}, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		snapshotConfig.InternalName, snapshotConfig.VolumeInternalName).Return(
+		api.Snapshot{
+			CreateTime: "",
+			Name:       snapshotConfig.InternalName,
+		},
+		errors.NotFoundError("snapshot %v not found for volume %v", snapshotConfig.InternalName, snapshotConfig.VolumeInternalName))
 
 	_, err := driver.CreateSnapshot(ctx, snapshotConfig, volConfig)
 
@@ -3243,9 +3248,10 @@ func TestOntapSANStorageDriverPromoteMirror(t *testing.T) {
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, gomock.Any()).Return(&snapmirrorPolicy, nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(
 		&api.Snapmirror{State: api.SnapmirrorStateSynchronizing}, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, "volume-a").Times(1).Return(api.Snapshots{
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		"snapshot-a", "volume-a").Return(
 		api.Snapshot{Name: "snapshot-1", CreateTime: "1"},
-	}, nil)
+		nil)
 
 	mirror, err := driver.PromoteMirror(ctx, "volume-a",
 		"svm1:vol1", "volume-a/snapshot-a")
@@ -3491,14 +3497,14 @@ func TestOntapSanVolumeGetSnapshot(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 
-	snapshots := api.Snapshots{}
-	snapshots = append(snapshots, api.Snapshot{
-		CreateTime: "time",
-		Name:       "trident-pvc-1234_snap",
-	})
-
 	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, "trident-pvc-1234").Return(snapshots, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		snapshotConfig.InternalName, snapshotConfig.VolumeInternalName).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       snapshotConfig.InternalName,
+		},
+		nil)
 
 	snapshot, err := driver.GetSnapshot(ctx, snapshotConfig, volConfig)
 

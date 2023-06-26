@@ -250,28 +250,17 @@ func promoteMirror(
 
 // isSnapshotPresent returns whether the given snapshot is found on the snapmirror snapshot list
 func isSnapshotPresent(ctx context.Context, snapshotHandle, localInternalVolumeName string, d api.OntapAPI) (bool, error) {
-	found := false
-
 	_, snapshotName, err := storage.ParseSnapshotID(snapshotHandle)
 	if err != nil {
-		return found, err
+		return false, err
 	}
 
-	snapshots, err := d.VolumeSnapshotList(ctx, localInternalVolumeName)
+	snapshot, err := d.VolumeSnapshotInfo(ctx, snapshotName, localInternalVolumeName)
 	if err != nil {
-		return found, err
+		return false, err
 	}
 
-	for _, snapshot := range snapshots {
-		if snapshot.Name == snapshotName {
-			found = true
-		}
-	}
-	if !found {
-		Logc(ctx).WithField("snapshot", snapshotHandle).Debug("Snapshot not yet present.")
-		return found, nil
-	}
-	return found, nil
+	return snapshot.Name == snapshotName, nil
 }
 
 // getMirrorStatus returns the current state of a snapmirror relationship

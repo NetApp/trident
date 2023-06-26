@@ -275,6 +275,8 @@ type ZapiClientInterface interface {
 	SnapshotCreate(snapshotName, volumeName string) (*azgo.SnapshotCreateResponse, error)
 	// SnapshotList returns the list of snapshots associated with a volume
 	SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, error)
+	// SnapshotInfo returns a snapshot by name for a volume
+	SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error)
 	// SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 	SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error)
 	// DeleteSnapshot deletes a snapshot of a volume

@@ -19,6 +19,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -720,30 +721,26 @@ func getFlexvolSnapshot(
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-			"created":      snap.CreateTime,
-		}).Debug("Found snapshot.")
-
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
+		if errors.IsNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, err
 		}
 	}
 
-	return nil, nil
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(size),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot

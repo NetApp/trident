@@ -696,30 +696,26 @@ func getQtreeSnapshot(
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getQtreeSnapshot")
 
-	snapshots, err := client.VolumeSnapshotList(ctx, flexvol)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, flexvol)
 	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": snap.Name,
-			"volumeName":   snapConfig.VolumeInternalName,
-			"created":      snap.CreateTime,
-		}).Debug("Found snapshot.")
-
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(0),
-				State:     storage.SnapshotStateOnline,
-			}, nil
+		if errors.IsNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, err
 		}
 	}
 
-	return nil, nil
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   snapConfig.VolumeInternalName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(0),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
@@ -851,28 +847,22 @@ func createQtreeSnapshot(
 		return nil, err
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, flexvol)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, flexvol)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, snap := range snapshots {
-		if snap.Name == internalSnapName {
-			Logc(ctx).WithFields(LogFields{
-				"snapshotName": snapConfig.InternalName,
-				"volumeName":   snapConfig.VolumeInternalName,
-			}).Info("Snapshot created.")
-
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(0),
-				State:     storage.SnapshotStateOnline,
-			}, nil
-		}
-	}
-
-	return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, flexvol)
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   snapConfig.VolumeInternalName,
+		"created":      snap.CreateTime,
+	}).Debug("Snapshot created.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(0),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // CreateSnapshot creates a snapshot for the given volume

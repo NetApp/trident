@@ -1942,6 +1942,37 @@ func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 	return nil
 }
 
+func (d OntapAPIZAPI) VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error) {
+	emptyResult := Snapshot{}
+
+	snapListResponse, err := d.api.SnapshotInfo(snapshotName, sourceVolume)
+	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
+		return emptyResult, fmt.Errorf("error getting snapshot %v for volume %v: %v", snapshotName, sourceVolume, err)
+	}
+
+	if snapListResponse == nil {
+		return emptyResult, fmt.Errorf("unexpected error getting snapshot %v for volume %v", snapshotName, sourceVolume)
+	}
+
+	if snapListResponse.Result.NumRecords() == 0 {
+		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+	} else if snapListResponse.Result.NumRecords() > 1 {
+		return emptyResult, fmt.Errorf("should have exactly 1 record, not: %v", snapListResponse.Result.NumRecords())
+	}
+
+	if snapListResponse.Result.AttributesListPtr == nil || snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr == nil {
+		return emptyResult, fmt.Errorf("unexpected error getting snapshot %v for volume %v", snapshotName, sourceVolume)
+	}
+
+	snap := snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr[0]
+	result := Snapshot{
+		CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(utils.TimestampFormat),
+		Name:       snap.Name(),
+	}
+
+	return result, nil
+}
+
 func (d OntapAPIZAPI) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
 	snapListResponse, err := d.api.SnapshotList(sourceVolume)
 	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
