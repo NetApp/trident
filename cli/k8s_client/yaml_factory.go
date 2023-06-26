@@ -496,6 +496,7 @@ spec:
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
+          runAsNonRoot: false
           capabilities:
             drop:
             - all
@@ -2408,6 +2409,8 @@ metadata:
 spec:
   privileged: true
   allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - SYS_ADMIN
   hostIPC: true
   hostPID: true
   hostNetwork: true
