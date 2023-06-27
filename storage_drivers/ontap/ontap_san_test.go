@@ -1165,6 +1165,7 @@ func TestOntapSanVolumeClone(t *testing.T) {
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 	err := driver.CreateClone(ctx, volConfig, volConfig, pool1)
@@ -1261,6 +1262,7 @@ func TestOntapSanVolumeClone_ValidationTest(t *testing.T) {
 				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
 				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			},

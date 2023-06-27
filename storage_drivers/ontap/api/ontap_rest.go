@@ -1713,12 +1713,8 @@ func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 		return fmt.Errorf("could not create clone: %v", "unexpected result")
 	}
 
-	if pollErr := c.PollJobStatus(ctx, cloneCreateResult.Payload); pollErr != nil {
-		return pollErr
-	}
-
-	// ontap_common has something similar, but only for NVMe?, in cloneFlexvol there
-	return c.waitForVolume(ctx, cloneName)
+	// NOTE the callers of this function should perform their own existence checks based on type (vol or flexgroup)
+	return c.PollJobStatus(ctx, cloneCreateResult.Payload)
 }
 
 // ///////////////////////////////////////////////////////////////////////////

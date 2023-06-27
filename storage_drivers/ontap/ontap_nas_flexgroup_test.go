@@ -1386,7 +1386,12 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone(t *testing.T) {
 	volume := api.Volume{}
 	volume.Comment = "ontap"
 
-	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
+	// the first lookup should fail, the second should succeed
+	gomock.InOrder(
+		mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil),
+		mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil),
+	)
+
 	mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&volume, nil)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
@@ -1422,35 +1427,6 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_StoragePoolNil(t *testing.T) 
 }
 
 func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.T) {
-	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
-
-	pool1 := storage.NewStoragePool(nil, "pool1")
-	pool1.SetInternalAttributes(map[string]string{
-		SpaceReserve:      "none",
-		SnapshotPolicy:    "fake-snap-policy",
-		SnapshotReserve:   "10",
-		UnixPermissions:   "0755",
-		SnapshotDir:       "true",
-		ExportPolicy:      "fake-export-policy",
-		SecurityStyle:     "mixed",
-		Encryption:        "false",
-		TieringPolicy:     "",
-		QosPolicy:         "fake-qos-policy",
-		AdaptiveQosPolicy: "",
-		SplitOnClone:      "false",
-	})
-	driver.physicalPool = pool1
-	driver.Config.AutoExportPolicy = true
-
-	volume := api.Volume{}
-	volume.Comment = "ontap"
-
-	volConfig := &storage.VolumeConfig{
-		Size:       "400g",
-		Encryption: "false",
-		FileSystem: "nfs",
-	}
-
 	tests := []struct {
 		name       string
 		errMessage string
@@ -1469,131 +1445,156 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+
+			pool1 := storage.NewStoragePool(nil, "pool1")
+			pool1.SetInternalAttributes(map[string]string{
+				SpaceReserve:      "none",
+				SnapshotPolicy:    "fake-snap-policy",
+				SnapshotReserve:   "10",
+				UnixPermissions:   "0755",
+				SnapshotDir:       "true",
+				ExportPolicy:      "fake-export-policy",
+				SecurityStyle:     "mixed",
+				Encryption:        "false",
+				TieringPolicy:     "",
+				QosPolicy:         "fake-qos-policy",
+				AdaptiveQosPolicy: "",
+				SplitOnClone:      "false",
+			})
+			driver.physicalPool = pool1
+			driver.Config.AutoExportPolicy = true
+
+			volume := api.Volume{}
+			volume.Comment = "ontap"
+
+			volConfig := &storage.VolumeConfig{
+				Size:         "400g",
+				Encryption:   "false",
+				FileSystem:   "nfs",
+				Name:         "sourceVol",
+				InternalName: "sourceVol-internal",
+			}
+
+			cloneConfig := &storage.VolumeConfig{
+				Size:                      "400g",
+				Encryption:                "false",
+				FileSystem:                "nfs",
+				CloneSourceVolume:         volConfig.Name,
+				CloneSourceVolumeInternal: volConfig.InternalName,
+				CloneSourceSnapshot:       "",
+				Name:                      "clone1",
+				InternalName:              "clone1-internal",
+			}
+
+			flexgroup := api.Volume{
+				Name:    "flexgroup",
+				Comment: "flexgroup",
+			}
+
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
 			if test.name == "FlexgroupInfoFailed" {
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(nil, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, fmt.Errorf(test.errMessage))
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
 				assert.Error(t, result, "Original Flexgroup volume is found")
+
 			} else if test.name == "FlexgroupInfoNil" {
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(nil, nil)
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, nil)
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
 				assert.Error(t, result, "Original Flexgroup volume is found")
-			} else if test.name == "SupportsFeatureFailed" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
 
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+			} else if test.name == "SupportsFeatureFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(false)
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
-				assert.Error(t, result,
-					"Clone feature supported")
+				assert.Error(t, result, "Clone feature supported")
 				assert.Contains(t, result.Error(), "the ONTAPI version does not support FlexGroup cloning")
+
 			} else if test.name == "FlexgroupVolumeExists" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
-
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(true, nil)
+				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
 				assert.Error(t, result, "Clone created despite clone volume present")
-				assert.Contains(t, result.Error(), "volume  already exists")
+				assert.Contains(t, result.Error(), "volume "+cloneConfig.InternalName+" already exists")
+
 			} else if test.name == "FlexgroupVolumeExistsFailed" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
-
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(true, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, fmt.Errorf(test.errMessage))
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
 				assert.Error(t, result, "Clone created despite error in checking for existing volume")
-				assert.Contains(t, result.Error(), "error checking for existing volume")
-			} else if test.name == "FlexgroupSnapshotCreateFailed" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
+				assert.Contains(t, result.Error(), test.errMessage)
 
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+			} else if test.name == "FlexgroupSnapshotCreateFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).Return(false, nil)
+				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(),
 					gomock.Any()).Return(fmt.Errorf(test.errMessage))
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
 				assert.Error(t, result, "Clone created despite failed to create snapshot")
 				assert.Contains(t, result.Error(), "failed to create snapshot")
-			} else if test.name == "FlexgroupSetCommentFailed" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
 
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+			} else if test.name == "FlexgroupSetCommentFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).Return(false, nil)
+
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(),
 					gomock.Any()).Return(fmt.Errorf(test.errMessage))
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
 				assert.Error(t, result, "Clone created even with failed to set comment on flexgroup volume")
 				assert.Contains(t, result.Error(), "failed to set comment on flexgroup volume")
-			} else if test.name == "FlexgroupMountFailed" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
 
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+			} else if test.name == "FlexgroupMountFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).Return(false, nil)
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(),
 					gomock.Any()).Return(fmt.Errorf(test.errMessage))
 
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
 				assert.Error(t, result, "Clone volume mounted")
 				assert.Contains(t, result.Error(), test.errMessage)
-			} else if test.name == "FlexgroupSetQosPolicyGroupNameFailed" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
 
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+			} else if test.name == "FlexgroupSetQosPolicyGroupNameFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).Return(false, nil)
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -1601,21 +1602,19 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(),
 					gomock.Any()).Return(fmt.Errorf(test.errMessage))
 
-				volConfig.QosPolicy = "fake-qos-policy"
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
-				volConfig.QosPolicy = ""
+				cloneConfig.QosPolicy = "fake-qos-policy"
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 				assert.Error(t, result, "QosPolicy set on flexgroup volume")
 				assert.Contains(t, result.Error(), test.errMessage)
-			} else if test.name == "FlexgroupCloneSplitStartFailed" {
-				flexgroup := api.Volume{
-					Name:    "flexgroup",
-					Comment: "flexgroup",
-				}
 
-				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
+			} else if test.name == "FlexgroupCloneSplitStartFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).Return(false, nil)
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -1623,15 +1622,221 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(fmt.Errorf(
 					test.errMessage))
 
-				volConfig.SplitOnClone = "true"
-				result := driver.CreateClone(ctx, nil, volConfig, pool1)
-				volConfig.SplitOnClone = ""
+				cloneConfig.SplitOnClone = "true"
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 				assert.Error(t, result, "Clone created while error in splitting clone")
 				assert.Contains(t, result.Error(), "error splitting clone: error in splitting clone")
 			}
 		})
 	}
 }
+
+/*
+func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.T) {
+	tests := []struct {
+		name       string
+		errMessage string
+	}{
+		{"FlexgroupInfoFailed", "volume not found"},
+		{"FlexgroupInfoNil", ""}, // backend return empty list
+		{"SupportsFeatureFailed", ""},
+		{"FlexgroupVolumeExists", ""}, // Volume is present with clone name
+		{"FlexgroupVolumeExistsFailed", "failed to get volume"},
+		{"FlexgroupSnapshotCreateFailed", "failed to create snapshot"},
+		{"FlexgroupSetCommentFailed", "failed to set comment on flexgroup volume"},
+		{"FlexgroupMountFailed", "failed to mount flexgroup volume"},
+		{"FlexgroupSetQosPolicyGroupNameFailed", "failed to set QosPolicy on flexgroup volume"},
+		{"FlexgroupCloneSplitStartFailed", "error in splitting clone"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+
+			pool1 := storage.NewStoragePool(nil, "pool1")
+			pool1.SetInternalAttributes(map[string]string{
+				SpaceReserve:      "none",
+				SnapshotPolicy:    "fake-snap-policy",
+				SnapshotReserve:   "10",
+				UnixPermissions:   "0755",
+				SnapshotDir:       "true",
+				ExportPolicy:      "fake-export-policy",
+				SecurityStyle:     "mixed",
+				Encryption:        "false",
+				TieringPolicy:     "",
+				QosPolicy:         "fake-qos-policy",
+				AdaptiveQosPolicy: "",
+				SplitOnClone:      "false",
+			})
+			driver.physicalPool = pool1
+			driver.Config.AutoExportPolicy = true
+
+			volume := api.Volume{}
+			volume.Comment = "ontap"
+
+			volConfig := &storage.VolumeConfig{
+				Size:         "400g",
+				Encryption:   "false",
+				FileSystem:   "nfs",
+				Name:         "sourceVol",
+				InternalName: "sourceVol-internal",
+			}
+
+			cloneConfig := &storage.VolumeConfig{
+				Size:                      "400g",
+				Encryption:                "false",
+				FileSystem:                "nfs",
+				CloneSourceVolume:         volConfig.Name,
+				CloneSourceVolumeInternal: volConfig.InternalName,
+				CloneSourceSnapshot:       "",
+				Name:                      "clone1",
+				InternalName:              "clone1-internal",
+			}
+
+			flexgroup := api.Volume{
+				Name:    "flexgroup",
+				Comment: "flexgroup",
+			}
+
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+			if test.name == "FlexgroupInfoFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, fmt.Errorf(test.errMessage))
+
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
+
+				assert.Error(t, result, "Original Flexgroup volume is found")
+
+			} else if test.name == "FlexgroupInfoNil" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, nil)
+
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
+
+				assert.Error(t, result, "Original Flexgroup volume is found")
+
+			} else if test.name == "SupportsFeatureFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(false)
+
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
+
+				assert.Error(t, result, "Clone feature supported")
+				assert.Contains(t, result.Error(), "the ONTAPI version does not support FlexGroup cloning")
+
+			} else if test.name == "FlexgroupVolumeExists" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+				mockAPI.EXPECT().FlexgroupExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
+
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
+
+				assert.Error(t, result, "Clone created despite clone volume present")
+				assert.Contains(t, result.Error(), "volume "+cloneConfig.InternalName+" already exists")
+
+			} else if test.name == "FlexgroupVolumeExistsFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, fmt.Errorf(test.errMessage))
+
+				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
+
+				assert.Error(t, result, "Clone created despite error in checking for existing volume")
+				assert.Contains(t, result.Error(), test.errMessage)
+
+			} else if test.name == "FlexgroupSnapshotCreateFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(),
+					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
+
+				assert.Error(t, result, "Clone created despite failed to create snapshot")
+				assert.Contains(t, result.Error(), "failed to create snapshot")
+
+			} else if test.name == "FlexgroupSetCommentFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
+				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
+
+				assert.Error(t, result, "Clone created even with failed to set comment on flexgroup volume")
+				assert.Contains(t, result.Error(), "failed to set comment on flexgroup volume")
+
+			} else if test.name == "FlexgroupMountFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
+				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(),
+					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
+
+				assert.Error(t, result, "Clone volume mounted")
+				assert.Contains(t, result.Error(), test.errMessage)
+
+			} else if test.name == "FlexgroupSetQosPolicyGroupNameFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
+				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(),
+					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+
+				cloneConfig.QosPolicy = "fake-qos-policy"
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
+				assert.Error(t, result, "QosPolicy set on flexgroup volume")
+				assert.Contains(t, result.Error(), test.errMessage)
+
+			} else if test.name == "FlexgroupCloneSplitStartFailed" {
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
+				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
+				// the first lookup should fail, the second should succeed
+				gomock.InOrder(
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil),
+					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
+				)
+				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(fmt.Errorf(
+					test.errMessage))
+
+				cloneConfig.SplitOnClone = "true"
+				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
+				assert.Error(t, result, "Clone created while error in splitting clone")
+				assert.Contains(t, result.Error(), "error splitting clone: error in splitting clone")
+			}
+		})
+	}
+}
+*/
 
 func TestOntapNasSFlexgrouptorageDriverVolumeClone_BothQosPolicy(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
@@ -1777,7 +1982,11 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_SMBShareCreateFail(t *testing
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(false, nil)
+	// the first lookup should fail, the second should succeed
+	gomock.InOrder(
+		mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(false, nil),
+		mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(true, nil),
+	)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
 		volConfig.CloneSourceSnapshotInternal, true).Return(nil)
 	mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)

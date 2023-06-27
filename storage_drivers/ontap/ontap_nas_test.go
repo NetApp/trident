@@ -673,6 +673,7 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 			mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
 			mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
 				volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+			mockAPI.EXPECT().VolumeWaitForStates(ctx, "", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).Return("online", nil)
 			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 
@@ -875,6 +876,7 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
 		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, "", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).Return("online", nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)

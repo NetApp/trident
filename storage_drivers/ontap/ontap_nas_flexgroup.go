@@ -719,6 +719,10 @@ func cloneFlexgroup(
 		return err
 	}
 
+	if err = waitForFlexgroup(ctx, client, name); err != nil {
+		return err
+	}
+
 	if err = client.FlexgroupSetComment(ctx, name, name, labels); err != nil {
 		return err
 	}
@@ -742,6 +746,35 @@ func cloneFlexgroup(
 		if err := client.FlexgroupCloneSplitStart(ctx, name); err != nil {
 			return fmt.Errorf("error splitting clone: %v", err)
 		}
+	}
+
+	return nil
+}
+
+// waitForFlexgroup polls for the ONTAP flexgroup to exist, with backoff retry logic
+func waitForFlexgroup(ctx context.Context, c api.OntapAPI, volumeName string) error {
+	checkStatus := func() error {
+		// this checks using ZAPI or REST via the supplied OntapAPI instance
+		exists, err := c.FlexgroupExists(ctx, volumeName)
+		if !exists {
+			return fmt.Errorf("FlexGroup '%v' does not exit, will continue checking", volumeName)
+		}
+		return err
+	}
+	statusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("FlexGroup not found, waiting.")
+	}
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 1 * time.Minute
+
+	// Run the existence check using an exponential backoff
+	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithField("name", volumeName).Warnf("FlexGroup not found after %3.2f seconds.",
+			statusBackoff.MaxElapsedTime.Seconds())
+		return err
 	}
 
 	return nil
