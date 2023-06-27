@@ -338,6 +338,9 @@ type ZapiClientInterface interface {
 	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 	// Intended to be used on the source vserver
 	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
+	// SnapmirrorDestinationRelease removes all local snapmirror relationship metadata of the destination volume
+	// Intended to be used on the destination vserver
+	SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error)
 	// Intended to be from the destination vserver
 	SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName string) (*azgo.SnapmirrorDestroyResponse,
 		error)

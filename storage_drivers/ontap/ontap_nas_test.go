@@ -917,6 +917,7 @@ func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 			mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
 			mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
+			mockAPI.EXPECT().SnapmirrorRelease(ctx, volConfig.InternalName, svmName).Return(nil)
 			mockAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
 			if test.nasType == sa.SMB {
 				if test.smbShare == "" {
@@ -1002,6 +1003,7 @@ func TestOntapNasStorageDriverVolumeDestroy_Fail(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
 	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
 	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(fmt.Errorf("cannot delete volume"))
 
 	result := driver.Destroy(ctx, volConfig)
@@ -1035,6 +1037,7 @@ func TestOntapNasStorageDriverSMBShareDestroy_VolumeNotFound(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 			mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
 			mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+			mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
 			mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(nil)
 			if test.serverReturnError {
 				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(false,
@@ -1068,6 +1071,7 @@ func TestOntapNasStorageDriverSMBDestroy_Fail(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
 	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
 	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
 	mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(fmt.Errorf("cannot delete SMB share"))

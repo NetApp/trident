@@ -96,9 +96,22 @@ func reestablishMirror(
 	}
 
 	// Check if a snapmirror relationship already exists
-	snapmirror, err := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err != nil {
-		if api.IsNotFoundError(err) {
+	snapmirror, snapmirrorGetErr := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
+	if snapmirrorGetErr != nil {
+		if api.IsNotFoundError(snapmirrorGetErr) {
+			if replicationPolicy != "" {
+				snapmirrorPolicy, err := d.SnapmirrorPolicyGet(ctx, replicationPolicy)
+				if err != nil {
+					return err
+				}
+				if snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeSync() {
+					if err := d.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName); err != nil {
+						return err
+					}
+				}
+			}
+
 			// create and initialize snapmirror if not found
 			if err := d.SnapmirrorCreate(ctx,
 				localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
@@ -111,7 +124,7 @@ func reestablishMirror(
 				return err
 			}
 		} else {
-			return err
+			return snapmirrorGetErr
 		}
 	} else {
 		// If the snapmirror is already established we have nothing to do

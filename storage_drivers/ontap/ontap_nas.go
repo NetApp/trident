@@ -525,6 +525,13 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
+	// If flexvol has been a snapmirror source
+	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
 	if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
 		return err
 	}

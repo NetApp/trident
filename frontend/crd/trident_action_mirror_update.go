@@ -76,10 +76,6 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 		return
 	}
 
-	if tmr.Status.Conditions[0].ReplicationPolicy == "Sync" {
-		return fmt.Errorf("TAMU %s cannot be executed for TMR %s is a synchronous relationship", actionCR.Name,
-			actionCR.Spec.TMRName)
-	}
 	// Check the state of the TMR to determine if it is ready to be updated or not.
 	// A TMR in the process of establishing or reestablishing will be retried.
 	// A TMR that is in any other state than established or reestablished will return an error and not be retried.
@@ -92,8 +88,13 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 		remoteVolumeHandle = tmr.Status.Conditions[0].RemoteVolumeHandle
 		localPVCName = tmr.Status.Conditions[0].LocalPVCName
 	} else {
-		return fmt.Errorf("TAMU %s cannot be executed for TMR %s in %s state", actionCR.Name, actionCR.Spec.TMRName,
-			tmr.Status.Conditions[0].MirrorState)
+		return fmt.Errorf("mirror update failed: TAMU %s cannot be executed for TMR %s in %s state",
+			actionCR.Name, actionCR.Spec.TMRName, tmr.Status.Conditions[0].MirrorState)
+	}
+
+	if tmr.Status.Conditions[0].ReplicationPolicy == "Sync" {
+		return fmt.Errorf("mirror update failed: TAMU %s cannot be executed for TMR %s is a synchronous relationship",
+			actionCR.Name, actionCR.Spec.TMRName)
 	}
 
 	// Check if local PVC exists

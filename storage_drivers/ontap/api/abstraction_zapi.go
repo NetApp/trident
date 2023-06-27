@@ -2075,15 +2075,23 @@ func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(
 ) error {
 	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName)
 	if snapDeleteResponse != nil {
-		if snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
+		if snapDeleteResponse.Result.ResultErrnoAttr != "" && snapDeleteResponse.Result.ResultErrnoAttr != azgo.
+			EOBJECTNOTFOUND {
 			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
 		}
 	}
 
 	// Ensure no leftover snapmirror metadata
-	err = d.api.SnapmirrorRelease(localInternalVolumeName, localSVMName)
-	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName, err)
+	releaseResponse, err := d.api.SnapmirrorDestinationRelease(localInternalVolumeName)
+	if releaseResponse != nil {
+		if releaseResponse.Result.ResultErrnoAttr == azgo.EAPIERROR {
+			return errors.ReconcileIncompleteError("operation failed, retrying, err: %v", err)
+		}
+		if releaseResponse.Result.ResultErrnoAttr != "" && releaseResponse.Result.ResultErrnoAttr != azgo.
+			SOURCEINFONOTFOUND {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName,
+				releaseResponse.Result.ResultReasonAttr)
+		}
 	}
 
 	return nil
@@ -2093,7 +2101,9 @@ func (d OntapAPIZAPI) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, 
 	// Ensure no leftover snapmirror metadata
 	err := d.api.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
 	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		if !errors.IsNotFoundError(err) {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		}
 	}
 
 	return nil
@@ -2335,6 +2345,9 @@ func (d OntapAPIZAPI) SnapmirrorAbort(
 	if err = azgo.GetError(ctx, snapAbort, err); err != nil {
 		zerr, ok := err.(azgo.ZapiError)
 		if !ok || zerr.Code() != azgo.ENOTRANSFERINPROGRESS {
+			if zerr.Code() == azgo.EOBJECTNOTFOUND {
+				return nil
+			}
 			return NotReadyError(fmt.Sprintf("Snapmirror abort failed, still aborting: %v", err.Error()))
 		}
 	}

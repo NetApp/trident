@@ -1631,6 +1631,21 @@ func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDeleteViaDestination(ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDeleteViaDestination", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDeleteViaDestination), arg0, arg1)
 }
 
+// SnapmirrorDestinationRelease mocks base method.
+func (m *MockZapiClientInterface) SnapmirrorDestinationRelease(arg0 string) (*azgo.SnapmirrorReleaseResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SnapmirrorDestinationRelease", arg0)
+	ret0, _ := ret[0].(*azgo.SnapmirrorReleaseResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SnapmirrorDestinationRelease indicates an expected call of SnapmirrorDestinationRelease.
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDestinationRelease(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDestinationRelease", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDestinationRelease), arg0)
+}
+
 // SnapmirrorGet mocks base method.
 func (m *MockZapiClientInterface) SnapmirrorGet(arg0, arg1, arg2, arg3 string) (*azgo.SnapmirrorGetResponse, error) {
 	m.ctrl.T.Helper()

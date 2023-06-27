@@ -727,6 +727,13 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		}
 	}
 
+	// If flexvol has been a snapmirror source
+	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
 	// Delete the Flexvol & LUN
 	err = d.API.VolumeDestroy(ctx, name, true)
 	if err != nil {

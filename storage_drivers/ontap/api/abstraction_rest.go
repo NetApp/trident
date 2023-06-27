@@ -1620,7 +1620,13 @@ func (d OntapAPIREST) SnapmirrorDeleteViaDestination(
 	err := d.api.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName)
 	if err != nil {
 		if !IsNotFoundError(err) {
-			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
+			if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+				if restErr.Error != nil && restErr.Error.Code != nil &&
+					*restErr.Error.Code != SNAPMIRROR_MODIFICATION_IN_PROGRESS {
+					return fmt.Errorf("error deleting snapmirror info for volume %v: %v",
+						localInternalVolumeName, err)
+				}
+			}
 		}
 	}
 
@@ -1639,7 +1645,9 @@ func (d OntapAPIREST) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, 
 	// Ensure no leftover snapmirror metadata
 	err := d.api.SnapmirrorRelease(ctx, sourceFlexvolName, sourceSVMName)
 	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		if !IsNotFoundError(err) {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		}
 	}
 
 	return nil

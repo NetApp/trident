@@ -2746,6 +2746,8 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			_, err = releaseRequest.ExecuteUsing(c.zr)
 			if err != nil {
 				return err
+			} else {
+				return nil
 			}
 		} else {
 			Logc(context.Background()).WithFields(LogFields{
@@ -2753,7 +2755,17 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			}).Warn("Missing destination location.")
 		}
 	}
-	return nil
+	return errors.NotFoundError("could not find snapmirror relationship to release")
+}
+
+// SnapmirrorDestinationRelease removes all local snapmirror relationship metadata of the destination volume
+// Intended to be used on the destination vserver
+func (c Client) SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error) {
+	request := azgo.NewSnapmirrorReleaseRequest()
+	request.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	request.SetRelationshipInfoOnly(true)
+
+	return request.ExecuteUsing(c.zr)
 }
 
 // Intended to be from the destination vserver

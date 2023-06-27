@@ -5275,7 +5275,7 @@ func (c RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, so
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(string(*relationship.UUID))
-	params.WithSourceInfoOnly(utils.Ptr(true))
+	params.WithSourceOnly(utils.Ptr(true))
 
 	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
 	if err != nil {
@@ -5293,9 +5293,17 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 	ctx context.Context, localFlexvolName, localSVMName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to delete it
-	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, localSVMName, "", "")
+	relationshipUUID := ""
+	relationship, err := c.SnapmirrorListDestinations(ctx, localFlexvolName, localSVMName, "", "")
 	if err != nil {
-		return err
+		if IsNotFoundError(err) {
+			relationship, err = c.SnapmirrorGet(ctx, localFlexvolName, localSVMName, "", "")
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 	if relationship == nil {
 		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
@@ -5304,16 +5312,40 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
 	}
 
+	relationshipUUID = string(*relationship.UUID)
+
 	// now, delete the relationship via its UUID
 	params := snapmirror.NewSnapmirrorRelationshipDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
-	params.SetUUID(string(*relationship.UUID))
+	params.SetUUID(relationshipUUID)
 	params.WithDestinationOnly(utils.Ptr(true))
 
 	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
 	if err != nil {
-		return err
+		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST {
+				return fmt.Errorf(*restErr.Error.Message)
+			}
+		} else {
+			return err
+		}
+	}
+	// now, delete the relationship via its UUID
+	params2 := snapmirror.NewSnapmirrorRelationshipDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params2.SetContext(ctx)
+	params2.SetHTTPClient(c.httpClient)
+	params2.SetUUID(relationshipUUID)
+	params2.WithSourceInfoOnly(utils.Ptr(true))
+	snapmirrorRelationshipDeleteAccepted, err = c.api.Snapmirror.SnapmirrorRelationshipDelete(params2, c.authInfo)
+	if err != nil {
+		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code == ENTRY_DOESNT_EXIST {
+				return nil
+			}
+		} else {
+			return err
+		}
 	}
 	if snapmirrorRelationshipDeleteAccepted == nil {
 		return fmt.Errorf("unexpected response from snapmirror relationship delete")
