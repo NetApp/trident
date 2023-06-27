@@ -111,6 +111,10 @@ var (
 		config.ISCSISelfHealingWaitTime,
 		"Wait time after which iSCSI self-healing attempts to fix stale sessions")
 
+	// NVMe
+	nvmeSelfHealingInterval = flag.Duration("nvme_self_healing_interval", config.NVMeSelfHealingInterval,
+		"Interval at which the NVMe self-healing thread is invoked")
+
 	// core
 	backendStoragePollInterval = flag.Duration("backend_storage_poll_interval", config.BackendStoragePollInterval,
 		"Interval at which core polls backend storage for its state")
@@ -438,14 +442,14 @@ func main() {
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 		}
 		if err != nil {
 			Log().Fatalf("Unable to start the CSI frontend. %v", err)

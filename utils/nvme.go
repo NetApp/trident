@@ -5,6 +5,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -62,10 +63,10 @@ func (s *NVMeSubsystem) GetConnectionStatus() NVMeSubsystemConnectionStatus {
 	return NVMeSubsystemDisconnected
 }
 
-// isLIFPresent checks if there is a path present in the subsystem corresponding to the LIF.
-func (s *NVMeSubsystem) isLIFPresent(ip string) bool {
+// IsNetworkPathPresent checks if there is a path present in the subsystem corresponding to the LIF.
+func (s *NVMeSubsystem) IsNetworkPathPresent(ip string) bool {
 	for _, path := range s.Paths {
-		if extractNVMeLIF(path.Address) == ip {
+		if extractIPFromNVMeAddress(path.Address) == ip {
 			return true
 		}
 	}
@@ -75,18 +76,24 @@ func (s *NVMeSubsystem) isLIFPresent(ip string) bool {
 
 // Connect creates paths corresponding to all the targetIPs for the subsystem
 // and updates the in-memory subsystem path details.
-func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string) error {
+func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string, connectOnly bool) error {
 	updatePaths := false
 	var errors error
 
 	for _, LIF := range nvmeTargetIps {
-		if !s.isLIFPresent(LIF) {
+		if !s.IsNetworkPathPresent(LIF) {
 			if err := ConnectSubsystemToHost(ctx, s.NQN, LIF); err != nil {
 				errors = multierr.Append(errors, err)
 			} else {
 				updatePaths = true
 			}
 		}
+	}
+
+	// We set connectOnly true only when we connect in NVMe self-healing thread. We don't want to update any in-memory
+	// structures in that case.
+	if connectOnly {
+		return errors
 	}
 
 	// updatePaths == true indicates that at least one path/connection was created for the subsystem.
@@ -121,18 +128,22 @@ func (s *NVMeSubsystem) Disconnect(ctx context.Context) error {
 
 // GetNamespaceCount returns the number of namespaces mapped to the subsystem.
 func (s *NVMeSubsystem) GetNamespaceCount(ctx context.Context) (int, error) {
+	var combinedError error
+
 	for _, path := range s.Paths {
 		count, err := GetNamespaceCountForSubsDevice(ctx, "/dev/"+path.Name)
 		if err != nil {
-			Logc(ctx).WithField("Error", err).Errorf("Failed to get namespace count: %v", err)
-			return 0, fmt.Errorf("failed to get namespace count: %v", err)
+			Logc(ctx).WithField("Error", err).Warnf("Failed to get namespace count: %v", err)
+			combinedError = multierr.Append(combinedError, err)
+			continue
 		}
 
 		return count, nil
 	}
 
-	// Couldn't find any sessions, so no namespaces are attached to this subsystem
-	return 0, nil
+	// Couldn't find any sessions, so no namespaces are attached to this subsystem.
+	// But if there was error getting the number of namespaces from all the paths, return error.
+	return 0, combinedError
 }
 
 // getNVMeDevice returns the NVMe device corresponding to nsPath namespace.
@@ -194,8 +205,8 @@ func (nh *NVMeHandler) NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	return NVMeActiveOnHost(ctx)
 }
 
-// extractNVMeLIF extracts IP address from NVMeSubsystem's Path.Address field.
-func extractNVMeLIF(a string) string {
+// extractIPFromNVMeAddress extracts IP address from NVMeSubsystem's Path.Address field.
+func extractIPFromNVMeAddress(a string) string {
 	after := strings.TrimPrefix(a, TransportAddressEqualTo)
 	// Address contents in Rhel - "traddr=10.193.108.74,trsvcid=4420".
 	before, _, _ := strings.Cut(after, ",")
@@ -240,7 +251,7 @@ func AttachNVMeVolume(ctx context.Context, name, mountpoint string, publishInfo 
 
 	if connectionStatus != NVMeSubsystemConnected {
 		// connect to the subsystem from this host -> nvme connect call
-		if err := nvmeSubsys.Connect(ctx, publishInfo.NVMeTargetIPs); err != nil {
+		if err := nvmeSubsys.Connect(ctx, publishInfo.NVMeTargetIPs, false); err != nil {
 			return err
 		}
 	}
@@ -319,4 +330,223 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 	}
 
 	return nil
+}
+
+// Self-healing functions
+
+// NewNVMeSessionData returns NVMeSessionData object with the specified subsystem, targetIPs and default values.
+func NewNVMeSessionData(subsystem NVMeSubsystem, targetIPs []string) *NVMeSessionData {
+	return &NVMeSessionData{
+		Subsystem:      subsystem,
+		NVMeTargetIPs:  targetIPs,
+		LastAccessTime: time.Now(),
+		Remediation:    NoOp,
+	}
+}
+
+// SetRemediation updates the remediation value.
+func (sd *NVMeSessionData) SetRemediation(op NVMeOperation) {
+	sd.Remediation = op
+}
+
+func (sd *NVMeSessionData) IsTargetIPPresent(ip string) bool {
+	for _, existingIP := range sd.NVMeTargetIPs {
+		if existingIP == ip {
+			return true
+		}
+	}
+	return false
+}
+
+func (sd *NVMeSessionData) AddTargetIP(ip string) {
+	sd.NVMeTargetIPs = append(sd.NVMeTargetIPs, ip)
+}
+
+// NewNVMeSessions initializes and returns empty NVMeSession object pointer.
+func NewNVMeSessions() *NVMeSessions {
+	return &NVMeSessions{Info: make(map[string]*NVMeSessionData)}
+}
+
+// AddNVMeSession adds a new NVMeSession to the session map.
+func (s *NVMeSessions) AddNVMeSession(subsystem NVMeSubsystem, targetIPs []string) {
+	if s.Info == nil {
+		s.Info = make(map[string]*NVMeSessionData)
+	}
+
+	sd, ok := s.Info[subsystem.NQN]
+	if !ok {
+		s.Info[subsystem.NQN] = NewNVMeSessionData(subsystem, targetIPs)
+		return
+	}
+
+	// NVMeSession Already present. We won't reach here in case of PopulateCurrentNVMeSessions as all the sessions are
+	// unique in the case; unlike AddPublishedNVMeSession. Check if NVMeTargetIPs present in the existing session data
+	// match with the targetIPs sent in this function and update any missing IP.
+	for _, ip := range targetIPs {
+		if !sd.IsTargetIPPresent(ip) {
+			sd.AddTargetIP(ip)
+		}
+	}
+}
+
+// RemoveNVMeSession deletes NVMeSession corresponding to a given subsystem NQN.
+func (s *NVMeSessions) RemoveNVMeSession(subNQN string) {
+	if !s.IsEmpty() {
+		delete(s.Info, subNQN)
+	}
+}
+
+// CheckNVMeSessionExists queries if a particular NVMeSession is present using the subsystem NQN.
+func (s *NVMeSessions) CheckNVMeSessionExists(subNQN string) bool {
+	if s.IsEmpty() {
+		return false
+	}
+
+	_, ok := s.Info[subNQN]
+	return ok
+}
+
+// IsEmpty checks if the subsystem map is empty.
+func (s *NVMeSessions) IsEmpty() bool {
+	if s.Info == nil || len(s.Info) == 0 {
+		return true
+	}
+
+	return false
+}
+
+// ResetRemediationForAll updates the remediation for all the NVMeSessions to NoOp.
+func (s *NVMeSessions) ResetRemediationForAll() {
+	for _, sData := range s.Info {
+		sData.Remediation = NoOp
+	}
+}
+
+// AddPublishedNVMeSession adds the published NVMeSession to the given session map.
+func (nh *NVMeHandler) AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *VolumePublishInfo) {
+	if pubSessions == nil {
+		return
+	}
+
+	pubSessions.AddNVMeSession(NVMeSubsystem{NQN: publishInfo.NVMeSubsystemNQN}, publishInfo.NVMeTargetIPs)
+}
+
+// RemovePublishedNVMeSession deletes the  published NVMeSession from the given session map.
+func (nh *NVMeHandler) RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN string) {
+	if pubSessions == nil {
+		return
+	}
+
+	pubSessions.RemoveNVMeSession(subNQN)
+}
+
+// PopulateCurrentNVMeSessions populates the given session map with the current session present on the k8s node. This
+// is done by listing the existing NVMe namespaces using the nvme cli command.
+func (nh *NVMeHandler) PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error {
+	if currSessions == nil {
+		return fmt.Errorf("current NVMeSessions not initialized")
+	}
+
+	// Get the list of the subsystems currently present on the k8s node.
+	subs, err := GetNVMeSubsystemList(ctx)
+	if err != nil {
+		Logc(ctx).WithField("Error", err).Errorf("Failed to get subsystem list: %v", err)
+		return err
+	}
+
+	Logc(ctx).Debug("Populating current NVMe sessions.")
+	for index := range subs.Subsystems {
+		currSessions.AddNVMeSession(subs.Subsystems[index], []string{})
+	}
+
+	return nil
+}
+
+// SortSubsystemsUsingSessions sorts the subsystems in accordance to the LastAccessTime present in the NVMeSessionData.
+func SortSubsystemsUsingSessions(subs []NVMeSubsystem, pubSessions *NVMeSessions) {
+	if pubSessions == nil || pubSessions.IsEmpty() {
+		return
+	}
+
+	if len(subs) > 1 {
+		sort.Slice(subs, func(i, j int) bool {
+			iSub := subs[i]
+			jSub := subs[j]
+
+			iLastAccessTime := pubSessions.Info[iSub.NQN].LastAccessTime
+			jLastAccessTime := pubSessions.Info[jSub.NQN].LastAccessTime
+
+			return iLastAccessTime.Before(jLastAccessTime)
+		})
+	}
+}
+
+// InspectNVMeSessions compares and checks if the current sessions are in-line with the published sessions. If any
+// subsystem is missing any path in the current session (as compared with the published session), then it is added in
+// the subsToFix array for healing.
+func (nh *NVMeHandler) InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *NVMeSessions) []NVMeSubsystem {
+	var subsToFix []NVMeSubsystem
+	if pubSessions == nil || pubSessions.IsEmpty() {
+		return subsToFix
+	}
+
+	for pubNQN, pubSessionData := range pubSessions.Info {
+		if pubSessionData == nil {
+			continue
+		}
+
+		if currSessions == nil || !currSessions.CheckNVMeSessionExists(pubNQN) {
+			Logc(ctx).Warnf("Published nqn %s not present in current sessions.", pubNQN)
+			continue
+		}
+
+		// Published session equivalent is present in the list of current sessions.
+		currSessionData := currSessions.Info[pubNQN]
+		if currSessionData == nil {
+			continue
+		}
+
+		switch currSessionData.Subsystem.GetConnectionStatus() {
+		case NVMeSubsystemDisconnected:
+			// We can reconnect with all the subsystem paths in this case, but that leads to change in the NVMe device
+			// names which are already mounted. So, we don't do self-healing in this case. It is better that the Admin
+			// takes care of this issue and then restart the node.
+			Logc(ctx).Warnf("All the paths to %s subsystem are down. Please check the network connectivity to"+
+				" these IPs %v.", pubNQN, pubSessionData.NVMeTargetIPs)
+		case NVMeSubsystemPartiallyConnected:
+			// At least one path of the subsystem is connected. We should try to connect with other remaining paths.
+			pubSessionData.SetRemediation(ConnectOp)
+			subsToFix = append(subsToFix, currSessionData.Subsystem)
+			continue
+		}
+
+		// All/None of the paths are present for the subsystem
+		pubSessionData.LastAccessTime = time.Now()
+	}
+
+	SortSubsystemsUsingSessions(subsToFix, pubSessions)
+	return subsToFix
+}
+
+// RectifyNVMeSession applies the required remediation on the subsystemToFix to make it working again.
+func (nh *NVMeHandler) RectifyNVMeSession(ctx context.Context, subsystemToFix NVMeSubsystem, pubSessions *NVMeSessions) {
+	if pubSessions == nil || pubSessions.IsEmpty() {
+		return
+	}
+
+	pubSessionData := pubSessions.Info[subsystemToFix.NQN]
+	if pubSessionData == nil {
+		return
+	}
+
+	// Updating the access time as we are trying to do some NVMeOperation on this subsystem.
+	pubSessionData.LastAccessTime = time.Now()
+
+	if pubSessionData.Remediation == ConnectOp {
+		if err := subsystemToFix.Connect(ctx, pubSessionData.NVMeTargetIPs, true); err != nil {
+			Logc(ctx).Errorf("NVMe Self healing failed for subsystem %s; %v", subsystemToFix.NQN, err)
+		} else {
+			Logc(ctx).Infof("NVMe Self healing succeeded for %s", subsystemToFix.NQN)
+		}
+	}
 }
