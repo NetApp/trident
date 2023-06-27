@@ -20,6 +20,8 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
+const maskDisplayOfSnapshotStateOnline = storage.SnapshotState("") // Used for display in 'tridentctl' query
+
 var getSnapshotVolume string
 
 func init() {
@@ -132,6 +134,12 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 	if getSnapshotResponse.Snapshot == nil {
 		return storage.SnapshotExternal{}, fmt.Errorf("could not get snapshot %s: no snapshot returned",
 			snapshotID)
+	}
+
+	if getSnapshotResponse.Snapshot.State == storage.SnapshotStateOnline {
+		// Currently, this is used only for display, mask 'online' state as "".
+		// If in future any callers use this attribute, need to take care of it.
+		getSnapshotResponse.Snapshot.State = maskDisplayOfSnapshotStateOnline
 	}
 
 	return *getSnapshotResponse.Snapshot, nil
