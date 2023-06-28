@@ -2726,11 +2726,18 @@ func cloneFlexvol(
 		return err
 	}
 
-	desiredVolStates := []string{"online"}
-	abortVolStates := []string{"error"}
-	volState, err := client.VolumeWaitForStates(ctx, name, desiredVolStates, abortVolStates, maxFlexvolCloneWait)
-	if err != nil {
-		return fmt.Errorf("unable to create flexClone for volume %v, volState:%v", name, volState)
+	// NVMe clone is not ready by the time we return from VolumeCloneCreate.
+	// This check here makes sure that we don't fail the clone operation during the time clone is not ready
+	// Currently this change is done only for NVMe volumes but it should work with other volumes too if needed
+	if config.SANType == sa.NVMe {
+
+		desiredNVMeVolStates := []string{"online"}
+		abortNVMeVolStates := []string{"error"}
+		volState, err := client.VolumeWaitForStates(ctx, name, desiredNVMeVolStates, abortNVMeVolStates,
+			maxFlexvolCloneWait)
+		if err != nil {
+			return fmt.Errorf("unable to create flexClone for NVMe volume %v, volState:%v", name, volState)
+		}
 	}
 
 	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
@@ -2987,24 +2994,43 @@ func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volu
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
 }
 
-// ConstructOntapNASQTreeSMBVolumePath returns windows compatible volume path for Ontap NAS QTree
+// ConstructOntapNASQTreeVolumePath returns volume path for Ontap NAS QTree
 // Function accepts parameters in following way:
 // 1.smbShare : This takes the value given in backend config, without path prefix.
 // 2.flexVol : This takes the value of the parent volume, without path prefix.
-// 3.volumeName : This takes the value of volume's internal name,  without path prefix.
-// Example, ConstructOntapNASQTreeSMBVolumePath(ctx, "test_share", "flex-vol", "vol")
-func ConstructOntapNASQTreeSMBVolumePath(ctx context.Context, smbShare, flexVol, volumeName string) string {
-	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeSMBVolumePath")
-	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASQTreeSMBVolumePath")
+// 3.volConfig : This takes the value of volume configuration.
+// 4. protocol: This takes the value of the protocol for which the path needs to be created.
+// Example, ConstructOntapNASQTreeVolumePath(ctx, test.smbShare, "flex-vol", volConfig, sa.SMB)
+func ConstructOntapNASQTreeVolumePath(ctx context.Context, smbShare, flexvol string,
+	volConfig *storage.VolumeConfig, protocol string,
+) (completeVolumePath string) {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASQTreeVolumePath")
 
-	var completeVolumePath string
-	if smbShare != "" {
-		completeVolumePath = utils.WindowsPathSeparator + smbShare + utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
-	} else {
-		// If the user does not specify an SMB Share, Trident creates it with the same name as the parent flexVol volume name.
-		completeVolumePath = utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+	switch protocol {
+	case sa.NFS:
+		if volConfig.ReadOnlyClone {
+			completeVolumePath = fmt.Sprintf("/%s/%s/%s/%s", flexvol, volConfig.CloneSourceVolumeInternal,
+				".snapshot", volConfig.CloneSourceSnapshot)
+		} else {
+			completeVolumePath = fmt.Sprintf("/%s/%s", flexvol, volConfig.InternalName)
+		}
+	case sa.SMB:
+		var smbSharePath string
+		if smbShare != "" {
+			smbSharePath = smbShare + utils.WindowsPathSeparator
+		}
+		if volConfig.ReadOnlyClone {
+			completeVolumePath = fmt.Sprintf("\\%s%s\\%s\\%s\\%s", smbSharePath, flexvol,
+				volConfig.CloneSourceVolumeInternal, "~snapshot", volConfig.CloneSourceSnapshot)
+		} else {
+			completeVolumePath = fmt.Sprintf("\\%s%s\\%s", smbSharePath, flexvol, volConfig.InternalName)
+		}
+
+		// Replace unix styled path separator, if exists
+		completeVolumePath = strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator,
+			-1)
 	}
 
-	// Replace unix styled path separator, if exists
-	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+	return
 }

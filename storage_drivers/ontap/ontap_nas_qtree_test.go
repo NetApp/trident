@@ -591,10 +591,173 @@ func TestValidate_WithErrorInApiOperation(t *testing.T) {
 	assert.Error(t, result2, "Expected error when api fails to create export policy, got nil")
 }
 
-func TestCreateClone_NotSupported(t *testing.T) {
+func TestCreateClone_NotSupportedWithoutRO(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	result := driver.CreateClone(ctx, nil, &storage.VolumeConfig{}, getValidOntapNASPool())
 	assert.Error(t, result, "Expected error in CreateClone, got nil")
+}
+
+func TestCreateClone_Success_ROClone(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: true,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, nil)
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+	fmt.Println(result)
+
+	assert.NoError(t, result, "received error %v", result)
+}
+
+func TestCreateClone_FailureROCloneFalse(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       false,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+
+	assert.Error(t, result, "expected error")
+}
+
+func TestCreateClone_FailureWrongVolID(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          "wrong-volume-id",
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+
+	assert.Error(t, result, "expected error")
+}
+
+func TestCreateClone_FailureNoVolInfo(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: true,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, mockError)
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+	fmt.Println(result)
+
+	assert.Error(t, result, "expected error")
+}
+
+func TestCreateClone_FailureSnapDirFalse(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "false",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: false,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, nil)
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+
+	assert.Error(t, result, "expected error")
 }
 
 func TestImport_NotSupported(t *testing.T) {
@@ -718,8 +881,10 @@ func TestPublish_Success_WithNASTypeNone(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
 	volConfig := &storage.VolumeConfig{
-		Size:            "1g",
-		Encryption:      "false",
+		Size:       "1g",
+		Encryption: "false",
+		AccessInfo: utils.VolumeAccessInfo{NfsAccessInfo: utils.
+			NfsAccessInfo{NfsPath: "/testVol/testVolInternal"}},
 		FileSystem:      "nfs",
 		Name:            volName,
 		InternalName:    volNameInternal,
@@ -2041,6 +2206,41 @@ func TestCreateFollowup_Success_WithNASTypeSMB(t *testing.T) {
 		volNameInternal
 	assert.Equal(t, expectedSMBPath, volConfig.AccessInfo.SMBPath, "Incorrect SMBPath")
 	assert.Equal(t, sa.SMB, volConfig.FileSystem, "Incorrect FileSystem")
+}
+
+func TestCreateFollowup_Success_WithROClone(t *testing.T) {
+	svm := "svm1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
+	volConfig := &storage.VolumeConfig{
+		Name:                      volName,
+		InternalName:              volNameInternal,
+		InternalID:                "",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: volNameInternal,
+	}
+
+	// Set driver config nas type default and other config values
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SVM = svm
+	driver.Config.NASType = ""
+	driver.Config.DataLIF = "10.0.0.0"
+	driver.Config.NfsMountOptions = "-o nfsvers=3"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
+
+	// Create followup
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	// Assert on no error and suitable values for volconfig
+	assert.NoError(t, result, "Expected no error in CreateFollowup, got error")
+	assert.Equal(t, fmt.Sprintf("/svm/%s/flexvol/%s/qtree/%s", svm, volName, volNameInternal), volConfig.InternalID,
+		"Incorrect volume InternalID")
+	assert.Equal(t, driver.Config.DataLIF, volConfig.AccessInfo.NfsServerIP, "Incorrect NfsServerIP")
+	assert.Equal(t, fmt.Sprintf("/%s/%s/.snapshot/", volName, volNameInternal), volConfig.AccessInfo.NfsPath,
+		"Incorrect NfsPath")
+	assert.Equal(t, strings.TrimPrefix(driver.Config.NfsMountOptions, "-o "), volConfig.AccessInfo.MountOptions,
+		"Incorrect MountOptions")
 }
 
 func TestCreateFollowup_WithInvalidInternalID(t *testing.T) {
