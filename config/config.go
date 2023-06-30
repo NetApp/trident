@@ -186,6 +186,9 @@ const (
 
 	// BackendStoragePollInterval is an interval  that core layer attempts to poll storage backend periodically
 	BackendStoragePollInterval = 300 * time.Second
+
+	// NVMeSelfHealingInterval is an interval with which the NVMe self-healing thread is called periodically
+	NVMeSelfHealingInterval = 300 * time.Second
 )
 
 var (

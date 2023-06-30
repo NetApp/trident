@@ -1788,9 +1788,25 @@ func (i *Installer) createTridentVersionPod(
 	// spinning up this transient pod.
 	serviceAccountName := getNodeRBACResourceName(false)
 
-	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(
-		podName, imageName, serviceAccountName, imagePullPolicy, imagePullSecrets, podLabels, controllingCRDetails,
-	)
+	var tolerations []map[string]string
+	if controllerPluginTolerations != nil {
+		tolerations = make([]map[string]string, 0)
+		for _, t := range controllerPluginTolerations {
+			tolerations = append(tolerations, t.GetMap())
+		}
+	}
+
+	versionPodArgs := &k8sclient.TridentVersionPodYAMLArguments{
+		TridentVersionPodName: podName,
+		TridentImage:          imageName,
+		Labels:                podLabels,
+		ControllingCRDetails:  controllingCRDetails,
+		ImagePullSecrets:      imagePullSecrets,
+		ImagePullPolicy:       imagePullPolicy,
+		ServiceAccountName:    serviceAccountName,
+		Tolerations:           tolerations,
+	}
+	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(versionPodArgs)
 
 	err = i.client.CreateObjectByYAML(newTridentVersionPodYAML)
 	if err != nil {

@@ -33,7 +33,6 @@ const (
 
 	TridentAppKey   = "app"
 	TridentAppValue = "csi.trident.netapp.io"
-	TridentAppLabel = TridentAppKey + "=" + TridentAppValue
 
 	CRAPIVersionKey = "apiVersion"
 	CRController    = "controller"
@@ -42,10 +41,7 @@ const (
 	CRUID           = "uid"
 )
 
-var (
-	Secrets      = []string{"thisisasecret1", "thisisasecret2"}
-	SubjectNames = []string{"name1", "name2"}
-)
+var Secrets = []string{"thisisasecret1", "thisisasecret2"}
 
 // TestYAML simple validation of the YAML
 func TestYAML(t *testing.T) {
@@ -871,14 +867,8 @@ func TestGetNamespaceYAML(t *testing.T) {
 	assert.Equal(t, "trident", actual.Name)
 }
 
-func TestGetTridentVersionPodYAML(t *testing.T) {
-	name := "trident-csi"
-	image := "trident-csi-image"
-	secrets := []string{"trident-csi-image-secret"}
-	labels := map[string]string{"app": "controller.csi.trident.netapp.io"}
-	crdDetails := map[string]string{"kind": "ReplicaSet"}
-
-	expected := v1.Pod{
+func getTestTridentVersionPodYAML(toleration []v1.Toleration) v1.Pod {
+	return v1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
 			APIVersion: "v1",
@@ -940,13 +930,55 @@ func TestGetTridentVersionPodYAML(t *testing.T) {
 					},
 				},
 			},
+			Tolerations: toleration,
 		},
 	}
+}
 
-	var actual v1.Pod
-	actualYAML := GetTridentVersionPodYAML(name, image, "service", "IfNotPresent", secrets, labels, crdDetails)
-	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
-	assert.Equal(t, expected, actual)
+func TestGetTridentVersionPodYAML(t *testing.T) {
+	name := "trident-csi"
+	image := "trident-csi-image"
+	secrets := []string{"trident-csi-image-secret"}
+	labels := map[string]string{"app": "controller.csi.trident.netapp.io"}
+	crdDetails := map[string]string{"kind": "ReplicaSet"}
+
+	type Args struct {
+		toleration []map[string]string
+		Expected   []v1.Toleration
+	}
+
+	testArgs := []*Args{
+		{
+			nil, // Default toleration
+			[]v1.Toleration{},
+		},
+		{
+			[]map[string]string{
+				{"effect": "NoExecute", "operator": "Exists"},
+			},
+			[]v1.Toleration{
+				{Effect: "NoExecute", Operator: "Exists"},
+			},
+		},
+	}
+	for _, args := range testArgs {
+		expected := getTestTridentVersionPodYAML(args.Expected)
+
+		var actual v1.Pod
+		versionPodArgs := &TridentVersionPodYAMLArguments{
+			TridentVersionPodName: name,
+			TridentImage:          image,
+			Labels:                labels,
+			ControllingCRDetails:  crdDetails,
+			ImagePullSecrets:      secrets,
+			ImagePullPolicy:       "IfNotPresent",
+			ServiceAccountName:    "service",
+			Tolerations:           args.toleration,
+		}
+		actualYAML := GetTridentVersionPodYAML(versionPodArgs)
+		assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+		assert.Equal(t, expected, actual)
+	}
 }
 
 func TestGetOpenShiftSCCYAML(t *testing.T) {

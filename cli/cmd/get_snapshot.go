@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/dustin/go-humanize"
@@ -18,6 +19,8 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )
+
+const maskDisplayOfSnapshotStateOnline = storage.SnapshotState("") // Used for display in 'tridentctl' query
 
 var getSnapshotVolume string
 
@@ -133,6 +136,12 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 			snapshotID)
 	}
 
+	if getSnapshotResponse.Snapshot.State == storage.SnapshotStateOnline {
+		// Currently, this is used only for display, mask 'online' state as "".
+		// If in future any callers use this attribute, need to take care of it.
+		getSnapshotResponse.Snapshot.State = maskDisplayOfSnapshotStateOnline
+	}
+
 	return *getSnapshotResponse.Snapshot, nil
 }
 
@@ -153,12 +162,13 @@ func WriteSnapshots(snapshots []storage.SnapshotExternal) {
 
 func writeSnapshotTable(snapshots []storage.SnapshotExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Volume"})
+	table.SetHeader([]string{"Name", "Volume", "Managed"})
 
 	for _, snapshot := range snapshots {
 		table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,
+			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 		})
 	}
 
@@ -173,6 +183,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 		"Created",
 		"Size",
 		"State",
+		"Managed",
 	}
 	table.SetHeader(header)
 
@@ -183,6 +194,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 			snapshot.Created,
 			humanize.IBytes(uint64(snapshot.SizeBytes)),
 			string(snapshot.State),
+			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 		})
 	}
 

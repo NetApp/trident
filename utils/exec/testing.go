@@ -50,6 +50,7 @@ func newFakeExecCommand(
 		returnString := b64.StdEncoding.EncodeToString([]byte(returnValue))
 		envVars := []string{
 			"GO_TEST=1",
+			fmt.Sprintf("GOCOVERDIR=%s", os.Getenv("GOCOVERDIR")),
 			fmt.Sprintf("GO_TEST_RETURN_VALUE=%s", returnString),
 			fmt.Sprintf("GO_TEST_RETURN_CODE=%d", returnCode),
 		}

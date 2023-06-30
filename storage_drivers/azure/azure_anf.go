@@ -236,8 +236,10 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) {
 	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "NASStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	if config.StoragePrefix == nil {
 		defaultPrefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
@@ -469,8 +471,10 @@ func (d *NASStorageDriver) initializeAzureConfig(
 	backendSecret map[string]string,
 ) (*drivers.AzureNASStorageDriverConfig, error) {
 	fields := LogFields{"Method": "initializeAzureConfig", "Type": "NASStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureConfig")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureConfig")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureConfig")
 
 	config := &drivers.AzureNASStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
@@ -496,8 +500,10 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) error {
 	fields := LogFields{"Method": "initializeAzureSDKClient", "Type": "NASStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureSDKClient")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureSDKClient")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureSDKClient")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureSDKClient")
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
@@ -900,7 +906,7 @@ func (d *NASStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":   "CreateClone",
@@ -1011,6 +1017,16 @@ func (d *NASStorageDriver) CreateClone(
 			"snapshot": sourceSnapshot.Name,
 			"source":   sourceVolume.Name,
 		}).Debug("Created source snapshot.")
+	}
+
+	// If RO clone is requested, don't create the volume on ANF backend and return nil
+	if cloneVolConfig.ReadOnlyClone {
+		// Return error , if snapshot directory is not enabled for RO clone
+		if !sourceVolume.SnapshotDirectory {
+			return fmt.Errorf("snapshot directory access is set to %t and readOnly clone is set to %t ",
+				sourceVolume.SnapshotDirectory, cloneVolConfig.ReadOnlyClone)
+		}
+		return nil
 	}
 
 	var labels map[string]string
@@ -1322,6 +1338,9 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 func (d *NASStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
+	var volume *api.FileSystem
+	var err error
+
 	name := volConfig.InternalName
 	fields := LogFields{
 		"Method": "Publish",
@@ -1336,15 +1355,23 @@ func (d *NASStorageDriver) Publish(
 		return fmt.Errorf("could not update ANF resource cache; %v", err)
 	}
 
-	// Get the volume
-	volume, err := d.SDK.Volume(ctx, volConfig)
-	if err != nil {
-		return fmt.Errorf("could not find volume %s; %v", name, err)
-	}
+	// If it's a RO clone, get source volume to populate publish info
+	if volConfig.ReadOnlyClone {
+		volume, err = d.SDK.VolumeByCreationToken(ctx, volConfig.CloneSourceVolumeInternal)
+		if err != nil {
+			return fmt.Errorf("could not find volume %s; %v", name, err)
+		}
+	} else {
+		// Get the volume
+		volume, err = d.SDK.Volume(ctx, volConfig)
+		if err != nil {
+			return fmt.Errorf("could not find volume %s; %v", name, err)
+		}
 
-	// Heal the ID on legacy volumes
-	if volConfig.InternalID == "" {
-		volConfig.InternalID = volume.ID
+		// Heal the ID on legacy volumes
+		if volConfig.InternalID == "" {
+			volConfig.InternalID = volume.ID
+		}
 	}
 
 	if len(volume.MountTargets) == 0 {
@@ -1359,12 +1386,12 @@ func (d *NASStorageDriver) Publish(
 
 	// Add required fields for attaching SMB volume
 	if d.Config.NASType == sa.SMB {
-		publishInfo.SMBPath = "\\" + volume.CreationToken
+		publishInfo.SMBPath = volConfig.AccessInfo.SMBPath
 		publishInfo.SMBServer = (volume.MountTargets)[0].SmbServerFqdn
 		publishInfo.FilesystemType = sa.SMB
 	} else {
 		// Add fields needed by Attach
-		publishInfo.NfsPath = "/" + volume.CreationToken
+		publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
 		publishInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
 		publishInfo.FilesystemType = sa.NFS
 		publishInfo.MountOptions = mountOptions
@@ -1798,6 +1825,9 @@ func (d *NASStorageDriver) GetInternalVolumeName(ctx context.Context, name strin
 
 // CreateFollowup is called after volume creation and sets the access info in the volume config.
 func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	var volume *api.FileSystem
+	var err error
+
 	name := volConfig.InternalName
 	fields := LogFields{
 		"Method": "CreateFollowup",
@@ -1812,10 +1842,18 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		return fmt.Errorf("could not update ANF resource cache; %v", err)
 	}
 
-	// Get the volume
-	volume, err := d.SDK.Volume(ctx, volConfig)
-	if err != nil {
-		return fmt.Errorf("could not find volume %s; %v", name, err)
+	// If it's a RO clone, get source volume to populate access details
+	if volConfig.ReadOnlyClone {
+		volume, err = d.SDK.VolumeByCreationToken(ctx, volConfig.CloneSourceVolumeInternal)
+		if err != nil {
+			return fmt.Errorf("could not find volume %s; %v", name, err)
+		}
+	} else {
+		// Get the volume
+		volume, err = d.SDK.Volume(ctx, volConfig)
+		if err != nil {
+			return fmt.Errorf("could not find volume %s; %v", name, err)
+		}
 	}
 
 	// Ensure volume is in a good state
@@ -1829,12 +1867,12 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 
 	// Set the mount target based on the NASType
 	if d.Config.NASType == sa.SMB {
-		volConfig.AccessInfo.SMBPath = "\\" + volume.CreationToken
+		volConfig.AccessInfo.SMBPath = constructVolumeAccessPath(volConfig, volume, sa.SMB)
 		volConfig.AccessInfo.SMBServer = (volume.MountTargets)[0].SmbServerFqdn
 		volConfig.FileSystem = sa.SMB
 	} else {
+		volConfig.AccessInfo.NfsPath = constructVolumeAccessPath(volConfig, volume, sa.NFS)
 		volConfig.AccessInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
-		volConfig.AccessInfo.NfsPath = "/" + volume.CreationToken
 		volConfig.FileSystem = sa.NFS
 	}
 
@@ -1889,7 +1927,8 @@ func (d *NASStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
 func (d *NASStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
 	fields := LogFields{"Method": "GetVolumeExternalWrappers", "Type": "NASStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetVolumeExternalWrappers")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetVolumeExternalWrappers")
+	defer Logd(ctx, d.Name(),
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetVolumeExternalWrappers")
 
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
@@ -2009,4 +2048,22 @@ func validateStoragePrefix(storagePrefix string) error {
 // GetCommonConfig returns driver's CommonConfig
 func (d *NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
+}
+
+func constructVolumeAccessPath(
+	volConfig *storage.VolumeConfig, volume *api.FileSystem, protocol string,
+) string {
+	switch protocol {
+	case sa.NFS:
+		if volConfig.ReadOnlyClone {
+			return "/" + volConfig.CloneSourceVolumeInternal + "/" + ".snapshot" + "/" + volConfig.CloneSourceSnapshot
+		}
+		return "/" + volume.CreationToken
+	case sa.SMB:
+		if volConfig.ReadOnlyClone {
+			return "\\" + volConfig.CloneSourceVolumeInternal + "\\" + "~snapshot" + "\\" + volConfig.CloneSourceSnapshot
+		}
+		return "\\" + volume.CreationToken
+	}
+	return ""
 }

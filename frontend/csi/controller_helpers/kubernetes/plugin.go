@@ -13,6 +13,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	csiaccessmodes "github.com/kubernetes-csi/csi-lib-utils/accessmodes"
+	k8ssnapshot "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -55,6 +56,10 @@ const (
 	eventDelete = "delete"
 
 	outOfServiceTaintKey = "node.kubernetes.io/out-of-service"
+
+	// maxResourceNameLength is the maximum possible length of a Kubernetes resource name.
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names
+	maxResourceNameLength = 253
 )
 
 var (
@@ -74,6 +79,7 @@ type helper struct {
 	tridentClient     clientset.Interface
 	restConfig        rest.Config
 	kubeClient        kubernetes.Interface
+	snapClient        k8ssnapshot.Interface
 	kubeVersion       *k8sversion.Info
 	namespace         string
 	eventRecorder     record.EventRecorder
@@ -136,6 +142,7 @@ func NewHelper(
 		tridentClient:          clients.TridentClient,
 		restConfig:             *clients.RestConfig,
 		kubeClient:             clients.KubeClient,
+		snapClient:             clients.SnapshotClient,
 		kubeVersion:            kubeVersion,
 		namespace:              clients.Namespace,
 		enableForceDetach:      enableForceDetach,

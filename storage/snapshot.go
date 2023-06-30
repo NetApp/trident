@@ -20,6 +20,7 @@ type SnapshotConfig struct {
 	VolumeName          string   `json:"volumeName,omitempty"`
 	VolumeInternalName  string   `json:"volumeInternalName,omitempty"`
 	LUKSPassphraseNames []string `json:"luksPassphraseNames,omitempty"`
+	ImportNotManaged    bool     `json:"importNotManaged"`
 }
 
 func (c *SnapshotConfig) ID() string {
@@ -110,6 +111,7 @@ func (s *Snapshot) ConstructClone() *Snapshot {
 			VolumeName:          s.Config.VolumeName,
 			VolumeInternalName:  s.Config.VolumeInternalName,
 			LUKSPassphraseNames: s.Config.LUKSPassphraseNames,
+			ImportNotManaged:    s.Config.ImportNotManaged,
 		},
 		Created:   s.Created,
 		SizeBytes: s.SizeBytes,

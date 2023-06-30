@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -174,9 +174,14 @@ func TestPromoteMirror_WaitForSnapshot(t *testing.T) {
 		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
 		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyZAPITypeAsync}, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, localFlexvolName).Times(1).Return(api.Snapshots{
-		api.Snapshot{Name: "snapshot-1", CreateTime: "1"},
-	}, nil)
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		"snapshot-a", localFlexvolName).Return(
+		api.Snapshot{
+			CreateTime: "1",
+			Name:       "snapshot-1",
+		},
+		nil)
 
 	wait, err := promoteMirror(ctx, localFlexvolName, remoteVolumeHandle, "volume-a/snapshot-a", replicationPolicy,
 		mockAPI)
@@ -195,9 +200,15 @@ func TestPromoteMirror_FoundSnapshot(t *testing.T) {
 		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
 		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyZAPITypeAsync}, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, localFlexvolName).Times(1).Return(api.Snapshots{
-		api.Snapshot{Name: "snapshot-a", CreateTime: "1"},
-	}, nil)
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		"snapshot-a", localFlexvolName).Return(
+		api.Snapshot{
+			CreateTime: "1",
+			Name:       "snapshot-a",
+		},
+		nil)
+
 	mockAPI.EXPECT().SnapmirrorQuiesce(ctx, localFlexvolName, localSVMName, remoteFlexvolName,
 		remoteSVMName).Times(1)
 	mockAPI.EXPECT().SnapmirrorAbort(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Times(1)
@@ -255,7 +266,10 @@ func TestPromoteMirror_SnapshotPresentError(t *testing.T) {
 		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored}, nil)
 	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Times(1).
 		Return(&api.SnapmirrorPolicy{Type: api.SnapmirrorPolicyZAPITypeAsync}, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, localFlexvolName).Times(1).Return(nil,
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		"snapshot-a", localFlexvolName).Return(
+		api.Snapshot{},
 		api.ApiError("snapshot present error"))
 
 	wait, err := promoteMirror(ctx, localFlexvolName, remoteVolumeHandle, "volume-a/snapshot-a",
@@ -613,7 +627,7 @@ func TestEstablishMirror_StillUninitialized(t *testing.T) {
 	assert.True(t, api.IsNotReadyError(err), "not NotReadyError")
 }
 
-func TestReestablishMirror_NoErrors(t *testing.T) {
+func TestReestablishMirror_NoErrorsAsync(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	ctx := context.Background()
@@ -621,6 +635,36 @@ func TestReestablishMirror_NoErrors(t *testing.T) {
 	mockAPI.EXPECT().SVMName().Return(localSVMName)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
 		Return(nil, errNotFound)
+	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Return(&api.SnapmirrorPolicy{
+		Type: api.SnapmirrorPolicyZAPITypeAsync,
+	}, nil)
+	mockAPI.EXPECT().SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
+		replicationPolicy, replicationSchedule).Return(nil)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
+		Return(&api.Snapmirror{State: api.SnapmirrorStateUninitialized, RelationshipStatus: api.SnapmirrorStatusIdle},
+			nil)
+	mockAPI.EXPECT().SnapmirrorResync(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).Return(nil)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
+		Return(&api.Snapmirror{State: api.SnapmirrorStateSnapmirrored, IsHealthy: true}, nil)
+
+	err := reestablishMirror(ctx, localFlexvolName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		mockAPI)
+
+	assert.NoError(t, err, "reestablish mirror should not return an error")
+}
+
+func TestReestablishMirror_NoErrorsSync(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	ctx := context.Background()
+
+	mockAPI.EXPECT().SVMName().Return(localSVMName)
+	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
+		Return(nil, errNotFound)
+	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Return(&api.SnapmirrorPolicy{
+		Type: api.SnapmirrorPolicyZAPITypeSync,
+	}, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, localFlexvolName, localSVMName).Return(nil)
 	mockAPI.EXPECT().SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule).Return(nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
@@ -701,6 +745,9 @@ func TestReestablishMirror_ResyncError(t *testing.T) {
 	mockAPI.EXPECT().SVMName().Return(localSVMName)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
 		Return(nil, errNotFound)
+	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Return(&api.SnapmirrorPolicy{
+		Type: api.SnapmirrorPolicyZAPITypeAsync,
+	}, nil)
 	mockAPI.EXPECT().SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule).Return(nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
@@ -723,6 +770,9 @@ func TestReestablishMirror_ReconcileIncompleteError(t *testing.T) {
 	mockAPI.EXPECT().SVMName().Return(localSVMName)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
 		Return(nil, errNotFound)
+	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Return(&api.SnapmirrorPolicy{
+		Type: api.SnapmirrorPolicyZAPITypeAsync,
+	}, nil)
 	mockAPI.EXPECT().SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule).Return(nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
@@ -747,6 +797,9 @@ func TestReestablishMirror_SnapmirrorNotHealthy(t *testing.T) {
 	mockAPI.EXPECT().SVMName().Return(localSVMName)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).
 		Return(nil, errNotFound)
+	mockAPI.EXPECT().SnapmirrorPolicyGet(ctx, replicationPolicy).Return(&api.SnapmirrorPolicy{
+		Type: api.SnapmirrorPolicyZAPITypeAsync,
+	}, nil)
 	mockAPI.EXPECT().SnapmirrorCreate(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName,
 		replicationPolicy, replicationSchedule).Return(nil)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName).

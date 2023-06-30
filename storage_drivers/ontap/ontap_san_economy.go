@@ -720,7 +720,7 @@ func (d *SANEconomyStorageDriver) CreateClone(
 ) error {
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	name := cloneVolConfig.InternalName
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 	isFromSnapshot := snapshot != ""
 	qosPolicy := cloneVolConfig.QosPolicy
 	adaptiveQosPolicy := cloneVolConfig.AdaptiveQosPolicy

@@ -2158,6 +2158,21 @@ func (c Client) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, 
 	return response, err
 }
 
+// SnapshotInfo returns a snapshot by name for a volume
+func (c Client) SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error) {
+	query := &azgo.SnapshotGetIterRequestQuery{}
+	snapshotInfo := azgo.NewSnapshotInfoType().
+		SetVolume(volumeName).
+		SetName(snapshotName)
+	query.SetSnapshotInfo(*snapshotInfo)
+
+	response, err := azgo.NewSnapshotGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
 // SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 func (c Client) SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error) {
 	response, err := azgo.NewSnapshotRestoreVolumeRequest().
@@ -2731,6 +2746,8 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			_, err = releaseRequest.ExecuteUsing(c.zr)
 			if err != nil {
 				return err
+			} else {
+				return nil
 			}
 		} else {
 			Logc(context.Background()).WithFields(LogFields{
@@ -2738,7 +2755,17 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			}).Warn("Missing destination location.")
 		}
 	}
-	return nil
+	return errors.NotFoundError("could not find snapmirror relationship to release")
+}
+
+// SnapmirrorDestinationRelease removes all local snapmirror relationship metadata of the destination volume
+// Intended to be used on the destination vserver
+func (c Client) SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error) {
+	request := azgo.NewSnapmirrorReleaseRequest()
+	request.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	request.SetRelationshipInfoOnly(true)
+
+	return request.ExecuteUsing(c.zr)
 }
 
 // Intended to be from the destination vserver

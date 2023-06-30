@@ -191,3 +191,14 @@ type DaemonsetYAMLArguments struct {
 	ServiceAccountName   string                `json:"serviceAccountName"`
 	ImagePullPolicy      string                `json:"imagePullPolicy"`
 }
+
+type TridentVersionPodYAMLArguments struct {
+	TridentVersionPodName string              `json:"tridentVersionPodName"`
+	TridentImage          string              `json:"tridentImage"`
+	ImagePullSecrets      []string            `json:"imagePullSecrets"`
+	Labels                map[string]string   `json:"labels"`
+	ControllingCRDetails  map[string]string   `json:"controllingCRDetails"`
+	Tolerations           []map[string]string `json:"tolerations"`
+	ServiceAccountName    string              `json:"serviceAccountName"`
+	ImagePullPolicy       string              `json:"imagePullPolicy"`
+}

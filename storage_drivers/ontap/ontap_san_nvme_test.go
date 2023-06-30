@@ -1204,10 +1204,10 @@ func TestCreateClone(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)
 	cloneConfig := &storage.VolumeConfig{
-		InternalName:              "cloneVol1",
-		Size:                      "200000000",
-		CloneSourceVolumeInternal: "fakeSource",
-		CloneSourceSnapshot:       "fakeSourceSnapshot",
+		InternalName:                "cloneVol1",
+		Size:                        "200000000",
+		CloneSourceVolumeInternal:   "fakeSource",
+		CloneSourceSnapshotInternal: "fakeSourceSnapshot",
 	}
 	vol := &api.Volume{Aggregates: []string{"data"}}
 	pool := storage.NewStoragePool(nil, "fakepool")
@@ -1221,6 +1221,7 @@ func TestCreateClone(t *testing.T) {
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
 	mAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+	mAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
 	mAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
 

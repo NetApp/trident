@@ -35,10 +35,15 @@ type ControllerHelper interface {
 		requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
 	) (*storage.VolumeConfig, error)
 
-	// GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI
-	// provisioner, adds in any CO-specific details about the new volume, and returns
+	// GetSnapshotConfigForCreate accepts the attributes of a snapshot being requested by the CSI
+	// provisioner, adds in any CO-specific details about the new snapshot, and returns
 	// a SnapshotConfig structure as needed by Trident to create a new snapshot.
-	GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error)
+	GetSnapshotConfigForCreate(volumeName, snapshotName string) (*storage.SnapshotConfig, error)
+
+	// GetSnapshotConfigForImport accepts the attributes of a snapshot being imported by the CSI
+	// provisioner, adds in any CO-specific details about the existing snapshot, and returns
+	// a SnapshotConfig structure as needed by Trident to import a snapshot.
+	GetSnapshotConfigForImport(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotConfig, error)
 
 	// GetNodeTopologyLabels returns topology labels for a given node
 	// Example: map[string]string{"topology.kubernetes.io/region": "us-east1"}
@@ -56,6 +61,9 @@ type ControllerHelper interface {
 	// RecordNodeEvent accepts the name of a CSI node and writes the specified
 	// event message in a manner appropriate to the container orchestrator.
 	RecordNodeEvent(ctx context.Context, name, eventType, reason, message string)
+
+	// IsValidResourceName accepts the name of a resource and returns whether it meets the requirements of that CO.
+	IsValidResourceName(name string) bool
 
 	// SupportsFeature accepts a CSI feature and returns true if the feature is supported.
 	SupportsFeature(ctx context.Context, feature Feature) bool

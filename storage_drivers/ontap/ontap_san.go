@@ -478,7 +478,7 @@ func (d *SANStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":      "CreateClone",
@@ -722,6 +722,13 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	// If flexvol has been a snapmirror destination
 	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
+	// If flexvol has been a snapmirror source
+	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}

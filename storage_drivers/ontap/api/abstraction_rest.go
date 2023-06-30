@@ -1410,6 +1410,44 @@ func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string
 	return volumeState, nil
 }
 
+func (d OntapAPIREST) VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error) {
+	emptyResult := Snapshot{}
+
+	volume, err := d.VolumeInfo(ctx, sourceVolume)
+	if err != nil {
+		return emptyResult, fmt.Errorf("error looking up source volume: %v", err)
+	}
+	if volume == nil {
+		return emptyResult, fmt.Errorf("error looking up source volume: %v", sourceVolume)
+	}
+
+	snapListResponse, err := d.api.SnapshotListByName(ctx, volume.UUID, snapshotName)
+	if err != nil {
+		return emptyResult, fmt.Errorf("error getting snapshot %v for volume %v: %v", snapshotName, sourceVolume, err)
+	}
+	if snapListResponse == nil || snapListResponse.Payload == nil || snapListResponse.Payload.SnapshotResponseInlineRecords == nil {
+		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+	}
+	if len(snapListResponse.Payload.SnapshotResponseInlineRecords) == 0 {
+		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+	}
+
+	if len(snapListResponse.Payload.SnapshotResponseInlineRecords) > 1 {
+		return emptyResult, fmt.Errorf("should have exactly 1 record, not: %v", len(snapListResponse.Payload.SnapshotResponseInlineRecords))
+	}
+
+	snap := snapListResponse.Payload.SnapshotResponseInlineRecords[0]
+	if snap == nil || snap.CreateTime == nil || snap.Name == nil {
+		return emptyResult, fmt.Errorf("error getting snapshot %v for volume %v: %v", snapshotName, sourceVolume, err)
+	}
+
+	result := Snapshot{
+		CreateTime: snap.CreateTime.String(),
+		Name:       *snap.Name,
+	}
+	return result, nil
+}
+
 func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
 	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
@@ -1582,7 +1620,13 @@ func (d OntapAPIREST) SnapmirrorDeleteViaDestination(
 	err := d.api.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName)
 	if err != nil {
 		if !IsNotFoundError(err) {
-			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
+			if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+				if restErr.Error != nil && restErr.Error.Code != nil &&
+					*restErr.Error.Code != SNAPMIRROR_MODIFICATION_IN_PROGRESS {
+					return fmt.Errorf("error deleting snapmirror info for volume %v: %v",
+						localInternalVolumeName, err)
+				}
+			}
 		}
 	}
 
@@ -1601,7 +1645,9 @@ func (d OntapAPIREST) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, 
 	// Ensure no leftover snapmirror metadata
 	err := d.api.SnapmirrorRelease(ctx, sourceFlexvolName, sourceSVMName)
 	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		if !IsNotFoundError(err) {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		}
 	}
 
 	return nil

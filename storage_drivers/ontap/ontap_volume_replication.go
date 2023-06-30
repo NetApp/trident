@@ -96,9 +96,22 @@ func reestablishMirror(
 	}
 
 	// Check if a snapmirror relationship already exists
-	snapmirror, err := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err != nil {
-		if api.IsNotFoundError(err) {
+	snapmirror, snapmirrorGetErr := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
+	if snapmirrorGetErr != nil {
+		if api.IsNotFoundError(snapmirrorGetErr) {
+			if replicationPolicy != "" {
+				snapmirrorPolicy, err := d.SnapmirrorPolicyGet(ctx, replicationPolicy)
+				if err != nil {
+					return err
+				}
+				if snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeSync() {
+					if err := d.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName); err != nil {
+						return err
+					}
+				}
+			}
+
 			// create and initialize snapmirror if not found
 			if err := d.SnapmirrorCreate(ctx,
 				localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
@@ -111,7 +124,7 @@ func reestablishMirror(
 				return err
 			}
 		} else {
-			return err
+			return snapmirrorGetErr
 		}
 	} else {
 		// If the snapmirror is already established we have nothing to do
@@ -250,28 +263,17 @@ func promoteMirror(
 
 // isSnapshotPresent returns whether the given snapshot is found on the snapmirror snapshot list
 func isSnapshotPresent(ctx context.Context, snapshotHandle, localInternalVolumeName string, d api.OntapAPI) (bool, error) {
-	found := false
-
 	_, snapshotName, err := storage.ParseSnapshotID(snapshotHandle)
 	if err != nil {
-		return found, err
+		return false, err
 	}
 
-	snapshots, err := d.VolumeSnapshotList(ctx, localInternalVolumeName)
+	snapshot, err := d.VolumeSnapshotInfo(ctx, snapshotName, localInternalVolumeName)
 	if err != nil {
-		return found, err
+		return false, err
 	}
 
-	for _, snapshot := range snapshots {
-		if snapshot.Name == snapshotName {
-			found = true
-		}
-	}
-	if !found {
-		Logc(ctx).WithField("snapshot", snapshotHandle).Debug("Snapshot not yet present.")
-		return found, nil
-	}
-	return found, nil
+	return snapshot.Name == snapshotName, nil
 }
 
 // getMirrorStatus returns the current state of a snapmirror relationship
@@ -338,6 +340,10 @@ func checkSVMPeered(
 	if err != nil {
 		err = fmt.Errorf("could not determine required peer SVM; %v", err)
 		return storagedrivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
+	}
+	if remoteSVM == svm {
+		Logc(ctx).Info("TMR is in single SVM peer mode. Both source and destination volumes are on a single SVM.")
+		return nil
 	}
 	peeredVservers, _ := d.GetSVMPeers(ctx)
 	if !utils.SliceContainsString(peeredVservers, remoteSVM) {

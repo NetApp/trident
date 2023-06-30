@@ -812,7 +812,7 @@ func (d *NASBlockStorageDriver) CreateClone(
 
 	// Check if called from CreateClone and is from a snapshot
 	if isFromSnapshot {
-		snapshotInternalName := d.helper.GetSnapshotInternalName(source, snapshot)
+		snapshotInternalName := volConfig.CloneSourceSnapshotInternal
 
 		subscription, resourceGroup, _, netappAccount, cPoolName, volumeName, _, err := api.ParseSubvolumeID(sourceVolConfig.InternalID)
 		if err != nil {
@@ -1159,13 +1159,13 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 ) (*storage.Snapshot, error) {
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
-	externalVolName := snapConfig.VolumeName
 
 	fields := LogFields{
-		"Method":       "GetSnapshot",
-		"Type":         "NASBlockStorageDriver",
-		"snapshotName": snapName,
-		"volumeName":   internalVolName,
+		"Method":               "GetSnapshot",
+		"Type":                 "NASBlockStorageDriver",
+		"snapshotName":         snapName,
+		"snapshotInternalName": snapConfig.InternalName,
+		"volumeName":           internalVolName,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
@@ -1179,10 +1179,10 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("source subvolume '%s' does not exist", volConfig.Name)
 	}
 
-	// Create the snapshot name/string
-	creationToken := d.helper.GetSnapshotInternalName(externalVolName, snapName)
+	// For snapshot imports, creation token should be the internal name for the backend snapshot.
+	creationToken := snapConfig.InternalName
 
-	// Based on volume's internal name, snapshot ID can be identified
+	// Build the backend snapshot ID from the source volume and config internal snap name.
 	snapshotInternalID := api.CreateSubvolumeID(d.Config.SubscriptionID, sourceSubvolume.ResourceGroup,
 		sourceSubvolume.NetAppAccount, sourceSubvolume.CapacityPool, sourceSubvolume.Volume, creationToken)
 

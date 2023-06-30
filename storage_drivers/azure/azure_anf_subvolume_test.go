@@ -1394,14 +1394,15 @@ func getStructsForSubvolumeCreateClone() (
 	}
 
 	volConfig := &storage.VolumeConfig{
-		Version:                   "1",
-		Name:                      "pvc-c883baf4-9742-49a3-85d6-6dd1d5514826",
-		InternalName:              "trident-pvc-c883baf4-9742-49a3-85d6-6dd1d5514826-file-0",
-		Size:                      SubvolumeSizeStr,
-		InternalID:                volumeID2,
-		CloneSourceVolume:         "pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1",
-		CloneSourceVolumeInternal: "trident-pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1-file-0",
-		CloneSourceSnapshot:       "testSnap",
+		Version:                     "1",
+		Name:                        "pvc-c883baf4-9742-49a3-85d6-6dd1d5514826",
+		InternalName:                "trident-pvc-c883baf4-9742-49a3-85d6-6dd1d5514826-file-0",
+		Size:                        SubvolumeSizeStr,
+		InternalID:                  volumeID2,
+		CloneSourceVolume:           "pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1",
+		CloneSourceVolumeInternal:   "trident-pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1-file-0",
+		CloneSourceSnapshot:         "testSnap",
+		CloneSourceSnapshotInternal: "trident-testSnap--b99a6",
 	}
 	subVolumeID1 := api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
 		"trident-testSnap--b99a6")
@@ -2587,7 +2588,7 @@ func TestSubvolumeGetSnapshot(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -2611,7 +2612,7 @@ func TestSubvolumeGetSnapshot_ErrorCheckingForExistingSnapshot(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -2635,7 +2636,7 @@ func TestSubvolumeGetSnapshot_ErrorSnapshotDoesNotExist(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -2659,7 +2660,7 @@ func TestSubvolumeGetSnapshot_ErrorSnapshotStateIsNotAvailable(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 	subVolume.ProvisioningState = api.StateCreating
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
@@ -2703,6 +2704,31 @@ func TestSubvolumeGetSnapshot_ErrorSubvolumeNotFound(t *testing.T) {
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	mockAPI.EXPECT().SubvolumeExistsByID(ctx, volConfig.InternalID).Return(false, nil, errFailed).Times(1)
+
+	result, resultErr := driver.GetSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, result, "got snapshot")
+	assert.Error(t, resultErr, "no error")
+}
+
+func TestSubvolumeGetSnapshot_UnmanagedSnapshotImport(t *testing.T) {
+	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+
+	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
+		snapConfig.InternalName)
+	subVolume.ProvisioningState = api.StateCreating
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, volConfig.InternalID).Return(true, subVolume, nil).Times(1)
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, volConfig.InternalID).Return(true, subVolume, nil).Times(1)
 
 	result, resultErr := driver.GetSnapshot(ctx, snapConfig, volConfig)
 

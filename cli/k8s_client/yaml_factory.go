@@ -506,6 +506,7 @@ spec:
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
+          runAsNonRoot: false
           capabilities:
             drop:
             - all
@@ -1278,30 +1279,28 @@ spec:
             type: DirectoryOrCreate
 `
 
-func GetTridentVersionPodYAML(
-	name, tridentImage, serviceAccountName, imagePullPolicy string, imagePullSecrets []string, labels,
-	controllingCRDetails map[string]string,
-) string {
+func GetTridentVersionPodYAML(args *TridentVersionPodYAMLArguments) string {
 	Log().WithFields(LogFields{
-		"Name":                 name,
-		"TridentImae":          tridentImage,
-		"ServiceAccountName":   serviceAccountName,
-		"Labels":               labels,
-		"ControllingCRDetails": controllingCRDetails,
+		"Name":                 args.TridentVersionPodName,
+		"TridentImae":          args.TridentImage,
+		"ServiceAccountName":   args.ServiceAccountName,
+		"Labels":               args.Labels,
+		"ControllingCRDetails": args.ControllingCRDetails,
 	}).Trace(">>>> GetTridentVersionPodYAML")
 	defer func() { Log().Trace("<<<< GetTridentVersionPodYAML") }()
 
-	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", serviceAccountName)
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(labels))
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", args.TridentVersionPodName)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", args.TridentImage)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(args.Labels))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", versionPodYAML).Trace("Trident Version Pod YAML.")
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS",
-		constructImagePullSecrets(imagePullSecrets))
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", imagePullPolicy)
+		constructImagePullSecrets(args.ImagePullSecrets))
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 
 	return versionPodYAML
 }
@@ -1327,6 +1326,7 @@ spec:
         drop:
         - all
   {IMAGE_PULL_SECRETS}
+  {NODE_TOLERATIONS}
   affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -2422,6 +2422,8 @@ metadata:
 spec:
   privileged: true
   allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - SYS_ADMIN
   hostIPC: true
   hostPID: true
   hostNetwork: true

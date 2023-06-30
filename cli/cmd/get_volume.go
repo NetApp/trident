@@ -25,6 +25,8 @@ var (
 	backendsByUUID       map[string]*storage.BackendExternal
 )
 
+const maskDisplayOfVolumeStateOnline = storage.VolumeState("") // Used for display in 'tridentctl' query
+
 func init() {
 	getCmd.AddCommand(getVolumeCmd)
 	getVolumeCmd.Flags().StringVar(&getSourceVolume, "subordinateOf", "", "Limit query to subordinates of volume")
@@ -150,6 +152,12 @@ func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 	}
 	if getVolumeResponse.Volume == nil {
 		return storage.VolumeExternal{}, fmt.Errorf("could not get volume %s: no volume returned", volumeName)
+	}
+
+	if getVolumeResponse.Volume.State == storage.VolumeStateOnline {
+		// Currently, this is used only for display, mask 'online' state as "".
+		// If in future any callers use this attribute, need to take care of it.
+		getVolumeResponse.Volume.State = maskDisplayOfVolumeStateOnline
 	}
 
 	return *getVolumeResponse.Volume, nil
