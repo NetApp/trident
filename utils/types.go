@@ -78,8 +78,6 @@ type NVMeAccessInfo struct {
 	NVMeSubsystemNQN  string   `json:"nvmeSubsystemNqn,omitempty"`
 	NVMeSubsystemUUID string   `json:"nvmeSubsystemUUID,omitempty"`
 	NVMeNamespaceUUID string   `json:"nvmeNamespaceUUID,omitempty"`
-	NVMeNamespacePath string   `json:"nvmeNamespacePath,omitempty"`
-	NVMeNamespaceSize string   `json:"nvmeNamespaceSize,omitempty"`
 }
 
 type VolumePublishInfo struct {

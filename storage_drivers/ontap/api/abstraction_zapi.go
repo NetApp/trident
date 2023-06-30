@@ -16,7 +16,6 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -1943,6 +1942,37 @@ func (d OntapAPIZAPI) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 	return nil
 }
 
+func (d OntapAPIZAPI) VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error) {
+	emptyResult := Snapshot{}
+
+	snapListResponse, err := d.api.SnapshotInfo(snapshotName, sourceVolume)
+	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
+		return emptyResult, fmt.Errorf("error getting snapshot %v for volume %v: %v", snapshotName, sourceVolume, err)
+	}
+
+	if snapListResponse == nil {
+		return emptyResult, fmt.Errorf("unexpected error getting snapshot %v for volume %v", snapshotName, sourceVolume)
+	}
+
+	if snapListResponse.Result.NumRecords() == 0 {
+		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+	} else if snapListResponse.Result.NumRecords() > 1 {
+		return emptyResult, fmt.Errorf("should have exactly 1 record, not: %v", snapListResponse.Result.NumRecords())
+	}
+
+	if snapListResponse.Result.AttributesListPtr == nil || snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr == nil {
+		return emptyResult, fmt.Errorf("unexpected error getting snapshot %v for volume %v", snapshotName, sourceVolume)
+	}
+
+	snap := snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr[0]
+	result := Snapshot{
+		CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(utils.TimestampFormat),
+		Name:       snap.Name(),
+	}
+
+	return result, nil
+}
+
 func (d OntapAPIZAPI) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
 	snapListResponse, err := d.api.SnapshotList(sourceVolume)
 	if err = azgo.GetError(ctx, snapListResponse, err); err != nil {
@@ -1954,7 +1984,7 @@ func (d OntapAPIZAPI) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 	if snapListResponse.Result.AttributesListPtr != nil {
 		for _, snap := range snapListResponse.Result.AttributesListPtr.SnapshotInfoPtr {
 			snapshots = append(snapshots, Snapshot{
-				CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(storage.SnapshotTimestampFormat),
+				CreateTime: time.Unix(int64(snap.AccessTime()), 0).UTC().Format(utils.TimestampFormat),
 				Name:       snap.Name(),
 			})
 		}
@@ -2045,15 +2075,23 @@ func (d OntapAPIZAPI) SnapmirrorDeleteViaDestination(
 ) error {
 	snapDeleteResponse, err := d.api.SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName)
 	if snapDeleteResponse != nil {
-		if snapDeleteResponse.Result.ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
+		if snapDeleteResponse.Result.ResultErrnoAttr != "" && snapDeleteResponse.Result.ResultErrnoAttr != azgo.
+			EOBJECTNOTFOUND {
 			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
 		}
 	}
 
 	// Ensure no leftover snapmirror metadata
-	err = d.api.SnapmirrorRelease(localInternalVolumeName, localSVMName)
-	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName, err)
+	releaseResponse, err := d.api.SnapmirrorDestinationRelease(localInternalVolumeName)
+	if releaseResponse != nil {
+		if releaseResponse.Result.ResultErrnoAttr == azgo.EAPIERROR {
+			return errors.ReconcileIncompleteError("operation failed, retrying, err: %v", err)
+		}
+		if releaseResponse.Result.ResultErrnoAttr != "" && releaseResponse.Result.ResultErrnoAttr != azgo.
+			SOURCEINFONOTFOUND {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", localInternalVolumeName,
+				releaseResponse.Result.ResultReasonAttr)
+		}
 	}
 
 	return nil
@@ -2063,7 +2101,9 @@ func (d OntapAPIZAPI) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, 
 	// Ensure no leftover snapmirror metadata
 	err := d.api.SnapmirrorRelease(sourceFlexvolName, sourceSVMName)
 	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		if !errors.IsNotFoundError(err) {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		}
 	}
 
 	return nil
@@ -2157,6 +2197,7 @@ func (d OntapAPIZAPI) SnapmirrorGet(
 	if info.LastTransferEndTimestampPtr != nil {
 		transferUnix := int64(uint32(info.LastTransferEndTimestamp()))
 		transferTime := time.Unix(transferUnix, 0)
+		transferTime = transferTime.UTC()
 		snapmirror.EndTransferTime = &transferTime
 	}
 
@@ -2304,6 +2345,9 @@ func (d OntapAPIZAPI) SnapmirrorAbort(
 	if err = azgo.GetError(ctx, snapAbort, err); err != nil {
 		zerr, ok := err.(azgo.ZapiError)
 		if !ok || zerr.Code() != azgo.ENOTRANSFERINPROGRESS {
+			if zerr.Code() == azgo.EOBJECTNOTFOUND {
+				return nil
+			}
 			return NotReadyError(fmt.Sprintf("Snapmirror abort failed, still aborting: %v", err.Error()))
 		}
 	}
@@ -2331,11 +2375,8 @@ func (d OntapAPIZAPI) SnapmirrorBreak(
 }
 
 func (d OntapAPIZAPI) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
-	// TODO (victorir): implement me TRID-12901
-	Logc(ctx).Debugf("Will send update mirror with volumeName: %s and snapshotName: %s",
-		localInternalVolumeName, snapshotName)
-	// d.api.UpdateMirror(localInternalVolumeName, localasvmnamee)
-	return nil
+	mirrorUpdate, err := d.api.SnapmirrorUpdate(localInternalVolumeName, snapshotName)
+	return azgo.GetError(ctx, mirrorUpdate, err)
 }
 
 func (d OntapAPIZAPI) JobScheduleExists(ctx context.Context, replicationSchedule string) (bool, error) {
@@ -2456,5 +2497,81 @@ func (d OntapAPIZAPI) NVMeNamespaceGetSize(ctx context.Context, subsystemName st
 func (d OntapAPIZAPI) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates,
 	abortStates []string, maxElapsedTime time.Duration,
 ) (string, error) {
-	return "", fmt.Errorf("ZAPI call is not supported yet")
+	fields := LogFields{
+		"method":        "VolumeWaitForStates",
+		"type":          "OntapAPIZAPI",
+		"volume":        volumeName,
+		"desiredStates": desiredStates,
+		"abortStates":   abortStates,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeWaitForStates")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeWaitForStates")
+
+	var volumeState string
+
+	checkVolumeState := func() error {
+		vol, err := d.api.VolumeGet(volumeName)
+		if err != nil {
+			volumeState = ""
+			return fmt.Errorf("error getting volume %v; %v", volumeName, err)
+		}
+
+		if vol == nil {
+			return fmt.Errorf("volume %v not found", volumeName)
+		}
+		if vol.VolumeStateAttributesPtr == nil || vol.VolumeStateAttributesPtr.StatePtr == nil {
+			return fmt.Errorf("volume %v state not found", volumeName)
+		}
+
+		volumeState := *vol.VolumeStateAttributesPtr.StatePtr
+		Logc(ctx).Debugf("Volume %v is in state:%v", volumeName, volumeState)
+
+		if utils.SliceContainsString(desiredStates, volumeState) {
+			Logc(ctx).Debugf("Found volume in the desired state %v", desiredStates)
+			return nil
+		}
+
+		Logc(ctx).Debugf("Volume is not in desired states. Current State: %v, Desired States: %v", volumeState, desiredStates)
+
+		// Return a permanent error to stop retrying if we reached one of the abort states
+		for _, abortState := range abortStates {
+			if volumeState == abortState {
+				Logc(ctx).Debugf("Volume is in abort state %v. Permanently backing off", volumeState)
+				return backoff.Permanent(TerminalState(fmt.Errorf("volume is in abort state")))
+			} else {
+				return fmt.Errorf("volume is neither in desired state nor in abort state")
+			}
+		}
+
+		return fmt.Errorf("volume is in unknown state")
+	}
+
+	stateNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"increment": duration,
+			"message":   err.Error(),
+		}).Debugf("Waiting for volume state.")
+	}
+	stateBackoff := backoff.NewExponentialBackOff()
+	stateBackoff.MaxElapsedTime = maxElapsedTime
+	stateBackoff.MaxInterval = 2 * time.Second
+	stateBackoff.RandomizationFactor = 0.1
+	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
+	stateBackoff.Multiplier = 1.414
+
+	Logc(ctx).WithField("desiredStates", desiredStates).Info("Waiting for volume state.")
+
+	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
+		if terminalStateErr, ok := err.(*TerminalStateError); ok {
+			Logc(ctx).Errorf("Volume reached terminal state: %v", terminalStateErr)
+		} else {
+			Logc(ctx).Errorf("Volume state was not any of %s after %3.2f seconds.",
+				desiredStates, stateBackoff.MaxElapsedTime.Seconds())
+		}
+		return volumeState, err
+	}
+
+	Logc(ctx).WithField("desiredStates", desiredStates).Debug("Desired volume state reached.")
+	return volumeState, nil
 }

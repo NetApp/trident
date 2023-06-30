@@ -68,19 +68,34 @@ func (mr *MockControllerHelperMockRecorder) GetNodeTopologyLabels(arg0, arg1 int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodeTopologyLabels", reflect.TypeOf((*MockControllerHelper)(nil).GetNodeTopologyLabels), arg0, arg1)
 }
 
-// GetSnapshotConfig mocks base method.
-func (m *MockControllerHelper) GetSnapshotConfig(arg0, arg1 string) (*storage.SnapshotConfig, error) {
+// GetSnapshotConfigForCreate mocks base method.
+func (m *MockControllerHelper) GetSnapshotConfigForCreate(arg0, arg1 string) (*storage.SnapshotConfig, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshotConfig", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSnapshotConfigForCreate", arg0, arg1)
 	ret0, _ := ret[0].(*storage.SnapshotConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSnapshotConfig indicates an expected call of GetSnapshotConfig.
-func (mr *MockControllerHelperMockRecorder) GetSnapshotConfig(arg0, arg1 interface{}) *gomock.Call {
+// GetSnapshotConfigForCreate indicates an expected call of GetSnapshotConfigForCreate.
+func (mr *MockControllerHelperMockRecorder) GetSnapshotConfigForCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotConfig", reflect.TypeOf((*MockControllerHelper)(nil).GetSnapshotConfig), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotConfigForCreate", reflect.TypeOf((*MockControllerHelper)(nil).GetSnapshotConfigForCreate), arg0, arg1)
+}
+
+// GetSnapshotConfigForImport mocks base method.
+func (m *MockControllerHelper) GetSnapshotConfigForImport(arg0 context.Context, arg1, arg2 string) (*storage.SnapshotConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSnapshotConfigForImport", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*storage.SnapshotConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSnapshotConfigForImport indicates an expected call of GetSnapshotConfigForImport.
+func (mr *MockControllerHelperMockRecorder) GetSnapshotConfigForImport(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotConfigForImport", reflect.TypeOf((*MockControllerHelper)(nil).GetSnapshotConfigForImport), arg0, arg1, arg2)
 }
 
 // GetVolumeConfig mocks base method.
@@ -96,6 +111,20 @@ func (m *MockControllerHelper) GetVolumeConfig(arg0 context.Context, arg1 string
 func (mr *MockControllerHelperMockRecorder) GetVolumeConfig(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeConfig", reflect.TypeOf((*MockControllerHelper)(nil).GetVolumeConfig), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+}
+
+// IsValidResourceName mocks base method.
+func (m *MockControllerHelper) IsValidResourceName(arg0 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsValidResourceName", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsValidResourceName indicates an expected call of IsValidResourceName.
+func (mr *MockControllerHelperMockRecorder) IsValidResourceName(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidResourceName", reflect.TypeOf((*MockControllerHelper)(nil).IsValidResourceName), arg0)
 }
 
 // RecordNodeEvent mocks base method.

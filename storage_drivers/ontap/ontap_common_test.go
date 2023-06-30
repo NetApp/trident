@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // ToIPAddressPointer takes a models.IPAddress and returns a pointer
@@ -2293,20 +2294,99 @@ func TestConstructOntapNASFlexGroupSMBVolumePath(t *testing.T) {
 	}
 }
 
-func TestConstructOntapNASQTreeSMBVolumePath(t *testing.T) {
+func TestConstructOntapNASQTreeVolumePath(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
 		smbShare     string
+		flexvol      string
+		volConfig    *storage.VolumeConfig
+		protocol     string
 		expectedPath string
 	}{
-		{"test_share", "\\test_share\\flex-vol\\vol"},
-		{"", "\\flex-vol\\vol"},
+		{
+			"test_share",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "pvc-vol",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             false,
+			},
+			sa.SMB,
+			"\\test_share\\flex-vol\\trident_pvc_vol",
+		},
+		{
+			"",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "volumeConfig",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             false,
+			},
+			sa.SMB,
+			"\\flex-vol\\trident_pvc_vol",
+		},
+		{
+			"test_share",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "volmeConfig",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             true,
+			},
+			sa.SMB,
+			"\\test_share\\flex-vol\\cloneSourceInternal\\~snapshot\\sourceSnapShot",
+		},
+		{
+			"",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "volmeConfig",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             true,
+			},
+			sa.SMB,
+			"\\flex-vol\\cloneSourceInternal\\~snapshot\\sourceSnapShot",
+		},
+		{
+			"test_share",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "pvc-vol",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             false,
+			},
+			sa.NFS,
+			"/flex-vol/trident_pvc_vol",
+		},
+		{
+			"test_share",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "pvc-vol",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             true,
+			},
+			sa.NFS,
+			"/flex-vol/cloneSourceInternal/.snapshot/sourceSnapShot",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
-			result := ConstructOntapNASQTreeSMBVolumePath(ctx, test.smbShare, "flex-vol", "vol")
+			result := ConstructOntapNASQTreeVolumePath(ctx, test.smbShare, "flex-vol", test.volConfig, test.protocol)
 			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
 		})
 	}
@@ -2788,9 +2868,9 @@ func TestGetVolumeSnapshot(t *testing.T) {
 		Name:       "fakeInternalName",
 		CreateTime: "dummyTime",
 	}
-	snapshotsList := []api.Snapshot{dummySnapshot}
 	mockAPI.EXPECT().LunSize(ctx, "fakeVolInternalName").Return(100, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, snapConfig.VolumeInternalName).Return(snapshotsList, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName,
+		snapConfig.VolumeInternalName).Return(dummySnapshot, nil)
 	expectedSnap := &storage.Snapshot{
 		Config:    expectedSnapConfig,
 		Created:   "dummyTime",
@@ -2810,9 +2890,11 @@ func TestGetVolumeSnapshot(t *testing.T) {
 		Name:       "wrongSnapshotName",
 		CreateTime: "dummyTime",
 	}
-	snapshotsList = []api.Snapshot{dummySnapshot}
 	mockAPI.EXPECT().LunSize(ctx, "fakeVolInternalName").Return(100, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, snapConfig.VolumeInternalName).Return(snapshotsList, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(
+		dummySnapshot,
+		errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapConfig.InternalName,
+			snapConfig.VolumeInternalName)))
 
 	snap, err = getVolumeSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
 
@@ -2830,7 +2912,8 @@ func TestGetVolumeSnapshot(t *testing.T) {
 	// Test-4: Testing Error flow: VolumeSnapshotList returned error
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().LunSize(ctx, "fakeVolInternalName").Return(100, nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx, snapConfig.VolumeInternalName).Return(snapshotsList,
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName,
+		snapConfig.VolumeInternalName).Return(dummySnapshot,
 		fmt.Errorf("Error returned"))
 
 	_, err = getVolumeSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
@@ -4352,8 +4435,9 @@ func TestCreateFlexvolSnapshot(t *testing.T) {
 	mockAPI.EXPECT().LunSize(ctx, "fakeVolumeInternalName").Return(100, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, snapConfig.InternalName,
 		snapConfig.VolumeInternalName).Return(nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx,
-		snapConfig.VolumeInternalName).Return([]api.Snapshot{}, fmt.Errorf("Error getting snapshot list"))
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.Snapshot{},
+		fmt.Errorf("Error getting snapshot list"))
 
 	snapshot, err = createFlexvolSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
 
@@ -4369,8 +4453,11 @@ func TestCreateFlexvolSnapshot(t *testing.T) {
 	mockAPI.EXPECT().LunSize(ctx, "fakeVolumeInternalName").Return(100, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, snapConfig.InternalName,
 		snapConfig.VolumeInternalName).Return(nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx,
-		snapConfig.VolumeInternalName).Return([]api.Snapshot{dummySnap}, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		snapConfig.InternalName, snapConfig.VolumeInternalName).Return(
+		dummySnap,
+		errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapConfig.InternalName,
+			snapConfig.VolumeInternalName)))
 
 	snapshot, err = createFlexvolSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
 
@@ -4386,12 +4473,12 @@ func TestCreateFlexvolSnapshot(t *testing.T) {
 	mockAPI.EXPECT().LunSize(ctx, "fakeVolumeInternalName").Return(100, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, snapConfig.InternalName,
 		snapConfig.VolumeInternalName).Return(nil)
-	mockAPI.EXPECT().VolumeSnapshotList(ctx,
-		snapConfig.VolumeInternalName).Return([]api.Snapshot{dummySnap}, nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx,
+		snapConfig.InternalName, snapConfig.VolumeInternalName).Return(dummySnap, nil)
 
 	snapshot, err = createFlexvolSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
 
-	assert.NotNil(t, snapshot, "Expected no snapshot")
+	assert.NotNil(t, snapshot, "Expected snapshot")
 	assert.NoError(t, err)
 }
 

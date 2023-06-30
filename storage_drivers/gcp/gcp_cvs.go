@@ -33,8 +33,8 @@ const (
 	MinimumVolumeSizeBytes       = uint64(1073741824)   // 1 GiB
 	MinimumCVSVolumeSizeBytesHW  = uint64(107374182400) // 100 GiB
 	MaximumVolumesPerStoragePool = 50
-	MinimumAPIVersion            = "1.1.26"
-	MinimumSDEVersion            = "2022.9.0"
+	MinimumAPIVersion            = "1.4.0"
+	MinimumSDEVersion            = "2023.1.2"
 
 	defaultHWServiceLevel  = api.UserServiceLevel1
 	defaultSWServiceLevel  = api.PoolServiceLevel1
@@ -956,7 +956,7 @@ func (d *NFSStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":   "CreateClone",
@@ -1451,7 +1451,7 @@ func (d *NFSStorageDriver) getSnapshot(
 	for _, snapshot := range *snapshots {
 		if snapshot.Name == internalSnapName {
 
-			created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
+			created := snapshot.Created.UTC().Format(utils.TimestampFormat)
 
 			Logc(ctx).WithFields(LogFields{
 				"snapshotName": internalSnapName,
@@ -1521,7 +1521,7 @@ func (d *NFSStorageDriver) getSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+			Created:   snapshot.Created.Format(utils.TimestampFormat),
 			SizeBytes: volume.QuotaInBytes,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1597,7 +1597,7 @@ func (d *NFSStorageDriver) createSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+		Created:   snapshot.Created.Format(utils.TimestampFormat),
 		SizeBytes: sourceVolume.QuotaInBytes,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -1627,15 +1627,13 @@ func (d *NFSStorageDriver) RestoreSnapshot(
 		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
 	}
 
-	if volume.StorageClass == api.StorageClassSoftware {
-		return errors.New("software volumes do not support snapshot restore")
-	}
-
+	// Get the snapshot
 	snapshot, err := d.API.GetSnapshotForVolume(ctx, volume, internalSnapName)
 	if err != nil {
 		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
 	}
 
+	// Do the restore
 	return d.API.RestoreSnapshot(ctx, volume, snapshot)
 }
 

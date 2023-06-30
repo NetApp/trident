@@ -13,6 +13,7 @@ import (
 type TridentV1Interface interface {
 	RESTClient() rest.Interface
 	TridentActionMirrorUpdatesGetter
+	TridentActionSnapshotRestoresGetter
 	TridentBackendsGetter
 	TridentBackendConfigsGetter
 	TridentMirrorRelationshipsGetter
@@ -34,6 +35,10 @@ type TridentV1Client struct {
 
 func (c *TridentV1Client) TridentActionMirrorUpdates(namespace string) TridentActionMirrorUpdateInterface {
 	return newTridentActionMirrorUpdates(c, namespace)
+}
+
+func (c *TridentV1Client) TridentActionSnapshotRestores(namespace string) TridentActionSnapshotRestoreInterface {
+	return newTridentActionSnapshotRestores(c, namespace)
 }
 
 func (c *TridentV1Client) TridentBackends(namespace string) TridentBackendInterface {

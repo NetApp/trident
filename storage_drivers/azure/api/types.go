@@ -22,7 +22,6 @@ type Azure interface {
 	CapacityPools() *[]*CapacityPool
 	CapacityPoolsForStoragePools(context.Context) []*CapacityPool
 	CapacityPoolsForStoragePool(context.Context, storage.Pool, string) []*CapacityPool
-	RandomCapacityPoolForStoragePool(context.Context, storage.Pool, string) *CapacityPool
 	EnsureVolumeInValidCapacityPool(context.Context, *FileSystem) error
 	SubnetsForStoragePool(context.Context, storage.Pool) []*Subnet
 	RandomSubnetForStoragePool(context.Context, storage.Pool) *Subnet
@@ -58,5 +57,6 @@ type Azure interface {
 	SnapshotForVolume(context.Context, *FileSystem, string) (*Snapshot, error)
 	WaitForSnapshotState(context.Context, *Snapshot, *FileSystem, string, []string, time.Duration) error
 	CreateSnapshot(context.Context, *FileSystem, string) (*Snapshot, error)
+	RestoreSnapshot(context.Context, *FileSystem, *Snapshot) error
 	DeleteSnapshot(context.Context, *FileSystem, *Snapshot) error
 }

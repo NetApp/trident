@@ -443,6 +443,21 @@ func (mr *MockOrchestratorMockRecorder) GetMirrorStatus(arg0, arg1, arg2, arg3 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorStatus", reflect.TypeOf((*MockOrchestrator)(nil).GetMirrorStatus), arg0, arg1, arg2, arg3)
 }
 
+// GetMirrorTransferTime mocks base method.
+func (m *MockOrchestrator) GetMirrorTransferTime(arg0 context.Context, arg1 string) (*time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMirrorTransferTime", arg0, arg1)
+	ret0, _ := ret[0].(*time.Time)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMirrorTransferTime indicates an expected call of GetMirrorTransferTime.
+func (mr *MockOrchestratorMockRecorder) GetMirrorTransferTime(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorTransferTime", reflect.TypeOf((*MockOrchestrator)(nil).GetMirrorTransferTime), arg0, arg1)
+}
+
 // GetNode mocks base method.
 func (m *MockOrchestrator) GetNode(arg0 context.Context, arg1 string) (*utils.NodeExternal, error) {
 	m.ctrl.T.Helper()
@@ -638,6 +653,21 @@ func (m *MockOrchestrator) GetVolumeTransaction(arg0 context.Context, arg1 *stor
 func (mr *MockOrchestratorMockRecorder) GetVolumeTransaction(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransaction", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumeTransaction), arg0, arg1)
+}
+
+// ImportSnapshot mocks base method.
+func (m *MockOrchestrator) ImportSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig) (*storage.SnapshotExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ImportSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(*storage.SnapshotExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ImportSnapshot indicates an expected call of ImportSnapshot.
+func (mr *MockOrchestratorMockRecorder) ImportSnapshot(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).ImportSnapshot), arg0, arg1)
 }
 
 // ImportVolume mocks base method.
@@ -1000,6 +1030,20 @@ func (m *MockOrchestrator) ResizeVolume(arg0 context.Context, arg1, arg2 string)
 func (mr *MockOrchestratorMockRecorder) ResizeVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockOrchestrator)(nil).ResizeVolume), arg0, arg1, arg2)
+}
+
+// RestoreSnapshot mocks base method.
+func (m *MockOrchestrator) RestoreSnapshot(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreSnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RestoreSnapshot indicates an expected call of RestoreSnapshot.
+func (mr *MockOrchestratorMockRecorder) RestoreSnapshot(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).RestoreSnapshot), arg0, arg1, arg2)
 }
 
 // SetLogLayers mocks base method.

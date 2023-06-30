@@ -224,7 +224,7 @@ func TestConnectSubsystemToHost(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
 	mockCommand.EXPECT().Execute(ctx, "nvme", "connect", "-t", "tcp", "-n", gomock.Any(),
-		"-a", gomock.Any(), "-s", "4420").Return([]byte(""), nil)
+		"-a", gomock.Any(), "-s", "4420", "-l", "-1").Return([]byte(""), nil)
 	command = mockCommand
 	err := ConnectSubsystemToHost(ctx, "fakeNqn", "fakeDataLif")
 
@@ -232,7 +232,7 @@ func TestConnectSubsystemToHost(t *testing.T) {
 
 	// Test2: Error - Unable to connect to subsystem
 	mockCommand.EXPECT().Execute(ctx, "nvme", "connect", "-t", "tcp", "-n", gomock.Any(),
-		"-a", gomock.Any(), "-s", "4420").Return([]byte(""), fmt.Errorf("Error connecting to subsystem"))
+		"-a", gomock.Any(), "-s", "4420", "-l", "-1").Return([]byte(""), fmt.Errorf("Error connecting to subsystem"))
 	command = mockCommand
 	err = ConnectSubsystemToHost(ctx, "fakeNqn", "fakeDataLif")
 
@@ -345,7 +345,7 @@ func TestGetNVMeDeviceList(t *testing.T) {
 	gotNVMeDevices, err = GetNVMeDeviceList(ctx)
 
 	assert.Equal(t, expectedNVMeDevices, gotNVMeDevices)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
 	// Test4: Error - Valid json but not mapping to NVMe Device
 	expectedValue := `{"some":"json"}`

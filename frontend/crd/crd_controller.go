@@ -46,12 +46,13 @@ const (
 	EventForceUpdate EventType = "forceupdate"
 	EventDelete      EventType = "delete"
 
-	ObjectTypeTridentBackendConfig      string = "TridentBackendConfig"
-	ObjectTypeTridentBackend            string = "TridentBackend"
-	ObjectTypeSecret                    string = "secret"
-	ObjectTypeTridentMirrorRelationship string = "TridentMirrorRelationship"
-	ObjectTypeTridentActionMirrorUpdate string = "TridentActionMirrorUpdate"
-	ObjectTypeTridentSnapshotInfo       string = "TridentSnapshotInfo"
+	ObjectTypeTridentBackendConfig         string = "TridentBackendConfig"
+	ObjectTypeTridentBackend               string = "TridentBackend"
+	ObjectTypeSecret                       string = "secret"
+	ObjectTypeTridentMirrorRelationship    string = "TridentMirrorRelationship"
+	ObjectTypeTridentActionMirrorUpdate    string = "TridentActionMirrorUpdate"
+	ObjectTypeTridentSnapshotInfo          string = "TridentSnapshotInfo"
+	ObjectTypeTridentActionSnapshotRestore string = "TridentActionSnapshotRestore"
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -156,6 +157,10 @@ type TridentCrdController struct {
 	secretsLister v1.SecretLister
 	secretsSynced cache.InformerSynced
 
+	// TridentSnapshot CRD handling
+	actionSnapshotRestoreLister listers.TridentActionSnapshotRestoreLister
+	actionSnapshotRestoreSynced cache.InformerSynced
+
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
 	// means we can ensure we only process a fixed amount of resources at a
@@ -222,6 +227,7 @@ func newTridentCrdControllerImpl(
 	volumePublicationInformer := crdInformer.TridentVolumePublications()
 	snapshotInformer := crdInformer.TridentSnapshots()
 	secretInformer := kubeInformer.Secrets()
+	actionSnapshotRestoreInformer := allNSCrdInformer.TridentActionSnapshotRestores()
 
 	// Create event broadcaster
 	// Add our types to the default Kubernetes Scheme so Events can be logged.
@@ -232,43 +238,45 @@ func newTridentCrdControllerImpl(
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &TridentCrdController{
-		orchestrator:              orchestrator,
-		kubeClientset:             kubeClientset,
-		snapshotClientSet:         snapshotClientset,
-		crdClientset:              crdClientset,
-		crdControllerStopChan:     make(chan struct{}),
-		crdInformerFactory:        crdInformerFactory,
-		crdInformer:               crdInformer,
-		txnInformerFactory:        txnInformerFactory,
-		txnInformer:               txnInformer,
-		kubeInformerFactory:       kubeInformerFactory,
-		kubeInformer:              kubeInformer,
-		backendsLister:            backendInformer.Lister(),
-		backendsSynced:            backendInformer.Informer().HasSynced,
-		backendConfigsLister:      backendConfigInformer.Lister(),
-		backendConfigsSynced:      backendConfigInformer.Informer().HasSynced,
-		mirrorLister:              mirrorInformer.Lister(),
-		mirrorSynced:              mirrorInformer.Informer().HasSynced,
-		actionMirrorUpdateLister:  actionMirrorUpdateInformer.Lister(),
-		actionMirrorUpdatesSynced: actionMirrorUpdateInformer.Informer().HasSynced,
-		snapshotInfoLister:        snapshotInfoInformer.Lister(),
-		snapshotInfoSynced:        snapshotInfoInformer.Informer().HasSynced,
-		nodesLister:               nodeInformer.Lister(),
-		nodesSynced:               nodeInformer.Informer().HasSynced,
-		storageClassesLister:      storageClassInformer.Lister(),
-		storageClassesSynced:      storageClassInformer.Informer().HasSynced,
-		transactionsLister:        transactionInformer.Lister(),
-		transactionsSynced:        transactionInformer.Informer().HasSynced,
-		versionsLister:            versionInformer.Lister(),
-		versionsSynced:            versionInformer.Informer().HasSynced,
-		volumesLister:             volumeInformer.Lister(),
-		volumesSynced:             volumeInformer.Informer().HasSynced,
-		volumePublicationsLister:  volumePublicationInformer.Lister(),
-		volumePublicationsSynced:  volumePublicationInformer.Informer().HasSynced,
-		snapshotsLister:           snapshotInformer.Lister(),
-		snapshotsSynced:           snapshotInformer.Informer().HasSynced,
-		secretsLister:             secretInformer.Lister(),
-		secretsSynced:             secretInformer.Informer().HasSynced,
+		orchestrator:                orchestrator,
+		kubeClientset:               kubeClientset,
+		snapshotClientSet:           snapshotClientset,
+		crdClientset:                crdClientset,
+		crdControllerStopChan:       make(chan struct{}),
+		crdInformerFactory:          crdInformerFactory,
+		crdInformer:                 crdInformer,
+		txnInformerFactory:          txnInformerFactory,
+		txnInformer:                 txnInformer,
+		kubeInformerFactory:         kubeInformerFactory,
+		kubeInformer:                kubeInformer,
+		backendsLister:              backendInformer.Lister(),
+		backendsSynced:              backendInformer.Informer().HasSynced,
+		backendConfigsLister:        backendConfigInformer.Lister(),
+		backendConfigsSynced:        backendConfigInformer.Informer().HasSynced,
+		mirrorLister:                mirrorInformer.Lister(),
+		mirrorSynced:                mirrorInformer.Informer().HasSynced,
+		actionMirrorUpdateLister:    actionMirrorUpdateInformer.Lister(),
+		actionMirrorUpdatesSynced:   actionMirrorUpdateInformer.Informer().HasSynced,
+		snapshotInfoLister:          snapshotInfoInformer.Lister(),
+		snapshotInfoSynced:          snapshotInfoInformer.Informer().HasSynced,
+		nodesLister:                 nodeInformer.Lister(),
+		nodesSynced:                 nodeInformer.Informer().HasSynced,
+		storageClassesLister:        storageClassInformer.Lister(),
+		storageClassesSynced:        storageClassInformer.Informer().HasSynced,
+		transactionsLister:          transactionInformer.Lister(),
+		transactionsSynced:          transactionInformer.Informer().HasSynced,
+		versionsLister:              versionInformer.Lister(),
+		versionsSynced:              versionInformer.Informer().HasSynced,
+		volumesLister:               volumeInformer.Lister(),
+		volumesSynced:               volumeInformer.Informer().HasSynced,
+		volumePublicationsLister:    volumePublicationInformer.Lister(),
+		volumePublicationsSynced:    volumePublicationInformer.Informer().HasSynced,
+		snapshotsLister:             snapshotInformer.Lister(),
+		snapshotsSynced:             snapshotInformer.Informer().HasSynced,
+		secretsLister:               secretInformer.Lister(),
+		secretsSynced:               secretInformer.Informer().HasSynced,
+		actionSnapshotRestoreLister: actionSnapshotRestoreInformer.Lister(),
+		actionSnapshotRestoreSynced: actionSnapshotRestoreInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			crdControllerQueueName),
 		recorder: recorder,
@@ -305,6 +313,10 @@ func newTridentCrdControllerImpl(
 		AddFunc:    controller.addCRHandler,
 		UpdateFunc: controller.updateCRHandler,
 		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	_, _ = actionSnapshotRestoreInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.addCRHandler,
 	})
 
 	_, _ = secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -597,6 +609,8 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleActionMirrorUpdate
 		case ObjectTypeTridentSnapshotInfo:
 			handleFunction = c.handleTridentSnapshotInfo
+		case ObjectTypeTridentActionSnapshotRestore:
+			handleFunction = c.handleActionSnapshotRestore
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}

@@ -768,3 +768,42 @@ func IsInProgressError(err error) bool {
 	_, ok := err.(*inProgressError)
 	return ok
 }
+
+// ///////////////////////////////////////////////////////////////////////////
+// notManagedError
+// ///////////////////////////////////////////////////////////////////////////
+
+type notManagedError struct {
+	inner   error
+	message string
+}
+
+func (e *notManagedError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *notManagedError) Unwrap() error { return e.inner }
+
+func NotManagedError(message string, a ...any) error {
+	return &notManagedError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithNotManagedError(err error, message string, a ...any) error {
+	return &notManagedError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsNotManagedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *notManagedError
+	return errors.As(err, &errPtr)
+}

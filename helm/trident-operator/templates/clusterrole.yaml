@@ -216,6 +216,8 @@ rules:
       - tridentactionmirrorupdates/status
       - tridentsnapshotinfos
       - tridentsnapshotinfos/status
+      - tridentactionsnapshotrestores
+      - tridentactionsnapshotrestores/status
       - tridentprovisioners # Required for Tprov
       - tridentprovisioners/status # Required to update Tprov's status section
       - tridentorchestrators # Required for torc

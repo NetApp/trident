@@ -740,6 +740,11 @@ func (k *KubeClient) DeleteDaemonSet(name, namespace string, foreground bool) er
 // with a background propagation policy, so it returns immediately and the Kubernetes garbage collector reaps any
 // associated pod(s) asynchronously.
 func (k *KubeClient) deleteDaemonSetBackground(name, namespace string) error {
+	Logc(ctx).WithFields(LogFields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Starting background deletion of DaemonSet.")
+
 	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}

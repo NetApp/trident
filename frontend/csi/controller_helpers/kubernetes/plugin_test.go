@@ -4,12 +4,15 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	k8sfakesnapshotter "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned/fake"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
@@ -20,7 +23,9 @@ import (
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/csi"
+	. "github.com/netapp/trident/logging"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
@@ -688,7 +693,7 @@ func TestListVolumeAttachments(t *testing.T) {
 			},
 			shouldFail: false,
 		},
-		"with attachments not found status ": {
+		"with attachments not found status": {
 			setupMocks: func(c *k8sfake.Clientset) {
 				c.Fake.PrependReactor(
 					"list" /* use '*' for all operations */, "*", /* use '*' all object types */
@@ -1027,6 +1032,344 @@ func TestIsAttachmentValid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			isValid := h.isAttachmentValid(ctx, test.attachment)
 			assert.Equal(t, test.shouldBeValid, isValid)
+		})
+	}
+}
+
+func TestIsValidResourceName(t *testing.T) {
+	tests := map[string]struct {
+		name     string
+		expected bool
+	}{
+		"name contains all legal characters": {
+			"snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj",
+			true,
+		},
+		"name is greater than 253 characters": {
+			fmt.Sprintf("resource-name%v", strings.Join(make([]string, 50), "-test")),
+			false,
+		},
+		"name is empty": {
+			// "" is not valid for Kubernetes names.
+			"",
+			false,
+		},
+		"name contains illegal character at beginning": {
+			// "-" is not valid for end of Kubernetes names.
+			"-snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj",
+			false,
+		},
+		"name contains illegal character within": {
+			// "_" is not valid for Kubernetes names.
+			"snap_2eff1a7e-679d-4fc6-892f-1nridmry3dj",
+			false,
+		},
+		"name contains illegal character at end": {
+			// "-" is not valid for end of Kubernetes names.
+			"snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj-",
+			false,
+		},
+		"name contains uppercase illegal character at beginning": {
+			// Uppercase letters are not valid for Kubernetes names.
+			"Snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj",
+			false,
+		},
+	}
+
+	h := &helper{}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			isValid := h.IsValidResourceName(test.name)
+			assert.Equal(t, test.expected, isValid)
+		})
+	}
+}
+
+func TestGetSnapshotCreateConfig(t *testing.T) {
+	snapName := "snap-import"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	snapshotConfig := &storage.SnapshotConfig{
+		Version:    config.OrchestratorAPIVersion,
+		Name:       snapName,
+		VolumeName: volumeName,
+	}
+
+	h := &helper{}
+	config, err := h.GetSnapshotConfigForCreate(volumeName, snapName)
+	assert.NoError(t, err)
+	assert.Equal(t, config, snapshotConfig)
+}
+
+func TestGetSnapshotConfigForImport(t *testing.T) {
+	type input struct {
+		volumeName, snapName string
+	}
+
+	type event struct {
+		error error
+		vsc   *vsv1.VolumeSnapshotContent
+	}
+
+	type expectation struct {
+		config *storage.SnapshotConfig
+		error  bool
+	}
+
+	type test struct {
+		input  input
+		event  event
+		expect expectation
+	}
+
+	snapName := "snap-import"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	internalSnapName := "snap.2023-05-23_175116"
+
+	tests := map[string]test{
+		"fails when no snapshot name is supplied": {
+			input: input{
+				volumeName: volumeName,
+				snapName:   "",
+			},
+			event: event{
+				error: nil,
+				vsc:   &vsv1.VolumeSnapshotContent{ObjectMeta: metav1.ObjectMeta{Name: snapName}},
+			},
+			expect: expectation{
+				config: nil,
+				error:  true,
+			},
+		},
+		"fails when no volume name is supplied": {
+			input: input{
+				volumeName: "",
+				snapName:   snapName,
+			},
+			event: event{
+				error: nil,
+				vsc:   &vsv1.VolumeSnapshotContent{ObjectMeta: metav1.ObjectMeta{Name: snapName}},
+			},
+			expect: expectation{
+				config: nil,
+				error:  true,
+			},
+		},
+		"fails when volume snapshot content is not found": {
+			input: input{
+				volumeName: volumeName,
+				snapName:   snapName,
+			},
+			event: event{
+				error: &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}},
+				vsc:   nil,
+			},
+			expect: expectation{
+				config: nil,
+				error:  true,
+			},
+		},
+		"fails when volume snapshot internal name is not found": {
+			input: input{
+				volumeName: volumeName,
+				snapName:   snapName,
+			},
+			event: event{
+				error: &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}},
+				vsc: &vsv1.VolumeSnapshotContent{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        snapName,
+						Annotations: map[string]string{AnnInternalSnapshotName: ""},
+					},
+				},
+			},
+			expect: expectation{
+				config: nil,
+				error:  true,
+			},
+		},
+		"succeeds when volume snapshot content and internal name is found": {
+			input: input{
+				volumeName: volumeName,
+				snapName:   snapName,
+			},
+			event: event{
+				error: nil,
+				vsc: &vsv1.VolumeSnapshotContent{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        snapName,
+						Annotations: map[string]string{AnnInternalSnapshotName: internalSnapName},
+					},
+				},
+			},
+			expect: expectation{
+				config: &storage.SnapshotConfig{
+					Version:      config.OrchestratorAPIVersion,
+					Name:         snapName,
+					InternalName: internalSnapName,
+					VolumeName:   volumeName,
+				},
+				error: false,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+
+			// Initialize the fake snapshot Client
+			fakeClient := k8sfakesnapshotter.NewSimpleClientset()
+
+			fakeClient.Fake.PrependReactor(
+				"get" /* use '*' for all operations */, "*", /* use '*' all object types */
+				func(actionCopy k8stesting.Action) (bool, runtime.Object, error) {
+					switch actionCopy.(type) {
+					case k8stesting.GetActionImpl:
+						return true, test.event.vsc, test.event.error
+					default:
+						// Use this to find if any unanticipated actions occurred.
+						Log().Errorf("~~~ unhandled type: %T\n", actionCopy)
+						return false, nil, nil
+					}
+				},
+			)
+
+			// Inject the fakeClient into a helper.
+			h := &helper{snapClient: fakeClient}
+			config, err := h.GetSnapshotConfigForImport(ctx, test.input.volumeName, test.input.snapName)
+			assert.Equal(t, test.expect.error, err != nil)
+			assert.Equal(t, test.expect.config, config)
+		})
+	}
+}
+
+func TestGetSnapshotContentByName(t *testing.T) {
+	type event struct {
+		error error
+		vsc   *vsv1.VolumeSnapshotContent
+	}
+
+	type expectation struct {
+		vsc   *vsv1.VolumeSnapshotContent
+		error bool
+	}
+
+	type test struct {
+		name   string
+		event  event
+		expect expectation
+	}
+
+	tests := map[string]test{
+		"fails when snapshot client api call fails": {
+			name: "snapshot-content",
+			event: event{
+				error: &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusFailure}},
+				vsc:   nil,
+			},
+			expect: expectation{
+				error: true,
+				vsc:   nil,
+			},
+		},
+		"fails when volume snapshot content is not found": {
+			name: "snapshot-content",
+			event: event{
+				error: &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}},
+				vsc:   nil,
+			},
+			expect: expectation{
+				error: true,
+				vsc:   nil,
+			},
+		},
+		"succeeds when snapshot client finds volume snapshot content": {
+			name: "snapshot-content",
+			event: event{
+				error: nil,
+				vsc:   &vsv1.VolumeSnapshotContent{ObjectMeta: metav1.ObjectMeta{Name: "snapshot-content"}},
+			},
+			expect: expectation{
+				error: false,
+				vsc:   &vsv1.VolumeSnapshotContent{ObjectMeta: metav1.ObjectMeta{Name: "snapshot-content"}},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+
+			// Initialize the fake snapshot Client
+			fakeClient := k8sfakesnapshotter.NewSimpleClientset()
+
+			// Prepend a reactor for each anticipated event.
+			event := test.event
+			fakeClient.Fake.PrependReactor(
+				"get" /* use '*' for all operations */, "*", /* use '*' all object types */
+				func(actionCopy k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+					switch actionCopy.(type) {
+					case k8stesting.GetActionImpl:
+						return true, event.vsc, event.error
+					default:
+						// Use this to find if any unanticipated actions occurred.
+						Log().Errorf("~~~ unhandled type: %T\n", actionCopy)
+						return false, nil, nil
+					}
+				},
+			)
+
+			// Inject the fakeClient into a helper.
+			h := &helper{snapClient: fakeClient}
+			vsc, err := h.getSnapshotContentByName(ctx, test.name)
+			assert.Equal(t, test.expect.vsc, vsc)
+			assert.Equal(t, test.expect.error, err != nil)
+		})
+	}
+}
+
+func TestGetSnapshotInternalName(t *testing.T) {
+	tests := map[string]struct {
+		vsc    *vsv1.VolumeSnapshotContent
+		errors bool
+	}{
+		"fails with nil vsc": {
+			vsc:    nil,
+			errors: true,
+		},
+		"fails with nil vsc annotations": {
+			vsc:    &vsv1.VolumeSnapshotContent{},
+			errors: true,
+		},
+		"fails with empty internalName annotation": {
+			vsc: &vsv1.VolumeSnapshotContent{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{AnnInternalSnapshotName: ""},
+				},
+			},
+			errors: true,
+		},
+		"succeeds with internalName specified in annotations": {
+			vsc: &vsv1.VolumeSnapshotContent{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{AnnInternalSnapshotName: "snap.2023-05-23_175116"},
+				},
+			},
+			errors: false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			h := &helper{}
+			internalName, err := h.getSnapshotInternalNameFromAnnotation(context.Background(), test.vsc)
+			if test.errors {
+				assert.Empty(t, internalName)
+				assert.Error(t, err)
+			} else {
+				assert.NotEmpty(t, internalName)
+				assert.NoError(t, err)
+			}
 		})
 	}
 }

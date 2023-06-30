@@ -24,11 +24,12 @@ import (
 )
 
 const (
-	maxLunNameLength      = 254
-	minLUNsPerFlexvol     = 50
-	defaultLUNsPerFlexvol = 100
-	maxLUNsPerFlexvol     = 200
-	snapshotNameSeparator = "_snapshot_"
+	maxLunNameLength       = 254
+	minLUNsPerFlexvol      = 50
+	defaultLUNsPerFlexvol  = 100
+	maxLUNsPerFlexvol      = 200
+	snapshotNameSeparator  = "_snapshot_"
+	snapshotCopyNameSuffix = "_copy"
 )
 
 func GetLUNPathEconomy(bucketName, volNameInternal string) string {
@@ -719,7 +720,7 @@ func (d *SANEconomyStorageDriver) CreateClone(
 ) error {
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	name := cloneVolConfig.InternalName
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 	isFromSnapshot := snapshot != ""
 	qosPolicy := cloneVolConfig.QosPolicy
 	adaptiveQosPolicy := cloneVolConfig.AdaptiveQosPolicy
@@ -1277,13 +1278,17 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 			State:     storage.SnapshotStateOnline,
 		}, nil
 	}
-	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolumeName)
+	return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, internalVolumeName)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
 func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
+	volLunName := snapConfig.VolumeInternalName
+	snapLunName := d.helper.GetSnapshotName(snapConfig.VolumeInternalName, snapConfig.InternalName)
+	snapLunCopyName := snapLunName + snapshotCopyNameSuffix
+
 	fields := LogFields{
 		"Method":       "RestoreSnapshot",
 		"Type":         "SANEconomyStorageDriver",
@@ -1293,7 +1298,105 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	// Check to see if volume LUN exists
+	volLunExists, volBucketVol, err := d.LUNExists(ctx, volLunName, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Error checking for existing volume LUN: %v", err)
+		return err
+	}
+	if !volLunExists {
+		message := fmt.Sprintf("volume LUN %v does not exist", volLunName)
+		Logc(ctx).Warnf(message)
+		return errors.NotFoundError(message)
+	}
+
+	// Check to see if the snapshot LUN exists
+	snapLunExists, snapBucketVol, err := d.LUNExists(ctx, snapLunName, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).Errorf("Error checking for existing snapshot LUN: %v", err)
+		return err
+	}
+	if !snapLunExists {
+		return fmt.Errorf("snapshot LUN %v does not exist", snapLunName)
+	}
+
+	// Sanity check to ensure both LUNs are in the same Flexvol
+	if volBucketVol != snapBucketVol {
+		return fmt.Errorf("snapshot LUN %s and volume LUN %s are in different Flexvols", snapLunName, volLunName)
+	}
+
+	// Check to see if the snapshot LUN copy exists
+	snapLunCopyExists, snapCopyBucketVol, err := d.LUNExists(ctx, snapLunCopyName, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).Errorf("Error checking for existing snapshot copy LUN: %v", err)
+		return err
+	}
+
+	// Delete any copy so we can create a fresh one
+	if snapLunCopyExists {
+
+		// Sanity check to ensure both LUNs are in the same Flexvol
+		if snapCopyBucketVol != snapBucketVol {
+			return fmt.Errorf("snapshot LUN %s and snapshot copy LUN %s are in different Flexvols",
+				snapLunName, snapLunCopyName)
+		}
+
+		snapLunCopyPath := GetLUNPathEconomy(snapCopyBucketVol, snapLunCopyName)
+
+		if err = LunUnmapAllIgroups(ctx, d.GetAPI(), snapLunCopyPath); err != nil {
+			msg := "error removing all mappings from LUN"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+
+		if err = d.API.LunDestroy(ctx, snapLunCopyPath); err != nil {
+			return fmt.Errorf("could not delete snapshot copy LUN %s", snapLunCopyName)
+		}
+	}
+
+	// Get the snapshot LUN
+	snapLunPath := GetLUNPathEconomy(snapBucketVol, snapLunName)
+	snapLunInfo, err := d.API.LunGetByName(ctx, snapLunPath)
+	if err != nil {
+		return fmt.Errorf("could not get existing LUN %s; %v", snapLunPath, err)
+	}
+
+	// Clone the snapshot LUN
+	if err = d.API.LunCloneCreate(ctx, snapBucketVol, snapLunName, snapLunCopyName, snapLunInfo.Qos); err != nil {
+		return fmt.Errorf("could not clone snapshot LUN %s: %v", snapLunPath, err)
+	}
+
+	// Rename the original LUN
+	volLunPath := GetLUNPathEconomy(volBucketVol, volLunName)
+	tempVolLunPath := volLunPath + "_original"
+	if err = d.API.LunRename(ctx, volLunPath, tempVolLunPath); err != nil {
+		return fmt.Errorf("could not rename LUN %s: %v", volLunPath, err)
+	}
+
+	// Rename snapshot copy to original LUN path
+	snapLunCopyPath := GetLUNPathEconomy(snapBucketVol, snapLunCopyName)
+	if err = d.API.LunRename(ctx, snapLunCopyPath, volLunPath); err != nil {
+
+		// Attempt to recover by restoring the original LUN
+		if recoverErr := d.API.LunRename(ctx, tempVolLunPath, volLunPath); recoverErr != nil {
+			Logc(ctx).WithError(recoverErr).Errorf("Could not recover RestoreSnapshot by renaming LUN %s to %s.",
+				tempVolLunPath, volLunPath)
+		}
+
+		return fmt.Errorf("could not rename LUN %s: %v", snapLunCopyPath, err)
+	}
+
+	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), tempVolLunPath); err != nil {
+		Logc(ctx).WithError(err).Warning("Could not remove all mappings from original LUN %s after RestoreSnapshot",
+			tempVolLunPath)
+	}
+
+	// Delete original LUN
+	if err = d.API.LunDestroy(ctx, tempVolLunPath); err != nil {
+		Logc(ctx).WithError(err).Warningf("Could not delete original LUN %s after RestoreSnapshot", tempVolLunPath)
+	}
+
+	return nil
 }
 
 // DeleteSnapshot deletes a LUN snapshot.

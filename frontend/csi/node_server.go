@@ -33,6 +33,7 @@ const (
 	AttachISCSIVolumeTimeoutShort   = 20 * time.Second
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
 	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
+	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maxJitterValue                  = 5000
 	nvmeAttachTimeout               = 20 * time.Second
@@ -44,6 +45,7 @@ var (
 	bofUtils       = utils.BofUtils
 
 	publishedISCSISessions, currentISCSISessions utils.ISCSISessions
+	publishedNVMeSessions, currentNVMeSessions   utils.NVMeSessions
 )
 
 func (p *Plugin) NodeStageVolume(
@@ -1009,7 +1011,7 @@ func unstashIscsiTargetPortals(publishInfo *utils.VolumePublishInfo, reqPublishI
 	return nil
 }
 
-func (p *Plugin) populatePublishedISCSISessions(ctx context.Context) {
+func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
@@ -1024,8 +1026,12 @@ func (p *Plugin) populatePublishedISCSISessions(ctx context.Context) {
 
 		publishInfo := &trackingInfo.VolumePublishInfo
 
-		newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceTrackingInfo)
-		utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", utils.NotInvalid)
+		if publishInfo.SANType != sa.NVMe {
+			newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceTrackingInfo)
+			utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", utils.NotInvalid)
+		} else {
+			p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
+		}
 	}
 }
 
@@ -2111,7 +2117,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.NVMeSubsystemNQN = req.PublishContext["nvmeSubsystemNqn"]
-	publishInfo.NVMeNamespacePath = req.PublishContext["nvmeNamespacePath"]
+	publishInfo.NVMeNamespaceUUID = req.PublishContext["nvmeNamespaceUUID"]
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
 
@@ -2147,6 +2153,8 @@ func (p *Plugin) nodeStageNVMeVolume(
 		return err
 	}
 
+	p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
+
 	return nil
 }
 
@@ -2163,7 +2171,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	// Get the device from tracking info using commands or from publishInfo
 	// Flush the device IOs
 
-	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespacePath)
+	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting NVMe device, %v", err)
 	}
@@ -2184,6 +2192,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 		if err := nvmeSubsys.Disconnect(ctx); err != nil {
 			return nil, err
 		}
+		p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN)
 	}
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
@@ -2315,7 +2324,7 @@ func (p *Plugin) nodeStageSANVolume(ctx context.Context, req *csi.NodeStageVolum
 
 	if req.PublishContext["SANType"] == sa.NVMe {
 		if err := p.nodeStageNVMeVolume(ctx, req, publishInfo); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %s", err.Error()))
 		}
 	} else {
 		if err = p.nodeStageISCSIVolume(ctx, req, publishInfo); err != nil {
@@ -2324,4 +2333,66 @@ func (p *Plugin) nodeStageSANVolume(ctx context.Context, req *csi.NodeStageVolum
 	}
 
 	return &csi.NodeStageVolumeResponse{}, nil
+}
+
+// performNVMeSelfHealing inspects the desired state of the NVMe sessions with the current state and accordingly
+// identifies candidate sessions that require remediation. This function is invoked periodically.
+func (p *Plugin) performNVMeSelfHealing(ctx context.Context) {
+	utils.Lock(ctx, nvmeSelfHealingLockContext, lockID)
+	defer utils.Unlock(ctx, nvmeSelfHealingLockContext, lockID)
+
+	defer func() {
+		if r := recover(); r != nil {
+			Logc(ctx).Errorf("Panic in NVMeSelfHealing. \nStack Trace: %v", string(debug.Stack()))
+			return
+		}
+	}()
+
+	if publishedNVMeSessions.IsEmpty() {
+		Logc(ctx).Debug("No NVMe volumes are published. Self healing is not required.")
+		return
+	}
+
+	// After this time self-healing may be stopped
+	stopSelfHealingAt := time.Now().Add(60 * time.Second)
+
+	// Reset the remediations found in the previous run.
+	publishedNVMeSessions.ResetRemediationForAll()
+
+	// Reset current sessions
+	currentNVMeSessions = utils.NVMeSessions{}
+
+	// Populate the current sessions
+	if err := p.nvmeHandler.PopulateCurrentNVMeSessions(ctx, &currentNVMeSessions); err != nil {
+		Logc(ctx).Errorf("Failed to populate current sessions %v.", err)
+		return
+	}
+
+	Logc(ctx).Debugf("Published NVMe sessions %v.", publishedNVMeSessions)
+	Logc(ctx).Debugf("Current NVMe sessions %v.", currentNVMeSessions)
+
+	subsToFix := p.nvmeHandler.InspectNVMeSessions(ctx, &publishedNVMeSessions, &currentNVMeSessions)
+
+	Logc(ctx).Debug("Start NVMe healing.")
+	p.fixNVMeSessions(ctx, stopSelfHealingAt, subsToFix)
+	Logc(ctx).Debug("NVMe healing finished.")
+}
+
+func (p *Plugin) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsystems []utils.NVMeSubsystem) {
+	for index, sub := range subsystems {
+		// If the subsystem is not present in the published NVMe sessions, we don't need to rectify it's sessions.
+		if !publishedNVMeSessions.CheckNVMeSessionExists(sub.NQN) {
+			continue
+		}
+
+		// 1. We should fix at least one subsystem in a single self-healing thread.
+		// 2. If there's another thread waiting for the node lock and if we have exceeded our 60 secs lock, we should
+		//    stop NVMe self-healing.
+		if index > 0 && utils.WaitQueueSize(lockID) > 0 && time.Now().After(stopAt) {
+			Logc(ctx).Info("Self-healing has exceeded maximum runtime; preempting NVMe session self-healing.")
+			break
+		}
+
+		p.nvmeHandler.RectifyNVMeSession(ctx, sub, &publishedNVMeSessions)
+	}
 }

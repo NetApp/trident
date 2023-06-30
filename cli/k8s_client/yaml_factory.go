@@ -158,7 +158,8 @@ rules:
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
 "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status"]
+"tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
+"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -504,6 +505,11 @@ spec:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          runAsNonRoot: false
+          capabilities:
+            drop:
+            - all
         ports:
         - containerPort: 8443
         - containerPort: 8001
@@ -559,6 +565,10 @@ spec:
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -579,6 +589,10 @@ spec:
       - name: csi-provisioner
         image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.4.1
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=600s"
@@ -595,6 +609,10 @@ spec:
       - name: csi-attacher
         image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.2.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=60s"
@@ -622,6 +640,10 @@ spec:
       - name: csi-snapshotter
         image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v6.2.1
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
@@ -848,6 +870,11 @@ spec:
         securityContext:
           privileged: true
           allowPrivilegeEscalation: true
+          capabilities:
+            drop:
+            - all
+            add:
+            - SYS_ADMIN
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         command:
@@ -964,6 +991,15 @@ spec:
                     values:
                     - linux
                   {NODE_SELECTOR}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - node.csi.trident.netapp.io
+              topologyKey: kubernetes.io/hostname
       {NODE_TOLERATIONS}
       volumes:
       - name: plugin-dir
@@ -1190,6 +1226,15 @@ spec:
                     values:
                     - windows
                   {NODE_SELECTOR}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - node.csi.trident.netapp.io
+              topologyKey: kubernetes.io/hostname
       volumes:
         - name: trident-tracking-dir
           hostPath:
@@ -1234,30 +1279,28 @@ spec:
             type: DirectoryOrCreate
 `
 
-func GetTridentVersionPodYAML(
-	name, tridentImage, serviceAccountName, imagePullPolicy string, imagePullSecrets []string, labels,
-	controllingCRDetails map[string]string,
-) string {
+func GetTridentVersionPodYAML(args *TridentVersionPodYAMLArguments) string {
 	Log().WithFields(LogFields{
-		"Name":                 name,
-		"TridentImae":          tridentImage,
-		"ServiceAccountName":   serviceAccountName,
-		"Labels":               labels,
-		"ControllingCRDetails": controllingCRDetails,
+		"Name":                 args.TridentVersionPodName,
+		"TridentImae":          args.TridentImage,
+		"ServiceAccountName":   args.ServiceAccountName,
+		"Labels":               args.Labels,
+		"ControllingCRDetails": args.ControllingCRDetails,
 	}).Trace(">>>> GetTridentVersionPodYAML")
 	defer func() { Log().Trace("<<<< GetTridentVersionPodYAML") }()
 
-	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", serviceAccountName)
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(labels))
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", args.TridentVersionPodName)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", args.TridentImage)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(args.Labels))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", versionPodYAML).Trace("Trident Version Pod YAML.")
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS",
-		constructImagePullSecrets(imagePullSecrets))
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", imagePullPolicy)
+		constructImagePullSecrets(args.ImagePullSecrets))
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 
 	return versionPodYAML
 }
@@ -1278,7 +1321,12 @@ spec:
     image: {TRIDENT_IMAGE}
     command: ["tridentctl"]
     args: ["pause"]
+    securityContext:
+      capabilities:
+        drop:
+        - all
   {IMAGE_PULL_SECRETS}
+  {NODE_TOLERATIONS}
   affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1543,6 +1591,12 @@ func GetVolumeReferenceCRDYAML() string {
 	return tridentVolumeReferenceCRDYAMLv1
 }
 
+func GetActionSnapshotRestoreCRDYAML() string {
+	Log().Trace(">>>> GetActionSnapshotRestoreCRDYAML")
+	defer func() { Log().Trace("<<<< GetActionSnapshotRestoreCRDYAML") }()
+	return tridentActionSnapshotRestoreCRDYAMLv1
+}
+
 func GetOrchestratorCRDYAML() string {
 	Log().Trace(">>>> GetOrchestratorCRDYAML")
 	defer func() { Log().Trace("<<<< GetOrchestratorCRDYAML") }()
@@ -1562,6 +1616,7 @@ kubectl delete crd tridentnodes.trident.netapp.io --wait=false
 kubectl delete crd tridenttransactions.trident.netapp.io --wait=false
 kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumereferences.trident.netapp.io --wait=false
+kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io --wait=false
 
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -1575,6 +1630,7 @@ kubectl patch crd tridentnodes.trident.netapp.io -p '{"metadata":{"finalizers": 
 kubectl patch crd tridenttransactions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumereferences.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentactionsnapshotrestores.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
@@ -1588,6 +1644,7 @@ kubectl delete crd tridentnodes.trident.netapp.io
 kubectl delete crd tridenttransactions.trident.netapp.io
 kubectl delete crd tridentsnapshots.trident.netapp.io
 kubectl delete crd tridentvolumereferences.trident.netapp.io
+kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io
 */
 
 const tridentVersionCRDYAMLv1 = `
@@ -2240,6 +2297,63 @@ spec:
     - trident-external
     - trident-internal`
 
+const tridentActionSnapshotRestoreCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentactionsnapshotrestores.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - description: Namespace
+        jsonPath: .metadata.namespace
+        name: Namespace
+        type: string
+        priority: 0
+      - description: PVC
+        jsonPath: .spec.pvcName
+        name: PVC
+        type: string
+        priority: 0
+      - description: Snapshot
+        jsonPath: .spec.volumeSnapshotName
+        name: Snapshot
+        type: string
+        priority: 0
+      - description: State
+        jsonPath: .status.state
+        name: State
+        type: string
+        priority: 0
+      - description: CompletionTime
+        jsonPath: .status.completionTime
+        name: CompletionTime
+        type: date
+        priority: 0
+      - description: Message
+        jsonPath: .status.message
+        name: Message
+        type: string
+        priority: 1
+  scope: Namespaced
+  names:
+    plural: tridentactionsnapshotrestores
+    singular: tridentactionsnapshotrestore
+    kind: TridentActionSnapshotRestore
+    shortNames:
+    - tasr
+    categories:
+    - trident
+    - trident-external`
+
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
@@ -2252,7 +2366,8 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 +
-	"\n---" + tridentVolumeReferenceCRDYAMLv1 + "\n"
+	"\n---" + tridentVolumeReferenceCRDYAMLv1 +
+	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{
@@ -2307,6 +2422,8 @@ metadata:
 spec:
   privileged: true
   allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - SYS_ADMIN
   hostIPC: true
   hostPID: true
   hostNetwork: true

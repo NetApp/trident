@@ -35,20 +35,20 @@ const (
 	PreferredNamespace = tridentconfig.OrchestratorName
 
 	// CRD names
-
-	ActionMirrorUpdateCRDName = "tridentactionmirrorupdates.trident.netapp.io"
-	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
-	BackendCRDName            = "tridentbackends.trident.netapp.io"
-	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
-	NodeCRDName               = "tridentnodes.trident.netapp.io"
-	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
-	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
-	StorageClassCRDName       = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
-	VersionCRDName            = "tridentversions.trident.netapp.io"
-	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
-	VolumeReferenceCRDName    = "tridentvolumereferences.trident.netapp.io"
+	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
+	BackendCRDName               = "tridentbackends.trident.netapp.io"
+	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
+	NodeCRDName                  = "tridentnodes.trident.netapp.io"
+	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
+	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
+	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
+	VersionCRDName               = "tridentversions.trident.netapp.io"
+	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
+	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -152,8 +152,6 @@ var (
 	persistentObjectLabelKey   string
 	persistentObjectLabelValue string
 
-	dns1123LabelRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
-
 	CRDnames = []string{
 		ActionMirrorUpdateCRDName,
 		BackendConfigCRDName,
@@ -168,6 +166,7 @@ var (
 		VersionCRDName,
 		VolumeCRDName,
 		VolumePublicationCRDName,
+		ActionSnapshotRestoreCRDName,
 	}
 )
 
@@ -403,7 +402,7 @@ func validateInstallationArguments() error {
 	labelFormat := "a DNS-1123 label must consist of lower case alphanumeric characters or '-', " +
 		"and must start and end with an alphanumeric character"
 
-	if !dns1123LabelRegex.MatchString(TridentPodNamespace) {
+	if !utils.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("'%s' is not a valid namespace name; %s", TridentPodNamespace, labelFormat)
 	}
 

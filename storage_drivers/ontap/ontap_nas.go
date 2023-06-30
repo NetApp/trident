@@ -19,6 +19,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -419,7 +420,7 @@ func (d *NASStorageDriver) CreateClone(
 		"Type":        "NASStorageDriver",
 		"name":        cloneVolConfig.InternalName,
 		"source":      cloneVolConfig.CloneSourceVolumeInternal,
-		"snapshot":    cloneVolConfig.CloneSourceSnapshot,
+		"snapshot":    cloneVolConfig.CloneSourceSnapshotInternal,
 		"storagePool": storagePool,
 	}
 	Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
@@ -472,8 +473,10 @@ func (d *NASStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	if err := cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup); err != nil {
+
+	if err = cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
+		cloneVolConfig.CloneSourceSnapshotInternal, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup,
+	); err != nil {
 		return err
 	}
 
@@ -517,6 +520,13 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	// If flexvol has been a snapmirror destination
 	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
+	// If flexvol has been a snapmirror source
+	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
@@ -718,30 +728,26 @@ func getFlexvolSnapshot(
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-			"created":      snap.CreateTime,
-		}).Debug("Found snapshot.")
-
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
+		if errors.IsNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, err
 		}
 	}
 
-	return nil, nil
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(size),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
@@ -1315,10 +1321,17 @@ func (d *NASStorageDriver) UpdateMirror(ctx context.Context, localInternalVolume
 
 // CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
 // succeeded or in progress
-func (d *NASStorageDriver) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time,
-	error,
-) {
+func (d *NASStorageDriver) CheckMirrorTransferState(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
 	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
+}
+
+// GetMirrorTransferTime will return the transfer time of the mirror relationship
+func (d *NASStorageDriver) GetMirrorTransferTime(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return getMirrorTransferTime(ctx, localInternalVolumeName, d.API)
 }
 
 // MountVolume returns the volume mount error(if any)

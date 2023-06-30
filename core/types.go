@@ -58,11 +58,15 @@ type Orchestrator interface {
 	GetSubordinateSourceVolume(ctx context.Context, subordinateVolumeName string) (*storage.VolumeExternal, error)
 
 	CreateSnapshot(ctx context.Context, snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
+	ImportSnapshot(
+		ctx context.Context, snapshotConfig *storage.SnapshotConfig,
+	) (*storage.SnapshotExternal, error)
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotExternal, error)
 	ListSnapshots(ctx context.Context) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsByName(ctx context.Context, snapshotName string) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
 	ReadSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
+	RestoreSnapshot(ctx context.Context, volumeName, snapshotName string) error
 	DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error
 
 	AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
@@ -105,6 +109,7 @@ type Orchestrator interface {
 	GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
 	UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) error
 	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 

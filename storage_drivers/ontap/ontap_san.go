@@ -478,7 +478,7 @@ func (d *SANStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":      "CreateClone",
@@ -722,6 +722,13 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	// If flexvol has been a snapmirror destination
 	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
+	// If flexvol has been a snapmirror source
+	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
@@ -1414,10 +1421,17 @@ func (d *SANStorageDriver) UpdateMirror(ctx context.Context, localInternalVolume
 
 // CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
 // succeeded or in progress
-func (d *SANStorageDriver) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time,
-	error,
-) {
+func (d *SANStorageDriver) CheckMirrorTransferState(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
 	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
+}
+
+// GetMirrorTransferTime will return the transfer time of the mirror relationship
+func (d *SANStorageDriver) GetMirrorTransferTime(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return getMirrorTransferTime(ctx, localInternalVolumeName, d.API)
 }
 
 func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {

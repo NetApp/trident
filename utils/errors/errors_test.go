@@ -119,6 +119,46 @@ func TestFoundError(t *testing.T) {
 	assert.Equal(t, "outer; inner; ", err.Error())
 }
 
+func TestNotManagedError(t *testing.T) {
+	err := NotManagedError("not managed error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("not managed error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsNotManagedError(err))
+
+	assert.False(t, IsNotManagedError(nil))
+
+	err = NotManagedError("")
+	assert.True(t, IsNotManagedError(err))
+
+	// Test wrapping
+	err = WrapWithNotManagedError(fmt.Errorf("not a not managed err"), "not managed")
+	assert.True(t, IsNotManagedError(err))
+	assert.Equal(t, "not managed; not a not managed err", err.Error())
+
+	err = WrapWithNotManagedError(nil, "not managed")
+	assert.Equal(t, "not managed", err.Error())
+
+	err = WrapWithNotManagedError(fmt.Errorf("not a not managed err"), "")
+	assert.True(t, IsNotManagedError(err))
+	assert.Equal(t, "not a not managed err", err.Error())
+
+	err = WrapWithNotManagedError(fmt.Errorf(""), "not managed")
+	assert.True(t, IsNotManagedError(err))
+	assert.Equal(t, "not managed", err.Error())
+
+	err = NotManagedError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsNotManagedError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = NotManagedError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsNotManagedError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
+}
+
 func TestAsInvalidJSONError(t *testing.T) {
 	unmarshalTypeErr := &json.UnmarshalTypeError{
 		Value:  "",

@@ -29,6 +29,7 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -419,6 +420,11 @@ func (t *tracker) add(
 		if newMeta.GetName() == "" {
 			newMeta.SetName(newMeta.GetGenerateName() + strings.ToLower(utils.RandomString(5)))
 		}
+	}
+
+	// Set an initial UID if not set
+	if newMeta.GetUID() == "" {
+		newMeta.SetUID(types.UID(uuid.NewString()))
 	}
 
 	// Set an initial resource version if not set

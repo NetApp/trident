@@ -70,6 +70,10 @@ type Plugin struct {
 	nodePublicationTimer    *time.Timer
 
 	nvmeHandler utils.NVMeInterface
+
+	nvmeSelfHealingTicker   *time.Ticker
+	nvmeSelfHealingChannel  chan struct{}
+	nvmeSelfHealingInterval time.Duration
 }
 
 func NewControllerPlugin(
@@ -128,7 +132,7 @@ func NewControllerPlugin(
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	unsafeDetach bool, helper *nodehelpers.NodeHelper, enableForceDetach bool,
-	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
+	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime, nvmeSelfHealingInterval time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 
@@ -156,6 +160,7 @@ func NewNodePlugin(
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              utils.NewNVMeHandler(),
+		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
 	}
 
 	if runtime.GOOS == "windows" {
@@ -219,7 +224,7 @@ func NewNodePlugin(
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
 	controllerHelper *controllerhelpers.ControllerHelper, nodeHelper *nodehelpers.NodeHelper, unsafeDetach bool,
-	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime time.Duration,
+	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime, nvmeSelfHealingInterval time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
 
@@ -239,6 +244,7 @@ func NewAllInOnePlugin(
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,
 		iSCSISelfHealingWaitTime: iSCSIStaleSessionWaitTime,
 		nvmeHandler:              utils.NewNVMeHandler(),
+		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
 	}
 
 	// Define controller capabilities
@@ -303,7 +309,12 @@ func (p *Plugin) Activate() error {
 
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
+			// Populate the published sessions IFF iSCSI/NVMe self-healing is enabled.
+			if p.iSCSISelfHealingInterval > 0 || p.nvmeSelfHealingInterval > 0 {
+				p.populatePublishedSessions(ctx)
+			}
 			p.startISCSISelfHealingThread(ctx)
+			p.startNVMeSelfHealingThread(ctx)
 			if p.enableForceDetach {
 				p.startReconcilingNodePublications(ctx)
 			}
@@ -328,6 +339,7 @@ func (p *Plugin) Deactivate() error {
 
 	// Stop iSCSI self-healing thread
 	p.stopISCSISelfHealingThread(ctx)
+	p.stopNVMeSelfHealingThread(ctx)
 
 	return nil
 }
@@ -435,8 +447,6 @@ func (p *Plugin) startISCSISelfHealingThread(ctx context.Context) {
 	p.iSCSISelfHealingTicker = time.NewTicker(p.iSCSISelfHealingInterval)
 	p.iSCSISelfHealingChannel = make(chan struct{})
 
-	p.populatePublishedISCSISessions(ctx)
-
 	go func() {
 		ctx = GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeHealISCSI, LogLayerCSIFrontend)
 
@@ -464,6 +474,59 @@ func (p *Plugin) stopISCSISelfHealingThread(_ context.Context) {
 
 	if p.iSCSISelfHealingChannel != nil {
 		close(p.iSCSISelfHealingChannel)
+	}
+
+	return
+}
+
+// startNVMeSelfHealingThread starts the NVMe self-healing thread to heal faulty sessions.
+func (p *Plugin) startNVMeSelfHealingThread(ctx context.Context) {
+	// provision to disable the NVMe self-healing feature
+	if p.nvmeSelfHealingInterval <= 0 {
+		Logc(ctx).Info("NVMe self-healing is disabled.")
+		return
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"NVMeSelfHealingInterval": p.nvmeSelfHealingInterval,
+	}).Info("NVMe self-healing is enabled.")
+	// We are halving the nvmeSelfHealingInterval as it will be used to add some jitter between the iSCSI and NVMe
+	// self-healing threads initially. We will reset the ticker after the first NVMe self-healing run.
+	p.nvmeSelfHealingTicker = time.NewTicker(p.nvmeSelfHealingInterval / 2)
+	p.nvmeSelfHealingChannel = make(chan struct{})
+
+	go func() {
+		ctx = GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowNodeHealNVMe, LogLayerCSIFrontend)
+		resetTicker := true
+
+		for {
+			select {
+			case tick := <-p.nvmeSelfHealingTicker.C:
+				Logc(ctx).WithField("tick", tick).Debug("NVMe self-healing is running.")
+				p.performNVMeSelfHealing(ctx)
+				// Resetting the ticket to a proper NVMeSelfHealingInterval.
+				if resetTicker {
+					p.nvmeSelfHealingTicker.Reset(p.nvmeSelfHealingInterval)
+					resetTicker = false
+				}
+			case <-p.nvmeSelfHealingChannel:
+				Logc(ctx).Info("NVMe self-healing stopped.")
+				return
+			}
+		}
+	}()
+
+	return
+}
+
+// stopNVMeSelfHealingThread stops the NVMe self-healing thread.
+func (p *Plugin) stopNVMeSelfHealingThread(_ context.Context) {
+	if p.nvmeSelfHealingTicker != nil {
+		p.nvmeSelfHealingTicker.Stop()
+	}
+
+	if p.nvmeSelfHealingChannel != nil {
+		close(p.nvmeSelfHealingChannel)
 	}
 
 	return

@@ -55,6 +55,7 @@ const (
 	OpStage            = WorkflowOperation("stage")
 	OpUnstage          = WorkflowOperation("unstage")
 	OpHealISCSI        = WorkflowOperation("heal_iscsi")
+	OpHealNVMe         = WorkflowOperation("heal_nvme")
 	OpReconcilePubs    = WorkflowOperation("reconcile_publications")
 	OpTraceFactory     = WorkflowOperation("trace_factory")
 	OpTraceAPI         = WorkflowOperation("trace_api")
@@ -145,6 +146,7 @@ var (
 	WorkflowNodePublish       = Workflow{CategoryNodeServer, OpPublish}
 	WorkflowNodeUnpublish     = Workflow{CategoryNodeServer, OpUnpublish}
 	WorkflowNodeHealISCSI     = Workflow{CategoryNodeServer, OpHealISCSI}
+	WorkflowNodeHealNVMe      = Workflow{CategoryNodeServer, OpHealNVMe}
 	WorkflowNodeReconcilePubs = Workflow{CategoryNodeServer, OpReconcilePubs}
 
 	WorkflowNone = Workflow{CategoryNone, OpNone}

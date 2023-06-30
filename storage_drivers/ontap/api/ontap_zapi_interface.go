@@ -275,6 +275,8 @@ type ZapiClientInterface interface {
 	SnapshotCreate(snapshotName, volumeName string) (*azgo.SnapshotCreateResponse, error)
 	// SnapshotList returns the list of snapshots associated with a volume
 	SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, error)
+	// SnapshotInfo returns a snapshot by name for a volume
+	SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error)
 	// SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 	SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error)
 	// DeleteSnapshot deletes a snapshot of a volume
@@ -336,6 +338,9 @@ type ZapiClientInterface interface {
 	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 	// Intended to be used on the source vserver
 	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
+	// SnapmirrorDestinationRelease removes all local snapmirror relationship metadata of the destination volume
+	// Intended to be used on the destination vserver
+	SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error)
 	// Intended to be from the destination vserver
 	SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName string) (*azgo.SnapmirrorDestroyResponse,
 		error)

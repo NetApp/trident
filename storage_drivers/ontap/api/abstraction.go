@@ -209,6 +209,7 @@ type OntapAPI interface {
 	VolumeSize(ctx context.Context, volumeName string) (uint64, error)
 	VolumeUsedSize(ctx context.Context, volumeName string) (int, error)
 	VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error)
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
 	VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string,

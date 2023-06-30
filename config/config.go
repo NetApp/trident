@@ -45,8 +45,10 @@ const (
 	PersistentStoreTimeout           = 10 * time.Second
 	DockerCreateTimeout              = 115 * time.Second
 	DockerDefaultTimeout             = 55 * time.Second
-	CSIUnixSocketPermissions         = 0o600
-	CSISocketDirPermissions          = 0o600
+	// CSIUnixSocketPermissions CSI socket file needs rw access only for user
+	CSIUnixSocketPermissions = 0o600
+	// CSISocketDirPermissions CSI socket directory needs rwx access only for user
+	CSISocketDirPermissions = 0o700
 
 	/* REST/HTTP constants */
 	HTTPTimeout       = 90 * time.Second
@@ -184,6 +186,9 @@ const (
 
 	// BackendStoragePollInterval is an interval  that core layer attempts to poll storage backend periodically
 	BackendStoragePollInterval = 300 * time.Second
+
+	// NVMeSelfHealingInterval is an interval with which the NVMe self-healing thread is called periodically
+	NVMeSelfHealingInterval = 300 * time.Second
 )
 
 var (

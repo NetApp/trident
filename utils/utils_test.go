@@ -1488,3 +1488,38 @@ func TestSlicePtrs(t *testing.T) {
 	assert.Equal(t, slice[0], *result[0])
 	assert.Equal(t, slice[1], *result[1])
 }
+
+func TestDNS1123Regexes_MatchString(t *testing.T) {
+	tests := map[string]struct {
+		s        string
+		expected bool
+	}{
+		"finds no match when supplied string is empty": {
+			"",
+			false,
+		},
+		"finds no match when supplied string doesn't match regex": {
+			"pvc_2eff1a7e-679d-4fc6-892f-a6538cdbe278",
+			false,
+		},
+		"finds no match when supplied string has invalid characters at beginning": {
+			"-pvc_2eff1a7e-679d-4fc6-892f-a6538cdbe278",
+			false,
+		},
+		"finds no match when supplied string has invalid characters at end": {
+			"pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278-",
+			false,
+		},
+		"finds match when supplied string matches regex": {
+			"snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj",
+			true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expected, DNS1123DomainRegex.MatchString(test.s))
+			assert.Equal(t, test.expected, DNS1123LabelRegex.MatchString(test.s))
+		})
+	}
+}

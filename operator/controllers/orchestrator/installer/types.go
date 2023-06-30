@@ -99,7 +99,7 @@ type ExtendedK8sClient interface {
 		currentDaemonSet *appsv1.DaemonSet, createDaemonSet bool, newDaemonSetYAML, nodeLabel, daemonSetName string,
 	) error
 	DeleteTridentDaemonSet(nodeLabel string) error
-	RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonSet) error
+	RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonSet, foreground bool) error
 
 	GetDeploymentInformation(
 		deploymentName, appLabel, namespace string,

@@ -35,6 +35,8 @@ var (
 	invalidStoragePrefix = utils.Ptr("$invalid$")
 	validStoragePrefix   = utils.Ptr("trident")
 	nameMoreThan64char   = "foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoo"
+	volInternalID        = "/svm/svm0_nas/flexvol/trident_qtree_pool_trident_GLVRJSQGLP/qtree/trident_pvc_92c02355"
+	flexvol              = "trident_qtree_pool_trident_GLVRJSQGLP"
 )
 
 func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
@@ -155,6 +157,26 @@ func TestInitialize_Success(t *testing.T) {
 	assert.True(t, driver.initialized, "Driver not initialized")
 }
 
+func TestInitialize_WithInvalidDriverAPI(t *testing.T) {
+	// Get structs needed for initializing driver
+	commonConfig, configJSON, secrets := getStructsForInitializeDriver()
+
+	// Create mock driver and api
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	// Add various expect to mockAPI
+	addCommonExpectToMockApiForInitialize(mockAPI)
+
+	// Setting API to an ivalid value.
+	driver.API = nil
+	// Initialize
+	result := driver.Initialize(ctx, driverContextCSI, *configJSON,
+		commonConfig, secrets, BackendUUID)
+
+	// Assert that error occurs
+	assert.Error(t, result, "expected error in initialize with invalid API, got nil")
+}
+
 func TestInitialize_WithInvalidConfigJson(t *testing.T) {
 	// Get structs needed for initializing driver
 	commonConfig, configJSON, secrets := getStructsForInitializeDriver()
@@ -258,7 +280,8 @@ func TestInitialize_WithDifferentQtreePerFlexvol(t *testing.T) {
 						"password":          "dummypassword",
 						"qtreesPerFlexvol":  "5"
 					}`,
-			expectedError: fmt.Sprintf("invalid config value for qtreesPerFlexvol (minimum is %d)", minQtreesPerFlexvol),
+			expectedError: fmt.Sprintf("invalid config value for qtreesPerFlexvol (minimum is %d)",
+				minQtreesPerFlexvol),
 		},
 		{
 			name: "qtreePerFlexVol more than maximum qtreePerFlexvol",
@@ -273,7 +296,8 @@ func TestInitialize_WithDifferentQtreePerFlexvol(t *testing.T) {
 						"password":          "dummypassword",
 						"qtreesPerFlexvol":  "400"
 					}`,
-			expectedError: fmt.Sprintf("invalid config value for qtreesPerFlexvol (maximum is %d)", maxQtreesPerFlexvol),
+			expectedError: fmt.Sprintf("invalid config value for qtreesPerFlexvol (maximum is %d)",
+				maxQtreesPerFlexvol),
 		},
 	}
 
@@ -296,9 +320,11 @@ func TestInitialize_WithDifferentQtreePerFlexvol(t *testing.T) {
 				commonConfig, secrets, BackendUUID)
 
 			if test.expectedError != "" {
-				assert.Contains(tt, result.Error(), test.expectedError, "Expected error when invalid qtreePerFlexvol, got nil ")
+				assert.Contains(tt, result.Error(), test.expectedError,
+					"Expected error when invalid qtreePerFlexvol, got nil ")
 			} else {
-				assert.Equal(tt, test.expectedQtreePerFlexvol, driver.qtreesPerFlexvol, "Incorrect value of qtreePerFlexvol")
+				assert.Equal(tt, test.expectedQtreePerFlexvol, driver.qtreesPerFlexvol,
+					"Incorrect value of qtreePerFlexvol")
 			}
 		})
 	}
@@ -565,10 +591,173 @@ func TestValidate_WithErrorInApiOperation(t *testing.T) {
 	assert.Error(t, result2, "Expected error when api fails to create export policy, got nil")
 }
 
-func TestCreateClone_NotSupported(t *testing.T) {
+func TestCreateClone_NotSupportedWithoutRO(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	result := driver.CreateClone(ctx, nil, &storage.VolumeConfig{}, getValidOntapNASPool())
 	assert.Error(t, result, "Expected error in CreateClone, got nil")
+}
+
+func TestCreateClone_Success_ROClone(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: true,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, nil)
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+	fmt.Println(result)
+
+	assert.NoError(t, result, "received error %v", result)
+}
+
+func TestCreateClone_FailureROCloneFalse(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       false,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+
+	assert.Error(t, result, "expected error")
+}
+
+func TestCreateClone_FailureWrongVolID(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          "wrong-volume-id",
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+
+	assert.Error(t, result, "expected error")
+}
+
+func TestCreateClone_FailureNoVolInfo(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "true",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: true,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, mockError)
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+	fmt.Println(result)
+
+	assert.Error(t, result, "expected error")
+}
+
+func TestCreateClone_FailureSnapDirFalse(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	srcVolConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		SnapshotDir:         "false",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		InternalID:          volInternalID,
+		CloneSourceSnapshot: "flexvol",
+		ReadOnlyClone:       true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: false,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, nil)
+
+	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
+
+	assert.Error(t, result, "expected error")
 }
 
 func TestImport_NotSupported(t *testing.T) {
@@ -692,8 +881,10 @@ func TestPublish_Success_WithNASTypeNone(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
 	volConfig := &storage.VolumeConfig{
-		Size:            "1g",
-		Encryption:      "false",
+		Size:       "1g",
+		Encryption: "false",
+		AccessInfo: utils.VolumeAccessInfo{NfsAccessInfo: utils.
+			NfsAccessInfo{NfsPath: "/testVol/testVolInternal"}},
 		FileSystem:      "nfs",
 		Name:            volName,
 		InternalName:    volNameInternal,
@@ -798,7 +989,8 @@ func TestPublish_WithDifferentInternalId(t *testing.T) {
 			if test.expectError {
 				assert.Error(tt, result, "Expected error in publish, got nil")
 			} else {
-				assert.Equal(tt, test.newVolInternalID, test.volConfig.InternalID, "New InternalID of volume not correct")
+				assert.Equal(tt, test.newVolInternalID, test.volConfig.InternalID,
+					"New InternalID of volume not correct")
 			}
 		})
 	}
@@ -897,41 +1089,10 @@ func TestPublishQtreeShare_WithErrorInApiOperation(t *testing.T) {
 	assert.Error(t, result2, "Expected error when api failed to check export policy exists, got nil")
 }
 
-func TestCanSnapshot_NotSupported(t *testing.T) {
-	_, driver := newMockOntapNasQtreeDriver(t)
-	result := driver.CanSnapshot(ctx, &storage.SnapshotConfig{}, &storage.VolumeConfig{})
-	assert.Error(t, result, "Expected error in CanSnapshot, got nil")
-}
-
-func TestGetSnapshot_NotSupported(t *testing.T) {
-	_, driver := newMockOntapNasQtreeDriver(t)
-	_, result := driver.GetSnapshot(ctx, &storage.SnapshotConfig{}, &storage.VolumeConfig{})
-	assert.Error(t, result, "Expected error in CanSnapshot, got nil")
-}
-
-func TestGetSnapshots_NotSupported(t *testing.T) {
-	_, driver := newMockOntapNasQtreeDriver(t)
-	snapshots, result := driver.GetSnapshots(ctx, &storage.VolumeConfig{})
-	assert.NoError(t, result, "Expected no error in GetSnapshots, got error")
-	assert.Equal(t, 0, len(snapshots), "Expected 0 snapshots, got non-zero snapshots")
-}
-
-func TestCreateSnapshot_NotSupported(t *testing.T) {
-	_, driver := newMockOntapNasQtreeDriver(t)
-	_, result := driver.CreateSnapshot(ctx, &storage.SnapshotConfig{}, &storage.VolumeConfig{})
-	assert.Error(t, result, "Expected error in CreateSnapshots, got nil")
-}
-
 func TestRestoreSnapshot_NotSupported(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	result := driver.RestoreSnapshot(ctx, &storage.SnapshotConfig{}, &storage.VolumeConfig{})
 	assert.Error(t, result, "Expected error in RestoreSnapshot, got nil")
-}
-
-func TestDeleteSnapshot_NotSupported(t *testing.T) {
-	_, driver := newMockOntapNasQtreeDriver(t)
-	result := driver.DeleteSnapshot(ctx, &storage.SnapshotConfig{}, &storage.VolumeConfig{})
-	assert.Error(t, result, "Expected error in DeleteSnapshot, got nil")
 }
 
 func TestGet_Success(t *testing.T) {
@@ -1185,7 +1346,8 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).AnyTimes().Return(mockError)
 	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 
 	resultFlexvol6, result6 := driver.createFlexvolForQtree(
@@ -1200,7 +1362,8 @@ func TestCreateFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
+	mockAPI.EXPECT().QuotaSetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).AnyTimes().Return(mockError)
 	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).AnyTimes().Return(mockError)
 
 	resultFlexvol7, result7 := driver.createFlexvolForQtree(
@@ -1224,7 +1387,7 @@ func addExpectForCreateFlexvolForQtree(mockAPI *mockapi.MockOntapAPI) {
 	)
 }
 
-func TestGetFlexvolForQtree_Success_ZeroEligibleVolume(t *testing.T) {
+func TestFindFlexvolForQtree_Success_ZeroEligibleVolume(t *testing.T) {
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
@@ -1244,7 +1407,7 @@ func TestGetFlexvolForQtree_Success_ZeroEligibleVolume(t *testing.T) {
 	// Ensure 0 volumes are returned by api
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{}, nil)
 
-	resultFlexvol, result := driver.getFlexvolForQtree(
+	resultFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		false, 0, 0,
@@ -1254,7 +1417,7 @@ func TestGetFlexvolForQtree_Success_ZeroEligibleVolume(t *testing.T) {
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
-func TestGetFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
+func TestFindFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
@@ -1279,7 +1442,7 @@ func TestGetFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume.Name).AnyTimes().Return(0, nil)
 
-	resultFlexvol, result := driver.getFlexvolForQtree(
+	resultFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		false, 0, 0,
@@ -1289,7 +1452,7 @@ func TestGetFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
-func TestGetFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
+func TestFindFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
@@ -1310,11 +1473,12 @@ func TestGetFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 	eligibleVolume2 := &api.Volume{Name: "test_flexvol2"}
 
 	// Ensure multiple volumes are returned by api
-	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume1, eligibleVolume2}, nil)
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume1, eligibleVolume2},
+		nil)
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume1.Name).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume2.Name).AnyTimes().Return(0, nil)
 
-	resultFlexvol, result := driver.getFlexvolForQtree(
+	resultFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		false, 0, 0,
@@ -1327,7 +1491,7 @@ func TestGetFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
-func TestGetFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
+func TestFindFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 	// Create mock driver and api
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
@@ -1348,7 +1512,8 @@ func TestGetFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 	eligibleVolume2 := &api.Volume{Name: "test_flexvol2"}
 
 	// Ensure volume is returned by api
-	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume1, eligibleVolume2}, nil)
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume1, eligibleVolume2},
+		nil)
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume1.Name).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume2.Name).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, eligibleVolume1.Name).AnyTimes().Return(volAttrs, nil)
@@ -1356,7 +1521,7 @@ func TestGetFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 	mockAPI.EXPECT().QuotaEntryList(ctx, eligibleVolume1.Name).AnyTimes().
 		Return(api.QuotaEntries{&api.QuotaEntry{Target: "", DiskLimitBytes: 1 * 1024 * 1024 * 1024}}, nil)
 
-	resultFlexvol, result := driver.getFlexvolForQtree(
+	resultFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		true, 1073741824, 10,
@@ -1367,12 +1532,12 @@ func TestGetFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
-func TestGetFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
+func TestFindFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
 	// Create mock driver
 	_, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test_"
 
-	_, result := driver.getFlexvolForQtree(
+	_, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "invalid", false, utils.Ptr(false),
 		true, 1073741824, 10,
@@ -1382,14 +1547,14 @@ func TestGetFlexvolForQtree_WithInvalidSnapshotReserve(t *testing.T) {
 	assert.Error(t, result, "Expected error when invalid snapshot reserve, got no error")
 }
 
-func TestGetFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
+func TestFindFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	volName := "testVol"
 
 	// CASE 1: Error in getting volume list
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(nil, mockError)
 
-	resultFlexvol1, result1 := driver.getFlexvolForQtree(
+	resultFlexvol1, result1 := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, utils.Ptr(false),
 		false, 0, 0,
@@ -1404,7 +1569,7 @@ func TestGetFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{volInfo}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volName).AnyTimes().Return(0, mockError)
 
-	resultFlexvol2, result2 := driver.getFlexvolForQtree(
+	resultFlexvol2, result2 := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, utils.Ptr(false),
 		false, 0, 0,
@@ -1674,8 +1839,10 @@ func TestQueueAllFlexvolsForQuotaResize_Success(t *testing.T) {
 
 	driver.queueAllFlexvolsForQuotaResize(ctx)
 
-	assert.True(t, driver.quotaResizeMap[volName1], fmt.Sprintf("Expected true for %s in driver's quotaResizeMap, got false", volName1))
-	assert.True(t, driver.quotaResizeMap[volName2], fmt.Sprintf("Expected true for %s in driver's quotaResizeMap, got false", volName2))
+	assert.True(t, driver.quotaResizeMap[volName1],
+		fmt.Sprintf("Expected true for %s in driver's quotaResizeMap, got false", volName1))
+	assert.True(t, driver.quotaResizeMap[volName2],
+		fmt.Sprintf("Expected true for %s in driver's quotaResizeMap, got false", volName2))
 }
 
 func TestQueueAllFlexvolsForQuotaResize_WithErrorInApiOperation(t *testing.T) {
@@ -1708,8 +1875,10 @@ func TestResizeQuotas_Success(t *testing.T) {
 	// Assert that where resize is successful or the flexvol is not found, the entry is removed from quotaResizeMap
 	assert.NotContains(t, driver.quotaResizeMap, "vol1", "Expected successful resizeQuota, but failed")
 	assert.NotContains(t, driver.quotaResizeMap, "vol2", "Not found flexvol should be removed from quotaResize map")
-	assert.Contains(t, driver.quotaResizeMap, "vol3", "Flexvol for which quotaResize failed due should be retained for next try")
-	assert.Contains(t, driver.quotaResizeMap, "vol4", "Flexvol not requiring quotaResize should be retained for next try")
+	assert.Contains(t, driver.quotaResizeMap, "vol3",
+		"Flexvol for which quotaResize failed due should be retained for next try")
+	assert.Contains(t, driver.quotaResizeMap, "vol4",
+		"Flexvol not requiring quotaResize should be retained for next try")
 }
 
 func TestGetTotalHardDiskLimitQuota_Success(t *testing.T) {
@@ -1779,7 +1948,8 @@ func TestPruneUnusedFlexvols_WithUnexpiredFlexvolWithZeroQtree(t *testing.T) {
 	flexvolPrefix := "test"
 	driver.flexvolNamePrefix = flexvolPrefix
 
-	mockAPI.EXPECT().VolumeListByPrefix(ctx, flexvolPrefix).AnyTimes().Return(api.Volumes{vol, volNotInEmptyFlexvolMap}, nil)
+	mockAPI.EXPECT().VolumeListByPrefix(ctx, flexvolPrefix).AnyTimes().Return(api.Volumes{vol, volNotInEmptyFlexvolMap},
+		nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volName).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volNotInEmptyFlexvolMapName).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().VolumeDestroy(ctx, volName, true).AnyTimes().Return(nil)
@@ -2038,6 +2208,41 @@ func TestCreateFollowup_Success_WithNASTypeSMB(t *testing.T) {
 	assert.Equal(t, sa.SMB, volConfig.FileSystem, "Incorrect FileSystem")
 }
 
+func TestCreateFollowup_Success_WithROClone(t *testing.T) {
+	svm := "svm1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
+	volConfig := &storage.VolumeConfig{
+		Name:                      volName,
+		InternalName:              volNameInternal,
+		InternalID:                "",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: volNameInternal,
+	}
+
+	// Set driver config nas type default and other config values
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SVM = svm
+	driver.Config.NASType = ""
+	driver.Config.DataLIF = "10.0.0.0"
+	driver.Config.NfsMountOptions = "-o nfsvers=3"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
+
+	// Create followup
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	// Assert on no error and suitable values for volconfig
+	assert.NoError(t, result, "Expected no error in CreateFollowup, got error")
+	assert.Equal(t, fmt.Sprintf("/svm/%s/flexvol/%s/qtree/%s", svm, volName, volNameInternal), volConfig.InternalID,
+		"Incorrect volume InternalID")
+	assert.Equal(t, driver.Config.DataLIF, volConfig.AccessInfo.NfsServerIP, "Incorrect NfsServerIP")
+	assert.Equal(t, fmt.Sprintf("/%s/%s/.snapshot/", volName, volNameInternal), volConfig.AccessInfo.NfsPath,
+		"Incorrect NfsPath")
+	assert.Equal(t, strings.TrimPrefix(driver.Config.NfsMountOptions, "-o "), volConfig.AccessInfo.MountOptions,
+		"Incorrect MountOptions")
+}
+
 func TestCreateFollowup_WithInvalidInternalID(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
@@ -2133,8 +2338,10 @@ func TestGetVolumeExternal_Success(t *testing.T) {
 	assert.NoError(t, result, "Expected no error in getting external volume, got error")
 	assert.Equal(t, "Internal", volumeExternal.Config.Name, "Volume name doesn't match")
 	assert.Equal(t, volNameInternal, volumeExternal.Config.InternalName, "Volume internal name doesn't match")
-	assert.Equal(t, strconv.FormatInt(quotaEntry.DiskLimitBytes, 10), volumeExternal.Config.Size, "Volume size incorrect")
-	assert.Equal(t, volInfo.SnapshotPolicy, volumeExternal.Config.SnapshotPolicy, "Volume snapshot policy doesn't match")
+	assert.Equal(t, strconv.FormatInt(quotaEntry.DiskLimitBytes, 10), volumeExternal.Config.Size,
+		"Volume size incorrect")
+	assert.Equal(t, volInfo.SnapshotPolicy, volumeExternal.Config.SnapshotPolicy,
+		"Volume snapshot policy doesn't match")
 	assert.Equal(t, tridentconfig.ReadWriteMany, volumeExternal.Config.AccessMode, "Volume accessMode not correct")
 	assert.Equal(t, volInfo.Aggregates[0], volumeExternal.Pool, "Volume pool not correct")
 }
@@ -2485,7 +2692,8 @@ func TestResize_WithDifferentSizeRequest(t *testing.T) {
 			attachExpectToApi: func(mockAPI *mockapi.MockOntapAPI) {
 				quotaEntry := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 1 * 1024 * 1024 * 1024}
 				mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
-				mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
+				mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal,
+					gomock.Any()).AnyTimes().Return(quotaEntry, nil)
 			},
 			expectError: false,
 		}, {
@@ -2494,10 +2702,12 @@ func TestResize_WithDifferentSizeRequest(t *testing.T) {
 			attachExpectToApi: func(mockAPI *mockapi.MockOntapAPI) {
 				quotaEntry := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 1 * 1024 * 1024 * 1024}
 				mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
-				mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
+				mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal,
+					gomock.Any()).AnyTimes().Return(quotaEntry, nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).AnyTimes().Return(volInfo, nil)
 				mockAPI.EXPECT().VolumeSetSize(ctx, volName, gomock.Any()).AnyTimes().Return(nil)
-				mockAPI.EXPECT().QuotaSetEntry(ctx, volNameInternal, volName, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().QuotaSetEntry(ctx, volNameInternal, volName, gomock.Any(),
+					gomock.Any()).AnyTimes().Return(nil)
 				mockAPI.EXPECT().QuotaEntryList(ctx, volName).AnyTimes().Return(api.QuotaEntries{quotaEntry}, nil)
 			},
 			expectError: false,
@@ -2507,7 +2717,8 @@ func TestResize_WithDifferentSizeRequest(t *testing.T) {
 			attachExpectToApi: func(mockAPI *mockapi.MockOntapAPI) {
 				quotaEntry := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 10 * 1024 * 1024 * 1024}
 				mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
-				mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
+				mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal,
+					gomock.Any()).AnyTimes().Return(quotaEntry, nil)
 			},
 			expectError: true,
 		},
@@ -3460,4 +3671,542 @@ func TestGetCommonConfig_Success(t *testing.T) {
 	result := driver.GetCommonConfig(ctx)
 
 	assert.NotNil(t, result, "Expected not nil config, got nil")
+}
+
+func TestCanSnapshot_Succsss(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+		SnapshotDir:  "true",
+	}
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	result := driver.CanSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NoError(t, result, "error occurred")
+	assert.Nil(t, result, "result not nil")
+}
+
+func TestCanSnapshot_NoSnapshotDir(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+		SnapshotDir:  "true",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	volConfig.SnapshotDir = "false"
+	result := driver.CanSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "expecting an error")
+	assert.NotNil(t, result, "result is nil")
+}
+
+func TestCanSnapshot_InvalidSnapshotDir(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: "vol1",
+		SnapshotDir:  "true",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+	volConfig.SnapshotDir = "wrongValue"
+	result := driver.CanSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "expecting an error")
+	assert.NotNil(t, result, "result is nil")
+}
+
+func TestCreateSnapshot_Success(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		nil,
+	)
+
+	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, snap, "result is nil")
+	assert.NoError(t, err, "error occurred")
+}
+
+func TestCreateSnapshot_FailureErrorCheckingVolume(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, mockError)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestCreateSnapshot_FailureNoVolumeExists(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(false, nil)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestCreateSnapshot_FailureSnapshotCreateFailed(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(mockError)
+
+	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestCreateSnapshot_FailureSnapshotInfoFailed(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		mockError,
+	)
+
+	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestCreateSnapshot_FailureNoSnapshots(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{},
+		mockError,
+	)
+	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestCreateSnapshot_FailureWrongVolumeID(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   "wrong-id",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestGetSnapshot_Success(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: "vol1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{
+			CreateTime: "time",
+			Name:       "snap1",
+		},
+		nil,
+	)
+
+	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, snap, "result is nil")
+	assert.NoError(t, err, "error occurred")
+}
+
+func TestGetSnapshot_FailureNoSnapshotReturned(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{},
+		errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapConfig.InternalName, snapConfig.VolumeInternalName)))
+
+	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.NoError(t, err, "error occurred")
+}
+
+func TestGetSnapshot_FailureErrorFetchingSnapshots(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
+		api.Snapshot{},
+		mockError)
+
+	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestGetSnapshot_FailureWrongVolumeID(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   "wrong-internal-id",
+	}
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestGetSnapshots_Success(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapshots := api.Snapshots{}
+	snapshots = append(snapshots, api.Snapshot{
+		CreateTime: "time",
+		Name:       "snap1",
+	})
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, nil)
+
+	snap, err := driver.GetSnapshots(ctx, volConfig)
+
+	assert.NotNil(t, snap, "result is nil")
+	assert.NoError(t, err, "error occurred")
+}
+
+func TestGetSnapshots_SuccessDockerContext(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapshots := api.Snapshots{}
+	snapshots = append(snapshots, api.Snapshot{
+		CreateTime: "time",
+		Name:       "snap1",
+	})
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	driver.Config.DriverContext = tridentconfig.ContextDocker
+	snap, err := driver.GetSnapshots(ctx, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.NoError(t, err, "error occurred")
+}
+
+func TestGetSnapshots_FailureWrongVolumeID(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   "wrong-internal-id",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	snap, err := driver.GetSnapshots(ctx, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestGetSnapshots_FailureSnapshotListErr(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapshots := api.Snapshots{}
+	snapshots = append(snapshots, api.Snapshot{
+		CreateTime: "time",
+		Name:       "snap1",
+	})
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, mockError)
+
+	snap, err := driver.GetSnapshots(ctx, volConfig)
+
+	assert.Nil(t, snap, "result not nil")
+	assert.Error(t, err, "expecting an error")
+}
+
+func TestDeleteSnapshot_Success(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", flexvol).Return(nil)
+	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, result, "result not nil")
+	assert.NoError(t, result, "error occurred")
+}
+
+func TestDeleteSnapshot_FailureSnapshotBusy(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	childVols := make([]string, 0)
+	childVols = append(childVols, flexvol)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	mockAPI.EXPECT().VolumeSnapshotDelete(ctx, "snap1", flexvol).Return(api.SnapshotBusyError("snapshot is busy"))
+	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", flexvol).Return(childVols, nil)
+	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, flexvol).Return(nil)
+
+	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "result is nil")
+	assert.Error(t, result, "expecting an error")
+}
+
+func TestDeleteSnapshot_FailureWrongVolumeID(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+	childVols := make([]string, 0)
+	childVols = append(childVols, flexvol)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   "wrong-id",
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+
+	assert.NotNil(t, result, "result is nil")
+	assert.Error(t, result, "expecting an error")
+}
+
+func TestNASQtreeStorageDriver_RestoreSnapshot(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Encryption:   "false",
+		FileSystem:   "nfs",
+		InternalName: flexvol,
+		InternalID:   volInternalID,
+	}
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snap1",
+		VolumeInternalName: flexvol,
+	}
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Error(t, result)
 }

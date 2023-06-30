@@ -33,16 +33,16 @@ linters-settings:
   gofumpt:
     # Select the Go version to target.
     # Default: 1.15
-    lang-version: "1.19"
-    
+    lang-version: "1.20"
+
     # Choose whether to use the extra rules.
     # Default: false
     extra-rules: true
-    
+
     # Module path which contains the source code being formatted.
     # Default: empty string
     module-path: github.com/netapp/trident
-  
+
   goimports:
     # Put imports beginning with prefix after 3rd-party packages.
     # It's a comma-separated list of prefixes.
