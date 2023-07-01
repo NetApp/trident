@@ -1364,6 +1364,8 @@ allowHostPID: true
 allowHostPorts: false
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
+allowedCapabilities:
+- SYS_ADMIN
 allowedUnsafeSysctls: null
 defaultAddCapabilities: null
 fsGroup:
