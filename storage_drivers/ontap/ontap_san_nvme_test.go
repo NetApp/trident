@@ -988,7 +988,7 @@ func TestUnpublish(t *testing.T) {
 	// case 1: NVMeEnsureNamespaceUnmapped returned error
 	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
-	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("NVMeEnsureNamespaceUnmapped returned error"))
+	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(false, fmt.Errorf("NVMeEnsureNamespaceUnmapped returned error"))
 
 	err := d.Unpublish(ctx, volConfig, publishInfo)
 
@@ -998,7 +998,7 @@ func TestUnpublish(t *testing.T) {
 	volConfig.AccessInfo.PublishEnforcement = true
 	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
-	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 
 	err = d.Unpublish(ctx, volConfig, publishInfo)
 

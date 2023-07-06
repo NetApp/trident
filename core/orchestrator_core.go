@@ -3271,9 +3271,16 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		return fmt.Errorf(msg)
 	}
 
+	// Get node attributes from the node ID
+	nodeInfo, err := o.GetNode(ctx, nodeName)
+	if err != nil {
+		Logc(ctx).WithError(err).WithField("Node info not found for node ", nodeName)
+		return err
+	}
 	publishInfo := &utils.VolumePublishInfo{
 		HostName:    nodeName,
 		TridentUUID: o.uuid,
+		HostNQN:     nodeInfo.NQN,
 	}
 
 	volume, ok := o.subordinateVolumes[volumeName]

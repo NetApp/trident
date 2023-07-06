@@ -248,7 +248,7 @@ func NewRestClientFromOntapConfig(
 
 	apiREST, err := NewOntapAPIREST(restClient, ontapConfig.StorageDriverName)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get REST API client for ontap: %v", err)
+		return nil, fmt.Errorf("unable to get REST API client for ontap; %v", err)
 	}
 
 	return apiREST, nil
@@ -1526,7 +1526,7 @@ func (c RestClient) SnapshotCreate(
 func (c RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snapshotName string) error {
 	snapshotCreateResult, err := c.SnapshotCreate(ctx, volumeUUID, snapshotName)
 	if err != nil {
-		return fmt.Errorf("could not create snapshot: %v", err)
+		return fmt.Errorf("could not create snapshot; %v", err)
 	}
 	if snapshotCreateResult == nil {
 		return fmt.Errorf("could not create snapshot: %v", "unexpected result")
@@ -1707,7 +1707,7 @@ func (c RestClient) VolumeCloneCreate(ctx context.Context, cloneName, sourceVolu
 func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error {
 	cloneCreateResult, err := c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshot)
 	if err != nil {
-		return fmt.Errorf("could not create clone: %v", err)
+		return fmt.Errorf("could not create clone; %v", err)
 	}
 	if cloneCreateResult == nil {
 		return fmt.Errorf("could not create clone: %v", "unexpected result")
@@ -1992,7 +1992,7 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 
 	lunDeleteResult, err := c.api.San.IgroupDelete(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("could not delete igroup: %v", err)
+		return fmt.Errorf("could not delete igroup; %v", err)
 	}
 	if lunDeleteResult == nil {
 		return fmt.Errorf("could not delete igroup: %v", "unexpected result")
@@ -2366,7 +2366,7 @@ func (c RestClient) LunDelete(
 
 	lunDeleteResult, err := c.api.San.LunDelete(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("could not delete lun: %v", err)
+		return fmt.Errorf("could not delete lun; %v", err)
 	}
 	if lunDeleteResult == nil {
 		return fmt.Errorf("could not delete lun: %v", "unexpected result")
@@ -2952,7 +2952,7 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 
 	lifResponse, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
 	if err != nil {
-		return nil, fmt.Errorf("error checking network interfaces: %v", err)
+		return nil, fmt.Errorf("error checking network interfaces; %v", err)
 	}
 	if lifResponse == nil {
 		return nil, fmt.Errorf("unexpected error checking network interfaces")
@@ -5671,7 +5671,7 @@ func (c RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, new
 
 	nsModify, err := c.api.NvMe.NvmeNamespaceModify(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("namespace resize failed, %v", err)
+		return fmt.Errorf("namespace resize failed; %v", err)
 	}
 	if nsModify == nil {
 		return fmt.Errorf("namespace resize failed")
@@ -5782,7 +5782,7 @@ func (c RestClient) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID
 
 	_, err := c.api.NvMe.NvmeSubsystemMapDelete(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("error while deleting namespace from subsystem map: %v", err)
+		return fmt.Errorf("error while deleting namespace from subsystem map; %v", err)
 	}
 	return nil
 }
@@ -5961,7 +5961,7 @@ func (c RestClient) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) 
 
 	subsysDeleted, err := c.api.NvMe.NvmeSubsystemDelete(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("issue while deleting the subsystem, %v", err)
+		return fmt.Errorf("issue while deleting the subsystem; %v", err)
 	}
 	if subsysDeleted == nil {
 		return fmt.Errorf("issue while deleting the subsystem")
@@ -5995,6 +5995,25 @@ func (c RestClient) NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subs
 	}
 
 	return fmt.Errorf("error while adding host to subsystem %v", hostAdded.Error())
+}
+
+// NVMeRemoveHostFromSubsystem remove the NQN of the host from the subsystem
+func (c RestClient) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+	params := nvme.NewNvmeSubsystemHostDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SubsystemUUID = subsUUID
+	params.Nqn = hostNQN
+
+	hostRemoved, err := c.api.NvMe.NvmeSubsystemHostDelete(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("issue while removing host to subsystem; %v", err)
+	}
+	if hostRemoved.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("error while removing host from subsystem; %v", hostRemoved.Error())
 }
 
 // NVMeGetHostsOfSubsystem retuns all the hosts connected to a subsystem

@@ -798,6 +798,7 @@ func (d *NVMeStorageDriver) Unpublish(
 		"name":              name,
 		"NVMeNamespaceUUID": volConfig.AccessInfo.NVMeNamespaceUUID,
 		"NVMeSubsystemUUID": volConfig.AccessInfo.NVMeSubsystemUUID,
+		"hostNQN":           publishInfo.HostNQN,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
@@ -805,7 +806,13 @@ func (d *NVMeStorageDriver) Unpublish(
 	subsystemUUID := volConfig.AccessInfo.NVMeSubsystemUUID
 	namespaceUUID := volConfig.AccessInfo.NVMeNamespaceUUID
 
-	return d.API.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, namespaceUUID)
+	removePublishInfo, err := d.API.NVMeEnsureNamespaceUnmapped(ctx, publishInfo.HostNQN, subsystemUUID, namespaceUUID)
+	if removePublishInfo {
+		volConfig.AccessInfo.NVMeTargetIPs = []string{}
+		volConfig.AccessInfo.NVMeSubsystemNQN = ""
+		volConfig.AccessInfo.NVMeSubsystemUUID = ""
+	}
+	return err
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.

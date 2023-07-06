@@ -2478,6 +2478,10 @@ func (d OntapAPIZAPI) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsU
 	return fmt.Errorf("ZAPI call is not supported yet")
 }
 
+func (d OntapAPIZAPI) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+	return fmt.Errorf("ZAPI call is not supported yet")
+}
+
 func (d OntapAPIZAPI) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error) {
 	return false, fmt.Errorf("ZAPI call is not supported yet")
 }
@@ -2486,8 +2490,8 @@ func (d OntapAPIZAPI) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUU
 	return fmt.Errorf("ZAPI call is not supported yet")
 }
 
-func (d OntapAPIZAPI) NVMeEnsureNamespaceUnmapped(ctx context.Context, subsystemUUID, namespaceUUID string) error {
-	return fmt.Errorf("ZAPI call is not supported yet")
+func (d OntapAPIZAPI) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsystemUUID, namespaceUUID string) (bool, error) {
+	return false, fmt.Errorf("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeNamespaceGetSize(ctx context.Context, subsystemName string) (int, error) {

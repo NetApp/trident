@@ -39,6 +39,7 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 
 	in.Name = persistent.Name
 	in.IQN = persistent.IQN
+	in.NQN = persistent.NQN
 	in.IPs = persistent.IPs
 	in.Deleted = persistent.Deleted
 	in.PublicationState = string(persistent.PublicationState)
@@ -68,6 +69,7 @@ func (in *TridentNode) Persistent() (*utils.Node, error) {
 	persistent := &utils.Node{
 		Name:             in.Name,
 		IQN:              in.IQN,
+		NQN:              in.NQN,
 		IPs:              in.IPs,
 		NodePrep:         &utils.NodePrep{},
 		HostInfo:         &utils.HostSystem{},

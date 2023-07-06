@@ -695,6 +695,8 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 		nvmeNQN, err = p.nvmeHandler.GetHostNqn(ctx)
 		if err != nil {
 			Logc(ctx).WithError(err).Warn("Problem getting Host NQN.")
+		} else {
+			Logc(ctx).WithField("NQN", nvmeNQN).Debug("Discovered NQN.")
 		}
 	} else {
 		Logc(ctx).Info("NVMe is not active on this host.")
