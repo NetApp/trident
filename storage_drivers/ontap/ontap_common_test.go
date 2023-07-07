@@ -2256,21 +2256,57 @@ func TestRestGetSLMLifs(t *testing.T) {
 	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
 }
 
-func TestConstructOntapNASSMBVolumePath(t *testing.T) {
+func TestConstructOntapNASVolumeAccessPath(t *testing.T) {
 	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName: "vol",
+	}
 
 	tests := []struct {
 		smbShare     string
+		volName      string
+		protocol     string
 		expectedPath string
 	}{
-		{"test_share", "\\test_sharevol"},
-		{"", "vol"},
+		{"test_share", "/vol", "smb", "\\test_share\\vol"},
+		{"", "/vol", "smb", "\\vol"},
+		{"", "/vol", "nfs", "/vol"},
+		{"", "/vol1", "nfs", "/vol1"},
 	}
 
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
-			result := ConstructOntapNASSMBVolumePath(ctx, test.smbShare, "vol")
-			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, test.volName, volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
+		})
+	}
+}
+
+func TestConstructOntapNASVolumeAccessPath_ROClone(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:              "vol",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: "sourceVol",
+		CloneSourceSnapshot:       "snapshot-abcd-1234-wxyz",
+	}
+
+	tests := []struct {
+		smbShare     string
+		protocol     string
+		expectedPath string
+	}{
+		{"test_share", "smb", "\\test_share\\sourceVol\\~snapshot\\snapshot-abcd-1234-wxyz"},
+		{"", "smb", "\\sourceVol\\~snapshot\\snapshot-abcd-1234-wxyz"},
+		{"", "nfs", "/sourceVol/.snapshot/snapshot-abcd-1234-wxyz"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, "/vol", volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
 		})
 	}
 }

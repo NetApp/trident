@@ -2952,23 +2952,49 @@ func GetEncryptionValue(encryption string) (*bool, string, error) {
 	return nil, "", nil
 }
 
-// ConstructOntapNASSMBVolumePath returns windows compatible volume path for Ontap NAS.
+// ConstructOntapNASVolumeAccessPath returns volume path for ONTAP NAS.
 // Function accepts parameters in following way:
 // 1.smbShare : This takes the value given in backend config, without path prefix.
 // 2.volumeName : This takes the value of volume's internal name, it is always prefixed with unix styled path separator.
-// Example, ConstructOntapNASSMBVolumePath(ctx, "test_share", "/vol")
-func ConstructOntapNASSMBVolumePath(ctx context.Context, smbShare, volumeName string) string {
-	Logc(ctx).Debug(">>>> smb.ConstructOntapNASSMBVolumePath")
-	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASSMBVolumePath")
+// 3.volConfig : This takes value of volume configuration.
+// 4.Protocol : This takes the value of NAS protocol (NFS/SMB).
+// Example, ConstructOntapNASVolumeAccessPath(ctx, "test_share", "/vol" , volConfig, "nfs")
+func ConstructOntapNASVolumeAccessPath(
+	ctx context.Context, smbShare, volumeName string,
+	volConfig *storage.VolumeConfig, protocol string,
+) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASVolumeAccessPath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASVolumeAccessPath")
 
 	var completeVolumePath string
-	if smbShare != "" {
-		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
-	} else {
-		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
-		completeVolumePath = volumeName
-	}
+	var smbSharePath string
+	switch protocol {
+	case sa.NFS:
+		if volConfig.ReadOnlyClone {
+			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot",
+				volConfig.CloneSourceSnapshot)
+		} else if volumeName != utils.UnixPathSeparator+volConfig.InternalName && strings.HasPrefix(volumeName,
+			utils.UnixPathSeparator) {
+			// For managed import, return the original junction path
+			return volumeName
+		}
+		return fmt.Sprintf("/%s", volConfig.InternalName)
+	case sa.SMB:
+		if smbShare != "" {
+			smbSharePath = fmt.Sprintf("\\%s", smbShare)
+		} else {
+			// Set share path as empty, volume name contains the path prefix.
+			smbSharePath = ""
+		}
 
+		if volConfig.ReadOnlyClone {
+			completeVolumePath = fmt.Sprintf("%s\\%s\\%s\\%s", smbSharePath, volConfig.CloneSourceVolumeInternal,
+				"~snapshot", volConfig.CloneSourceSnapshot)
+		} else {
+			// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
+			completeVolumePath = smbSharePath + volumeName
+		}
+	}
 	// Replace unix styled path separator, if exists
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
 }
@@ -3001,7 +3027,8 @@ func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volu
 // 3.volConfig : This takes the value of volume configuration.
 // 4. protocol: This takes the value of the protocol for which the path needs to be created.
 // Example, ConstructOntapNASQTreeVolumePath(ctx, test.smbShare, "flex-vol", volConfig, sa.SMB)
-func ConstructOntapNASQTreeVolumePath(ctx context.Context, smbShare, flexvol string,
+func ConstructOntapNASQTreeVolumePath(
+	ctx context.Context, smbShare, flexvol string,
 	volConfig *storage.VolumeConfig, protocol string,
 ) (completeVolumePath string) {
 	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeVolumePath")

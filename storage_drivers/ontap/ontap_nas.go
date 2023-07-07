@@ -455,6 +455,14 @@ func (d *NASStorageDriver) CreateClone(
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
 	}
 
+	if cloneVolConfig.ReadOnlyClone {
+		if !flexvol.SnapshotDir {
+			return fmt.Errorf("snapshot directory access is set to %t and readOnly clone is set to %t ",
+				flexvol.SnapshotDir, cloneVolConfig.ReadOnlyClone)
+		}
+		return nil
+	}
+
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
 	if storagePoolSplitOnCloneVal == "" {
 		storagePoolSplitOnCloneVal = d.GetConfig().SplitOnClone
@@ -956,6 +964,8 @@ func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 
 func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	var accessPath string
+	var flexvol *api.Volume
+	var err error
 
 	fields := LogFields{
 		"Method":       "CreateFollowup",
@@ -976,9 +986,17 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	}
 
 	// Set correct junction path
-	flexvol, err := d.API.VolumeInfo(ctx, volConfig.InternalName)
-	if err != nil {
-		return err
+	// If it's a RO clone, get source volume
+	if volConfig.ReadOnlyClone {
+		flexvol, err = d.API.VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal)
+		if err != nil {
+			return err
+		}
+	} else {
+		flexvol, err = d.API.VolumeInfo(ctx, volConfig.InternalName)
+		if err != nil {
+			return err
+		}
 	}
 
 	if flexvol.JunctionPath == "" {
@@ -988,13 +1006,14 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 			// 2. During Create/CreateClone there is a failure and mount is not performed.
 
 			if d.Config.NASType == sa.SMB {
-				volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
-					volConfig.InternalName)
+				volConfig.AccessInfo.SMBPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+					volConfig.InternalName, volConfig, sa.SMB)
 				// Overwriting mount path, mounting at root instead of admin share
 				volConfig.AccessInfo.SMBPath = "/" + volConfig.InternalName
 				accessPath = volConfig.AccessInfo.SMBPath
 			} else {
-				volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+				volConfig.AccessInfo.NfsPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+					volConfig.InternalName, volConfig, sa.NFS)
 				accessPath = volConfig.AccessInfo.NfsPath
 			}
 
@@ -1014,10 +1033,11 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		}
 	} else {
 		if d.Config.NASType == sa.SMB {
-			volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
-				flexvol.JunctionPath)
+			volConfig.AccessInfo.SMBPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+				flexvol.JunctionPath, volConfig, sa.SMB)
 		} else {
-			volConfig.AccessInfo.NfsPath = flexvol.JunctionPath
+			volConfig.AccessInfo.NfsPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+				flexvol.JunctionPath, volConfig, sa.NFS)
 		}
 	}
 	return nil
@@ -1246,7 +1266,8 @@ func (d *NASStorageDriver) EstablishMirror(
 		replicationSchedule = ""
 	}
 
-	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // ReestablishMirror will attempt to resync a mirror relationship, if and only if the relationship existed previously
@@ -1285,7 +1306,8 @@ func (d *NASStorageDriver) ReestablishMirror(
 		replicationSchedule = ""
 	}
 
-	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // PromoteMirror will break the mirror relationship and make the destination volume RW,
@@ -1293,8 +1315,8 @@ func (d *NASStorageDriver) ReestablishMirror(
 func (d *NASStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
-		d.API)
+	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName,
+		d.GetConfig().ReplicationPolicy, d.API)
 }
 
 // GetMirrorStatus returns the current state of a mirror relationship
@@ -1310,7 +1332,9 @@ func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolum
 }
 
 // GetReplicationDetails returns the replication policy and schedule of a mirror relationship
-func (d *NASStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+func (d *NASStorageDriver) GetReplicationDetails(
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
