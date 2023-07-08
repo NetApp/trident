@@ -618,7 +618,8 @@ func (c Client) LunGet(path string) (*azgo.LunInfoType, error) {
 		SetSize(0).
 		SetCreationTimestamp(0).
 		SetOnline(false).
-		SetMapped(false)
+		SetMapped(false).
+		SetSerialNumber("")
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().

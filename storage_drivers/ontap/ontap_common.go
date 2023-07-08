@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -562,52 +562,6 @@ func GetOntapDriverRedactList() []string {
 	return clone[:]
 }
 
-// PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
-// This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
-func PopulateOntapLunMapping(
-	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int,
-	lunPath, igroupName string,
-) error {
-	var targetIQN string
-	targetIQN, err := clientAPI.IscsiNodeGetNameRequest(ctx)
-	if err != nil {
-		return fmt.Errorf("problem retrieving iSCSI services: %v", err)
-	}
-
-	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
-	if err != nil || lunResponse == nil {
-		return fmt.Errorf("problem retrieving LUN info: %v", err)
-	}
-	serial := lunResponse.SerialNumber
-
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
-		volConfig.ImportNotManaged)
-	if err != nil {
-		return err
-	}
-
-	if len(filteredIPs) == 0 {
-		Logc(ctx).Warn("Unable to find reporting ONTAP nodes for discovered dataLIFs.")
-		filteredIPs = ips
-	}
-
-	volConfig.AccessInfo.IscsiTargetPortal = filteredIPs[0]
-	volConfig.AccessInfo.IscsiPortals = filteredIPs[1:]
-	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
-	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
-	volConfig.AccessInfo.IscsiIgroup = igroupName
-	volConfig.AccessInfo.IscsiLunSerial = serial
-	Logc(ctx).WithFields(LogFields{
-		"volume":          volConfig.Name,
-		"volume_internal": volConfig.InternalName,
-		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
-		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
-		"igroup":          volConfig.AccessInfo.IscsiIgroup,
-	}).Debug("Mapped ONTAP LUN.")
-
-	return nil
-}
-
 // getNodeSpecificIgroupName generates a distinct igroup name for node name.
 // Igroup names may collide if node names are over 59 characters.
 func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
@@ -681,6 +635,17 @@ func PublishLUN(
 		fstype = lunFSType
 	}
 
+	// Get LUN Serial Number
+	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
+	if err != nil || lunResponse == nil {
+		return fmt.Errorf("problem retrieving LUN info: %v", err)
+	}
+	serial := lunResponse.SerialNumber
+
+	if serial == "" {
+		return fmt.Errorf("LUN '%v' serial number not found", lunPath)
+	}
+
 	if config.DriverContext == tridentconfig.ContextCSI {
 		// Get the info about the targeted node
 		var targetNode *utils.Node
@@ -729,6 +694,7 @@ func PublishLUN(
 
 	// Add fields needed by Attach
 	publishInfo.IscsiLunNumber = int32(lunID)
+	publishInfo.IscsiLunSerial = serial
 	publishInfo.IscsiTargetPortal = filteredIPs[0]
 	publishInfo.IscsiPortals = filteredIPs[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName

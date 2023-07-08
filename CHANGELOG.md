@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v23.01.0
+## Changes since v23.04.0
+
+**Fixes:**
+
+- Fixed ONTAP ZAPI request to ensure LUN serial number is queried when getting LUN attributes.
+
+## v23.04.0
 
 - **IMPORTANT**: Force volume detach for ONTAP-SAN-* volumes is only supported with Kubernetes versions which have enabled the Non-Graceful Node Shutdown feature gate.
   Force detach must be enabled at install time via `--enable-force-detach` Trident installer flag.
