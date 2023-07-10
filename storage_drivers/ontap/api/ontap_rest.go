@@ -1794,10 +1794,18 @@ func (c RestClient) IscsiInitiatorSetDefaultAuth(
 	if *getDefaultAuthResponse.Payload.NumRecords != 1 {
 		return fmt.Errorf("should only be one default iscsi initiator")
 	}
+	if getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0] == nil {
+		return fmt.Errorf("could not get the default iscsi initiator")
+	}
+	if getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0].Initiator == nil {
+		return fmt.Errorf("could not get the default iscsi initiator")
+	}
 
 	params := san.NewIscsiCredentialsModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
+	params.SvmUUID = c.svmUUID
+	params.Initiator = *getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0].Initiator
 
 	outboundInfo := &models.IscsiCredentialsInlineChapInlineOutbound{}
 	if outbountUserName != "" && outboundPassphrase != "" {
@@ -1815,7 +1823,6 @@ func (c RestClient) IscsiInitiatorSetDefaultAuth(
 	authInfo := &models.IscsiCredentials{
 		AuthenticationType: utils.Ptr(authType),
 		Chap:               chapInfo,
-		Initiator:          getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0].Initiator,
 	}
 
 	params.SetInfo(authInfo)
