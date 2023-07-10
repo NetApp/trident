@@ -2154,7 +2154,7 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 // in physical pools list.
 func (d *SANEconomyStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	Logc(ctx).Debug(">>>> GetBackendState")
-	defer Logc(ctx).Debugf("<<<< GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
 
 	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx))
 }

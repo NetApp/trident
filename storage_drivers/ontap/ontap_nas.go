@@ -1209,7 +1209,7 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 // in physical pools list.
 func (d *NASStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	Logc(ctx).Debug(">>>> GetBackendState")
-	defer Logc(ctx).Debugf("<<<< GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
 
 	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
 }

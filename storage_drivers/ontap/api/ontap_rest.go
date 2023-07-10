@@ -5839,7 +5839,10 @@ func (c RestClient) NVMeNamespaceCount(ctx context.Context, subsysUUID string) (
 	}
 
 	if getSubsys.IsSuccess() {
-		return *getSubsys.GetPayload().NumRecords, nil
+		payload := getSubsys.GetPayload()
+		if payload != nil && payload.NumRecords != nil {
+			return *payload.NumRecords, nil
+		}
 	}
 
 	return 0, fmt.Errorf("failed to get subsystem map collection")
