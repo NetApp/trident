@@ -2214,8 +2214,8 @@ func (c RestClient) LunCloneCreate(
 				Name: utils.Ptr(sourcePath),
 			},
 		},
-		Name:   utils.Ptr(lunPath), // example:  /vol/myVolume/myLun1
-		OsType: utils.Ptr(osType),
+		Name: utils.Ptr(lunPath), // example:  /vol/myVolume/myLun1
+		// OsType is not supported for POST when creating a LUN clone
 		Space: &models.LunInlineSpace{
 			Size: utils.Ptr(sizeInBytes),
 		},

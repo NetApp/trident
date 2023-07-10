@@ -395,6 +395,11 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		state = *lunGetResponse.Status.State
 	}
 
+	osType := ""
+	if lunGetResponse.OsType != nil {
+		osType = *lunGetResponse.OsType
+	}
+
 	lunInfo := &Lun{
 		Comment:      responseComment,
 		CreateTime:   responseCreateTime,
@@ -408,6 +413,7 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		SerialNumber: serialNumber,
 		State:        state,
 		VolumeName:   responseVolName,
+		OsType:       osType,
 	}
 	return lunInfo, nil
 }
