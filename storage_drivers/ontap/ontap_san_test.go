@@ -2111,6 +2111,31 @@ func TestOntapSanVolumeGetStorageBackendSpecs(t *testing.T) {
 	assert.NoError(t, err, "Failed to get the storage backend specification")
 }
 
+func TestOntapSanStorageDriverGetStorageBackendPools(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	svmUUID := "SVM1-uuid"
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+}
+
 func TestOntapSanVolumeGetInternalVolumeName(t *testing.T) {
 	ctx := context.Background()
 
@@ -2867,6 +2892,7 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
 		string(message), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 

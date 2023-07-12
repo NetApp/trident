@@ -3036,6 +3036,35 @@ func TestOntapSanEconomyGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	assert.Equal(t, "pool1", poolNames[0], "Pool names are not equal")
 }
 
+func TestOntapSanEconomyGetStorageBackendPools(t *testing.T) {
+	mockAPI, driver := newMockOntapSanEcoDriver(t)
+	svmUUID := "SVM1-uuid"
+	flexVolPrefix := fmt.Sprintf("trident_lun_pool_%s_", *driver.Config.StoragePrefix)
+	driver.flexvolNamePrefix = flexVolPrefix
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+}
+
 func TestOntapSanEconomyGetInternalVolumeName(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 	d.Config.StoragePrefix = utils.Ptr("storagePrefix_")
@@ -3783,6 +3812,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
 
@@ -3913,6 +3943,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 				"trident", 5).AnyTimes()
 			if !test.expectError {
 				mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
+				mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid").AnyTimes()
 			}
 
 			result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)

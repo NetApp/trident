@@ -574,3 +574,106 @@ func TestEnsureJoinedStringContainsElem(t *testing.T) {
 		})
 	}
 }
+
+func TestEncodeAndDecode_OntapFlexGroupStorageBackendPools(t *testing.T) {
+	ctx := context.Background()
+	config := &CommonStorageDriverConfig{
+		StorageDriverName: "test storage driver",
+		DebugTraceFlags:   map[string]bool{"method": true},
+	}
+	backendPools := []OntapFlexGroupStorageBackendPool{{SvmUUID: "svm0"}}
+
+	encoded, err := EncodeStorageBackendPools[OntapFlexGroupStorageBackendPool](ctx, config, backendPools)
+	assert.NoError(t, err)
+	assert.True(t, len(backendPools) == len(encoded))
+
+	// Passing the type of the backend pools is required for DecodeStorageBackendPools.
+	decoded, err := DecodeStorageBackendPools[OntapFlexGroupStorageBackendPool](ctx, config, encoded)
+	assert.NoError(t, err)
+	assert.EqualValues(t, backendPools, decoded)
+}
+
+func TestEncodeAndDecode_OntapStorageBackendPools(t *testing.T) {
+	ctx := context.Background()
+	config := &CommonStorageDriverConfig{
+		StorageDriverName: "test storage driver",
+		DebugTraceFlags:   map[string]bool{"method": true},
+	}
+
+	backendPools := []OntapStorageBackendPool{
+		{SvmUUID: "svm0", Aggregate: "aggr0"},
+		{SvmUUID: "svm0", Aggregate: "aggr1"},
+	}
+
+	encoded, err := EncodeStorageBackendPools[OntapStorageBackendPool](ctx, config, backendPools)
+	assert.NoError(t, err)
+	assert.True(t, len(backendPools) == len(encoded))
+
+	// Passing the type of the backend pools is required for DecodeStorageBackendPools.
+	decoded, err := DecodeStorageBackendPools[OntapStorageBackendPool](ctx, config, encoded)
+	assert.NoError(t, err)
+	assert.EqualValues(t, backendPools, decoded)
+}
+
+func TestEncodeAndDecode_OntapEconomyStorageBackendPools(t *testing.T) {
+	ctx := context.Background()
+	config := &CommonStorageDriverConfig{
+		StorageDriverName: "test storage driver",
+		DebugTraceFlags:   map[string]bool{"method": true},
+	}
+
+	backendPools := []OntapEconomyStorageBackendPool{
+		{SvmUUID: "svm0", Aggregate: "aggr0", FlexVolPrefix: "trident_qtree_pool_test_"},
+		{SvmUUID: "svm0", Aggregate: "aggr1", FlexVolPrefix: "trident_qtree_pool_test_"},
+	}
+
+	encoded, err := EncodeStorageBackendPools[OntapEconomyStorageBackendPool](ctx, config, backendPools)
+	assert.NoError(t, err)
+	assert.True(t, len(backendPools) == len(encoded))
+
+	// Passing the type of the backend pools is required for DecodeStorageBackendPools.
+	decoded, err := DecodeStorageBackendPools[OntapEconomyStorageBackendPool](ctx, config, encoded)
+	assert.NoError(t, err)
+	assert.EqualValues(t, backendPools, decoded)
+}
+
+func TestEncodeStorageBackendPools_FailsWithInvalidBackendPools(t *testing.T) {
+	ctx := context.Background()
+	config := &CommonStorageDriverConfig{
+		StorageDriverName: "test storage driver",
+		DebugTraceFlags:   map[string]bool{"method": true},
+	}
+
+	// Backend pools are nil.
+	encodedPools, err := EncodeStorageBackendPools[OntapStorageBackendPool](ctx, config, nil)
+	assert.Error(t, err)
+	assert.Nil(t, encodedPools)
+
+	// Backend pools are empty.
+	encodedPools, err = EncodeStorageBackendPools[OntapStorageBackendPool](ctx, config, []OntapStorageBackendPool{})
+	assert.Error(t, err)
+	assert.Nil(t, encodedPools)
+}
+
+func TestDecodeStorageBackendPools_FailsWithInvalidEncodedPools(t *testing.T) {
+	ctx := context.Background()
+	config := &CommonStorageDriverConfig{
+		StorageDriverName: "test storage driver",
+		DebugTraceFlags:   map[string]bool{"method": true},
+	}
+
+	// Backend pools are nil.
+	backendPools, err := DecodeStorageBackendPools[OntapStorageBackendPool](ctx, config, nil)
+	assert.Error(t, err)
+	assert.Nil(t, backendPools)
+
+	// Backend pools are empty.
+	backendPools, err = DecodeStorageBackendPools[OntapStorageBackendPool](ctx, config, []string{})
+	assert.Error(t, err)
+	assert.Nil(t, backendPools)
+
+	// Backend pools specified are not valid base64 encoded strings.
+	backendPools, err = DecodeStorageBackendPools[OntapStorageBackendPool](ctx, config, []string{"test", ""})
+	assert.Error(t, err)
+	assert.Nil(t, backendPools)
+}

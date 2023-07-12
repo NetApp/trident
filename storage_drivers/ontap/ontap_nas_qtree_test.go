@@ -3140,6 +3140,35 @@ func TestGetStorageBackendSpecs_Success(t *testing.T) {
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
+func TestOntapNasQtreeStorageDriverGetStorageBackendPools(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	svmUUID := "SVM1-uuid"
+	flexVolPrefix := fmt.Sprintf("trident_qtree_pool_%s_", *driver.Config.StoragePrefix)
+	driver.flexvolNamePrefix = flexVolPrefix
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+}
+
 func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_1Gi(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 

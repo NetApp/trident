@@ -123,6 +123,13 @@ func (d *NASStorageDriver) Initialize(
 		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
 	}
 
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
+
 	// Set up the autosupport heartbeat
 	d.telemetry = NewOntapTelemetry(ctx, d)
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
@@ -933,6 +940,28 @@ func (d *NASStorageDriver) GetStorageBackendSpecs(
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.OntapStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// 2. Aggregate (physical pool)
+	svmUUID := d.GetAPI().GetSVMUUID()
+	backendPools := make([]drivers.OntapStorageBackendPool, 0)
+	for _, pool := range d.physicalPools {
+		backendPool := drivers.OntapStorageBackendPool{
+			SvmUUID:   svmUUID,
+			Aggregate: pool.Name(),
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
 }
 
 func (d *NASStorageDriver) getStoragePoolAttributes(ctx context.Context) map[string]sa.Offer {

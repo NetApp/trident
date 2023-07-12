@@ -194,6 +194,7 @@ func TestNVMeInitialize_Success(t *testing.T) {
 	mAPI.EXPECT().SVMName().Return("svm")
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
 
@@ -243,6 +244,31 @@ func TestNVMeGetStorageBackendSpecs(t *testing.T) {
 func TestNVMeGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	d := newNVMeDriver(nil)
 	assert.Equal(t, d.GetStorageBackendPhysicalPoolNames(ctx), []string{"pool1"}, "Physical pools are different.")
+}
+
+func TestNVMeGetStorageBackendPools(t *testing.T) {
+	driver, mockAPI := newNVMeDriverAndMockApi(t)
+	svmUUID := "SVM1-uuid"
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
 }
 
 func TestNVMeGetVolumeOpts(t *testing.T) {

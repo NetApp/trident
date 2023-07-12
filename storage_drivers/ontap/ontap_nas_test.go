@@ -393,6 +393,7 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
@@ -1529,6 +1530,31 @@ func TestOntapNasStorageDriverGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	poolNames := driver.GetStorageBackendPhysicalPoolNames(ctx)
 
 	assert.Equal(t, "pool1", poolNames[0], "Pool names are not equal")
+}
+
+func TestOntapNasStorageDriverGetStorageBackendPools(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	svmUUID := "SVM1-uuid"
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pools[0].SvmUUID)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pools[1].SvmUUID)
 }
 
 func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {

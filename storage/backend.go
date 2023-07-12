@@ -1034,6 +1034,7 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 	for volName := range b.volumes {
 		backendExternal.Volumes = append(backendExternal.Volumes, volName)
 	}
+
 	return &backendExternal
 }
 
