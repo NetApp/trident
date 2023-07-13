@@ -39,6 +39,8 @@ type Clients struct {
 const (
 	k8sTimeout       = 30 * time.Second
 	defaultNamespace = "default"
+	QPS              = 50
+	burstTime        = 100
 )
 
 var cachedClients *Clients
@@ -198,6 +200,8 @@ func createK8SClientsExCluster(
 	}
 
 	// Create the CLI-based Kubernetes client
+	restConfig.QPS = QPS
+	restConfig.Burst = burstTime
 	k8sClient, err := NewKubeClient(restConfig, namespace, k8sTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
@@ -220,6 +224,8 @@ func createK8SClientsInCluster(ctx context.Context, overrideNamespace string) (*
 	if err != nil {
 		return nil, err
 	}
+	restConfig.QPS = QPS
+	restConfig.Burst = burstTime
 
 	// when running in a pod, we use the Trident pod's namespace
 	namespaceBytes, err := os.ReadFile(config.NamespaceFile)
