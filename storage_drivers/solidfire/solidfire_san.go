@@ -1180,7 +1180,7 @@ func (d *SANStorageDriver) Publish(
 	// Get the fstype
 	attrs, _ := v.Attributes.(map[string]interface{})
 	fstype := drivers.DefaultFileSystemType
-	if str, ok := attrs["fstype"].(string); ok {
+	if str, ok := attrs["fstype"].(string); ok && str != "" {
 		fstype = str
 	}
 

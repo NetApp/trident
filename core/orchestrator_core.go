@@ -3952,7 +3952,7 @@ func (o *TridentOrchestrator) ImportSnapshot(
 	// Complete the snapshot config.
 	snapshotConfig.VolumeInternalName = volume.Config.InternalName
 	snapshotConfig.LUKSPassphraseNames = volume.Config.LUKSPassphraseNames
-	snapshotConfig.ImportNotManaged = true // All imported snapshots are not managed.
+	snapshotConfig.ImportNotManaged = volume.Config.ImportNotManaged // Snapshots inherit the managed state of their volume
 
 	// Query the storage backend for the snapshot.
 	snapshot, err := backend.GetSnapshot(ctx, snapshotConfig, volume.Config)

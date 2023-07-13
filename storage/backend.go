@@ -834,14 +834,14 @@ func (b *StorageBackend) DeleteSnapshot(
 		"snapshotName":     snapConfig.Name,
 	}).Debug("Attempting snapshot delete.")
 
+	// Ensure snapshot is managed
+	if snapConfig.ImportNotManaged {
+		return errors.NotManagedError("snapshot %s is not managed by Trident", snapConfig.InternalName)
+	}
+
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
 		return errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
-	}
-
-	// Ensure snapshot is managed
-	if snapConfig.ImportNotManaged {
-		return errors.NotManagedError("source volume %s is not managed by Trident", snapConfig.InternalName)
 	}
 
 	// Ensure backend is ready

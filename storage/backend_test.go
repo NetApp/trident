@@ -3,6 +3,7 @@
 package storage
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -65,4 +66,80 @@ func TestBackendState(t *testing.T) {
 			},
 		)
 	}
+}
+
+func TestDeleteSnapshot_BackendOffline(t *testing.T) {
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volumeConfig := &VolumeConfig{
+		Version:      "",
+		Name:         volumeName,
+		InternalName: volumeInternalName,
+	}
+	snapName := "snapshot"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+	}
+
+	backend := &StorageBackend{
+		state: Offline,
+	}
+
+	// Both volume and snapshot not managed
+	err := backend.DeleteSnapshot(context.Background(), snapConfig, volumeConfig)
+
+	assert.Errorf(t, err, "expected err")
+}
+
+func TestDeleteSnapshot_NotManaged(t *testing.T) {
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volumeConfig := &VolumeConfig{
+		Version:             "",
+		Name:                volumeName,
+		InternalName:        volumeInternalName,
+		ImportOriginalName:  "import-" + volumeName,
+		ImportBackendUUID:   "import-" + backendUUID,
+		ImportNotManaged:    true,
+		LUKSPassphraseNames: nil,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   true,
+	}
+
+	backend := &StorageBackend{
+		state: Online,
+	}
+
+	// Both volume and snapshot not managed
+	err := backend.DeleteSnapshot(context.Background(), snapConfig, volumeConfig)
+
+	assert.Errorf(t, err, "expected err")
+
+	// Volume not managed
+	volumeConfig.ImportNotManaged = true
+	snapConfig.ImportNotManaged = false
+	err = backend.DeleteSnapshot(context.Background(), snapConfig, volumeConfig)
+
+	assert.Errorf(t, err, "expected err")
+
+	// Snapshot not managed
+	volumeConfig.ImportNotManaged = false
+	snapConfig.ImportNotManaged = true
+	err = backend.DeleteSnapshot(context.Background(), snapConfig, volumeConfig)
+
+	assert.Errorf(t, err, "expected err")
 }
