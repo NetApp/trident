@@ -575,7 +575,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.4.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.5.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -595,7 +595,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.2.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.3.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -613,7 +613,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.7.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.8.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
@@ -626,7 +626,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v6.2.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v6.2.2
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -942,7 +942,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.7.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.8.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
@@ -1144,7 +1144,7 @@ spec:
             cpu: 10m
             memory: 20Mi
       - name: node-driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.7.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.8.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - --v=2
