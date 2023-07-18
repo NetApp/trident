@@ -482,7 +482,6 @@ func (d *NASQtreeStorageDriver) CreateClone(
 
 	// If RO clone is requested, validate the snapshot directory access and return
 	if cloneVolConfig.ReadOnlyClone {
-
 		_, flexvol, _, err := d.ParseQtreeInternalID(sourceVolConfig.InternalID)
 		if err != nil {
 			return errors.WrapWithNotFoundError(err, "error while getting flexvol")
@@ -901,6 +900,10 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
+
+	if tridentconfig.DisableExtraFeatures {
+		return nil, errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	}
 
 	if volConfig.ReadOnlyClone {
 		// This is a read-only volume and hence do not create snapshot of it

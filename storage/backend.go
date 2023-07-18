@@ -419,6 +419,12 @@ func (b *StorageBackend) CloneVolume(
 		"cloneVolumeInternal":    cloneVolConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
+	if cloneVolConfig.ReadOnlyClone {
+		if tridentconfig.DisableExtraFeatures {
+			return nil, errors.UnsupportedError("read only clone is not supported")
+		}
+	}
+
 	// Ensure volume is managed
 	if cloneVolConfig.ImportNotManaged {
 		return nil, errors.NotManagedError("volume %s is not managed by Trident", cloneVolConfig.InternalName)

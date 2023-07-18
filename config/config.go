@@ -248,6 +248,10 @@ var (
 		6: "SINGLE_NODE_SINGLE_WRITER",
 		7: "SINGLE_NODE_MULTI_WRITER",
 	}
+
+	// DisableExtraFeatures makes a subset of Trident features disabled
+	// This can be removed when ACP replaces feature-gating
+	DisableExtraFeatures = true
 )
 
 func IsValidProtocol(p Protocol) bool {

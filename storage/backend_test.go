@@ -7,6 +7,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestBackendState(t *testing.T) {
@@ -142,4 +145,62 @@ func TestDeleteSnapshot_NotManaged(t *testing.T) {
 	err = backend.DeleteSnapshot(context.Background(), snapConfig, volumeConfig)
 
 	assert.Errorf(t, err, "expected err")
+}
+
+func TestCloneVolume_FeatureDisabled(t *testing.T) {
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volumeConfig := &VolumeConfig{
+		Version:      "",
+		Name:         volumeName,
+		InternalName: volumeInternalName,
+	}
+	volumeConfigDest := &VolumeConfig{
+		Version:       "",
+		Name:          "pvc-deadbeef-8240-4fd8-97bc-868bf064ecd4",
+		InternalName:  "trident_pvc_deadbeef_8240_4fd8_97bc_868bf064ecd4",
+		ReadOnlyClone: true,
+	}
+
+	backend := &StorageBackend{
+		state: Offline,
+	}
+	pool := NewStoragePool(nil, "test-pool1")
+
+	// Both volume and snapshot not managed
+	_, err := backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)
+
+	assert.Error(t, err, "expected err")
+	assert.True(t, errors.IsUnsupportedError(err))
+}
+
+func TestCloneVolume_BackendOffline(t *testing.T) {
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volumeConfig := &VolumeConfig{
+		Version:       "",
+		Name:          volumeName,
+		InternalName:  volumeInternalName,
+		ReadOnlyClone: true,
+	}
+	volumeConfigDest := &VolumeConfig{
+		Version:       "",
+		Name:          "pvc-deadbeef-8240-4fd8-97bc-868bf064ecd4",
+		InternalName:  "trident_pvc_deadbeef_8240_4fd8_97bc_868bf064ecd4",
+		ReadOnlyClone: false,
+	}
+
+	backend := &StorageBackend{
+		state: Offline,
+		name:  "test-backend",
+	}
+	pool := NewStoragePool(nil, "test-pool1")
+
+	tridentconfig.DisableExtraFeatures = false
+
+	// Both volume and snapshot not managed
+	_, err := backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)
+
+	assert.Errorf(t, err, "expected err")
+	assert.Equal(t, err.Error(), "backend test-backend is not Online")
 }
