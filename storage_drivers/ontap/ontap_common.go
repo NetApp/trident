@@ -2692,18 +2692,10 @@ func cloneFlexvol(
 		return err
 	}
 
-	// NVMe clone is not ready by the time we return from VolumeCloneCreate.
-	// This check here makes sure that we don't fail the clone operation during the time clone is not ready
-	// Currently this change is done only for NVMe volumes but it should work with other volumes too if needed
-	if config.SANType == sa.NVMe {
-
-		desiredNVMeVolStates := []string{"online"}
-		abortNVMeVolStates := []string{"error"}
-		volState, err := client.VolumeWaitForStates(ctx, name, desiredNVMeVolStates, abortNVMeVolStates,
-			maxFlexvolCloneWait)
-		if err != nil {
-			return fmt.Errorf("unable to create flexClone for NVMe volume %v, volState:%v", name, volState)
-		}
+	desiredStates, abortStates := []string{"online"}, []string{"error"}
+	volState, err := client.VolumeWaitForStates(ctx, name, desiredStates, abortStates, maxFlexvolCloneWait)
+	if err != nil {
+		return fmt.Errorf("unable to create flexClone for volume %v, volState:%v", name, volState)
 	}
 
 	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
