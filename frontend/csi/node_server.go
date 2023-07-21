@@ -422,7 +422,8 @@ func (p *Plugin) NodeExpandVolume(
 		}).Warn("Received something other than the expected stagingTargetPath.")
 	}
 
-	err = p.nodeExpandVolume(ctx, &trackingInfo.VolumePublishInfo, requiredBytes, stagingTargetPath, volumeId, req.GetSecrets())
+	err = p.nodeExpandVolume(ctx, &trackingInfo.VolumePublishInfo, requiredBytes, stagingTargetPath, volumeId,
+		req.GetSecrets())
 	if err != nil {
 		return nil, err
 	}
@@ -1017,11 +1018,12 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
-		if err != nil {
+		if err != nil || trackingInfo == nil {
 			Logc(ctx).WithFields(LogFields{
-				"VolumeID": volumeID,
-				"Error":    err.Error(),
-			}).Error("Volume tracking file info not found.")
+				"volumeID": volumeID,
+				"error":    err.Error(),
+				"isEmpty":  trackingInfo == nil,
+			}).Error("Volume tracking file info not found or is empty.")
 
 			continue
 		}
@@ -1035,6 +1037,26 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 			p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
 		}
 	}
+}
+
+func (p *Plugin) readAllTrackingFiles(ctx context.Context) []utils.VolumePublishInfo {
+	publishInfos := make([]utils.VolumePublishInfo, 0)
+	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
+	for _, volumeID := range volumeIDs {
+		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
+		if err != nil || trackingInfo == nil {
+			Logc(ctx).WithError(err).WithFields(LogFields{
+				"volumeID": volumeID,
+				"isEmpty":  trackingInfo == nil,
+			}).Error("Volume tracking file info not found or is empty.")
+
+			continue
+		}
+
+		publishInfos = append(publishInfos, trackingInfo.VolumePublishInfo)
+	}
+
+	return publishInfos
 }
 
 func (p *Plugin) nodeStageISCSIVolume(
@@ -1098,7 +1120,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
-	if err = p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort); err != nil {
+	mpathSize, err := p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort)
+	if err != nil {
 		return err
 	}
 
@@ -1107,7 +1130,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 		return err
 	}
 	if isLUKS {
-		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
+		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+			req.VolumeContext["internalName"])
 		if err != nil {
 			return err
 		}
@@ -1115,6 +1139,20 @@ func (p *Plugin) nodeStageISCSIVolume(
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase")
+		}
+	}
+
+	if mpathSize > 0 {
+		Logc(ctx).Warn("Multipath device size may not be correct, performing gratuitous resize.")
+
+		err = p.nodeExpandVolume(ctx, publishInfo, mpathSize, stagingTargetPath, volumeId, req.GetSecrets())
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"multipathDevice": publishInfo.DevicePath,
+				"volumeID":        volumeId,
+				"size":            mpathSize,
+				"err":             err,
+			}).Warn("Attempt to perform gratuitous resize failed.")
 		}
 	}
 
@@ -1139,28 +1177,32 @@ func (p *Plugin) nodeStageISCSIVolume(
 func (p *Plugin) ensureAttachISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
 	publishInfo *utils.VolumePublishInfo, attachTimeout time.Duration,
-) error {
+) (int64, error) {
+	var err error
+	var mpathSize int64
+
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
-	if err := utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
+	if mpathSize, err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
 		req.GetSecrets(), attachTimeout); err != nil {
 		// Did we fail to log in?
 		if errors.IsAuthError(err) {
 			// Update CHAP info from the controller and try one more time.
 			Logc(ctx).Warn("iSCSI login failed; will retrieve CHAP credentials from Trident controller and try again.")
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
-				return status.Error(codes.Internal, err.Error())
+				return mpathSize, status.Error(codes.Internal, err.Error())
 			}
-			if err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint, publishInfo,
+			if mpathSize, err = utils.AttachISCSIVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
+				publishInfo,
 				req.GetSecrets(), attachTimeout); err != nil {
 				// Bail out no matter what as we've now tried with updated credentials
-				return status.Error(codes.Internal, err.Error())
+				return mpathSize, status.Error(codes.Internal, err.Error())
 			}
 		} else {
-			return status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %v", err))
+			return mpathSize, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %v", err))
 		}
 	}
 
-	return nil
+	return mpathSize, nil
 }
 
 func (p *Plugin) updateChapInfoFromController(
@@ -1192,18 +1234,41 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
 		}
 		if isLUKS {
-			err := utils.EnsureLUKSDeviceClosed(ctx, publishInfo.DevicePath)
+			// Before closing the device, get the corresponding DM device.
+			publishedLUKsDevice, err := utils.GetUnderlyingDevicePathForLUKSDevice(ctx, publishInfo.DevicePath)
+			if err != nil {
+				// No need to return an error
+				Logc(ctx).WithFields(LogFields{
+					"devicePath": publishInfo.DevicePath,
+					"LUN":        publishInfo.IscsiLunNumber,
+					"err":        err,
+				}).Error("Failed to verify the multipath device, could not determine" +
+					" underlying device for LUKS mapping.")
+			}
+
+			err = utils.EnsureLUKSDeviceClosed(ctx, publishInfo.DevicePath)
 			if err != nil {
 				return err
 			}
+
+			// For the future steps LUKs device path is not really useful, either it should be
+			// DM device or empty.
+			publishInfo.DevicePath = publishedLUKsDevice
 		}
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, int(publishInfo.IscsiLunNumber),
-		publishInfo.IscsiTargetIQN, p.unsafeDetach, force)
-	if nil != err && !p.unsafeDetach {
-		return status.Error(codes.Internal, err.Error())
+	unmappedMpathDevice, err := utils.PrepareDeviceForRemoval(ctx, publishInfo, nil, p.unsafeDetach, force)
+	if err != nil {
+		if errors.IsISCSISameLunNumberError(err) {
+			// There is a need to pass all the publish infos this time
+			unmappedMpathDevice, err = utils.PrepareDeviceForRemoval(ctx, publishInfo, p.readAllTrackingFiles(ctx),
+				p.unsafeDetach, force)
+		}
+
+		if err != nil && !p.unsafeDetach {
+			return status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	// Get map of hosts and sessions for given Target IQN.
@@ -1325,7 +1390,8 @@ func (p *Plugin) nodePublishISCSIVolume(
 		}
 		if isLUKS {
 			// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
+			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+				req.VolumeContext["internalName"])
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -1889,7 +1955,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 
 		publishedCHAPCredentials := publishInfo.IscsiChapInfo
 
-		if err = p.ensureAttachISCSIVolume(ctx, req, "", &publishInfo, iSCSILoginTimeout); err != nil {
+		if _, err = p.ensureAttachISCSIVolume(ctx, req, "", &publishInfo, iSCSILoginTimeout); err != nil {
 			return fmt.Errorf("failed to login to the target")
 		}
 
@@ -2123,7 +2189,8 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
 
-	if err := utils.AttachNVMeVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, nil, nvmeAttachTimeout); err != nil {
+	if err := utils.AttachNVMeVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, nil,
+		nvmeAttachTimeout); err != nil {
 		return err
 	}
 
@@ -2133,7 +2200,8 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	if isLUKS {
-		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
+		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+			req.VolumeContext["internalName"])
 		if err != nil {
 			return err
 		}
@@ -2245,7 +2313,8 @@ func (p *Plugin) nodePublishNVMeVolume(
 		}
 		if isLUKS {
 			// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath, req.VolumeContext["internalName"])
+			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+				req.VolumeContext["internalName"])
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}

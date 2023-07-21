@@ -1134,9 +1134,18 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
+		publishInfo := utils.VolumePublishInfo{
+			DevicePath: "",
+			VolumeAccessInfo: utils.VolumeAccessInfo{
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiTargetIQN: v.Iqn,
+					IscsiLunNumber: 0,
+				},
+			},
+		}
 
 		// Inform the host about the device removal
-		if _, err = utils.PrepareDeviceForRemoval(ctx, 0, v.Iqn, true, false); err != nil {
+		if _, err = utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
 			Logc(ctx).Warningf("Unable to prepare device for removal, attempting to detach anyway: %v", err)
 		}
 

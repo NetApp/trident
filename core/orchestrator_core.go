@@ -3441,8 +3441,9 @@ func (o *TridentOrchestrator) AttachVolume(
 			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)
 		}
 	} else {
-		return utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
+		_, err := utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
 			AttachISCSIVolumeTimeoutLong)
+		return err
 	}
 }
 

@@ -719,8 +719,18 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
 		}
 		if lunID >= 0 {
+			publishInfo := utils.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: utils.VolumeAccessInfo{
+					IscsiAccessInfo: utils.IscsiAccessInfo{
+						IscsiTargetIQN: iSCSINodeName,
+						IscsiLunNumber: int32(lunID),
+					},
+				},
+			}
+
 			// Inform the host about the device removal
-			if _, err := utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true, false); err != nil {
+			if _, err := utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
 				Logc(ctx).Error(err)
 			}
 		}

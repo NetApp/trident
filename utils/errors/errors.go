@@ -594,6 +594,28 @@ func IsISCSIDeviceFlushError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// iSCSISameLunNumberError
+// ///////////////////////////////////////////////////////////////////////////
+
+type iSCSISameLunNumberError struct {
+	message string
+}
+
+func (e *iSCSISameLunNumberError) Error() string { return e.message }
+
+func ISCSISameLunNumberError(message string) error {
+	return &iSCSISameLunNumberError{message}
+}
+
+func IsISCSISameLunNumberError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*iSCSISameLunNumberError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // tooManyRequestsError (HTTP 429)
 // ///////////////////////////////////////////////////////////////////////////
 
