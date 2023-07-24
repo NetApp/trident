@@ -362,6 +362,8 @@ type TridentNode struct {
 	NodeName string `json:"name"`
 	// IQN is the iqn of the node
 	IQN string `json:"iqn,omitempty"`
+	// NQN is the nqn of the node
+	NQN string `json:"nqn,omitempty"`
 	// IPs is a list of IP addresses for the TridentNode
 	IPs []string `json:"ips,omitempty"`
 	// NodePrep is the current status of node preparation for this node

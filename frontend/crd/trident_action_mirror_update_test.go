@@ -13,6 +13,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/netapp/trident/config"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils"
@@ -107,6 +108,9 @@ func fakeTAMU(name, namespace, tmrName, snapshotHandle string) *netappv1.Trident
 }
 
 func TestHandleActionMirrorUpdate(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = true }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -258,6 +262,9 @@ func TestHandleActionMirrorUpdate_ValidateFailure(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = true }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -320,7 +327,56 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 	assert.True(t, tamu.Succeeded(), "TAMU operation failed")
 }
 
+func TestHandleActionMirrorUpdate_InProgress_Disabled(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// Activate the CRD controller and start monitoring
+	if err = crdController.Activate(); err != nil {
+		t.Fatalf("error while activating: %v", err.Error())
+	}
+	delaySeconds(1)
+
+	pvc := fakePVC(pvc1, namespace1, pv1)
+	_, _ = kubeClient.CoreV1().PersistentVolumeClaims(namespace1).Create(ctx(), pvc, createOpts)
+
+	tmr := fakeTMR(tmrName1, namespace1, pvc1)
+	_, _ = crdClient.TridentV1().TridentMirrorRelationships(namespace1).Create(ctx(), tmr, createOpts)
+
+	tamu := fakeTAMU(tamu1, namespace1, tmrName1, snapHandle1)
+	_, _ = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Create(ctx(), tamu, createOpts)
+
+	// Wait until the operation completes
+	for i := 0; i < 5; i++ {
+		time.Sleep(250 * time.Millisecond)
+
+		tamu, err = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Get(ctx(), tamu1, getOpts)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				continue
+			}
+			break
+		} else if tamu.IsComplete() {
+			break
+		}
+	}
+
+	assert.True(t, tamu.Failed(), "TAMU operation was not disabled")
+}
+
 func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = true }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -362,6 +418,9 @@ func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = true }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	transferTime, _ := time.Parse(utils.TimestampFormat, previousTransferTime)
@@ -397,6 +456,9 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = true }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -430,6 +492,9 @@ func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Failed(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = true }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 

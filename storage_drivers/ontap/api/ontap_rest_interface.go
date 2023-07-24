@@ -356,4 +356,5 @@ type RestClientInterface interface {
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
 	// NVMeSubsystemRemoveNamespace ummaps a given namespace from a Subsystem with the specified subsystem UUID.
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
+	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsystemUUID string) error
 }

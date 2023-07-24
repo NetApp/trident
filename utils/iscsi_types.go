@@ -9,6 +9,9 @@ import (
 type IscsiReconcileUtils interface {
 	GetISCSIHostSessionMapForTarget(context.Context, string) map[int]int
 	GetSysfsBlockDirsForLUN(int, map[int]int) []string
+	GetMultipathDeviceUUID(string) (string, error)
+	GetMultipathDeviceBySerial(context.Context, string) (string, error)
+	GetMultipathDeviceDisks(context.Context, string) ([]string, error)
 	GetDevicesForLUN(paths []string) ([]string, error)
 	ReconcileISCSIVolumeInfo(ctx context.Context, trackingInfo *VolumeTrackingInfo) (bool, error)
 }

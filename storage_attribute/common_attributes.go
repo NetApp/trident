@@ -48,6 +48,9 @@ const (
 	ISCSI = "iscsi"
 	NVMe  = "nvme"
 
+	// NVMeTransport is used to get NVMe TCP dataLIFs.
+	NVMeTransport = "nvme_tcp"
+
 	RequiredStorage        = "requiredStorage" // deprecated, use additionalStoragePools
 	StoragePools           = "storagePools"
 	AdditionalStoragePools = "additionalStoragePools"

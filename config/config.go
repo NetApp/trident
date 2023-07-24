@@ -39,7 +39,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "23.04.0"
+	DefaultOrchestratorVersion       = "23.07.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -158,7 +158,7 @@ const (
 	Darwin  = "darwin"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.21"
+	KubernetesVersionMin = "v1.22"
 	KubernetesVersionMax = "v1.27"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
@@ -176,7 +176,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.01"
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.04"
 
 	// IscsiSelfHealingInterval is an interval with which the iSCSI self-healing thread is called periodically
 	IscsiSelfHealingInterval = 300 * time.Second
@@ -248,6 +248,10 @@ var (
 		6: "SINGLE_NODE_SINGLE_WRITER",
 		7: "SINGLE_NODE_MULTI_WRITER",
 	}
+
+	// DisableExtraFeatures makes a subset of Trident features disabled
+	// This can be removed when ACP replaces feature-gating
+	DisableExtraFeatures = true
 )
 
 func IsValidProtocol(p Protocol) bool {

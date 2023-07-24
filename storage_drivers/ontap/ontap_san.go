@@ -116,10 +116,9 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	err = InitializeSANDriver(ctx, driverContext, d.API, &d.Config, d.validate, backendUUID)
-
-	// clean up igroup for failed driver
 	if err != nil {
 		if d.Config.DriverContext == tridentconfig.ContextCSI {
+			// Clean up igroup for failed driver.
 			err := d.API.IgroupDestroy(ctx, d.Config.IgroupName)
 			if err != nil {
 				Logc(ctx).WithError(err).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
@@ -127,6 +126,13 @@ func (d *SANStorageDriver) Initialize(
 		}
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
+
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
 
 	// Set up the autosupport heartbeat
 	d.telemetry = NewOntapTelemetry(ctx, d)
@@ -713,8 +719,18 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
 		}
 		if lunID >= 0 {
+			publishInfo := utils.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: utils.VolumeAccessInfo{
+					IscsiAccessInfo: utils.IscsiAccessInfo{
+						IscsiTargetIQN: iSCSINodeName,
+						IscsiLunNumber: int32(lunID),
+					},
+				},
+			}
+
 			// Inform the host about the device removal
-			if _, err := utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true, false); err != nil {
+			if _, err := utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
 				Logc(ctx).Error(err)
 			}
 		}
@@ -956,6 +972,28 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend sto
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *SANStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.OntapStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "SANStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// 2. Aggregate (physical pool)
+	svmUUID := d.GetAPI().GetSVMUUID()
+	backendPools := make([]drivers.OntapStorageBackendPool, 0)
+	for _, pool := range d.physicalPools {
+		backendPool := drivers.OntapStorageBackendPool{
+			SvmUUID:   svmUUID,
+			Aggregate: pool.Name(),
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
 }
 
 func (d *SANStorageDriver) getStoragePoolAttributes(ctx context.Context) map[string]sa.Offer {
@@ -1285,7 +1323,7 @@ func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*uti
 // in physical pools list.
 func (d *SANStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	Logc(ctx).Debug(">>>> GetBackendState")
-	defer Logc(ctx).Debugf("<<<< GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
 
 	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx))
 }

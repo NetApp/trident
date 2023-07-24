@@ -72,6 +72,7 @@ type CommonStorageDriverConfig struct {
 	StoragePrefixRaw  json.RawMessage       `json:"storagePrefix,string"`
 	StoragePrefix     *string               `json:"-"`
 	SerialNumbers     []string              `json:"serialNumbers,omitEmpty"`
+	BackendPools      []string              `json:"backendPools,omitEmpty"`
 	DriverContext     trident.DriverContext `json:"-"`
 	LimitVolumeSize   string                `json:"limitVolumeSize"`
 	Credentials       map[string]string     `json:"credentials"`
@@ -146,6 +147,32 @@ type OntapStorageDriverPool struct {
 	SANType                          string              `json:"sanType"`
 	SMBShare                         string              `json:"smbShare"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// StorageBackendPool is a type constraint that enables drivers to generically report non-overlapping storage pools
+// within a backend.
+type StorageBackendPool interface {
+	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool
+}
+
+// OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
+// provisioning storage.
+type OntapFlexGroupStorageBackendPool struct {
+	SvmUUID string `json:"svmUUID"`
+}
+
+// OntapStorageBackendPool is a non-overlapping section of an ONTAP backend that may be used for provisioning storage.
+type OntapStorageBackendPool struct {
+	SvmUUID   string `json:"svmUUID"`
+	Aggregate string `json:"aggregate"`
+}
+
+// OntapEconomyStorageBackendPool is a non-overlapping section of an ONTAP economy backend that may be used for
+// provisioning storage.
+type OntapEconomyStorageBackendPool struct {
+	SvmUUID       string `json:"svmUUID"`
+	Aggregate     string `json:"aggregate"`
+	FlexVolPrefix string `json:"flexVolPrefix"`
 }
 
 type OntapStorageDriverConfigDefaults struct {

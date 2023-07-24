@@ -274,3 +274,55 @@ func ensureJoinedStringContainsElem(joined, elem, sep string) string {
 	}
 	return joined + sep + elem
 }
+
+// EncodeStorageBackendPools serializes and base64 encodes backend storage pools within the driver's backend;
+// it is shared by all storage drivers.
+func EncodeStorageBackendPools[P StorageBackendPool](
+	ctx context.Context, config *CommonStorageDriverConfig, backendPools []P,
+) ([]string, error) {
+	fields := LogFields{"Method": "EncodeStorageBackendPools", "Type": config.StorageDriverName}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> EncodeStorageBackendPools")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug("<<<< EncodeStorageBackendPools")
+
+	if len(backendPools) == 0 {
+		return nil, fmt.Errorf("failed encode backend pools; no storage backend pools supplied")
+	}
+
+	encodedPools := make([]string, 0)
+	for _, pool := range backendPools {
+		encodedPool, err := utils.EncodeObjectToBase64String(pool)
+		if err != nil {
+			return nil, err
+		}
+		encodedPools = append(encodedPools, encodedPool)
+	}
+	return encodedPools, nil
+}
+
+// DecodeStorageBackendPools deserializes and decodes base64 encoded pools into driver-specific backend storage pools.
+func DecodeStorageBackendPools[P StorageBackendPool](
+	ctx context.Context, config *CommonStorageDriverConfig, encodedPools []string,
+) ([]P, error) {
+	fields := LogFields{"Method": "DecodeStorageBackendPools", "Type": config.StorageDriverName}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> DecodeStorageBackendPools")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug("<<<< DecodeStorageBackendPools")
+
+	if len(encodedPools) == 0 {
+		return nil, fmt.Errorf("failed to decode backend pools; no encoded backend pools supplied")
+	}
+
+	backendPools := make([]P, 0)
+	for _, pool := range encodedPools {
+		var backendPool P
+		err := utils.DecodeBase64StringToObject(pool, &backendPool)
+		if err != nil {
+			return nil, err
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+	return backendPools, nil
+}

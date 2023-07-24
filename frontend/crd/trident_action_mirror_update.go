@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
@@ -61,6 +62,10 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 				"Could not update mirror update action CR with final result.")
 		}
 	}()
+
+	if config.DisableExtraFeatures {
+		return errors.UnsupportedError("mirror update is not enabled")
+	}
 
 	// Detect a CR that is in progress but is not a retry from the workqueue.
 	// This can only happen if Trident restarted while processing a CR, in which case we move the CR directly to Failed.

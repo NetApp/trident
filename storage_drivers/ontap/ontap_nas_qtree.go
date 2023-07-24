@@ -179,6 +179,13 @@ func (d *NASQtreeStorageDriver) Initialize(
 		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
 	}
 
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
+
 	// Ensure all quotas are in force after a driver restart
 	d.queueAllFlexvolsForQuotaResize(ctx)
 
@@ -475,7 +482,6 @@ func (d *NASQtreeStorageDriver) CreateClone(
 
 	// If RO clone is requested, validate the snapshot directory access and return
 	if cloneVolConfig.ReadOnlyClone {
-
 		_, flexvol, _, err := d.ParseQtreeInternalID(sourceVolConfig.InternalID)
 		if err != nil {
 			return errors.WrapWithNotFoundError(err, "error while getting flexvol")
@@ -894,6 +900,10 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
+
+	if tridentconfig.DisableExtraFeatures {
+		return nil, errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	}
 
 	if volConfig.ReadOnlyClone {
 		// This is a read-only volume and hence do not create snapshot of it
@@ -1560,6 +1570,31 @@ func (d *NASQtreeStorageDriver) GetStorageBackendPhysicalPoolNames(context.Conte
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NASQtreeStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.OntapEconomyStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASQtreeStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// 2. Aggregate (physical pool)
+	// 3. FlexVol Name Prefix
+	svmUUID := d.GetAPI().GetSVMUUID()
+	flexVolPrefix := d.FlexvolNamePrefix()
+	backendPools := make([]drivers.OntapEconomyStorageBackendPool, 0)
+	for _, pool := range d.physicalPools {
+		backendPool := drivers.OntapEconomyStorageBackendPool{
+			SvmUUID:       svmUUID,
+			Aggregate:     pool.Name(),
+			FlexVolPrefix: flexVolPrefix,
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
+}
+
 func (d *NASQtreeStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
 	return map[string]sa.Offer{
 		sa.BackendType:      sa.NewStringOffer(d.Name()),
@@ -2113,7 +2148,7 @@ func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
 // in physical pools list.
 func (d *NASQtreeStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	Logc(ctx).Debug(">>>> GetBackendState")
-	defer Logc(ctx).Debugf("<<<< GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
 
 	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
 }

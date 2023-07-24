@@ -20,10 +20,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-var (
-	mockIPs   = []string{"0.0.0.0", "1.1.1.1"}
-	transport = "tcp"
-)
+var mockIPs = []string{"0.0.0.0", "1.1.1.1"}
 
 func newNVMeDriver(apiOverride api.OntapAPI) *NVMeStorageDriver {
 	sPrefix := "test_"
@@ -121,7 +118,7 @@ func TestNVMeInitialize_GetDataLifError(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(nil, fmt.Errorf("error getting dataLifs"))
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(nil, fmt.Errorf("error getting dataLifs"))
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
 
@@ -136,12 +133,12 @@ func TestNVMeInitialize_NoDataLifs(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return([]string{}, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{}, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
 
-	assert.ErrorContains(t, err, "no data LIFs with TCP protocol found on SVM")
+	assert.ErrorContains(t, err, "no NVMe data LIFs found on SVM svm")
 }
 
 func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
@@ -152,7 +149,7 @@ func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, fmt.Errorf("failed to get aggrs"))
 
@@ -171,7 +168,7 @@ func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
@@ -190,13 +187,14 @@ func TestNVMeInitialize_Success(t *testing.T) {
 	}
 	configJSON := `{"SANType": "nvme"}`
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)).Return(mockIPs, nil)
+	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
 
@@ -246,6 +244,31 @@ func TestNVMeGetStorageBackendSpecs(t *testing.T) {
 func TestNVMeGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	d := newNVMeDriver(nil)
 	assert.Equal(t, d.GetStorageBackendPhysicalPoolNames(ctx), []string{"pool1"}, "Physical pools are different.")
+}
+
+func TestNVMeGetStorageBackendPools(t *testing.T) {
+	driver, mockAPI := newNVMeDriverAndMockApi(t)
+	svmUUID := "SVM1-uuid"
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
 }
 
 func TestNVMeGetVolumeOpts(t *testing.T) {
@@ -988,7 +1011,7 @@ func TestUnpublish(t *testing.T) {
 	// case 1: NVMeEnsureNamespaceUnmapped returned error
 	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
-	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("NVMeEnsureNamespaceUnmapped returned error"))
+	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(false, fmt.Errorf("NVMeEnsureNamespaceUnmapped returned error"))
 
 	err := d.Unpublish(ctx, volConfig, publishInfo)
 
@@ -998,7 +1021,7 @@ func TestUnpublish(t *testing.T) {
 	volConfig.AccessInfo.PublishEnforcement = true
 	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
-	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mock.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 
 	err = d.Unpublish(ctx, volConfig, publishInfo)
 
@@ -1406,4 +1429,15 @@ func TestCreateNamespacePath(t *testing.T) {
 	nsNameGot := createNamespacePath(flexVolName, nsName)
 
 	assert.Equal(t, nsNameExpected, nsNameGot)
+}
+
+func TestGetBackendState(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+
+	mAPI.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+
+	reason, changeMap := d.GetBackendState(ctx)
+
+	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
+	assert.NotNil(t, changeMap, "should not be nil")
 }

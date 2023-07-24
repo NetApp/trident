@@ -6969,6 +6969,69 @@ func TestImportSnapshot(t *testing.T) {
 		VolumeName:         volumeName,
 		InternalName:       snapInternalName,
 		VolumeInternalName: volumeInternalName,
+		ImportNotManaged:   false,
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	// Initialize mocks.
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStore := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Set up common mock expectations between test cases.
+	mockBackend.EXPECT().GetDriverName().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().Name().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Set up test case specific mock expectations and inject mocks into core.
+	mockBackend.EXPECT().GetSnapshot(
+		gomock.Any(), snapConfig, volume.Config,
+	).Return(snapshot, nil)
+	mockStore.EXPECT().AddSnapshot(gomock.Any(), snapshot).Return(nil)
+
+	o.storeClient = mockStore
+	o.backends[volume.BackendUUID] = mockBackend
+	o.volumes[snapConfig.VolumeName] = volume
+
+	// Call method under test and make assertions.
+	importedSnap, err := o.ImportSnapshot(ctx(), snapConfig)
+	assert.NoError(t, err)
+	assert.NotNil(t, importedSnap)
+	assert.EqualValues(t, snapshot.ConstructExternal(), importedSnap)
+}
+
+func TestImportSnapshot_VolumeNotManaged(t *testing.T) {
+	o := getOrchestrator(t, false)
+
+	// Initialize variables used in all subtests.
+	backendUUID := "test-backend"
+	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
+	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:             "",
+			Name:                volumeName,
+			InternalName:        volumeInternalName,
+			ImportOriginalName:  "import-" + volumeName,
+			ImportBackendUUID:   "import-" + backendUUID,
+			ImportNotManaged:    true,
+			LUKSPassphraseNames: nil,
+		},
+		BackendUUID: backendUUID,
+	}
+	snapName := "snapshot-import"
+	snapInternalName := "snap.2023-05-23_175116"
+	snapConfig := &storage.SnapshotConfig{
+		Version:            "1",
+		Name:               snapName,
+		VolumeName:         volumeName,
+		InternalName:       snapInternalName,
+		VolumeInternalName: volumeInternalName,
 		ImportNotManaged:   true,
 	}
 	snapshot := &storage.Snapshot{
