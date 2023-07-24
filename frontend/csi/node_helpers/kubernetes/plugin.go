@@ -17,6 +17,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils"
 )
 
 var osFs = afero.NewOsFs()
@@ -109,13 +110,18 @@ func (h *helper) reconcileVolumePublishInfo(ctx context.Context) error {
 		h.publishedPaths = publishedPaths
 	}
 
+	pvToDeviceMappings, err := utils.PVMountpointMappings(ctx)
+	if err != nil {
+		Logc(ctx).Errorf("Unable to get devices for mounted PVs.")
+	}
+
 	for _, file := range files {
 		// On Windows, the staging path is a directory whose name is the volume ID (e.g. pvc-<uuid>). We don't want to
 		// attempt to reconcile directories.
 		if file.IsDir() {
 			continue
 		}
-		err := h.reconcileVolumePublishInfoFile(ctx, file.Name())
+		err := h.reconcileVolumePublishInfoFile(ctx, file.Name(), pvToDeviceMappings)
 		if err != nil {
 			return err
 		}
@@ -124,7 +130,9 @@ func (h *helper) reconcileVolumePublishInfo(ctx context.Context) error {
 	return nil
 }
 
-func (h *helper) reconcileVolumePublishInfoFile(ctx context.Context, file string) error {
+func (h *helper) reconcileVolumePublishInfoFile(
+	ctx context.Context, file string, pvToDeviceMappings map[string]string,
+) error {
 	volumeId := strings.ReplaceAll(file, ".json", "")
 	paths, ok := h.publishedPaths[volumeId]
 	if !ok {
@@ -133,7 +141,7 @@ func (h *helper) reconcileVolumePublishInfoFile(ctx context.Context, file string
 		Log().Warningf("Could not determine determine published paths for volume: %s", volumeId)
 	}
 
-	shouldDelete, err := h.VolumePublishManager.UpgradeVolumeTrackingFile(ctx, volumeId, paths)
+	shouldDelete, err := h.VolumePublishManager.UpgradeVolumeTrackingFile(ctx, volumeId, paths, pvToDeviceMappings)
 	if err != nil {
 		Log().Infof("Volume tracking file upgrade failed for volume: %s .", volumeId)
 		return err

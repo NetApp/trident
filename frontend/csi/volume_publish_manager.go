@@ -98,6 +98,15 @@ func (v *VolumePublishManager) readTrackingInfo(
 	}
 
 	Logc(ctx).WithField("volumeTrackingInfo", volumeTrackingInfo).Debug("Volume tracking info found.")
+
+	// Given upgrade logic in volume_publish_manager, this should not
+	// be the case but adding an extra check here to move the
+	// rawDevicePath value to devicePath.
+	if volumeTrackingInfo.RawDevicePath != "" && volumeTrackingInfo.DevicePath == "" {
+		volumeTrackingInfo.DevicePath = volumeTrackingInfo.RawDevicePath
+		volumeTrackingInfo.RawDevicePath = ""
+	}
+
 	return &volumeTrackingInfo, nil
 }
 
@@ -153,7 +162,7 @@ func (v *VolumePublishManager) DeleteTrackingInfo(ctx context.Context, volumeID 
 // stagedDeviceInfo or legacy tracking file do not exist, or are unable to be unmarshalled, then an upgrade is not
 // possible, and we must delete the tracking file because it no longer has any value.
 func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
-	ctx context.Context, volumeId string, publishedPaths map[string]struct{},
+	ctx context.Context, volumeId string, publishedPaths map[string]struct{}, pvToDeviceMappings map[string]string,
 ) (bool, error) {
 	var err error
 	fields := LogFields{"volumeId": volumeId}
@@ -178,8 +187,81 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	// upon unmarshalling the json.
 	if volumeTrackingInfo.VolumePublishInfo.FilesystemType != "" {
 		Logc(ctx).Debug("Volume tracking method did not need to be upgraded.")
+
+		// For iSCSI case confirm iSCSI `devicePath` exists, if not check
+		// `rawDevicePath` exist, if yes then copy the value else log an
+		// error message in logs.
+		if volumeTrackingInfo.VolumePublishInfo.IscsiTargetPortal == "" {
+			Logc(ctx).Debug("IscsiTargetPortal was empty in volume publish info.")
+			return false, nil
+		}
+
+		Logc(ctx).Debug("Ensuring devicePath is present if not then attempting to recover it.")
+
+		// In 23.01 devicePath was changed to rawDevicePath, which led to missing devicePath for
+		// attached volumes from pre-23.01 and newly created volumes instead of devicePath would
+		// rawDevicePath. Starting 23.07, devicePath has been re-introduced, below effort ensures
+		// devicePath value is populated based on rawDevicePath, if both are missing Trident
+		// tries to identify the correct device based on the published paths.
+		if volumeTrackingInfo.DevicePath == "" {
+			if volumeTrackingInfo.RawDevicePath != "" {
+				volumeTrackingInfo.DevicePath = volumeTrackingInfo.RawDevicePath
+				volumeTrackingInfo.RawDevicePath = ""
+
+				Logc(ctx).WithFields(LogFields{
+					"volumeID":          volumeId,
+					"devicePath":        volumeTrackingInfo.DevicePath,
+					"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+					"lun":               volumeTrackingInfo.IscsiLunNumber,
+				}).Debug("Updating new publish info records.")
+			} else if len(volumeTrackingInfo.PublishedPaths) > 0 {
+				// This is a best-effort to identify a missing device path
+				for publishedPath := range volumeTrackingInfo.PublishedPaths {
+					if device, ok := pvToDeviceMappings[publishedPath]; ok {
+						volumeTrackingInfo.DevicePath = device
+						Logc(ctx).WithFields(LogFields{
+							"volumeID":          volumeId,
+							"devicePath":        volumeTrackingInfo.DevicePath,
+							"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+							"lun":               volumeTrackingInfo.IscsiLunNumber,
+						}).Debug("Updating new publish info records based on published paths.")
+					}
+				}
+			}
+
+			if volumeTrackingInfo.DevicePath != "" {
+				err = v.WriteTrackingInfo(ctx, volumeId, volumeTrackingInfo)
+				if err != nil {
+					Logc(ctx).WithFields(LogFields{
+						"volumeID":          volumeId,
+						"devicePath":        volumeTrackingInfo.DevicePath,
+						"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+						"lun":               volumeTrackingInfo.IscsiLunNumber,
+					}).Error("Failed to update tracking file with device path information.")
+				}
+			} else {
+				Logc(ctx).WithFields(LogFields{
+					"volumeID":          volumeId,
+					"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+					"lun":               volumeTrackingInfo.IscsiLunNumber,
+				}).Error("New publish info is missing device path.")
+			}
+		} else if volumeTrackingInfo.RawDevicePath != "" {
+			Logc(ctx).WithFields(LogFields{
+				"volumeID":          volumeId,
+				"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+				"lun":               volumeTrackingInfo.IscsiLunNumber,
+				"devicePath":        volumeTrackingInfo.DevicePath,
+				"rawDevicePath":     volumeTrackingInfo.RawDevicePath,
+			}).Warn("Found both devices.")
+
+			// No need to have two sources of device path information
+			volumeTrackingInfo.RawDevicePath = ""
+		}
+
 		return false, nil
 	}
+
 	file = path.Join(volumeTrackingInfo.StagingTargetPath, volumePublishInfoFilename)
 	err = utils.JsonReaderWriter.ReadJSONFile(ctx, publishInfo, file, "publish info")
 	if err != nil {
@@ -201,6 +283,41 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 
 	volumeTrackingInfo.VolumePublishInfo = *publishInfo
 	volumeTrackingInfo.PublishedPaths = publishedPaths
+
+	// (arorar): I do not think this condition will ever be true since `rawDevicePath`
+	//           was introduced after this migration logic and `devicePath` has been re-introduced.
+	if volumeTrackingInfo.VolumePublishInfo.IscsiTargetPortal != "" {
+		if volumeTrackingInfo.DevicePath == "" {
+			if volumeTrackingInfo.RawDevicePath != "" {
+				volumeTrackingInfo.DevicePath = volumeTrackingInfo.RawDevicePath
+				volumeTrackingInfo.RawDevicePath = ""
+
+				Logc(ctx).WithFields(LogFields{
+					"volumeID":          volumeId,
+					"devicePath":        volumeTrackingInfo.DevicePath,
+					"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+					"lun":               volumeTrackingInfo.IscsiLunNumber,
+				}).Debug("Updating publish info records.")
+			} else {
+				Logc(ctx).WithFields(LogFields{
+					"volumeID":          volumeId,
+					"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+					"lun":               volumeTrackingInfo.IscsiLunNumber,
+				}).Errorf("Publish info is missing device path.")
+			}
+		} else if volumeTrackingInfo.RawDevicePath != "" {
+			Logc(ctx).WithFields(LogFields{
+				"volumeID":          volumeId,
+				"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+				"lun":               volumeTrackingInfo.IscsiLunNumber,
+				"devicePath":        volumeTrackingInfo.DevicePath,
+				"rawDevicePath":     volumeTrackingInfo.RawDevicePath,
+			}).Warn("Found both devices.")
+
+			// No need to have two sources of device path information
+			volumeTrackingInfo.RawDevicePath = ""
+		}
+	}
 
 	Logc(ctx).WithField("publishInfoLocation", volumeTrackingInfo).Debug("Publish info location found.")
 	err = v.WriteTrackingInfo(ctx, volumeId, volumeTrackingInfo)

@@ -102,7 +102,8 @@ func TestReconcileVolumeTrackingInfo(t *testing.T) {
 
 	_ = osFs.Mkdir("/pods", 0o777)
 	mockVolumePublishManager.EXPECT().GetVolumeTrackingFiles().Return([]os.FileInfo{fInfo}, nil)
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, make(map[string]struct{})).
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, make(map[string]struct{}),
+		make(map[string]string)).
 		Return(false, errors.New("foo"))
 	err = h.reconcileVolumePublishInfo(ctx)
 	assert.Error(t, err, "expected error if reconcile file fails")
@@ -127,27 +128,31 @@ func TestReconcileVolumeTrackingInfoFile(t *testing.T) {
 
 	validH := newValidHelper(orchestrator, volId, mockVolumePublishManager)
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths).Return(false, nil)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths,
+		nil).Return(false, nil)
 	mockVolumePublishManager.EXPECT().ValidateTrackingFile(ctx, volId).Return(false, nil)
 
-	err := validH.reconcileVolumePublishInfoFile(ctx, fName)
+	err := validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.NoError(t, err, "did not expect an error during reconcile")
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths).Return(false, errors.New("foo"))
-	err = validH.reconcileVolumePublishInfoFile(ctx, fName)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths,
+		nil).Return(false, errors.New("foo"))
+	err = validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.Error(t, err, "expected error if upgrade to tracking file occurred")
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(gomock.Any(), volId, paths).Return(false, nil)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(gomock.Any(), volId, paths,
+		nil).Return(false, nil)
 	mockVolumePublishManager.EXPECT().ValidateTrackingFile(gomock.Any(), volId).Return(true, nil)
 	mockVolumePublishManager.EXPECT().DeleteTrackingInfo(gomock.Any(), volId).Return(errors.New("foo error"))
 
-	err = validH.reconcileVolumePublishInfoFile(ctx, fName)
+	err = validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.Error(t, err, "expected error if file delete failed")
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths).Return(false, nil)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths,
+		nil).Return(false, nil)
 	mockVolumePublishManager.EXPECT().ValidateTrackingFile(ctx, volId).Return(false, errors.New("foo"))
 
-	err = validH.reconcileVolumePublishInfoFile(ctx, fName)
+	err = validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.Error(t, err, "expected error if validate tracking file error occurred")
 }
 

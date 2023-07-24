@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -118,6 +119,44 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 
 	Logc(ctx).WithFields(logFields).Debug("Mount information not found.")
 	return false, nil
+}
+
+// PVMountpointMappings identifies devices corresponding to published paths
+func PVMountpointMappings(ctx context.Context) (map[string]string, error) {
+	Logc(ctx).Debug(">>>> mount_linux.PVMountpointMappings")
+	defer Logc(ctx).Debug("<<<< mount_linux.PVMountpointMappings")
+
+	pvMountpointRegex := regexp.MustCompile(`^(.*pods)(.*volumes)(.*pvc-).*$`)
+	mappings := make(map[string]string)
+
+	// Read the system mounts
+	procSelfMountinfo, err := listProcMountinfo(procSelfMountinfoPath)
+	if err != nil {
+		Logc(ctx).Errorf("checking mounts failed; %s", err)
+		return nil, fmt.Errorf("checking mounts failed; %s", err)
+	}
+
+	// Check each mount for K8s-based mounts
+	for _, procMount := range procSelfMountinfo {
+		if pvMountpointRegex.MatchString(procMount.MountPoint) {
+
+			var procSourceDevice string
+			if strings.HasPrefix(procMount.MountSource, "/dev/") {
+				procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
+				if err != nil {
+					Logc(ctx).Error(err)
+					continue
+				}
+				procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
+			}
+
+			if procSourceDevice != "" {
+				mappings[procMount.MountPoint] = "/dev/" + procSourceDevice
+			}
+		}
+	}
+
+	return mappings, nil
 }
 
 // mountNFSPath attaches the supplied NFS share at the supplied location with options.

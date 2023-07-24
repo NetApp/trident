@@ -7,6 +7,12 @@
 **Fixes:**
 
 - Fixed ONTAP ZAPI request to ensure LUN serial number is queried when getting LUN attributes.
+- Revert publish info field from `rawDevicePath` to `devicePath`; added logic to populate and recover (in some cases)
+  `devicePath` field.
+
+**Enhancements:**
+- Added additional logic to verify iSCSI multipath device serial number and size.
+- Additional verification for iSCSI volumes to ensure correct multipath device is unstaged.
 
 ## v23.04.0
 

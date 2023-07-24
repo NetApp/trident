@@ -136,18 +136,18 @@ func (mr *MockNodeHelperMockRecorder) RemovePublishedPath(arg0, arg1, arg2 inter
 }
 
 // UpgradeVolumeTrackingFile mocks base method.
-func (m *MockNodeHelper) UpgradeVolumeTrackingFile(arg0 context.Context, arg1 string, arg2 map[string]struct{}) (bool, error) {
+func (m *MockNodeHelper) UpgradeVolumeTrackingFile(arg0 context.Context, arg1 string, arg2 map[string]struct{}, arg3 map[string]string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpgradeVolumeTrackingFile", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpgradeVolumeTrackingFile", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpgradeVolumeTrackingFile indicates an expected call of UpgradeVolumeTrackingFile.
-func (mr *MockNodeHelperMockRecorder) UpgradeVolumeTrackingFile(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) UpgradeVolumeTrackingFile(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeVolumeTrackingFile", reflect.TypeOf((*MockNodeHelper)(nil).UpgradeVolumeTrackingFile), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeVolumeTrackingFile", reflect.TypeOf((*MockNodeHelper)(nil).UpgradeVolumeTrackingFile), arg0, arg1, arg2, arg3)
 }
 
 // ValidateTrackingFile mocks base method.
@@ -274,18 +274,18 @@ func (mr *MockVolumePublishManagerMockRecorder) ReadTrackingInfo(arg0, arg1 inte
 }
 
 // UpgradeVolumeTrackingFile mocks base method.
-func (m *MockVolumePublishManager) UpgradeVolumeTrackingFile(arg0 context.Context, arg1 string, arg2 map[string]struct{}) (bool, error) {
+func (m *MockVolumePublishManager) UpgradeVolumeTrackingFile(arg0 context.Context, arg1 string, arg2 map[string]struct{}, arg3 map[string]string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpgradeVolumeTrackingFile", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpgradeVolumeTrackingFile", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpgradeVolumeTrackingFile indicates an expected call of UpgradeVolumeTrackingFile.
-func (mr *MockVolumePublishManagerMockRecorder) UpgradeVolumeTrackingFile(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockVolumePublishManagerMockRecorder) UpgradeVolumeTrackingFile(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeVolumeTrackingFile", reflect.TypeOf((*MockVolumePublishManager)(nil).UpgradeVolumeTrackingFile), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeVolumeTrackingFile", reflect.TypeOf((*MockVolumePublishManager)(nil).UpgradeVolumeTrackingFile), arg0, arg1, arg2, arg3)
 }
 
 // ValidateTrackingFile mocks base method.

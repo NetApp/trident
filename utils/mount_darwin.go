@@ -121,3 +121,11 @@ func IsCompatible(ctx context.Context, protocol string) error {
 
 	return fmt.Errorf("mounting %s volume is not supported on darwin", protocol)
 }
+
+// PVMountpointMappings identifies devices corresponding to published paths
+func PVMountpointMappings(ctx context.Context) (map[string]string, error) {
+	Logc(ctx).Debug(">>>> mount_darwin.PVMountpointMappings")
+	defer Logc(ctx).Debug("<<<< mount_darwin.PVMountpointMappings")
+
+	return make(map[string]string), errors.UnsupportedError("PVMountpointMappings is not supported on darwin ")
+}
