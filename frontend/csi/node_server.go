@@ -1173,7 +1173,8 @@ func (p *Plugin) nodeStageISCSIVolume(
 	return nil
 }
 
-// ensureAttachISCSIVolume to ensure that iSCSI volume attachment is through.
+// ensureAttachISCSIVolume attempts to attach the volume to the local host
+// with a retry logic based on the pubish information passed in.
 func (p *Plugin) ensureAttachISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
 	publishInfo *utils.VolumePublishInfo, attachTimeout time.Duration,
@@ -1240,7 +1241,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 				// No need to return an error
 				Logc(ctx).WithFields(LogFields{
 					"devicePath": publishInfo.DevicePath,
-					"LUN":        publishInfo.IscsiLunNumber,
+					"lun":        publishInfo.IscsiLunNumber,
 					"err":        err,
 				}).Error("Failed to verify the multipath device, could not determine" +
 					" underlying device for LUKS mapping.")

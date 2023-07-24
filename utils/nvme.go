@@ -5,6 +5,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"sort"
 	"strings"
 	"time"
@@ -318,7 +319,23 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 		return err
 	}
 	if !mounted {
-		_ = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		err = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				logFields := LogFields{
+					"volume": name,
+					"fstype": publishInfo.FilesystemType,
+					"device": devicePath,
+				}
+
+				if exitErr.ExitCode() == 1 {
+					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
+				} else {
+					logFields["exitCode"] = exitErr.ExitCode()
+					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
+				}
+			}
+		}
 	}
 
 	// Optionally mount the device

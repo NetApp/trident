@@ -178,3 +178,35 @@ func TestIsCompatible_SMBProtocol(t *testing.T) {
 	err := IsCompatible(ctx, "smb")
 	assert.Error(t, err, "no error")
 }
+
+// TODO (arorar): Need to identify a way to override /proc/self/mountinfo
+/*
+func TestPVMountpointMappings(t *testing.T) {
+
+	file, err := osFs.OpenFile(procSelfMountinfoPath, os.O_RDWR, 0777)
+	assert.NoError(t, err, "error reading file")
+
+	input := "3242 30 0:6 /abc /var/lib/kubelet/plugins/kubernetes." +
+		"io/csi/volumeDevices/publish/pvc-abcc/0c587b40-e3db-4ff1-8c36-a47753e1ca2a" +
+		" rw,nosuid,relatime shared:2 - devtmpfs udev rw,size=1971956k,nr_inodes=492989," +
+		"mode=755\n3255 30 0:6 /abc /var/lib/kubelet/plugins/kubernetes." +
+		"io/csi/volumeDevices/pvc-abc/dev/0c587b40-e3db-4ff1-8c36-a47753e1ca2a rw," +
+		"relatime shared:2 - devtmpfs udev rw,size=1971956k,nr_inodes=492989," +
+		"mode=755\n3511 30 253:1 / /var/lib/kubelet/pods/b2821391-5790-4191-be66-eac8e744a3dd/volumes/kubernetes." +
+		"io~csi/pvc-xyz/mount rw,relatime shared:1304 - ext4 /xyz rw,stripe=16\n"
+
+	_, err = file.Write([]byte(input))
+	assert.NoError(t, err, "error writing")
+
+	mapping, err := PVMountpointMappings(context.Background())
+	assert.NoError(t, err, "error getting mapping")
+
+	value, ok := mapping["/var/lib/kubelet/plugins/kubernetes."+
+		"io/csi/volumeDevices/publish/pvc-abc/0c587b40-e3db-4ff1-8c36-a47753e1ca2a"]
+	assert.True(t, ok, "expected mapping to be found in map!")
+	assert.Equal(t, "/dev/abc", value)
+
+	value, ok = mapping["/var/lib/kubelet/pods/b2821391-5790-4191-be66-eac8e744a3dd/volumes/kubernetes.io~csi/pvc-xyz/mount"]
+	assert.True(t, ok, "expected mapping to be found in map!")
+	assert.Equal(t, "/dev/xyz", value)
+}*/
