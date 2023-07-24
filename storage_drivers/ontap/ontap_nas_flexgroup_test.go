@@ -310,6 +310,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize(t *testing.T) {
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas-flexgroup", "1", false, "heartbeat", hostname,
 		string(message), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
@@ -365,6 +366,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return([]string{"dataLIF"}, nil)
 			mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas-flexgroup", "1", false, "heartbeat", hostname,
 				string(message), 1, "trident", 5).AnyTimes()
+			mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid").AnyTimes()
 
 			if test.name == "flexgroupAggrListFailed" {
 				configJSON, _ = getOntapStorageDriverConfigJson("true", "volume", "none", "",
@@ -2715,6 +2717,19 @@ func TestOntapNasFlexgroupStorageDriverGetStorageBackendPhysicalPoolNames(t *tes
 	poolNames := driver.GetStorageBackendPhysicalPoolNames(ctx)
 
 	assert.Equal(t, "pool1", poolNames[0], "Pool names are not equal")
+}
+
+func TestOntapNasFlexgroupStorageDriverGetStorageBackendPools(t *testing.T) {
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	svmUUID := "SVM1-uuid"
+	pool := storage.NewStoragePool(nil, "pool1")
+	driver.physicalPool = pool
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+	backendPool := pools[0]
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, svmUUID, backendPool.SvmUUID)
 }
 
 func TestOntapNasFlexgroupStorageDriverGetInternalVolumeName(t *testing.T) {

@@ -230,10 +230,11 @@ type OntapAPI interface {
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
 	NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error
 	NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
 	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
 	NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error
-	NVMeEnsureNamespaceUnmapped(ctx context.Context, subsytemUUID, nsUUID string) error
+	NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsytemUUID, nsUUID string) (bool, error)
 }
 
 type AggregateSpace interface {

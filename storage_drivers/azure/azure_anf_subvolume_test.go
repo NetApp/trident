@@ -2421,7 +2421,7 @@ func getStructsForSubvolumeCreateSnapshot() (
 	snapConfig := &storage.SnapshotConfig{
 		Version:            "1",
 		Name:               "testSnap",
-		InternalName:       "testSnap",
+		InternalName:       "trident-testSnap--ce20c",
 		VolumeName:         "pvc-ce20c6cf-0a75-4b27-b9bd-3f53bf520f4f",
 		VolumeInternalName: "trident-pvc-ce20c6cf-0a75-4b27-b9bd-3f53bf520f4f-file-0",
 	}

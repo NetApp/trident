@@ -23,10 +23,12 @@ type Routes []Route
 
 const (
 	// arbitrarily large number to limit maximum routines waiting for global lock
-	updateNodeRateLimit = 10000.0 // requests per second
-	updateNodeBurst     = 10000   // maximum request burst
-	getNodeRateLimit    = 10000.0 // requests per second
-	getNodeBurst        = 10000   // maximum request burst
+	updateNodeRateLimit      = 10000.0 // requests per second
+	updateNodeBurst          = 10000   // maximum request burst
+	getNodeRateLimit         = 10000.0 // requests per second
+	getNodeBurst             = 10000   // maximum request burst
+	addOrUpdateNodeRateLimit = 50.0    // requests per second
+	addOrUpdateNodeBurst     = 100     // maximum request burst
 )
 
 var controllerRoutes = Routes{
@@ -160,7 +162,9 @@ var controllerRoutes = Routes{
 		"AddOrUpdateNode",
 		"PUT",
 		config.NodeURL + "/{node}",
-		nil,
+		[]mux.MiddlewareFunc{
+			rateLimiterMiddleware(addOrUpdateNodeRateLimit, addOrUpdateNodeBurst),
+		},
 		AddNode,
 	},
 	Route{

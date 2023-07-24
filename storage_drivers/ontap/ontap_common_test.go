@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -2256,21 +2256,57 @@ func TestRestGetSLMLifs(t *testing.T) {
 	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
 }
 
-func TestConstructOntapNASSMBVolumePath(t *testing.T) {
+func TestConstructOntapNASVolumeAccessPath(t *testing.T) {
 	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName: "vol",
+	}
 
 	tests := []struct {
 		smbShare     string
+		volName      string
+		protocol     string
 		expectedPath string
 	}{
-		{"test_share", "\\test_sharevol"},
-		{"", "vol"},
+		{"test_share", "/vol", "smb", "\\test_share\\vol"},
+		{"", "/vol", "smb", "\\vol"},
+		{"", "/vol", "nfs", "/vol"},
+		{"", "/vol1", "nfs", "/vol1"},
 	}
 
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
-			result := ConstructOntapNASSMBVolumePath(ctx, test.smbShare, "vol")
-			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, test.volName, volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
+		})
+	}
+}
+
+func TestConstructOntapNASVolumeAccessPath_ROClone(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:              "vol",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: "sourceVol",
+		CloneSourceSnapshot:       "snapshot-abcd-1234-wxyz",
+	}
+
+	tests := []struct {
+		smbShare     string
+		protocol     string
+		expectedPath string
+	}{
+		{"test_share", "smb", "\\test_share\\sourceVol\\~snapshot\\snapshot-abcd-1234-wxyz"},
+		{"", "smb", "\\sourceVol\\~snapshot\\snapshot-abcd-1234-wxyz"},
+		{"", "nfs", "/sourceVol/.snapshot/snapshot-abcd-1234-wxyz"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, "/vol", volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
 		})
 	}
 }
@@ -2995,84 +3031,6 @@ func TestGetDesiredExportPolicyRules(t *testing.T) {
 	_, err := getDesiredExportPolicyRules(ctx, nodeList, config)
 
 	assert.NoError(t, err, "Found error when expected none")
-}
-
-func TestPopulateOntapLunMapping(t *testing.T) {
-	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	inputIPs := []string{
-		"1.1.1.1", "2.2.2.2", "3.3.3.3",
-	}
-
-	volConfig := &storage.VolumeConfig{
-		Name:             "testVol",
-		InternalName:     "testInternalVol",
-		ImportNotManaged: true,
-	}
-
-	lunID := 5555
-
-	lunPath := "fakeLunPath"
-
-	igroupName := "testIgroupName"
-
-	dummyLun := &api.Lun{
-		Comment:      "dummyLun",
-		SerialNumber: "testSerialNumber",
-	}
-	reportingNodes := []string{"Node1"}
-
-	error := fmt.Errorf("Error returned")
-
-	// Test1: Positive flow
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("testIQN", nil)
-	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
-	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return(reportingNodes, nil)
-	mockAPI.EXPECT().GetSLMDataLifs(ctx, inputIPs, reportingNodes).Return([]string{"1.1.1.1"}, nil)
-
-	err := PopulateOntapLunMapping(ctx, mockAPI, inputIPs, volConfig, lunID, lunPath, igroupName)
-
-	assert.NoError(t, err)
-	assert.Equal(t, "1.1.1.1", volConfig.AccessInfo.IscsiTargetPortal)
-	assert.Equal(t, "testIQN", volConfig.AccessInfo.IscsiTargetIQN)
-	assert.Equal(t, int32(5555), volConfig.AccessInfo.IscsiLunNumber)
-	assert.Equal(t, "testIgroupName", volConfig.AccessInfo.IscsiIgroup)
-	assert.Equal(t, "testSerialNumber", volConfig.AccessInfo.IscsiLunSerial)
-
-	// Test2: Error flow: IscsiNodeGetNameRequest returns error
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("testIQN", error)
-
-	err = PopulateOntapLunMapping(ctx, mockAPI, inputIPs, volConfig, lunID, lunPath, igroupName)
-
-	assert.Error(t, err)
-
-	// Test3: Error flow: LunGetByName returns error
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("testIQN", nil)
-	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, error)
-
-	err = PopulateOntapLunMapping(ctx, mockAPI, inputIPs, volConfig, lunID, lunPath, igroupName)
-
-	assert.Error(t, err)
-
-	// Test4: Error flow: LunMapGetReportingNodes returns error
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("testIQN", nil)
-	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
-	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return(reportingNodes, error)
-
-	err = PopulateOntapLunMapping(ctx, mockAPI, inputIPs, volConfig, lunID, lunPath, igroupName)
-
-	assert.Error(t, err)
-
-	// Test5: Positive flow: Unable to find reporting ONTAP nodes
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("testIQN", nil)
-	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
-	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return(reportingNodes, nil)
-	mockAPI.EXPECT().GetSLMDataLifs(ctx, inputIPs, reportingNodes).Return([]string{}, nil)
-
-	err = PopulateOntapLunMapping(ctx, mockAPI, inputIPs, volConfig, lunID, lunPath, igroupName)
-
-	assert.NoError(t, err)
 }
 
 func TestReconcileNASNodeAccess(t *testing.T) {
@@ -3909,6 +3867,16 @@ func TestPublishLun(t *testing.T) {
 	}
 	nodeList := []*utils.Node{&node}
 
+	dummyLun := &api.Lun{
+		Comment:      "dummyLun",
+		SerialNumber: "testSerialNumber",
+	}
+
+	dummyLunNoSerial := &api.Lun{
+		Comment:      "dummyLun",
+		SerialNumber: "",
+	}
+
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
 		DriverContext:   "csi",
@@ -3929,6 +3897,7 @@ func TestPublishLun(t *testing.T) {
 	}
 	// Test1 - Positive flow
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
@@ -3951,6 +3920,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
@@ -3965,6 +3935,7 @@ func TestPublishLun(t *testing.T) {
 	publishInfo.HostIQN = []string{"host_iqn"}
 	publishInfo.HostName = "fakeHostName"
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", fmt.Errorf("LunGetFSType returned error"))
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 
@@ -3979,6 +3950,7 @@ func TestPublishLun(t *testing.T) {
 		HostIQN:     []string{"host_iqn"},
 	}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName,
 		gomock.Any()).Return(fmt.Errorf("EnsureIgroupAdded returned error"))
 
@@ -3988,9 +3960,26 @@ func TestPublishLun(t *testing.T) {
 
 	// Test 6 - EnsureLunMapped returns error
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111,
 		fmt.Errorf("EnsureLunMapped returned error"))
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+
+	assert.Error(t, err)
+
+	// Test 7 - LunGetByName returns error
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, fmt.Errorf("LunGetByName returned error"))
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+
+	assert.Error(t, err)
+
+	// Test 8 - LunGetByName returns nil but Serial Number is empty
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fstype", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLunNoSerial, nil)
 
 	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
 

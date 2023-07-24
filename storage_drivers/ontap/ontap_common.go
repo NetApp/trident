@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -562,52 +562,6 @@ func GetOntapDriverRedactList() []string {
 	return clone[:]
 }
 
-// PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
-// This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
-func PopulateOntapLunMapping(
-	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int,
-	lunPath, igroupName string,
-) error {
-	var targetIQN string
-	targetIQN, err := clientAPI.IscsiNodeGetNameRequest(ctx)
-	if err != nil {
-		return fmt.Errorf("problem retrieving iSCSI services: %v", err)
-	}
-
-	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
-	if err != nil || lunResponse == nil {
-		return fmt.Errorf("problem retrieving LUN info: %v", err)
-	}
-	serial := lunResponse.SerialNumber
-
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
-		volConfig.ImportNotManaged)
-	if err != nil {
-		return err
-	}
-
-	if len(filteredIPs) == 0 {
-		Logc(ctx).Warn("Unable to find reporting ONTAP nodes for discovered dataLIFs.")
-		filteredIPs = ips
-	}
-
-	volConfig.AccessInfo.IscsiTargetPortal = filteredIPs[0]
-	volConfig.AccessInfo.IscsiPortals = filteredIPs[1:]
-	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
-	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
-	volConfig.AccessInfo.IscsiIgroup = igroupName
-	volConfig.AccessInfo.IscsiLunSerial = serial
-	Logc(ctx).WithFields(LogFields{
-		"volume":          volConfig.Name,
-		"volume_internal": volConfig.InternalName,
-		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
-		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
-		"igroup":          volConfig.AccessInfo.IscsiIgroup,
-	}).Debug("Mapped ONTAP LUN.")
-
-	return nil
-}
-
 // getNodeSpecificIgroupName generates a distinct igroup name for node name.
 // Igroup names may collide if node names are over 59 characters.
 func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
@@ -681,6 +635,17 @@ func PublishLUN(
 		fstype = lunFSType
 	}
 
+	// Get LUN Serial Number
+	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
+	if err != nil || lunResponse == nil {
+		return fmt.Errorf("problem retrieving LUN info: %v", err)
+	}
+	serial := lunResponse.SerialNumber
+
+	if serial == "" {
+		return fmt.Errorf("LUN '%v' serial number not found", lunPath)
+	}
+
 	if config.DriverContext == tridentconfig.ContextCSI {
 		// Get the info about the targeted node
 		var targetNode *utils.Node
@@ -729,6 +694,7 @@ func PublishLUN(
 
 	// Add fields needed by Attach
 	publishInfo.IscsiLunNumber = int32(lunID)
+	publishInfo.IscsiLunSerial = serial
 	publishInfo.IscsiTargetPortal = filteredIPs[0]
 	publishInfo.IscsiPortals = filteredIPs[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName
@@ -2726,18 +2692,10 @@ func cloneFlexvol(
 		return err
 	}
 
-	// NVMe clone is not ready by the time we return from VolumeCloneCreate.
-	// This check here makes sure that we don't fail the clone operation during the time clone is not ready
-	// Currently this change is done only for NVMe volumes but it should work with other volumes too if needed
-	if config.SANType == sa.NVMe {
-
-		desiredNVMeVolStates := []string{"online"}
-		abortNVMeVolStates := []string{"error"}
-		volState, err := client.VolumeWaitForStates(ctx, name, desiredNVMeVolStates, abortNVMeVolStates,
-			maxFlexvolCloneWait)
-		if err != nil {
-			return fmt.Errorf("unable to create flexClone for NVMe volume %v, volState:%v", name, volState)
-		}
+	desiredStates, abortStates := []string{"online"}, []string{"error"}
+	volState, err := client.VolumeWaitForStates(ctx, name, desiredStates, abortStates, maxFlexvolCloneWait)
+	if err != nil {
+		return fmt.Errorf("unable to create flexClone for volume %v, volState:%v", name, volState)
 	}
 
 	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
@@ -2952,23 +2910,49 @@ func GetEncryptionValue(encryption string) (*bool, string, error) {
 	return nil, "", nil
 }
 
-// ConstructOntapNASSMBVolumePath returns windows compatible volume path for Ontap NAS.
+// ConstructOntapNASVolumeAccessPath returns volume path for ONTAP NAS.
 // Function accepts parameters in following way:
 // 1.smbShare : This takes the value given in backend config, without path prefix.
 // 2.volumeName : This takes the value of volume's internal name, it is always prefixed with unix styled path separator.
-// Example, ConstructOntapNASSMBVolumePath(ctx, "test_share", "/vol")
-func ConstructOntapNASSMBVolumePath(ctx context.Context, smbShare, volumeName string) string {
-	Logc(ctx).Debug(">>>> smb.ConstructOntapNASSMBVolumePath")
-	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASSMBVolumePath")
+// 3.volConfig : This takes value of volume configuration.
+// 4.Protocol : This takes the value of NAS protocol (NFS/SMB).
+// Example, ConstructOntapNASVolumeAccessPath(ctx, "test_share", "/vol" , volConfig, "nfs")
+func ConstructOntapNASVolumeAccessPath(
+	ctx context.Context, smbShare, volumeName string,
+	volConfig *storage.VolumeConfig, protocol string,
+) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASVolumeAccessPath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASVolumeAccessPath")
 
 	var completeVolumePath string
-	if smbShare != "" {
-		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
-	} else {
-		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
-		completeVolumePath = volumeName
-	}
+	var smbSharePath string
+	switch protocol {
+	case sa.NFS:
+		if volConfig.ReadOnlyClone {
+			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot",
+				volConfig.CloneSourceSnapshot)
+		} else if volumeName != utils.UnixPathSeparator+volConfig.InternalName && strings.HasPrefix(volumeName,
+			utils.UnixPathSeparator) {
+			// For managed import, return the original junction path
+			return volumeName
+		}
+		return fmt.Sprintf("/%s", volConfig.InternalName)
+	case sa.SMB:
+		if smbShare != "" {
+			smbSharePath = fmt.Sprintf("\\%s", smbShare)
+		} else {
+			// Set share path as empty, volume name contains the path prefix.
+			smbSharePath = ""
+		}
 
+		if volConfig.ReadOnlyClone {
+			completeVolumePath = fmt.Sprintf("%s\\%s\\%s\\%s", smbSharePath, volConfig.CloneSourceVolumeInternal,
+				"~snapshot", volConfig.CloneSourceSnapshot)
+		} else {
+			// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
+			completeVolumePath = smbSharePath + volumeName
+		}
+	}
 	// Replace unix styled path separator, if exists
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
 }
@@ -3001,7 +2985,8 @@ func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volu
 // 3.volConfig : This takes the value of volume configuration.
 // 4. protocol: This takes the value of the protocol for which the path needs to be created.
 // Example, ConstructOntapNASQTreeVolumePath(ctx, test.smbShare, "flex-vol", volConfig, sa.SMB)
-func ConstructOntapNASQTreeVolumePath(ctx context.Context, smbShare, flexvol string,
+func ConstructOntapNASQTreeVolumePath(
+	ctx context.Context, smbShare, flexvol string,
 	volConfig *storage.VolumeConfig, protocol string,
 ) (completeVolumePath string) {
 	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeVolumePath")

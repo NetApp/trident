@@ -1615,7 +1615,7 @@ func (d *NASBlockStorageDriver) DeleteSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
-	creationToken := d.helper.GetSnapshotInternalName(snapConfig.VolumeName, snapName)
+	creationToken := snapConfig.InternalName
 
 	subscriptionID, resourceGroup, _, netappAccount, cPoolName, volumeName, _,
 		err := api.ParseSubvolumeID(volConfig.InternalID)

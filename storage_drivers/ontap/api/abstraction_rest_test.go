@@ -542,6 +542,59 @@ func TestNVMeAddHostToSubsystem(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestNVMeRemoveHostFromSubsystem(t *testing.T) {
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+
+	// case 1 : Error removing host from subsystem
+	hostNQN := "fakeNQN"
+	subsystemUUID := "fakesubsysUUID"
+	host1 := &models.NvmeSubsystemHost{}
+
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, fmt.Errorf("Error while getting hosts for subsystem"))
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	err = oapi.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID)
+
+	assert.Error(t, err)
+
+	// case 2 : host not found
+	Nqn := "wrongNQN"
+	host1.Nqn = &Nqn
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	err = oapi.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID)
+
+	assert.NoError(t, err)
+
+	// case 3 : host found but failed to remove it
+	host1.Nqn = &hostNQN
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(fmt.Errorf("Error while removing host"))
+
+	err = oapi.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID)
+
+	assert.Error(t, err)
+
+	// case 4 : Success- host found and removed it
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(nil)
+
+	err = oapi.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID)
+
+	assert.NoError(t, err)
+}
+
 func TestNVMeSubsystemCreate(t *testing.T) {
 	clientConfig := api.ClientConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
@@ -669,62 +722,119 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	subsystemUUID := "fakeSubsysUUID"
 	nsUUID := "fakeNsUUID"
+	hostNQN := "fakeHostNQN"
+	host2NQN := "fakeHost2NQN"
+	host1 := &models.NvmeSubsystemHost{Nqn: &hostNQN}
+	host2 := &models.NvmeSubsystemHost{Nqn: &host2NQN}
+	var removePublishInfo bool
 
 	// case 1: Error getting namespace from subsystem
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, fmt.Errorf("Error getting namespace subsystem mapping"))
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, fmt.Errorf("Error getting namespace subsystem mapping")).Times(1)
 
-	err = oapi.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, nsUUID)
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
+	assert.Equal(t, false, removePublishInfo)
 	assert.Error(t, err)
 
 	// case 2: Namespace is not mapped
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, nil)
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, nil).Times(1)
 
-	err = oapi.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, nsUUID)
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
+	assert.Equal(t, true, removePublishInfo)
 	assert.NoError(t, err)
 
-	// case 3: Error removing namespace from subsystem
+	// case 3: Failed to get hosts of the subsystem
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil)
-	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(fmt.Errorf("Error removing namespace from subsystem"))
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, fmt.Errorf("failed to get hosts")).Times(1)
 
-	err = oapi.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, nsUUID)
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
+	assert.Equal(t, false, removePublishInfo)
 	assert.Error(t, err)
 
-	// case 4: Error getting namespace count from subsystem
+	// case 4: hosts of the subsystem not returned
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil)
-	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil)
-	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), fmt.Errorf("Error getting namespace count from subsystem"))
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, nil).Times(1)
 
-	err = oapi.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, nsUUID)
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
+	assert.Equal(t, false, removePublishInfo)
 	assert.Error(t, err)
 
-	// case 5: Error deleting subsystem
+	// case 5: multiple hosts of the subsystem returned  but error while removing host from subsystem
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil)
-	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil)
-	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), nil)
-	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(fmt.Errorf("Error deleting subsystem"))
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(fmt.Errorf("Error removing host from subsystem")).Times(1)
 
-	err = oapi.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, nsUUID)
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
+	assert.Equal(t, false, removePublishInfo)
 	assert.Error(t, err)
 
-	// case 6: Success deleting subsystem
+	// case 6: multiple hosts of the subsystem returned  and success while removing host from subsystem
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil)
-	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil)
-	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), nil)
-	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(nil)
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(nil).Times(1)
 
-	err = oapi.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, nsUUID)
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
+	assert.Equal(t, false, removePublishInfo)
+	assert.NoError(t, err)
+
+	// case 7: Error removing namespace from subsystem
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(fmt.Errorf("Error removing namespace from subsystem")).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo)
+	assert.Error(t, err)
+
+	// case 8: Error getting namespace count from subsystem
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), fmt.Errorf("Error getting namespace count from subsystem")).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo)
+	assert.Error(t, err)
+
+	// case 9: Error deleting subsystem
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), nil).Times(1)
+	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(fmt.Errorf("Error deleting subsystem")).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo)
+	assert.Error(t, err)
+
+	// case 10: Success deleting subsystem
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).AnyTimes().Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), nil).Times(1)
+	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, true, removePublishInfo)
 	assert.NoError(t, err)
 }
 

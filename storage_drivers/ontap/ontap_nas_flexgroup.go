@@ -107,6 +107,13 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
 	}
 
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
+
 	// Set up the autosupport heartbeat
 	d.telemetry = NewOntapTelemetry(ctx, d)
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
@@ -1342,6 +1349,21 @@ func (d *NASFlexGroupStorageDriver) GetStorageBackendPhysicalPoolNames(context.C
 	return physicalPoolNames
 }
 
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NASFlexGroupStorageDriver) getStorageBackendPools(
+	ctx context.Context,
+) []drivers.OntapFlexGroupStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASFlexGroupStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// FlexGroup volumes span all or a subset of aggregates assigned to the SVM;
+	// As such, backend comparisons can rely on the SVM name.
+	return []drivers.OntapFlexGroupStorageBackendPool{{SvmUUID: d.GetAPI().GetSVMUUID()}}
+}
+
 func (d *NASFlexGroupStorageDriver) vserverAggregates(ctx context.Context, svmName string) ([]string, error) {
 	var err error
 	// Get the aggregates assigned to the SVM.  There must be at least one!
@@ -1626,7 +1648,7 @@ func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
 // in physical pools list.
 func (d *NASFlexGroupStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	Logc(ctx).Debug(">>>> GetBackendState")
-	defer Logc(ctx).Debugf("<<<< GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
 
 	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
 }

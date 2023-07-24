@@ -1016,7 +1016,10 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 		AllowHostPorts:           false,
 		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 		AllowPrivilegedContainer: true,
-		DefaultAddCapabilities:   nil,
+		AllowedCapabilities: []v1.Capability{
+			"SYS_ADMIN",
+		},
+		DefaultAddCapabilities: nil,
 		FSGroup: scc.FSGroupStrategyOptions{
 			Type: "RunAsAny",
 		},

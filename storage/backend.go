@@ -419,6 +419,12 @@ func (b *StorageBackend) CloneVolume(
 		"cloneVolumeInternal":    cloneVolConfig.InternalName,
 	}).Debug("Attempting volume clone.")
 
+	if cloneVolConfig.ReadOnlyClone {
+		if tridentconfig.DisableExtraFeatures {
+			return nil, errors.UnsupportedError("read only clone is not supported")
+		}
+	}
+
 	// Ensure volume is managed
 	if cloneVolConfig.ImportNotManaged {
 		return nil, errors.NotManagedError("volume %s is not managed by Trident", cloneVolConfig.InternalName)
@@ -834,14 +840,14 @@ func (b *StorageBackend) DeleteSnapshot(
 		"snapshotName":     snapConfig.Name,
 	}).Debug("Attempting snapshot delete.")
 
+	// Ensure snapshot is managed
+	if snapConfig.ImportNotManaged {
+		return errors.NotManagedError("snapshot %s is not managed by Trident", snapConfig.InternalName)
+	}
+
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
 		return errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
-	}
-
-	// Ensure snapshot is managed
-	if snapConfig.ImportNotManaged {
-		return errors.NotManagedError("source volume %s is not managed by Trident", snapConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -1034,6 +1040,7 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 	for volName := range b.volumes {
 		backendExternal.Volumes = append(backendExternal.Volumes, volName)
 	}
+
 	return &backendExternal
 }
 

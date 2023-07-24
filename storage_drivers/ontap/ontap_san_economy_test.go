@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -1591,11 +1591,17 @@ func TestOntapSanEconomyVolumePublish(t *testing.T) {
 		Unmanaged:        false,
 	}
 
+	dummyLun := &api.Lun{
+		Comment:      "dummyLun",
+		SerialNumber: "testSerialNumber",
+	}
+
 	mockAPI.EXPECT().LunList(ctx,
 		gomock.Any()).Times(1).Return(api.Luns{api.Lun{Size: "1g", Name: "lunName", VolumeName: "volumeName"}}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
+	mockAPI.EXPECT().LunGetByName(ctx, "/vol/volumeName/storagePrefix_lunName").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
@@ -1623,11 +1629,17 @@ func TestOntapSanEconomyVolumePublishSLMError(t *testing.T) {
 		Unmanaged:        false,
 	}
 
+	dummyLun := &api.Lun{
+		Comment:      "dummyLun",
+		SerialNumber: "testSerialNumber",
+	}
+
 	mockAPI.EXPECT().LunList(ctx,
 		gomock.Any()).Times(1).Return(api.Luns{api.Lun{Size: "1g", Name: "lunName", VolumeName: "volumeName"}}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
 	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
+	mockAPI.EXPECT().LunGetByName(ctx, "/vol/volumeName/storagePrefix_lunName").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Times(1).Return([]string{"node1"}, nil)
@@ -3024,6 +3036,35 @@ func TestOntapSanEconomyGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	assert.Equal(t, "pool1", poolNames[0], "Pool names are not equal")
 }
 
+func TestOntapSanEconomyGetStorageBackendPools(t *testing.T) {
+	mockAPI, driver := newMockOntapSanEcoDriver(t)
+	svmUUID := "SVM1-uuid"
+	flexVolPrefix := fmt.Sprintf("trident_lun_pool_%s_", *driver.Config.StoragePrefix)
+	driver.flexvolNamePrefix = flexVolPrefix
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pool.SvmUUID)
+	assert.Equal(t, flexVolPrefix, pool.FlexVolPrefix)
+}
+
 func TestOntapSanEconomyGetInternalVolumeName(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 	d.Config.StoragePrefix = utils.Ptr("storagePrefix_")
@@ -3771,6 +3812,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 	mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
 
@@ -3901,6 +3943,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 				"trident", 5).AnyTimes()
 			if !test.expectError {
 				mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
+				mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid").AnyTimes()
 			}
 
 			result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)

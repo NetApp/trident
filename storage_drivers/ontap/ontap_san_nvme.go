@@ -24,7 +24,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-// RegExp to match the namespace path either empty string or
+// NVMeNamespaceRegExp RegExp to match the namespace path either empty string or
 // string of the form /vol/<flexVolName>/<Namespacename>
 var NVMeNamespaceRegExp = regexp.MustCompile(`[^(\/vol\/.+\/.+)?$]`)
 
@@ -109,7 +109,6 @@ func (d *NVMeStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
-	d.Config = *config
 
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
@@ -117,19 +116,21 @@ func (d *NVMeStorageDriver) Initialize(
 			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 		}
 	}
+	// OntapStorageDriverConfig gets updated with the SVM name in InitializeOntapDriver() if the SVM name is not provided
+	// in the backend config json. Therefore, this is the proper place to assign it to d.Config.
+	d.Config = *config
 
 	// Check NVMe feature support
 	if !d.API.SupportsFeature(ctx, api.NVMeProtocol) {
 		return fmt.Errorf("error initializing %s driver: ontap doesn't support NVMe", d.Name())
 	}
 
-	transport := "tcp"
-	if d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, fmt.Sprintf("%s_%s", sa.NVMe, transport)); err != nil {
+	if d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport); err != nil {
 		return err
 	}
 
 	if len(d.ips) == 0 {
-		return fmt.Errorf("no data LIFs with TCP protocol found on SVM %s", d.API.SVMName())
+		return fmt.Errorf("no NVMe data LIFs found on SVM %s", d.API.SVMName())
 	} else {
 		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found LIFs.")
 	}
@@ -143,6 +144,13 @@ func (d *NVMeStorageDriver) Initialize(
 	if err = d.validate(ctx); err != nil {
 		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
 	}
+
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
 
 	// Set up the autosupport heartbeat
 	d.telemetry = NewOntapTelemetry(ctx, d)
@@ -798,6 +806,7 @@ func (d *NVMeStorageDriver) Unpublish(
 		"name":              name,
 		"NVMeNamespaceUUID": volConfig.AccessInfo.NVMeNamespaceUUID,
 		"NVMeSubsystemUUID": volConfig.AccessInfo.NVMeSubsystemUUID,
+		"hostNQN":           publishInfo.HostNQN,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
@@ -805,7 +814,13 @@ func (d *NVMeStorageDriver) Unpublish(
 	subsystemUUID := volConfig.AccessInfo.NVMeSubsystemUUID
 	namespaceUUID := volConfig.AccessInfo.NVMeNamespaceUUID
 
-	return d.API.NVMeEnsureNamespaceUnmapped(ctx, subsystemUUID, namespaceUUID)
+	removePublishInfo, err := d.API.NVMeEnsureNamespaceUnmapped(ctx, publishInfo.HostNQN, subsystemUUID, namespaceUUID)
+	if removePublishInfo {
+		volConfig.AccessInfo.NVMeTargetIPs = []string{}
+		volConfig.AccessInfo.NVMeSubsystemNQN = ""
+		volConfig.AccessInfo.NVMeSubsystemUUID = ""
+	}
+	return err
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
@@ -932,6 +947,28 @@ func (d *NVMeStorageDriver) GetStorageBackendSpecs(_ context.Context, backend st
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools.
 func (d *NVMeStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NVMeStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.OntapStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NVMeStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// 2. Aggregate (physical pool)
+	svmUUID := d.GetAPI().GetSVMUUID()
+	backendPools := make([]drivers.OntapStorageBackendPool, 0)
+	for _, pool := range d.physicalPools {
+		backendPool := drivers.OntapStorageBackendPool{
+			SvmUUID:   svmUUID,
+			Aggregate: pool.Name(),
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
 }
 
 // getStoragePoolAttributes returns the map for storage pool attributes.
@@ -1257,6 +1294,15 @@ func (d *NVMeStorageDriver) ReconcileNodeAccess(_ context.Context, _ []*utils.No
 	// 2. SAN iSCSI driver needs to take care of per backend IGroup in reconcile node access.
 	// 3. Couldn't find anything to be taken care of for this driver in reconcile node yet!
 	return nil
+}
+
+// GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change
+// in physical pools list.
+func (d *NVMeStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
+	Logc(ctx).Debug(">>>> GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
+
+	return getSVMState(ctx, d.API, sa.NVMeTransport, d.GetStorageBackendPhysicalPoolNames(ctx))
 }
 
 // String makes NVMeStorageDriver satisfy the Stringer interface.

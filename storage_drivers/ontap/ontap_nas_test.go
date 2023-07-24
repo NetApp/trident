@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 	"github.com/golang/mock/gomock"
@@ -392,6 +393,7 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
 		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
 
 	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
@@ -673,8 +675,10 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 			mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
 			mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
 				volConfig.CloneSourceSnapshotInternal, false).Return(nil)
-			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName,
-				"flexvol").Return(nil)
+			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+				maxFlexvolCloneWait).Return("online", nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").
+				Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 
 			if test.NasType == sa.SMB {
@@ -688,6 +692,74 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 			assert.NoError(t, result)
 		})
 	}
+}
+
+func TestOntapNasStorageDriverVolumeClone_ROClone(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
+		ReadOnlyClone:               true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: true,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+	fmt.Println(result)
+
+	assert.NoError(t, result, "received error")
+}
+
+func TestOntapNasStorageDriverVolumeClone_ROClone_Failure(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
+		ReadOnlyClone:               true,
+	}
+
+	// Set snapshot directory visibility to false
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: false,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	// Creating a readonly clone only results in the driver looking up volume information and no other calls to ONTAP.
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result, "expected error")
 }
 
 func TestOntapNasStorageDriverVolumeClone_StoragePoolUnset(t *testing.T) {
@@ -876,6 +948,8 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
 		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
 	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
@@ -982,6 +1056,30 @@ func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorDeleteFail(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
 	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal,
 		svmName).Return(fmt.Errorf("error deleting snapmirror info for volume"))
+
+	result := driver.Destroy(ctx, volConfig)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorReleaseFail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+	mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal,
+		svmName).Return(fmt.Errorf("error releaseing snapmirror"))
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -1438,6 +1536,31 @@ func TestOntapNasStorageDriverGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	assert.Equal(t, "pool1", poolNames[0], "Pool names are not equal")
 }
 
+func TestOntapNasStorageDriverGetStorageBackendPools(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	svmUUID := "SVM1-uuid"
+	driver.physicalPools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+	mockAPI.EXPECT().GetSVMUUID().Return(svmUUID)
+
+	pools := driver.getStorageBackendPools(ctx)
+
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(driver.physicalPools), len(pools))
+
+	pool := pools[0]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pools[0].SvmUUID)
+
+	pool = pools[1]
+	assert.NotNil(t, driver.physicalPools[pool.Aggregate])
+	assert.Equal(t, driver.physicalPools[pool.Aggregate].Name(), pool.Aggregate)
+	assert.Equal(t, svmUUID, pools[1].SvmUUID)
+}
+
 func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockOntapNASDriver(t)
 	driver.Config.StoragePrefix = utils.Ptr("storagePrefix_")
@@ -1630,6 +1753,51 @@ func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath_NASType_None(t *te
 	result := driver.CreateFollowup(ctx, volConfig)
 
 	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath_ROClone_Success(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:                      "1g",
+		Encryption:                "false",
+		FileSystem:                "nfs",
+		InternalName:              "vol1",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: "flexvol",
+	}
+
+	flexVol := api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "/vol1",
+		AccessType:   "rw",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "flexvol").Return(&flexVol, nil)
+
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	assert.NoError(t, result, "error occurred")
+}
+
+func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath_ROClone_Failure(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:                      "1g",
+		Encryption:                "false",
+		FileSystem:                "nfs",
+		InternalName:              "vol1",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: "flexvol",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "flexvol").Return(nil, api.ApiError("api error"))
+
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	assert.Error(t, result, "expected error")
 }
 
 func TestOntapNasStorageDriverCreateFollowup_WithJunctionPath_NASType_SMB(t *testing.T) {
@@ -3197,4 +3365,48 @@ func TestOntapNasStorageDriverBackendName(t *testing.T) {
 	result := driver.BackendName()
 
 	assert.Equal(t, result, "myBackend")
+}
+
+func TestOntapNasStorageDriverUpdateMirror(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	mockAPI.EXPECT().SnapmirrorUpdate(ctx, "testVol", "testSnap")
+
+	err := driver.UpdateMirror(ctx, "testVol", "testSnap")
+	assert.Error(t, err, "expected error")
+}
+
+func TestOntapNasStorageDriverCheckMirrorTransferState(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	snapmirror := &api.Snapmirror{
+		State:              "snapmirrored",
+		RelationshipStatus: "idle",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
+	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "", "").Return(snapmirror, nil)
+
+	result, err := driver.CheckMirrorTransferState(ctx, "fakevolume1")
+
+	assert.Nil(t, result, "expected nil")
+	assert.Error(t, err, "expected error")
+}
+
+func TestOntapStorageDriverGetMirrorTransferTime(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	timeNow := time.Now()
+	snapmirror := &api.Snapmirror{
+		State:              "snapmirrored",
+		RelationshipStatus: "idle",
+		EndTransferTime:    &timeNow,
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm1")
+	mockAPI.EXPECT().SnapmirrorGet(ctx, "fakevolume1", "fakesvm1", "", "").Return(snapmirror, nil)
+
+	result, err := driver.GetMirrorTransferTime(ctx, "fakevolume1")
+	assert.NotNil(t, result, "received nil")
+	assert.NoError(t, err, "received error")
 }

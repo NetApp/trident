@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -1048,4 +1050,38 @@ func SlicePtrs[T any](slice []T) []*T {
 		result = append(result, Ptr(s))
 	}
 	return result
+}
+
+func EncodeObjectToBase64String(object any) (string, error) {
+	if object == nil {
+		return "", fmt.Errorf("cannot encode nil object")
+	}
+
+	// Serialize the object data to JSON
+	bytes, err := json.Marshal(object)
+	if err != nil {
+		return "", fmt.Errorf("failed encode object; %v", object)
+	}
+
+	// Encode JSON bytes to a string
+	return base64.StdEncoding.EncodeToString(bytes), nil
+}
+
+func DecodeBase64StringToObject(encodedObject string, destination any) error {
+	if encodedObject == "" {
+		return fmt.Errorf("cannot decode empty encoded string")
+	}
+
+	// Decode the data from a string
+	bytes, err := base64.StdEncoding.DecodeString(encodedObject)
+	if err != nil {
+		return fmt.Errorf("failed to decode string; %s", encodedObject)
+	}
+
+	// Deserialize the bytes into the destination
+	err = json.Unmarshal(bytes, &destination)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal bytes into destination of type: %t", reflect.TypeOf(destination))
+	}
+	return nil
 }
