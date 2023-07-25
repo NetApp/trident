@@ -188,3 +188,14 @@ func TestValidateStoragePrefix(t *testing.T) {
 		})
 	}
 }
+
+func TestGetStorageBackendPools(t *testing.T) {
+	d := newTestSolidfireSANDriver()
+	backendPools := d.getStorageBackendPools(context.Background())
+
+	// These backend pools are derived from the driver's configuration. If that changes in the helper
+	// "newTestSolidfireSANDriver", these assertions will need to be adjusted as well.
+	assert.Equal(t, len(backendPools), 1, "unexpected set of backend pools")
+	assert.Equal(t, d.Config.TenantName, backendPools[0].TenantName, "tenant name didn't match")
+	assert.Equal(t, d.AccountID, backendPools[0].AccountID, "account ID didn't match")
+}

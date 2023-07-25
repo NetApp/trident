@@ -152,7 +152,8 @@ type OntapStorageDriverPool struct {
 // StorageBackendPool is a type constraint that enables drivers to generically report non-overlapping storage pools
 // within a backend.
 type StorageBackendPool interface {
-	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool
+	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
+		SolidfireStorageBackendPool
 }
 
 // OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
@@ -349,6 +350,13 @@ type SolidfireStorageDriverPool struct {
 	Type                                 string              `json:"type"`
 	SupportedTopologies                  []map[string]string `json:"supportedTopologies"`
 	SolidfireStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// SolidfireStorageBackendPool is a non-overlapping section of a SolidFire backend that may be used for
+// provisioning storage.
+type SolidfireStorageBackendPool struct {
+	AccountID  int64  `json:"accountID,string"`
+	TenantName string `json:"tenantName"`
 }
 
 type SolidfireStorageDriverConfigDefaults struct {
