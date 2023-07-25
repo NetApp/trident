@@ -4255,6 +4255,14 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 		return nil
 	}
 
+	// Check if the snapshot is a source for a read-only volume. If so, return error.
+	for _, vol := range o.volumes {
+		if vol.Config.ReadOnlyClone && vol.Config.CloneSourceSnapshot == snapshotName {
+			return fmt.Errorf("unable to delete snapshot %s as it is a source for read-only clone %s", snapshotName,
+				vol.Config.Name)
+		}
+	}
+
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
 		if !snapshot.State.IsMissingBackend() {

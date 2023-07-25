@@ -3628,7 +3628,8 @@ func TestUpdateNode_BootstrapError(t *testing.T) {
 	expectedError := errors.New("bootstrap_error")
 	orchestrator.bootstrapError = expectedError
 
-	result := orchestrator.UpdateNode(ctx(), "testNode1", &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
+	result := orchestrator.UpdateNode(ctx(), "testNode1",
+		&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
 
 	assert.Equal(t, expectedError, result, "UpdateNode did not return bootstrap error")
 }
@@ -3636,7 +3637,8 @@ func TestUpdateNode_BootstrapError(t *testing.T) {
 func TestUpdateNode_NodeNotFound(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 
-	result := orchestrator.UpdateNode(ctx(), "testNode1", &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
+	result := orchestrator.UpdateNode(ctx(), "testNode1",
+		&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false)})
 
 	assert.True(t, errors.IsNotFoundError(result), "UpdateNode did not fail")
 }
@@ -4929,7 +4931,8 @@ func TestUnpublishVolume(t *testing.T) {
 			nodes:         map[string]*utils.Node{nodeName: node},
 			publications:  map[string]map[string]*utils.VolumePublication{volumeName: {nodeName: publication}},
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
-				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("some error"))
+				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(),
+					gomock.Any()).Return(fmt.Errorf("some error"))
 			},
 			wantErr:                assert.Error,
 			publicationShouldExist: true,
@@ -4958,7 +4961,8 @@ func TestUnpublishVolume(t *testing.T) {
 			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil)
-				mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx, gomock.Any()).Return(errors.New("failed to delete"))
+				mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx,
+					gomock.Any()).Return(errors.New("failed to delete"))
 			},
 			wantErr:                assert.Error,
 			publicationShouldExist: true,
@@ -5895,7 +5899,8 @@ func TestResizeSubordinateVolume(t *testing.T) {
 
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 			if tt.name == "PersistentStoreUpdateError" {
-				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(errors.New("persistent store update failed"))
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx,
+					gomock.Any()).Return(errors.New("persistent store update failed"))
 			} else {
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
@@ -5983,7 +5988,8 @@ func TestResizeVolume(t *testing.T) {
 			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
 			mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
 			if tt.name == "BackendResizeVolumeError" {
-				mockBackend.EXPECT().ResizeVolume(coreCtx, gomock.Any(), gomock.Any()).Return(errors.New("unable to resize"))
+				mockBackend.EXPECT().ResizeVolume(coreCtx, gomock.Any(),
+					gomock.Any()).Return(errors.New("unable to resize"))
 			} else {
 				mockBackend.EXPECT().ResizeVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			}
@@ -5991,17 +5997,20 @@ func TestResizeVolume(t *testing.T) {
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 			mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil, nil).AnyTimes()
 			if tt.name == "DeleteVolumeTranxError" {
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("delete failed"))
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+					gomock.Any()).Return(errors.New("delete failed"))
 			} else {
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
 			if tt.name == "AddVolumeTransactionError" {
-				mockStoreClient.EXPECT().AddVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to add to transaction"))
+				mockStoreClient.EXPECT().AddVolumeTransaction(coreCtx,
+					gomock.Any()).Return(errors.New("failed to add to transaction"))
 			} else {
 				mockStoreClient.EXPECT().AddVolumeTransaction(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
 			if tt.name == "PersistentStoreUpdateError" {
-				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(errors.New("persistent store update failed"))
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx,
+					gomock.Any()).Return(errors.New("persistent store update failed"))
 			} else {
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
@@ -6056,7 +6065,8 @@ func TestHandleFailedTranxResizeVolume(t *testing.T) {
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 			mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			if tt.name == "VolumeNotPresent" {
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("delete failed"))
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+					gomock.Any()).Return(errors.New("delete failed"))
 			} else {
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
@@ -6213,9 +6223,11 @@ func TestDeleteVolume(t *testing.T) {
 			mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
 
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-			mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to delete tranx")).AnyTimes()
+			mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+				gomock.Any()).Return(errors.New("failed to delete tranx")).AnyTimes()
 			if tt.name == "FailedToAddTranx" {
-				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil, errors.New("falied to get tranx"))
+				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil,
+					errors.New("falied to get tranx"))
 			} else {
 				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil, nil)
 				mockStoreClient.EXPECT().AddVolumeTransaction(coreCtx, gomock.Any()).Return(nil)
@@ -6300,7 +6312,8 @@ func TestDeleteVolume(t *testing.T) {
 			}
 
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-			mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to delete tranx")).AnyTimes()
+			mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+				gomock.Any()).Return(errors.New("failed to delete tranx")).AnyTimes()
 			if tt.name == "HasSubordinateVolumeError" || tt.name == "DeleteClone" {
 				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(errors.New("error updating volume"))
 			} else {
@@ -6312,7 +6325,8 @@ func TestDeleteVolume(t *testing.T) {
 				mockStoreClient.EXPECT().DeleteVolume(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
 			if tt.name == "DeleteBackendError" {
-				mockStoreClient.EXPECT().DeleteBackend(coreCtx, gomock.Any()).Return(errors.New("delete backend failed"))
+				mockStoreClient.EXPECT().DeleteBackend(coreCtx,
+					gomock.Any()).Return(errors.New("delete backend failed"))
 			}
 
 			o := getOrchestrator(t, false)
@@ -6348,7 +6362,8 @@ func TestHandleFailedDeleteVolumeError(t *testing.T) {
 
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 	mockStoreClient.EXPECT().DeleteVolume(coreCtx, gomock.Any()).Return(errors.New("unable to delete volume"))
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("unable to delete transaction"))
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+		gomock.Any()).Return(errors.New("unable to delete transaction"))
 
 	o := getOrchestrator(t, false)
 	o.storeClient = mockStoreClient
@@ -6435,30 +6450,36 @@ func TestCreateSnapshotError(t *testing.T) {
 			mockBackend.EXPECT().GetDriverName().Return("driver").AnyTimes()
 			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
 			if tt.name == "SnapshotNotPossible" {
-				mockBackend.EXPECT().CanSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(errors.New("cannot take snapshot"))
+				mockBackend.EXPECT().CanSnapshot(coreCtx, gomock.Any(),
+					gomock.Any()).Return(errors.New("cannot take snapshot"))
 			} else {
 				mockBackend.EXPECT().CanSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			}
 
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 			if tt.name == "AddVolumeTranxError" {
-				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil, errors.New("error getting transaction"))
+				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil,
+					errors.New("error getting transaction"))
 			} else {
 				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().AddVolumeTransaction(coreCtx, gomock.Any()).Return(nil).AnyTimes()
 			}
 			if tt.name == "MaxLimitError" {
-				mockBackend.EXPECT().CreateSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil, errors.MaxLimitReachedError("error"))
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to delete transaction"))
+				mockBackend.EXPECT().CreateSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil,
+					errors.MaxLimitReachedError("error"))
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+					gomock.Any()).Return(errors.New("failed to delete transaction"))
 			}
 			if tt.name == "CreateSnapshotError" {
-				mockBackend.EXPECT().CreateSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil, errors.New("failed to create snapshot"))
+				mockBackend.EXPECT().CreateSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil,
+					errors.New("failed to create snapshot"))
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(nil)
 			}
 
 			if tt.name == "AddSnapshotError" {
 				mockBackend.EXPECT().CreateSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(snap3, nil)
-				mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(errors.New("cleanup error"))
+				mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+					gomock.Any()).Return(errors.New("cleanup error"))
 				mockStoreClient.EXPECT().AddSnapshot(coreCtx, gomock.Any()).Return(errors.New("failed to add snapshot"))
 			}
 
@@ -7128,18 +7149,21 @@ func TestDeleteSnapshotError(t *testing.T) {
 			mockBackend.EXPECT().GetDriverName().Return("driver").AnyTimes()
 			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
 			if tt.name == "DeleteSnapshotFail" {
-				mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(errors.New("delete snapshot failed"))
+				mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+					gomock.Any()).Return(errors.New("delete snapshot failed"))
 			} else {
 				mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			}
 
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-			mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to delete transaction")).AnyTimes()
+			mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+				gomock.Any()).Return(errors.New("failed to delete transaction")).AnyTimes()
 			if tt.name == "NilVolumeFound" || tt.name == "NilBackendFound" {
 				mockStoreClient.EXPECT().DeleteSnapshot(coreCtx, gomock.Any()).Return(errors.New("delete failed"))
 			}
 			if tt.name == "AddVolumeTranxFail" {
-				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil, errors.New("failed to get transaction"))
+				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil,
+					errors.New("failed to get transaction"))
 			} else {
 				mockStoreClient.EXPECT().GetVolumeTransaction(coreCtx, gomock.Any()).Return(nil, nil).AnyTimes()
 				mockStoreClient.EXPECT().AddVolumeTransaction(coreCtx, gomock.Any()).Return(nil).AnyTimes()
@@ -7250,7 +7274,8 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	// storage.AddSnapshot switch case tests
 	vt.Op = storage.AddSnapshot
 
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
+	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+		gomock.Any()).Return(errors.New("failed to delete snapshot"))
 	mockBackend.EXPECT().Name().Return("abc")
 	err := o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete volume error")
@@ -7260,14 +7285,16 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	mockBackend2.EXPECT().State().Return(storage.Unknown).AnyTimes()
 	mockBackend.EXPECT().State().Return(storage.Online)
 	mockBackend.EXPECT().Name().Return("abc")
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
+	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+		gomock.Any()).Return(errors.New("failed to delete snapshot"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete snapshot error")
 
 	delete(o.backends, "xyz")
 	mockBackend.EXPECT().State().Return(storage.Online)
 	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to delete transaction"))
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+		gomock.Any()).Return(errors.New("failed to delete transaction"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete volume transaction error")
 
@@ -7275,11 +7302,31 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	vt.Op = storage.DeleteSnapshot
 
 	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
+	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+		gomock.Any()).Return(errors.New("failed to delete snapshot"))
 	mockBackend.EXPECT().Name().Return("abc")
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(errors.New("failed to delete transaction"))
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+		gomock.Any()).Return(errors.New("failed to delete transaction"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete volume transaction error")
+}
+
+func TestDeleteMountedSnapshot(t *testing.T) {
+	volName := "vol"
+	snapName := "snap"
+	snapshot := &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}}
+	snapID := storage.MakeSnapshotID(volName, snapName)
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{Name: volName, ReadOnlyClone: true, CloneSourceSnapshot: snapName},
+	}
+
+	o := getOrchestrator(t, false)
+	o.volumes[volName] = volume
+	o.snapshots[snapID] = snapshot
+
+	err := o.DeleteSnapshot(ctx(), volName, snapName)
+	assert.Error(t, err, "An error is expected")
+	assert.Equal(t, err.Error(), "unable to delete snapshot snap as it is a source for read-only clone vol")
 }
 
 func TestListLogWorkflows(t *testing.T) {
@@ -7495,7 +7542,8 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 			newBackendConfig: bConfig,
 			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("error updating non-orphan volume"))
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
+					gomock.Any()).Return(errors.New("error updating non-orphan volume"))
 			},
 			wantErr: assert.Error,
 		},
@@ -7816,7 +7864,8 @@ func TestReconcileVolumePublications_FailsToAddMissingVolumePublications(t *test
 	assert.NoError(t, err)
 
 	// Set up expected mock calls.
-	mockStoreClient.EXPECT().AddVolumePublication(ctx, gomock.Any()).Return(fmt.Errorf("store error")).Times(len(attachedLegacyVolumes) - 1)
+	mockStoreClient.EXPECT().AddVolumePublication(ctx,
+		gomock.Any()).Return(fmt.Errorf("store error")).Times(len(attachedLegacyVolumes) - 1)
 	err = o.ReconcileVolumePublications(ctx, attachedLegacyVolumes)
 	assert.Error(t, err)
 
