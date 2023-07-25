@@ -91,10 +91,12 @@ func AttachISCSIVolumeRetry(
 	return mpathSize, err
 }
 
-// AttachISCSIVolume attaches the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
-// It may be assumed that this method always runs on the host to which the volume will be attached.  If the mountpoint
-// parameter is specified, the volume will be mounted.  The device path is set on the in-out publishInfo parameter
-// so that it may be mounted later instead.
+// AttachISCSIVolume attaches the volume to the local host.
+// This method must be able to accomplish its task using only the publish information passed in.
+// It may be assumed that this method always runs on the host to which the volume will be attached.
+// If the mountpoint parameter is specified, the volume will be mounted to it.
+// The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
+// If multipath device size is found to be inconsistent with device size, then the correct size is returned.
 func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo,
 	secrets map[string]string,
 ) (int64, error) {
@@ -336,7 +338,23 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return mpathSize, err
 	}
 	if !mounted {
-		_ = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		err = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				logFields := LogFields{
+					"volume": name,
+					"fstype": deviceInfo.Filesystem,
+					"device": devicePath,
+				}
+
+				if exitErr.ExitCode() == 1 {
+					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
+				} else {
+					logFields["exitCode"] = exitErr.ExitCode()
+					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
+				}
+			}
+		}
 	}
 
 	// Optionally mount the device

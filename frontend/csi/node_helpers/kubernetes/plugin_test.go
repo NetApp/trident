@@ -358,7 +358,7 @@ func TestDiscoverPVCsToPublishedPaths(t *testing.T) {
 	_ = osFs.MkdirAll(podUUIDPath, 0o777)
 	_, _ = osFs.Create(podUUIDPath + volName)
 
-	result, err := h.discoverPVCsToPublishedPaths(context.Background())
+	result, err := h.discoverPVCsToPublishedPathsFilesystemVolumes(context.Background())
 	expectedPublishedPath := filepath.Join(podUUIDPath, volName, "mount")
 	_, ok = result[volName][expectedPublishedPath]
 	assert.NoError(t, err)
@@ -384,7 +384,7 @@ func TestDiscoverPVCsToPublishedPaths_ReadDirFails(t *testing.T) {
 
 	// invalid path
 	h.podsPath = "/*"
-	res, err := h.discoverPVCsToPublishedPaths(context.Background())
+	res, err := h.discoverPVCsToPublishedPathsFilesystemVolumes(context.Background())
 	assert.Error(t, err)
 	assert.Nil(t, res, "expected nil map!")
 
@@ -392,9 +392,82 @@ func TestDiscoverPVCsToPublishedPaths_ReadDirFails(t *testing.T) {
 	_ = osFs.RemoveAll(podUUIDPath)
 	_, _ = osFs.Create(podUUIDPath)
 	h.podsPath = "/var/lib/kubelet/pods"
-	res, err = h.discoverPVCsToPublishedPaths(context.Background())
+	res, err = h.discoverPVCsToPublishedPathsFilesystemVolumes(context.Background())
 	assert.Error(t, err)
 	assert.Empty(t, res)
+}
+
+func TestDiscoverPVCsToPublishedPathsRawDevices(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
+	defer func() { osFs = afero.NewOsFs() }()
+	osFs = afero.NewMemMapFs()
+
+	help, _ := NewHelper(orchestrator, "/var/lib/kubelet", false)
+	h, ok := help.(*helper)
+	if !ok {
+		t.Fatal("Could not cast helper to a NodeHelper!")
+	}
+
+	podUUIDPathBase := "/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/"
+	volName1 := "pvc-123"
+	podUUID1 := "123-456"
+	podUUIDPath1 := podUUIDPathBase + volName1
+	_ = osFs.MkdirAll(podUUIDPath1, 0o777)
+	_, _ = osFs.Create(podUUIDPath1 + "/" + podUUID1)
+
+	volName2 := "pvc-123"
+	podUUID2 := "123-456"
+	podUUIDPath2 := podUUIDPathBase + volName2
+	_ = osFs.MkdirAll(podUUIDPath2, 0o777)
+	_, _ = osFs.Create(podUUIDPath2 + "/" + podUUID2)
+
+	mapping := make(map[string]map[string]struct{})
+
+	err := h.discoverPVCsToPublishedPathsRawDevices(context.Background(), mapping)
+	expectedPublishedPath := filepath.Join(podUUIDPath1, podUUID1)
+	_, ok = mapping[volName1][expectedPublishedPath]
+	assert.NoError(t, err)
+	assert.True(t, ok, "expected published path not found in map!")
+
+	expectedPublishedPath = filepath.Join(podUUIDPath2, podUUID2)
+	_, ok = mapping[volName1][expectedPublishedPath]
+	assert.NoError(t, err)
+	assert.True(t, ok, "expected published path not found in map!")
+}
+
+func TestDiscoverPVCsToPublishedPathsRawDevices_EmptyMap(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
+	defer func() { osFs = afero.NewOsFs() }()
+	osFs = afero.NewMemMapFs()
+
+	help, _ := NewHelper(orchestrator, "/var/lib/kubelet", false)
+	h, ok := help.(*helper)
+	if !ok {
+		t.Fatal("Could not cast helper to a NodeHelper!")
+	}
+
+	podUUIDPathBase := "/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/"
+	volName1 := "pvc-123"
+	podUUID1 := "123-456"
+	podUUIDPath1 := podUUIDPathBase + volName1
+	_ = osFs.MkdirAll(podUUIDPath1, 0o777)
+	_, _ = osFs.Create(podUUIDPath1 + "/" + podUUID1)
+
+	volName2 := "pvc-123"
+	podUUID2 := "123-456"
+	podUUIDPath2 := podUUIDPathBase + volName2
+	_ = osFs.MkdirAll(podUUIDPath2, 0o777)
+	_, _ = osFs.Create(podUUIDPath2 + "/" + podUUID2)
+
+	mapping := make(map[string]map[string]struct{})
+
+	// invalid path
+	h.kubeConfigPath = "/abc/something"
+	err := h.discoverPVCsToPublishedPathsRawDevices(context.Background(), mapping)
+	assert.Nil(t, err)
+	assert.True(t, len(mapping) == 0, "expected empty map!")
 }
 
 func newValidHelper(

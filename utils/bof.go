@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -139,7 +140,23 @@ func AttachBlockOnFileVolume(
 		return "", "", err
 	}
 	if !mounted {
-		_ = repairVolume(ctx, loopDevice.Name, fsType)
+		err = repairVolume(ctx, loopDevice.Name, fsType)
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				logFields := LogFields{
+					"volume": loopFile,
+					"fstype": fsType,
+					"device": loopDevice.Name,
+				}
+
+				if exitErr.ExitCode() == 1 {
+					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
+				} else {
+					logFields["exitCode"] = exitErr.ExitCode()
+					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
+				}
+			}
+		}
 	}
 
 	if deviceMountpoint != "" {
@@ -357,7 +374,8 @@ func attachLoopDevice(ctx context.Context, loopFile string) (string, error) {
 	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> bof.attachLoopDevice")
 	defer Logc(ctx).Debug("<<<< bof.attachLoopDevice")
 
-	out, err := command.ExecuteWithTimeout(ctx, "losetup", 10*time.Second, true, "--find", "--show", "--direct-io", "--nooverlap",
+	out, err := command.ExecuteWithTimeout(ctx, "losetup", 10*time.Second, true, "--find", "--show", "--direct-io",
+		"--nooverlap",
 		loopFile)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to attach loop file.")

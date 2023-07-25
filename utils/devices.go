@@ -477,7 +477,7 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 			Logc(ctx).WithFields(LogFields{
 				"error":  deviceErr,
 				"device": devicePath,
-				"LUN":    deviceInfo.LUN,
+				"lun":    deviceInfo.LUN,
 				"host":   deviceInfo.Host,
 			}).Debug("Flush timed out.")
 			return deviceErr

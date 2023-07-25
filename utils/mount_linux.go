@@ -18,6 +18,12 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
+// Part of the published path for raw devices
+const rawDevicePublishPath = "plugins/kubernetes.io/csi/volumeDevices/publish/pvc-"
+
+// Regex to identify published path for mounted devices
+var pvMountpointRegex = regexp.MustCompile(`^(.*pods)(.*volumes)(.*pvc-).*$`)
+
 // IsLikelyNotMountPoint uses heuristics to determine if a directory is not a mountpoint.
 // It should return ErrNotExist when the directory does not exist.
 // IsLikelyNotMountPoint does NOT properly detect all mountpoint types
@@ -126,7 +132,6 @@ func PVMountpointMappings(ctx context.Context) (map[string]string, error) {
 	Logc(ctx).Debug(">>>> mount_linux.PVMountpointMappings")
 	defer Logc(ctx).Debug("<<<< mount_linux.PVMountpointMappings")
 
-	pvMountpointRegex := regexp.MustCompile(`^(.*pods)(.*volumes)(.*pvc-).*$`)
 	mappings := make(map[string]string)
 
 	// Read the system mounts
@@ -138,9 +143,12 @@ func PVMountpointMappings(ctx context.Context) (map[string]string, error) {
 
 	// Check each mount for K8s-based mounts
 	for _, procMount := range procSelfMountinfo {
-		if pvMountpointRegex.MatchString(procMount.MountPoint) {
+		if pvMountpointRegex.MatchString(procMount.MountPoint) ||
+			strings.Contains(procMount.MountPoint, rawDevicePublishPath) {
 
-			var procSourceDevice string
+			// In case of raw block volumes device is at the `procMount.Root`
+			procSourceDevice := strings.TrimPrefix(procMount.Root, "/")
+
 			if strings.HasPrefix(procMount.MountSource, "/dev/") {
 				procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
 				if err != nil {
