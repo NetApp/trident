@@ -1342,7 +1342,6 @@ func getTargets(ctx context.Context, tp string) ([]string, error) {
 func updateDiscoveryDb(ctx context.Context, tp, iface, key, value string) error {
 	Logc(ctx).WithFields(LogFields{
 		"Key":       key,
-		"Value":     value,
 		"Portal":    tp,
 		"Interface": iface,
 	}).Debug(">>>> iscsi.updateDiscoveryDb")
@@ -1479,7 +1478,6 @@ func configureISCSITarget(ctx context.Context, iqn, portal, name, value string) 
 		"IQN":    iqn,
 		"Portal": portal,
 		"Name":   name,
-		"Value":  value,
 	}).Debug(">>>> iscsi.configureISCSITarget")
 	defer Logc(ctx).Debug("<<<< iscsi.configureISCSITarget")
 
