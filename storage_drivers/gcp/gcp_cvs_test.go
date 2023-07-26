@@ -725,6 +725,8 @@ func TestInitialize_MultipleVPools(t *testing.T) {
 	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
 	assert.NoError(t, err, "Not initialized")
 	assert.True(t, d.initialized, "Driver not initialized")
+	assert.NotEmpty(t, d.Config.BackendPools, "backend pools were empty")
+	assert.Equal(t, len(d.pools), len(d.Config.BackendPools), "backend and storage pools were not equal")
 }
 
 func TestInitialize_ValidateError(t *testing.T) {
@@ -2214,6 +2216,24 @@ func TestGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	d := newTestGCPDriver(nil)
 	poolNames := d.GetStorageBackendPhysicalPoolNames(ctx())
 	assert.Equal(t, len(poolNames), 0, "Found physical pools")
+}
+
+func TestGetStorageBackendPools(t *testing.T) {
+	_, d := newMockGCPDriver(t)
+	d.pools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+
+	pools := d.getStorageBackendPools(context.Background())
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(d.pools), len(pools))
+
+	d.pools = nil
+
+	pools = d.getStorageBackendPools(context.Background())
+	assert.Empty(t, pools)
+	assert.Equal(t, len(d.pools), len(pools))
 }
 
 func TestGetInternalVolumeName(t *testing.T) {

@@ -153,7 +153,7 @@ type OntapStorageDriverPool struct {
 // within a backend.
 type StorageBackendPool interface {
 	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
-		SolidfireStorageBackendPool
+		SolidfireStorageBackendPool | GCPNFSStorageBackendPool
 }
 
 // OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
@@ -573,6 +573,14 @@ type GCPNFSStorageDriverPool struct {
 	Network                           string              `json:"network"`
 	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
 	GCPNFSStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// GCPNFSStorageBackendPool is a non-overlapping section of a GCP backend that may be used for provisioning storage.
+type GCPNFSStorageBackendPool struct {
+	ProjectNumber string `json:"projectNumber"`
+	APIRegion     string `json:"apiRegion"`
+	ServiceLevel  string `json:"serviceLevel"`
+	StoragePool   string `json:"storagePool"`
 }
 
 type GCPNFSStorageDriverConfigDefaults struct {

@@ -211,6 +211,13 @@ func (d *NFSStorageDriver) Initialize(
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
 	}
 
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
+
 	telemetry := tridentconfig.OrchestratorTelemetry
 	telemetry.TridentBackendUUID = backendUUID
 	d.telemetry = &Telemetry{
@@ -1814,6 +1821,30 @@ func (d *NFSStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NFSStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NFSStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.GCPNFSStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NFSStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. Project number
+	// 2. API region
+	// 3. Service type
+	// 4. Storage pool - contains at least one pool depending on the backend configuration.
+	backendPools := make([]drivers.GCPNFSStorageBackendPool, 0)
+	for _, pool := range d.pools {
+		backendPool := drivers.GCPNFSStorageBackendPool{
+			ProjectNumber: d.Config.ProjectNumber,
+			APIRegion:     d.Config.APIRegion,
+			ServiceLevel:  d.Config.ServiceLevel,
+			StoragePool:   pool.Name(),
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+	return backendPools
 }
 
 func (d *NFSStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
