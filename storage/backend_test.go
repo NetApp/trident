@@ -148,6 +148,9 @@ func TestDeleteSnapshot_NotManaged(t *testing.T) {
 }
 
 func TestCloneVolume_FeatureDisabled(t *testing.T) {
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
+	tridentconfig.DisableExtraFeatures = true
+
 	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
 	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
 	volumeConfig := &VolumeConfig{
@@ -175,6 +178,9 @@ func TestCloneVolume_FeatureDisabled(t *testing.T) {
 }
 
 func TestCloneVolume_BackendOffline(t *testing.T) {
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
+	tridentconfig.DisableExtraFeatures = false
+
 	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
 	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
 	volumeConfig := &VolumeConfig{
@@ -195,8 +201,6 @@ func TestCloneVolume_BackendOffline(t *testing.T) {
 		name:  "test-backend",
 	}
 	pool := NewStoragePool(nil, "test-pool1")
-
-	tridentconfig.DisableExtraFeatures = false
 
 	// Both volume and snapshot not managed
 	_, err := backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)

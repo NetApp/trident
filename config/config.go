@@ -251,7 +251,7 @@ var (
 
 	// DisableExtraFeatures makes a subset of Trident features disabled
 	// This can be removed when ACP replaces feature-gating
-	DisableExtraFeatures = true
+	DisableExtraFeatures = false
 )
 
 func IsValidProtocol(p Protocol) bool {

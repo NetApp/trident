@@ -3762,6 +3762,9 @@ func TestCanSnapshot_InvalidSnapshotDir(t *testing.T) {
 }
 
 func TestCreateSnapshot_Disabled(t *testing.T) {
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
+	tridentconfig.DisableExtraFeatures = true
+
 	_, driver := newMockOntapNasQtreeDriver(t)
 	volConfig := &storage.VolumeConfig{
 		Size:         "1g",
@@ -3782,7 +3785,7 @@ func TestCreateSnapshot_Disabled(t *testing.T) {
 }
 
 func TestCreateSnapshot_Success(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -3817,7 +3820,7 @@ func TestCreateSnapshot_Success(t *testing.T) {
 }
 
 func TestCreateSnapshot_FailureErrorCheckingVolume(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -3844,7 +3847,7 @@ func TestCreateSnapshot_FailureErrorCheckingVolume(t *testing.T) {
 }
 
 func TestCreateSnapshot_FailureNoVolumeExists(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -3871,7 +3874,7 @@ func TestCreateSnapshot_FailureNoVolumeExists(t *testing.T) {
 }
 
 func TestCreateSnapshot_FailureSnapshotCreateFailed(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -3899,7 +3902,7 @@ func TestCreateSnapshot_FailureSnapshotCreateFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_FailureSnapshotInfoFailed(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -3934,7 +3937,7 @@ func TestCreateSnapshot_FailureSnapshotInfoFailed(t *testing.T) {
 }
 
 func TestCreateSnapshot_FailureNoSnapshots(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -3965,7 +3968,7 @@ func TestCreateSnapshot_FailureNoSnapshots(t *testing.T) {
 }
 
 func TestCreateSnapshot_FailureWrongVolumeID(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -3991,7 +3994,7 @@ func TestCreateSnapshot_FailureWrongVolumeID(t *testing.T) {
 }
 
 func TestGetSnapshot_Success(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4024,7 +4027,7 @@ func TestGetSnapshot_Success(t *testing.T) {
 }
 
 func TestGetSnapshot_FailureNoSnapshotReturned(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4053,7 +4056,7 @@ func TestGetSnapshot_FailureNoSnapshotReturned(t *testing.T) {
 }
 
 func TestGetSnapshot_FailureErrorFetchingSnapshots(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4081,7 +4084,7 @@ func TestGetSnapshot_FailureErrorFetchingSnapshots(t *testing.T) {
 }
 
 func TestGetSnapshot_FailureWrongVolumeID(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4106,7 +4109,7 @@ func TestGetSnapshot_FailureWrongVolumeID(t *testing.T) {
 }
 
 func TestGetSnapshots_Success(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4134,7 +4137,7 @@ func TestGetSnapshots_Success(t *testing.T) {
 }
 
 func TestGetSnapshots_SuccessDockerContext(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4162,7 +4165,7 @@ func TestGetSnapshots_SuccessDockerContext(t *testing.T) {
 }
 
 func TestGetSnapshots_FailureWrongVolumeID(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4183,7 +4186,7 @@ func TestGetSnapshots_FailureWrongVolumeID(t *testing.T) {
 }
 
 func TestGetSnapshots_FailureSnapshotListErr(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4211,7 +4214,7 @@ func TestGetSnapshots_FailureSnapshotListErr(t *testing.T) {
 }
 
 func TestDeleteSnapshot_Success(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4237,7 +4240,7 @@ func TestDeleteSnapshot_Success(t *testing.T) {
 }
 
 func TestDeleteSnapshot_FailureSnapshotBusy(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
@@ -4268,7 +4271,7 @@ func TestDeleteSnapshot_FailureSnapshotBusy(t *testing.T) {
 }
 
 func TestDeleteSnapshot_FailureWrongVolumeID(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = true }()
+	defer func() { tridentconfig.DisableExtraFeatures = false }()
 	tridentconfig.DisableExtraFeatures = false
 
 	_, driver := newMockOntapNasQtreeDriver(t)
