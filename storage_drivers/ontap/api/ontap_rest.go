@@ -420,7 +420,7 @@ func (c RestClient) getAllVolumePayloadRecords(
 				payload.NumRecords = utils.Ptr(int64(0))
 			}
 			payload.NumRecords = utils.Ptr(*payload.NumRecords + *resultNext.Payload.NumRecords)
-			payload.VolumeResponseInlineRecords = append(resultNext.Payload.VolumeResponseInlineRecords, resultNext.Payload.VolumeResponseInlineRecords...)
+			payload.VolumeResponseInlineRecords = append(payload.VolumeResponseInlineRecords, resultNext.Payload.VolumeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				break
@@ -456,7 +456,7 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = &c.svmUUID
 	params.SetName(utils.Ptr(pattern))
@@ -1302,7 +1302,7 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = &c.svmUUID
 
@@ -1729,7 +1729,7 @@ func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 	params.HTTPClient = c.httpClient
 	params.ReturnRecords = utils.Ptr(true)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.Initiator = utils.Ptr("default")
@@ -4162,7 +4162,7 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(namePattern))         // Qtree name prefix
@@ -4215,7 +4215,7 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetPath(utils.Ptr(path))
@@ -4249,7 +4249,7 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetName(utils.Ptr(name))
@@ -4284,7 +4284,7 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetVolumeName(utils.Ptr(volumeName)) // Flexvol name
@@ -4347,7 +4347,7 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))                // Qtree name
@@ -4424,7 +4424,7 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))          // qtree name
@@ -4467,7 +4467,7 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetVolumeName(utils.Ptr(pattern)) // Flexvol name prefix
@@ -4710,7 +4710,7 @@ func (c RestClient) QuotaGetEntry(
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetType(utils.Ptr(quotaType))
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
@@ -4780,7 +4780,7 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.VolumeName = utils.Ptr(volumeName)
