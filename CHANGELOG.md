@@ -6,13 +6,34 @@
 
 **Fixes:**
 
-- Fixed ONTAP ZAPI request to ensure LUN serial number is queried when getting LUN attributes.
+- **Kubernetes:** Fixed Trident upgrade to disregard old pods stuck in terminating state (Issue [#740](https://github.com/NetApp/trident/issues/740)).
+- **Kubernetes:** Added toleration to "transient-trident-version-pod" definition (Issue [#795](https://github.com/NetApp/trident/issues/795)).
+- Fixed ONTAP ZAPI requests to ensure LUN serial numbers are queried when getting LUN attributes to identify and fix ghost iSCSI devices during Node Staging operations.
+- Fixed error handling in storage driver code (Issue [#816](https://github.com/NetApp/trident/issues/816)).
+- Fixed quota resize when using ONTAP drivers with use-rest=true.
+- Fixed LUN clone creation in ontap-san-economy.
 - Revert publish info field from `rawDevicePath` to `devicePath`; added logic to populate and recover (in some cases)
   `devicePath` field.
 
 **Enhancements:**
+
+- **Kubernetes:** Added support for importing pre-provisioned snapshots.
+- **Kubernetes:** Minimized deployment and daemonset linux permissions (Issue [#817](https://github.com/NetApp/trident/issues/817)).
+- No longer reporting the state field for "online" volumes and snapshots.
+- Updates the backend state if the ONTAP backend is offline (Issues [#801](https://github.com/NetApp/trident/issues/801), [#543](https://github.com/NetApp/trident/issues/543)).
+- LUN Serial Number is always retrieved and published during the ControllerVolumePublish workflow.
 - Added additional logic to verify iSCSI multipath device serial number and size.
 - Additional verification for iSCSI volumes to ensure correct multipath device is unstaged.
+
+**Experimental Enhancements:**
+
+- Added tech preview support for NVMe over TCP for the ONTAP-SAN driver.
+
+**Deprecations:**
+
+- **Kubernetes:** Removed support for v1beta1 snapshots.
+- **Kubernetes:** Removed support for pre-CSI volumes and storage classes.
+- **Kubernetes:** Updated minimum supported Kubernetes to 1.22.
 
 ## v23.04.0
 
