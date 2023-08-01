@@ -698,7 +698,7 @@ func (d *NASQtreeStorageDriver) CanSnapshot(
 		return fmt.Errorf("invalid value for snapshotDir; %v", err)
 	}
 	if !snapshotDirBool {
-		return errors.UnsupportedError(fmt.Sprintf("snapshots cannot be taken if snapdir access is disabled"))
+		return errors.UnsupportedError("snapshots cannot be taken if snapdir access is disabled")
 	}
 
 	return nil

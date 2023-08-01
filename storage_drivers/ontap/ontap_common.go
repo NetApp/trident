@@ -2763,7 +2763,7 @@ func LunUnmapIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup, lunPath
 
 	lunID, err := clientAPI.LunMapInfo(ctx, igroup, lunPath)
 	if err != nil {
-		msg := fmt.Sprintf("error reading LUN maps")
+		msg := "error reading LUN maps"
 		Logc(ctx).WithError(err).Error(msg)
 		return fmt.Errorf(msg)
 	}
