@@ -279,6 +279,13 @@ func (d *NASBlockStorageDriver) Initialize(
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
 	}
 
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
+
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
 		if i, parseErr := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64); parseErr != nil {
@@ -1712,6 +1719,31 @@ func (d *NASBlockStorageDriver) GetStorageBackendPhysicalPoolNames(context.Conte
 		physicalPoolNames = append(physicalPoolNames, poolName)
 	}
 	return physicalPoolNames
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NASBlockStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.ANFSubvolumeStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASBlockStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SubscriptionID
+	// 2. Location
+	// 3. FilePoolVolume Name - stored in the physical pools on the driver, the name is stored as:
+	//	<file pool volume name>_<hash based on RG/NA/CP and volume name>
+	filePoolVolumes := d.getAllFilePoolVolumes()
+	backendPools := make([]drivers.ANFSubvolumeStorageBackendPool, 0, len(filePoolVolumes))
+	for _, filePoolVolume := range filePoolVolumes {
+		backendPool := drivers.ANFSubvolumeStorageBackendPool{
+			SubscriptionID: d.Config.SubscriptionID,
+			Location:       d.Config.Location,
+			FilePoolVolume: filePoolVolume,
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
 }
 
 // GetInternalVolumeName accepts the name of a volume being created and returns what the internal name

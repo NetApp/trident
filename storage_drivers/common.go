@@ -287,7 +287,7 @@ func EncodeStorageBackendPools[P StorageBackendPool](
 		config.DebugTraceFlags["method"]).WithFields(fields).Debug("<<<< EncodeStorageBackendPools")
 
 	if len(backendPools) == 0 {
-		return nil, fmt.Errorf("failed encode backend pools; no storage backend pools supplied")
+		return nil, fmt.Errorf("failed to encode backend pools; no storage backend pools supplied")
 	}
 
 	encodedPools := make([]string, 0)

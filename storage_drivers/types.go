@@ -153,7 +153,7 @@ type OntapStorageDriverPool struct {
 // within a backend.
 type StorageBackendPool interface {
 	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
-		SolidfireStorageBackendPool | GCPNFSStorageBackendPool
+		ANFStorageBackendPool | ANFSubvolumeStorageBackendPool | SolidfireStorageBackendPool | GCPNFSStorageBackendPool
 }
 
 // OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
@@ -464,6 +464,23 @@ type AzureNASStorageDriverPool struct {
 	FilePoolVolumes                     []string            `json:"filePoolVolumes"`
 	NASType                             string              `json:"nasType"`
 	AzureNASStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// ANFStorageBackendPool is a non-overlapping section of an Azure backend that may be used for provisioning storage.
+type ANFStorageBackendPool struct {
+	SubscriptionID string `json:"subscriptionID"`
+	ResourceGroup  string `json:"resourceGroup"`
+	NetappAccount  string `json:"netappAccount"`
+	Location       string `json:"location"`
+	CapacityPool   string `json:"capacityPool"`
+}
+
+// ANFSubvolumeStorageBackendPool is a non-overlapping section of an Azure file backend that may be used for
+// provisioning storage.
+type ANFSubvolumeStorageBackendPool struct {
+	SubscriptionID string `json:"subscriptionID"`
+	Location       string `json:"location"`
+	FilePoolVolume string `json:"filePoolVolume"`
 }
 
 type AzureNASStorageDriverConfigDefaults struct {
