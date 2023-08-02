@@ -15,9 +15,11 @@ import (
 	pspv1beta1 "k8s.io/api/policy/v1beta1"
 	csiv1 "k8s.io/api/storage/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
+	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -652,6 +654,43 @@ func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
 		fmt.Sprintf("expected nodeSelector in final YAML: %s", yamlData))
 }
 
+func TestGetCSIDaemonSetYAMLLinux_ResourceClaims(t *testing.T) {
+	daemonsetArgs := &DaemonsetYAMLArguments{
+		RegistrarResourceSpec: netappv1.ResourceSpec{},
+		TridentResourceSpec: netappv1.ResourceSpec{
+			Resources: v1.ResourceRequirements{
+				Limits: v1.ResourceList{
+					v1.ResourceMemory: resource.MustParse("125Mi"),
+				},
+				Requests: v1.ResourceList{
+					v1.ResourceCPU:    resource.MustParse("50m"),
+					v1.ResourceMemory: resource.MustParse("50Mi"),
+				},
+			},
+		},
+	}
+	expectedRegistrarResourceClaimString := "resources: {}\n"
+	expectedTridentResourceClaimString := `
+        resources:
+          limits:
+            memory: 125Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
+`
+
+	yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
+	_, err := yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedRegistrarResourceClaimString,
+		fmt.Sprintf("expected empty registrar resource claims in final YAML: %s", yamlData))
+
+	assert.Contains(t, yamlData, expectedTridentResourceClaimString,
+		fmt.Sprintf("expected trident resource claims in final YAML: %s", yamlData))
+}
+
 func TestGetCSIDaemonSetYAMLLinux_Tolerations(t *testing.T) {
 	daemonsetArgs := &DaemonsetYAMLArguments{
 		Tolerations: []map[string]string{
@@ -800,6 +839,56 @@ func TestGetCSIDaemonSetYAMLWindowsImagePullPolicy(t *testing.T) {
 	}
 }
 
+func TestGetCSIDaemonSetYAMWindows_ResourceClaims(t *testing.T) {
+	versions := []string{"1.26.0"}
+	registrarResourceSpec := netappv1.ResourceSpec{}
+	tridentResourceSpec := netappv1.ResourceSpec{
+		Resources: v1.ResourceRequirements{
+			Limits: v1.ResourceList{
+				v1.ResourceMemory: resource.MustParse("125Mi"),
+			},
+			Requests: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("50m"),
+			},
+		},
+	}
+
+	expectedRegistrarResourceClaimString := `
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+`
+	expectedTridentResourceClaimString := `
+        resources:
+          limits:
+            memory: 125Mi
+          requests:
+            cpu: 50m
+            memory: 20Mi
+`
+	for _, versionString := range versions {
+		version := versionutils.MustParseSemantic(versionString)
+		daemonsetArgs := &DaemonsetYAMLArguments{
+			Version:               version,
+			RegistrarResourceSpec: registrarResourceSpec,
+			TridentResourceSpec:   tridentResourceSpec,
+		}
+		yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
+		_, err := yaml.YAMLToJSON([]byte(yamlData))
+		if err != nil {
+			t.Fatalf("expected valid YAML, got %s", yamlData)
+		}
+		assert.Contains(t, yamlData, expectedRegistrarResourceClaimString,
+			fmt.Sprintf("expected empty registrar resource claims in final YAML: %s", yamlData))
+
+		assert.Contains(t, yamlData, expectedTridentResourceClaimString,
+			fmt.Sprintf("expected trident resource claims in final YAML: %s", yamlData))
+	}
+}
+
 func TestConstructNodeSelector(t *testing.T) {
 	nodeSelMap := map[string]string{"node-label-name": "master"}
 
@@ -807,6 +896,54 @@ func TestConstructNodeSelector(t *testing.T) {
 	result := constructNodeSelector(nodeSelMap)
 
 	assert.Equal(t, expectedNodeSelString, result)
+}
+
+func TestConstructResourceClaim(t *testing.T) {
+	defaultResourceClaim := netappv1.ResourceSpec{
+		Resources: v1.ResourceRequirements{},
+	}
+	resourceClaim := netappv1.ResourceSpec{
+		Resources: v1.ResourceRequirements{
+			Limits: v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse("100m"),
+				v1.ResourceMemory: resource.MustParse("50Mi"),
+			},
+			Requests: v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse("20m"),
+				v1.ResourceMemory: resource.MustParse("20Mi"),
+			},
+		},
+	}
+
+	expectedResourceClaimString := `resources:
+  limits:
+    cpu: 100m
+    memory: 50Mi
+  requests:
+    cpu: 20m
+    memory: 20Mi
+`
+
+	result := constructResourceClaim("test", resourceClaim, defaultResourceClaim)
+	assert.Equal(t, expectedResourceClaimString, result)
+
+	resourceClaim = netappv1.ResourceSpec{
+		Resources: v1.ResourceRequirements{
+			Limits: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("100m"),
+			},
+		},
+	}
+
+	expectedResourceClaimString = "resources:\n  limits:\n    cpu: 100m\n"
+	result = constructResourceClaim("test", resourceClaim, defaultResourceClaim)
+	assert.Equal(t, expectedResourceClaimString, result)
+
+	resourceClaim = netappv1.ResourceSpec{}
+
+	expectedResourceClaimString = "resources: {}\n"
+	result = constructResourceClaim("test", resourceClaim, defaultResourceClaim)
+	assert.Equal(t, expectedResourceClaimString, result)
 }
 
 func TestGetNamespaceYAML(t *testing.T) {

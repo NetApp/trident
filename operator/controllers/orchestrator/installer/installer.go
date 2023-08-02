@@ -86,6 +86,8 @@ var (
 	controllerPluginTolerations  []netappv1.Toleration
 	nodePluginNodeSelector       map[string]string
 	nodePluginTolerations        []netappv1.Toleration
+	tridentResourceSpec          netappv1.ResourceSpec
+	registrarResourceSpec        netappv1.ResourceSpec
 
 	CRDnames = []string{
 		ActionMirrorUpdateCRDName,
@@ -373,6 +375,8 @@ func (i *Installer) setInstallationParams(
 	appLabel = TridentCSILabel
 	appLabelKey = TridentCSILabelKey
 	appLabelValue = TridentCSILabelValue
+	tridentResourceSpec = netappv1.ResourceSpec{Resources: cr.Spec.DsTridentResources}
+	registrarResourceSpec = netappv1.ResourceSpec{Resources: cr.Spec.DsRegistrarResources}
 
 	if cr.Spec.ControllerPluginNodeSelector != nil {
 		controllerPluginNodeSelector = cr.Spec.ControllerPluginNodeSelector
@@ -610,6 +614,8 @@ func (i *Installer) InstallOrPatchTrident(
 		ImagePullSecrets:        imagePullSecrets,
 		NodePluginNodeSelector:  nodePluginNodeSelector,
 		NodePluginTolerations:   nodePluginTolerations,
+		DsRegistrarResources:    registrarResourceSpec.Resources,
+		DsTridentResources:      tridentResourceSpec.Resources,
 		ImagePullPolicy:         imagePullPolicy,
 	}
 
@@ -1458,27 +1464,29 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 	}
 
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
-		DaemonsetName:        getDaemonSetName(isWindows),
-		TridentImage:         tridentImage,
-		ImageRegistry:        imageRegistry,
-		KubeletDir:           kubeletDir,
-		LogFormat:            logFormat,
-		DisableAuditLog:      disableAuditLog,
-		Debug:                debug,
-		LogLevel:             determineLogLevel(),
-		LogWorkflows:         logWorkflows,
-		LogLayers:            logLayers,
-		ProbePort:            probePort,
-		ImagePullSecrets:     imagePullSecrets,
-		Labels:               labels,
-		ControllingCRDetails: controllingCRDetails,
-		EnableForceDetach:    enableForceDetach,
-		Version:              i.client.ServerVersion(),
-		HTTPRequestTimeout:   httpTimeout,
-		NodeSelector:         nodePluginNodeSelector,
-		Tolerations:          tolerations,
-		ServiceAccountName:   serviceAccountName,
-		ImagePullPolicy:      imagePullPolicy,
+		DaemonsetName:         getDaemonSetName(isWindows),
+		TridentImage:          tridentImage,
+		ImageRegistry:         imageRegistry,
+		KubeletDir:            kubeletDir,
+		LogFormat:             logFormat,
+		DisableAuditLog:       disableAuditLog,
+		Debug:                 debug,
+		LogLevel:              determineLogLevel(),
+		LogWorkflows:          logWorkflows,
+		LogLayers:             logLayers,
+		ProbePort:             probePort,
+		ImagePullSecrets:      imagePullSecrets,
+		Labels:                labels,
+		ControllingCRDetails:  controllingCRDetails,
+		EnableForceDetach:     enableForceDetach,
+		Version:               i.client.ServerVersion(),
+		HTTPRequestTimeout:    httpTimeout,
+		NodeSelector:          nodePluginNodeSelector,
+		RegistrarResourceSpec: registrarResourceSpec,
+		TridentResourceSpec:   tridentResourceSpec,
+		Tolerations:           tolerations,
+		ServiceAccountName:    serviceAccountName,
+		ImagePullPolicy:       imagePullPolicy,
 	}
 
 	var newDaemonSetYAML string
