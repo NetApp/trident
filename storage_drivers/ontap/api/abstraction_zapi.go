@@ -475,6 +475,7 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 	var responseUUID string
 	var responseSerial string
 	var responseState string
+	var responseCreateTime string
 	var responseVolumeName string
 	var responseSpaceReserved bool
 	var responseSpaceAllocated bool
@@ -527,6 +528,10 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		responseSpaceAllocated = lunResponse.IsSpaceAllocEnabled()
 	}
 
+	if lunResponse.CreationTimestampPtr != nil {
+		responseCreateTime = time.Unix(int64(lunResponse.CreationTimestamp()), 0).UTC().Format(utils.TimestampFormat)
+	}
+
 	lunInfo := &Lun{
 		Comment:        responseComment,
 		Name:           responseName,
@@ -539,6 +544,7 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		VolumeName:     responseVolumeName,
 		SpaceReserved:  utils.Ptr(responseSpaceReserved),
 		SpaceAllocated: utils.Ptr(responseSpaceAllocated),
+		CreateTime:     responseCreateTime,
 	}
 	return lunInfo, nil
 }

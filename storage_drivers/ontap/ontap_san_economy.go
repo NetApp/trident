@@ -1211,7 +1211,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 					VolumeName:         externalVolumeName,
 					VolumeInternalName: internalVolumeName,
 				},
-				Created:   snap.VolumeName,
+				Created:   snap.CreateTime,
 				SizeBytes: int64(sizeBytes),
 				State:     storage.SnapshotStateOnline,
 			}
