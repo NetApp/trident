@@ -336,7 +336,7 @@ func TestGetNVMeDeviceList(t *testing.T) {
 	assert.Equal(t, expectedNVMeDevices, gotNVMeDevices)
 	assert.Error(t, err)
 
-	// Test3: Error - Invalid json
+	// Test3: Empty output and no error case
 	expectedNVMeDevices = NVMeDevices{}
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "netapp", "ontapdevices", "-o", "json").Return([]byte(""), nil)
@@ -345,7 +345,7 @@ func TestGetNVMeDeviceList(t *testing.T) {
 	gotNVMeDevices, err = GetNVMeDeviceList(ctx)
 
 	assert.Equal(t, expectedNVMeDevices, gotNVMeDevices)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	// Test4: Error - Valid json but not mapping to NVMe Device
 	expectedValue := `{"some":"json"}`

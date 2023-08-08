@@ -111,6 +111,7 @@ const (
 // at any point that we have a namespace missing use case to handle, we need to store that too in this structure.
 type NVMeSessionData struct {
 	Subsystem      NVMeSubsystem
+	Namespaces     map[string]bool
 	NVMeTargetIPs  []string
 	LastAccessTime time.Time
 	Remediation    NVMeOperation
@@ -132,6 +133,7 @@ type NVMeSubsystemInterface interface {
 type NVMeDeviceInterface interface {
 	GetPath() string
 	FlushDevice(ctx context.Context) error
+	IsNil() bool
 }
 
 // NVMeHandler implements the NVMeInterface. It acts as a layer to invoke all the NVMe related
@@ -145,7 +147,7 @@ type NVMeInterface interface {
 	NewNVMeSubsystem(ctx context.Context, subsNqn string) NVMeSubsystemInterface
 	NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
 	AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *VolumePublishInfo)
-	RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN string)
+	RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string)
 	PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error
 	InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *NVMeSessions) []NVMeSubsystem
 	RectifyNVMeSession(ctx context.Context, subsystemToFix NVMeSubsystem, pubSessions *NVMeSessions)

@@ -170,9 +170,12 @@ func GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
 		out = []byte(afterBrace)
 	}
 
-	if err = json.Unmarshal(out, &ontapDevs); err != nil {
-		Logc(ctx).WithField("Error", err).Errorf("Failed to unmarshal ontap nvme devices: %v", err)
-		return ontapDevs, fmt.Errorf("failed to unmarshal ontap nvme devices: %v", err)
+	if string(out) != "" {
+		// "out" would be empty string if there are no devices
+		if err = json.Unmarshal(out, &ontapDevs); err != nil {
+			Logc(ctx).WithField("Error", err).Errorf("Failed to unmarshal ontap nvme devices: %v", err)
+			return ontapDevs, fmt.Errorf("failed to unmarshal ontap nvme devices: %v", err)
+		}
 	}
 
 	return ontapDevs, nil

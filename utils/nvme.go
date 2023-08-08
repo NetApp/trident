@@ -14,6 +14,7 @@ import (
 	"go.uber.org/multierr"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // getNVMeSubsystem returns the NVMe subsystem details.
@@ -79,12 +80,12 @@ func (s *NVMeSubsystem) IsNetworkPathPresent(ip string) bool {
 // and updates the in-memory subsystem path details.
 func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string, connectOnly bool) error {
 	updatePaths := false
-	var errors error
+	var connectErrors error
 
 	for _, LIF := range nvmeTargetIps {
 		if !s.IsNetworkPathPresent(LIF) {
 			if err := ConnectSubsystemToHost(ctx, s.NQN, LIF); err != nil {
-				errors = multierr.Append(errors, err)
+				connectErrors = multierr.Append(connectErrors, err)
 			} else {
 				updatePaths = true
 			}
@@ -94,7 +95,7 @@ func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string, con
 	// We set connectOnly true only when we connect in NVMe self-healing thread. We don't want to update any in-memory
 	// structures in that case.
 	if connectOnly {
-		return errors
+		return connectErrors
 	}
 
 	// updatePaths == true indicates that at least one path/connection was created for the subsystem.
@@ -119,7 +120,7 @@ func (s *NVMeSubsystem) Connect(ctx context.Context, nvmeTargetIps []string, con
 		return nil
 	}
 
-	return errors
+	return connectErrors
 }
 
 // Disconnect removes the subsystem and its corresponding paths/sessions from the k8s node.
@@ -159,21 +160,34 @@ func getNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 
 	for _, dev := range dList.Devices {
 		if dev.UUID == nsUUID {
+			Logc(ctx).Debugf("Device found: %v.", dev)
 			return &dev, nil
 		}
 	}
 
-	return nil, fmt.Errorf("no device found for the given namespace %v", nsUUID)
+	Logc(ctx).WithField("nsUUID", nsUUID).Debug("No device found for this Namespace.")
+	return nil, errors.NotFoundError("no device found for the given namespace %v", nsUUID)
 }
 
 // GetPath returns the device path where we mount the filesystem in NodePublish.
 func (d *NVMeDevice) GetPath() string {
+	if d == nil {
+		return ""
+	}
 	return d.Device
 }
 
 // FlushDevice flushes any ongoing IOs on the device.
 func (d *NVMeDevice) FlushDevice(ctx context.Context) error {
-	return FlushNVMeDevice(ctx, d.Device)
+	return FlushNVMeDevice(ctx, d.GetPath())
+}
+
+// IsNil returns true if Device and NamespacePath are not set.
+func (d *NVMeDevice) IsNil() bool {
+	if d == nil || (d.Device == "" && d.NamespacePath == "") {
+		return true
+	}
+	return false
 }
 
 // NewNVMeHandler returns the interface to handle NVMe related utils operations.
@@ -406,6 +420,56 @@ func (s *NVMeSessions) AddNVMeSession(subsystem NVMeSubsystem, targetIPs []strin
 	}
 }
 
+// AddNamespaceToSession adds the Namespace UUID to the list of Namespaces for session.
+func (s *NVMeSessions) AddNamespaceToSession(subNQN, nsUUID string) bool {
+	if s == nil || s.IsEmpty() {
+		return false
+	}
+
+	session, ok := s.Info[subNQN]
+	if !ok {
+		// No session found for given subsystem.
+		return false
+	}
+	// add namespace to the session
+	if session.Namespaces == nil {
+		session.Namespaces = make(map[string]bool)
+	}
+	session.Namespaces[nsUUID] = true
+	return true
+}
+
+// RemoveNamespaceFromSession Removes the Namespace UUID from the list of Namespaces for session.
+func (s *NVMeSessions) RemoveNamespaceFromSession(subNQN, nsUUID string) {
+	if s == nil || s.IsEmpty() {
+		return
+	}
+
+	session, ok := s.Info[subNQN]
+	if !ok {
+		// No session found for given subsystem.
+		return
+	}
+	// Remove namespace from the list to the session
+	delete(session.Namespaces, nsUUID)
+	return
+}
+
+// GetNamespaceCountForSession Gets the number of Namespaces associated with the given session.
+func (s *NVMeSessions) GetNamespaceCountForSession(subNQN string) int {
+	if s == nil || s.IsEmpty() {
+		return 0
+	}
+
+	session, ok := s.Info[subNQN]
+	if !ok {
+		// No session found for given subsystem.
+		return 0
+	}
+
+	return len(session.Namespaces)
+}
+
 // RemoveNVMeSession deletes NVMeSession corresponding to a given subsystem NQN.
 func (s *NVMeSessions) RemoveNVMeSession(subNQN string) {
 	if !s.IsEmpty() {
@@ -446,15 +510,19 @@ func (nh *NVMeHandler) AddPublishedNVMeSession(pubSessions *NVMeSessions, publis
 	}
 
 	pubSessions.AddNVMeSession(NVMeSubsystem{NQN: publishInfo.NVMeSubsystemNQN}, publishInfo.NVMeTargetIPs)
+	pubSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID)
 }
 
 // RemovePublishedNVMeSession deletes the  published NVMeSession from the given session map.
-func (nh *NVMeHandler) RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN string) {
+func (nh *NVMeHandler) RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string) {
 	if pubSessions == nil {
 		return
 	}
 
-	pubSessions.RemoveNVMeSession(subNQN)
+	pubSessions.RemoveNamespaceFromSession(subNQN, nsUUID)
+	if pubSessions.GetNamespaceCountForSession(subNQN) < 1 {
+		pubSessions.RemoveNVMeSession(subNQN)
+	}
 }
 
 // PopulateCurrentNVMeSessions populates the given session map with the current session present on the k8s node. This

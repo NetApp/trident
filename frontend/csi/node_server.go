@@ -37,6 +37,7 @@ const (
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maxJitterValue                  = 5000
 	nvmeAttachTimeout               = 20 * time.Second
+	nvmeMaxFlushWaitDuration        = 6 * time.Minute
 )
 
 var (
@@ -46,6 +47,9 @@ var (
 
 	publishedISCSISessions, currentISCSISessions utils.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   utils.NVMeSessions
+	// NVMeNamespacesFlushRetry - Non-persistent map of Namespaces to maintain the flush errors if any.
+	// During NodeUnstageVolume, Trident shall return success after specific wait time (nvmeMaxFlushWaitDuration).
+	NVMeNamespacesFlushRetry = make(map[string]time.Time)
 )
 
 func (p *Plugin) NodeStageVolume(
@@ -1530,7 +1534,7 @@ func (p *Plugin) nodeUnstageNFSBlockVolume(
 			return nil, status.Error(codes.Internal,
 				fmt.Sprintf("unable to identify if loop device '%s' is mounted; %v", loopDevice.Name, err))
 		}
-		// If not mounted any more proceed to remove the device and/or remove the NFS mount point
+		// If not mounted anymore, proceed to remove the device and/or remove the NFS mount point.
 		if !isLoopDeviceMounted {
 			// Detach the loop device from the NFS mountpoint.
 			if err = utils.DetachBlockOnFileVolume(ctx, loopDevice.Name, loopFile); err != nil {
@@ -2229,41 +2233,80 @@ func (p *Plugin) nodeStageNVMeVolume(
 	return nil
 }
 
+// nodeUnstageNVMEVolume unstages volume for nvme driver.
+// - Get the device from tracking info OR from "nvme netapp ontapdevices".
+// - Flush the device using "nvme flush /dev/<nvme-device>"
+// - If the subsystem has <= 1 Namespaces connected to it, then disconnect.
+// - Remove the tracking file for the volume/Namespace.
 func (p *Plugin) nodeUnstageNVMeVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
-	/*
-		- Get the device from tracking info OR get it using "nvme netapp ontapdevices" (as iscsi people don't get device from tracking info and try to get the device using LUN and iscsi cmds - will check with Ravi/Vinay why is that the case?)
-		- Flush the device using "nvme flush /dev/nvme1n1"
-		- Don't delete the device like iscsi as its lifecycle is associated with the subsystem
-		- If the subsystem has 0 or 1 namespaces connected to it - disconnect it. Else more namespaces are associated with it and can be in use - so we don't disconnect it.
-		- Remove the tracking file
-	*/
-	// Get the device from tracking info using commands or from publishInfo
-	// Flush the device IOs
+	p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
+		publishInfo.NVMeNamespaceUUID)
 
+	// Get the device using 'nvme-cli' commands. Flush the device IOs.
 	nvmeDev, err := p.nvmeHandler.NewNVMeDevice(ctx, publishInfo.NVMeNamespaceUUID)
-	if err != nil {
+	// Proceed further with Unstage flow, if 'device is not found'.
+	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, fmt.Errorf("error while getting NVMe device, %v", err)
 	}
 
-	if err := nvmeDev.FlushDevice(ctx); err != nil {
-		return nil, fmt.Errorf("error while flushing NVMe device, %v", err)
+	if !nvmeDev.IsNil() {
+		// If device is found, proceed to flush and clean up.
+		err := nvmeDev.FlushDevice(ctx)
+		// If flush fails, give a grace period of 6 minutes (nvmeMaxFlushWaitDuration) before giving up.
+		if err != nil {
+			if NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID].IsZero() {
+				NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID] = time.Now()
+				return nil, fmt.Errorf("error while flushing NVMe device, %v", err)
+			} else {
+				elapsed := time.Since(NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID])
+				if elapsed > nvmeMaxFlushWaitDuration {
+					// Waited enough, log it and proceed with next step in detach flow.
+					Logc(ctx).WithFields(
+						LogFields{
+							"namespace": publishInfo.NVMeNamespaceUUID,
+							"elapsed":   elapsed,
+							"maxWait":   nvmeMaxFlushWaitDuration,
+						}).Debug("Volume is not safe to be detached. But, waited enough time.")
+					// Done with this, remove entry from exceptions list.
+					delete(NVMeNamespacesFlushRetry, publishInfo.NVMeNamespaceUUID)
+				} else {
+					// Allowing to wait for some more time. Let the kubelet retry.
+					Logc(ctx).WithFields(
+						LogFields{
+							"namespace": publishInfo.NVMeNamespaceUUID,
+							"elapsed":   elapsed,
+						}).Debug("Waiting for some more time.")
+					return nil, fmt.Errorf("error while flushing NVMe device, %v", err)
+				}
+			}
+		} else {
+			// No error in 'flush', remove entry from exceptions list in case it was added earlier.
+			delete(NVMeNamespacesFlushRetry, publishInfo.NVMeNamespaceUUID)
+		}
 	}
 
 	// Get the number of namespaces associated with the subsystem
 	nvmeSubsys := p.nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	numNs, err := nvmeSubsys.GetNamespaceCount(ctx)
 	if err != nil {
-		return nil, err
+		Logc(ctx).WithFields(
+			LogFields{
+				"subsystem": publishInfo.NVMeSubsystemNQN,
+				"error":     err,
+			}).Debug("Error getting Namespace count.")
 	}
 
 	// If number of namespaces is more than 1, don't disconnect the subsystem
-	if numNs <= 1 {
+	if err == nil && numNs <= 1 {
 		if err := nvmeSubsys.Disconnect(ctx); err != nil {
-			return nil, err
+			Logc(ctx).WithFields(
+				LogFields{
+					"subsystem": publishInfo.NVMeSubsystemNQN,
+					"error":     err,
+				}).Debug("Error disconnecting subsystem.")
 		}
-		p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN)
 	}
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
@@ -2452,7 +2495,7 @@ func (p *Plugin) performNVMeSelfHealing(ctx context.Context) {
 
 func (p *Plugin) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsystems []utils.NVMeSubsystem) {
 	for index, sub := range subsystems {
-		// If the subsystem is not present in the published NVMe sessions, we don't need to rectify it's sessions.
+		// If the subsystem is not present in the published NVMe sessions, we don't need to rectify its sessions.
 		if !publishedNVMeSessions.CheckNVMeSessionExists(sub.NQN) {
 			continue
 		}
