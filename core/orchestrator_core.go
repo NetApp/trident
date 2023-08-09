@@ -3441,8 +3441,15 @@ func (o *TridentOrchestrator) AttachVolume(
 			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)
 		}
 	} else {
-		_, err := utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
-			AttachISCSIVolumeTimeoutLong)
+		var err error
+		if publishInfo.SANType == sa.NVMe {
+			err = utils.AttachNVMeVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{}, utils.NVMeAttachTimeout)
+		}
+
+		if publishInfo.SANType == sa.ISCSI {
+			_, err = utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
+				AttachISCSIVolumeTimeoutLong)
+		}
 		return err
 	}
 }

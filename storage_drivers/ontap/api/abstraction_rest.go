@@ -460,6 +460,11 @@ func namespaceInfoFromRestAttrsHelper(namespaceGetResponse *models.NvmeNamespace
 		state = *namespaceGetResponse.Status.State
 	}
 
+	comment := ""
+	if namespaceGetResponse.Comment != nil {
+		comment = *namespaceGetResponse.Comment
+	}
+
 	nsInfo := &NVMeNamespace{
 		UUID:       nsUUID,
 		Name:       name,
@@ -468,6 +473,7 @@ func namespaceInfoFromRestAttrsHelper(namespaceGetResponse *models.NvmeNamespace
 		Size:       size,
 		BlockSize:  blockSize,
 		State:      state,
+		Comment:    comment,
 	}
 
 	return nsInfo, nil

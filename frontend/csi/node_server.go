@@ -36,7 +36,6 @@ const (
 	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maxJitterValue                  = 5000
-	nvmeAttachTimeout               = 20 * time.Second
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
 )
 
@@ -2195,7 +2194,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.SANType = req.PublishContext["SANType"]
 
 	if err := utils.AttachNVMeVolumeRetry(ctx, req.VolumeContext["internalName"], "", publishInfo, nil,
-		nvmeAttachTimeout); err != nil {
+		utils.NVMeAttachTimeout); err != nil {
 		return err
 	}
 

@@ -720,7 +720,42 @@ func (d *NVMeStorageDriver) Publish(
 		return errors.UnsupportedError(fmt.Sprintf("the volume %v is not enabled for read or writes", name))
 	}
 
+	if publishInfo.Localhost {
+		// Get its HostNQN and populate it in publishInfo.
+		nqn, err := utils.GetHostNqn(ctx)
+		if err != nil {
+			return err
+		}
+		publishInfo.HostNQN = nqn
+	}
+
 	nsPath := volConfig.InternalID
+	nsUUID := volConfig.AccessInfo.NVMeNamespaceUUID
+	// For docker context, some of the attributes like fsType, luks needs to be
+	// fetched from namespace where they were stored while creating the namespace.
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
+		ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+		if err != nil {
+			return fmt.Errorf("Problem fetching namespace %v. Error:%v", nsPath, err)
+		}
+		if ns == nil {
+			return fmt.Errorf("Namespace %v not found", nsPath)
+		}
+		nsAttrs, err := d.ParseNVMeNamespaceCommentString(ctx, ns.Comment)
+		publishInfo.FilesystemType = nsAttrs[nsAttributeFSType]
+		publishInfo.LUKSEncryption = nsAttrs[nsAttributeLUKS]
+	} else {
+		publishInfo.FilesystemType = volConfig.FileSystem
+		publishInfo.LUKSEncryption = volConfig.LUKSEncryption
+	}
+
+	// Get host nqn
+	if publishInfo.HostNQN == "" {
+		Logc(ctx).Error("Host NQN is empty")
+		return fmt.Errorf("hostNQN not found")
+	} else {
+		Logc(ctx).Debug("Host NQN is ", publishInfo.HostNQN)
+	}
 
 	// When FS type is RAW, we create a new subsystem per namespace,
 	// else we use the subsystem created for that particular node
@@ -745,42 +780,14 @@ func (d *NVMeStorageDriver) Publish(
 	// Fill important info in publishInfo
 	publishInfo.NVMeSubsystemNQN = subsystem.NQN
 	publishInfo.NVMeSubsystemUUID = subsystem.UUID
-	publishInfo.NVMeNamespaceUUID = volConfig.AccessInfo.NVMeNamespaceUUID
+	publishInfo.NVMeNamespaceUUID = nsUUID
 	publishInfo.SANType = d.Config.SANType
-
-	// for docker context, some of the attributes like fsType, luks needs to be
-	// fetched from namespace where they were stored while creating the namespace
-	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		ns, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
-		if err != nil {
-			return fmt.Errorf("Problem fetching namespace %v. Error:%v", nsPath, err)
-		}
-		if ns != nil {
-			return fmt.Errorf("Namespace %v not found", nsPath)
-		}
-		nsAttrs, err := d.ParseNVMeNamespaceCommentString(ctx, ns.Comment)
-		publishInfo.FilesystemType = nsAttrs[nsAttributeFSType]
-		publishInfo.LUKSEncryption = nsAttrs[nsAttributeLUKS]
-	} else {
-		publishInfo.FilesystemType = volConfig.FileSystem
-		publishInfo.LUKSEncryption = volConfig.LUKSEncryption
-	}
-
-	// Get host nqn
-	if publishInfo.HostNQN == "" {
-		Logc(ctx).Error("Host NQN is empty")
-		return fmt.Errorf("hostNQN not found")
-	} else {
-		Logc(ctx).Debug("Host NQN is ", publishInfo.HostNQN)
-	}
 
 	// Add HostNQN to the subsystem using api call
 	if err := d.API.NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID); err != nil {
 		Logc(ctx).Errorf("add host to subsystem failed, %v", err)
 		return err
 	}
-
-	nsUUID := volConfig.AccessInfo.NVMeNamespaceUUID
 
 	if err := d.API.NVMeEnsureNamespaceMapped(ctx, subsystem.UUID, nsUUID); err != nil {
 		return err
@@ -1134,7 +1141,8 @@ func (d *NVMeStorageDriver) getVolumeExternal(
 		BlockSize:       "",
 		FileSystem:      "",
 	}
-
+	volumeConfig.AccessInfo.NVMeAccessInfo.NVMeNamespaceUUID = ns.UUID
+	volumeConfig.InternalID = ns.Name
 	pool := drivers.UnsetPool
 	if len(volume.Aggregates) > 0 {
 		pool = volume.Aggregates[0]

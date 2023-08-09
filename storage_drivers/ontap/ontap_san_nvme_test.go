@@ -924,69 +924,100 @@ func TestPublish(t *testing.T) {
 		UUID: "fakeUUID",
 	}
 
+	namespace := &api.NVMeNamespace{
+		UUID:    "fakeNsUUID",
+		Comment: "fakeComment",
+	}
 	// case 1: error getting volume Info
-	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, fmt.Errorf("Error Getting Volume Info"))
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, fmt.Errorf("Error Getting Volume Info")).Times(1)
 
 	err := d.Publish(ctx, volConfig, publishInfo)
 
 	assert.Error(t, err)
 
-	// case 2: error getting volume Info
+	// case 2: success getting volume Info
 	flexVol.AccessType = VolTypeDP
-	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
 	assert.Error(t, err)
 
-	// case 3: Error creating subsystem
+	// case 3: Error getting namespace in Docker context
 	flexVol.AccessType = VolTypeRW
-	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, fmt.Errorf("Error creating subsystem"))
-
-	err = d.Publish(ctx, volConfig, publishInfo)
-
-	assert.Error(t, err)
-
-	// case 4: Host NQN not found in publish Info
-	flexVol.AccessType = VolTypeRW
-	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil)
-
-	err = d.Publish(ctx, volConfig, publishInfo)
-
-	assert.Error(t, err)
-
-	// case 5: Error while adding host nqn to subsystem
-	flexVol.AccessType = VolTypeRW
+	d.Config.DriverContext = tridentconfig.ContextDocker
 	publishInfo.HostNQN = "fakeHostNQN"
-	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil)
-	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(fmt.Errorf("Error adding host nqnq to subsystem"))
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(nil, fmt.Errorf("Error getting namespace by name")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
 	assert.Error(t, err)
 
-	// case 6: Error returned by NVMeEnsureNamespaceMapped
-	flexVol.AccessType = VolTypeRW
+	// case 4: Error getting namespace in Docker context
+	d.Config.DriverContext = tridentconfig.ContextDocker
 	publishInfo.HostNQN = "fakeHostNQN"
-	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil)
-	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil)
-	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("Error returned by NVMeEnsureNamespaceMapped"))
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(nil, nil).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
 	assert.Error(t, err)
 
-	// case 7: Success
-	flexVol.AccessType = VolTypeRW
+	// case 5: Error creating subsystem in Docker context
+	d.Config.DriverContext = tridentconfig.ContextDocker
 	publishInfo.HostNQN = "fakeHostNQN"
-	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil)
-	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil)
-	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(namespace, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, fmt.Errorf("Error creating subsystem")).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err)
+
+	// case 6: Error creating subsystem in CSI Context
+	d.Config.DriverContext = tridentconfig.ContextCSI
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, fmt.Errorf("Error creating subsystem")).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err)
+
+	// case 7: Host NQN not found in publish Info
+	flexVol.AccessType = VolTypeRW
+	publishInfo.HostNQN = ""
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err)
+
+	// case 8: Error while adding host nqn to subsystem
+	publishInfo.HostNQN = "fakeHostNQN"
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(fmt.Errorf("Error adding host nqnq to subsystem")).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err)
+
+	// case 9: Error returned by NVMeEnsureNamespaceMapped
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("Error returned by NVMeEnsureNamespaceMapped")).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err)
+
+	// case 10: Success
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 

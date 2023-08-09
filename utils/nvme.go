@@ -17,6 +17,8 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
+const NVMeAttachTimeout = 20 * time.Second
+
 // getNVMeSubsystem returns the NVMe subsystem details.
 func getNVMeSubsystem(ctx context.Context, subsysNqn string) (*NVMeSubsystem, error) {
 	Logc(ctx).Debug(">>>> nvme.getNVMeSubsystem")

@@ -1224,6 +1224,7 @@ func (d *SANStorageDriver) Publish(
 	publishInfo.FilesystemType = fstype
 	publishInfo.UseCHAP = true
 	publishInfo.SharedTarget = false
+	publishInfo.SANType = sa.ISCSI
 
 	return nil
 }

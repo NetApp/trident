@@ -698,6 +698,7 @@ func PublishLUN(
 	publishInfo.IscsiTargetPortal = filteredIPs[0]
 	publishInfo.IscsiPortals = filteredIPs[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName
+	publishInfo.SANType = sa.ISCSI
 
 	if igroupName != "" {
 		addUniqueIscsiIGroupName(publishInfo, igroupName)
