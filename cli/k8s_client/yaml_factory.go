@@ -9,7 +9,11 @@ import (
 
 	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
 	"github.com/netapp/trident/utils"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	k8syaml "sigs.k8s.io/yaml"
 )
 
 const (
@@ -726,6 +730,25 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 		}
 	}
 
+	defaultRegistrarResourceSpec := netappv1.ResourceSpec{Resources: v1.ResourceRequirements{
+		Limits: v1.ResourceList{
+			v1.ResourceMemory: resource.MustParse("100Mi"),
+		},
+		Requests: v1.ResourceList{
+			v1.ResourceCPU:    resource.MustParse("10m"),
+			v1.ResourceMemory: resource.MustParse("40Mi"),
+		},
+	}}
+	defaultTridentResourceSpec := netappv1.ResourceSpec{Resources: v1.ResourceRequirements{
+		Limits: v1.ResourceList{
+			v1.ResourceMemory: resource.MustParse("400Mi"),
+		},
+		Requests: v1.ResourceList{
+			v1.ResourceCPU:    resource.MustParse("10m"),
+			v1.ResourceMemory: resource.MustParse("20Mi"),
+		},
+	}}
+
 	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", args.DaemonsetName)
@@ -745,6 +768,10 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "REGISTRAR_RESOURCE_CLAIMS", constructResourceClaim(
+		"DsRegistrar", args.RegistrarResourceSpec, defaultRegistrarResourceSpec))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "TRIDENT_RESOURCE_CLAIMS", constructResourceClaim(
+		"DsTrident", args.TridentResourceSpec, defaultTridentResourceSpec))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 	// Log before secrets are inserted into YAML.
@@ -799,6 +826,13 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 		}
 	}
 
+	defaultRegistrarResourceSpec := netappv1.ResourceSpec{Resources: v1.ResourceRequirements{
+		Requests: v1.ResourceList{},
+	}}
+	defaultTridentResourceSpec := netappv1.ResourceSpec{Resources: v1.ResourceRequirements{
+		Requests: v1.ResourceList{},
+	}}
+
 	kubeletDir := strings.TrimRight(args.KubeletDir, "/")
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{DAEMONSET_NAME}", args.DaemonsetName)
@@ -819,6 +853,10 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "REGISTRAR_RESOURCE_CLAIMS", constructResourceClaim(
+		"DsRegistrar", args.RegistrarResourceSpec, defaultRegistrarResourceSpec))
+	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "TRIDENT_RESOURCE_CLAIMS", constructResourceClaim(
+		"DsTrident", args.TridentResourceSpec, defaultTridentResourceSpec))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 
@@ -907,6 +945,7 @@ spec:
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 10
+        {TRIDENT_RESOURCE_CLAIMS}
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -948,6 +987,7 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
+        {REGISTRAR_RESOURCE_CLAIMS}
         env:
         - name: ADDRESS
           value: /plugin/csi.sock
@@ -1137,12 +1177,7 @@ spec:
           mountPath: \\.\pipe\csi-proxy-filesystem-v1beta1
         - name: csi-proxy-smb-pipe-v1beta1
           mountPath: \\.\pipe\csi-proxy-smb-v1beta1
-        resources:
-          limits:
-            memory: 400Mi
-          requests:
-            cpu: 10m
-            memory: 20Mi
+        {TRIDENT_RESOURCE_CLAIMS}
       - name: node-driver-registrar
         image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.8.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
@@ -1174,12 +1209,7 @@ spec:
           mountPath: C:\csi
         - name: registration-dir
           mountPath: C:\registration
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 10m
-            memory: 20Mi
+        {REGISTRAR_RESOURCE_CLAIMS}
       - name: liveness-probe
         volumeMounts:
           - mountPath: C:\csi
@@ -1193,12 +1223,6 @@ spec:
         env:
           - name: CSI_ENDPOINT
             value: unix:///csi/csi.sock
-        resources:
-          limits:
-            memory: 100Mi
-          requests:
-            cpu: 10m
-            memory: 40Mi
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -2507,6 +2531,31 @@ func constructNodeSelector(nodeLabels map[string]string) string {
 		}
 	}
 	return nodeSelector
+}
+
+func constructResourceClaim(
+	containerName string, resourceClaim netappv1.ResourceSpec, defaultResourceClaim netappv1.ResourceSpec,
+) string {
+	userData, err := k8syaml.Marshal(resourceClaim)
+	if err != nil {
+		Log().WithField("container", containerName).Errorf("Cannot marshal resource claim: %s", err)
+		return ""
+	}
+
+	if err := k8syaml.Unmarshal(userData, &defaultResourceClaim); err != nil {
+		Log().WithField("container", containerName).Errorf(
+			"Cannot unmarshal provided resource claim into default resource claim: %s", err,
+		)
+		return ""
+	}
+	mergedData, err := k8syaml.Marshal(defaultResourceClaim)
+
+	if err != nil {
+		Log().WithField("container", containerName).Errorf("Cannot marshal resource claim: %s", err)
+		return ""
+	}
+
+	return string(mergedData)
 }
 
 func constructTolerations(tolerations []map[string]string) string {

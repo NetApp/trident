@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 
+	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -168,27 +169,29 @@ type DeploymentYAMLArguments struct {
 }
 
 type DaemonsetYAMLArguments struct {
-	DaemonsetName        string                `json:"daemonsetName"`
-	TridentImage         string                `json:"tridentImage"`
-	ImageRegistry        string                `json:"imageRegistry"`
-	KubeletDir           string                `json:"kubeletDir"`
-	LogFormat            string                `json:"logFormat"`
-	LogLevel             string                `json:"logLevel"`
-	LogWorkflows         string                `json:"logWorkflows"`
-	LogLayers            string                `json:"logLayers"`
-	ProbePort            string                `json:"probePort"`
-	ImagePullSecrets     []string              `json:"imagePullSecrets"`
-	Labels               map[string]string     `json:"labels"`
-	ControllingCRDetails map[string]string     `json:"controllingCRDetails"`
-	EnableForceDetach    bool                  `json:"enableForceDetach"`
-	DisableAuditLog      bool                  `json:"disableAuditLog"`
-	Debug                bool                  `json:"debug"`
-	Version              *versionutils.Version `json:"version"`
-	HTTPRequestTimeout   string                `json:"httpRequestTimeout"`
-	NodeSelector         map[string]string     `json:"nodeSelector"`
-	Tolerations          []map[string]string   `json:"tolerations"`
-	ServiceAccountName   string                `json:"serviceAccountName"`
-	ImagePullPolicy      string                `json:"imagePullPolicy"`
+	DaemonsetName         string                `json:"daemonsetName"`
+	TridentImage          string                `json:"tridentImage"`
+	ImageRegistry         string                `json:"imageRegistry"`
+	KubeletDir            string                `json:"kubeletDir"`
+	LogFormat             string                `json:"logFormat"`
+	LogLevel              string                `json:"logLevel"`
+	LogWorkflows          string                `json:"logWorkflows"`
+	LogLayers             string                `json:"logLayers"`
+	ProbePort             string                `json:"probePort"`
+	ImagePullSecrets      []string              `json:"imagePullSecrets"`
+	Labels                map[string]string     `json:"labels"`
+	ControllingCRDetails  map[string]string     `json:"controllingCRDetails"`
+	EnableForceDetach     bool                  `json:"enableForceDetach"`
+	DisableAuditLog       bool                  `json:"disableAuditLog"`
+	Debug                 bool                  `json:"debug"`
+	Version               *versionutils.Version `json:"version"`
+	HTTPRequestTimeout    string                `json:"httpRequestTimeout"`
+	NodeSelector          map[string]string     `json:"nodeSelector"`
+	Tolerations           []map[string]string   `json:"tolerations"`
+	TridentResourceSpec   netappv1.ResourceSpec `json:"tridentResourceSpec"`
+	RegistrarResourceSpec netappv1.ResourceSpec `json:"registrarSpec"`
+	ServiceAccountName    string                `json:"serviceAccountName"`
+	ImagePullPolicy       string                `json:"imagePullPolicy"`
 }
 
 type TridentVersionPodYAMLArguments struct {
