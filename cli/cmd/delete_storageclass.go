@@ -29,8 +29,9 @@ var deleteStorageClassCmd = &cobra.Command{
 			if allStorageClasses {
 				command = append(command, "--all")
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return storageClassDelete(args)
 		}

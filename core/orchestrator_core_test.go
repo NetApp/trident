@@ -8387,3 +8387,103 @@ func TestGetMirrorTransferTime_CheckSucceeded(t *testing.T) {
 	_, err := o.GetMirrorTransferTime(ctx(), pvcVolumeName)
 	assert.NoError(t, err, "GetMirrorTransferTime should have succeeded")
 }
+
+func TestUpdateBackendState(t *testing.T) {
+	// Setting up for the test cases.
+	backendUUID := "1234"
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.bootstrapError = nil
+	o.backends[backendUUID] = mockBackend
+
+	mockBackend.EXPECT().Name().Return("something").AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("ontap").AnyTimes()
+	mockBackend.EXPECT().SetState(gomock.Any()).AnyTimes()
+	mockBackend.EXPECT().SetUserState(gomock.Any()).AnyTimes()
+	mockBackend.EXPECT().ConstructExternal(gomock.Any()).AnyTimes()
+	mockBackend.EXPECT().Terminate(gomock.Any()).AnyTimes()
+	mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).AnyTimes()
+
+	// Test 1 - where backendName is correct, but it returns a backendUUID which is not mapped in backends map.
+	mockBackend.EXPECT().BackendUUID().Return("7890").Times(2)
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	_, err := o.UpdateBackendState(ctx, "something", "", "suspended")
+	assert.Error(t, err, "should return an error as backendUUID is not mapped in backends map")
+
+	// From here on we need the following for every test cases.
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+	// Test 2 - where we provide wrong backend name.
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	_, err = o.UpdateBackendState(ctx, "fake", "", "suspended")
+	assert.Error(t, err, "should return error backend not found")
+
+	// Test 3 - where we provide states to both userBackendState and backendState.
+	_, err = o.UpdateBackendState(ctx, "something", "suspended", "online")
+	assert.Error(t, err, "should return error as we are trying to update both userBackendState and backendState")
+
+	// Test 4 - where we don't provide any state.
+	_, err = o.UpdateBackendState(ctx, "something", "", "")
+	assert.Error(t, err, "should return error as we are not providing any state")
+
+	// Test 5 - where we provide wrong backendState.
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "fake", "")
+	assert.Error(t, err, "should return error, we are providing wrong backendState")
+
+	// Test 6 - where we provide correct backendState.
+	mockBackend.EXPECT().State().Return(storage.Failed).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "failed", "")
+	assert.NoError(t, err, "should not return any error")
+
+	// Test 7 - where we provide wrong userBackendState
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "fake")
+	assert.Error(t, err, "should return error, we are providing wrong userBackendState")
+
+	// Test 8 - we are trying to suspend a backend when backend itself is neither online,offline nor failed.
+	mockBackend.EXPECT().State().Return(storage.Deleting).Times(5)
+	mockBackend.EXPECT().UserState().Return(storage.UserNormal).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
+	assert.Error(t, err, "should return error, we are trying to suspend a backend which is neither online,offline or failed.")
+
+	// Test 9 - set backend to userSuspended when state is online.
+	mockBackend.EXPECT().State().Return(storage.Online).Times(2)
+	mockBackend.EXPECT().UserState().Return(storage.UserNormal).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
+	assert.NoError(t, err, "should be no error")
+
+	// Test 10 - set backend to userSuspended when state is offline.
+	mockBackend.EXPECT().State().Return(storage.Offline).Times(3)
+	mockBackend.EXPECT().UserState().Return(storage.UserNormal).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "Suspended")
+	assert.NoError(t, err, "should be no error")
+
+	// Test 11 - set backend to userSuspended when state is failed.
+	mockBackend.EXPECT().State().Return(storage.Failed).Times(4)
+	mockBackend.EXPECT().UserState().Return(storage.UserNormal).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "SUSpended")
+	assert.NoError(t, err, "should be no error")
+
+	// Test 12 - set backend to userNormal when it is in userSuspended and state is online.
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	mockBackend.EXPECT().UserState().Return(storage.UserSuspended).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "nOrmal")
+	assert.NoError(t, err, "should be no error")
+
+	// Test 13 - idempotent check.
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	mockBackend.EXPECT().UserState().Return(storage.UserSuspended).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
+	assert.NoError(t, err, "should be no error")
+
+	// Test 14 - bootstrap error
+	o.bootstrapError = fmt.Errorf("bootstrap error")
+	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
+	assert.Error(t, err, "should return error, bootstrap error")
+	o.bootstrapError = nil
+}

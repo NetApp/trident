@@ -33,7 +33,7 @@ type Orchestrator interface {
 		ctx context.Context, backendName, configJSON, backendUUID, configRef string,
 	) (storageBackendExternal *storage.BackendExternal, err error)
 	UpdateBackendState(
-		ctx context.Context, backendName, backendState string,
+		ctx context.Context, backendName, backendState, userBackendState string,
 	) (storageBackendExternal *storage.BackendExternal, err error)
 	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
 

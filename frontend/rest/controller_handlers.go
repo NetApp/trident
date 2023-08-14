@@ -351,7 +351,7 @@ func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
 			}
 			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate, LogLayerRESTFrontend)
 
-			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.State)
+			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.BackendState, request.UserBackendState)
 			if err != nil {
 				updateResponse.Error = err.Error()
 			}

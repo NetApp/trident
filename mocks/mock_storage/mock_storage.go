@@ -689,6 +689,18 @@ func (mr *MockBackendMockRecorder) SetStorage(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStorage", reflect.TypeOf((*MockBackend)(nil).SetStorage), arg0)
 }
 
+// SetUserState mocks base method.
+func (m *MockBackend) SetUserState(arg0 storage.UserBackendState) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetUserState", arg0)
+}
+
+// SetUserState indicates an expected call of SetUserState.
+func (mr *MockBackendMockRecorder) SetUserState(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserState", reflect.TypeOf((*MockBackend)(nil).SetUserState), arg0)
+}
+
 // SetVolumes mocks base method.
 func (m *MockBackend) SetVolumes(arg0 map[string]*storage.Volume) {
 	m.ctrl.T.Helper()
@@ -781,6 +793,20 @@ func (m *MockBackend) UpdateMirror(arg0 context.Context, arg1, arg2 string) erro
 func (mr *MockBackendMockRecorder) UpdateMirror(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMirror", reflect.TypeOf((*MockBackend)(nil).UpdateMirror), arg0, arg1, arg2)
+}
+
+// UserState mocks base method.
+func (m *MockBackend) UserState() storage.UserBackendState {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserState")
+	ret0, _ := ret[0].(storage.UserBackendState)
+	return ret0
+}
+
+// UserState indicates an expected call of UserState.
+func (mr *MockBackendMockRecorder) UserState() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserState", reflect.TypeOf((*MockBackend)(nil).UserState))
 }
 
 // Volumes mocks base method.

@@ -208,3 +208,163 @@ func TestCloneVolume_BackendOffline(t *testing.T) {
 	assert.Errorf(t, err, "expected err")
 	assert.Equal(t, err.Error(), "backend test-backend is not Online")
 }
+
+func TestUserBackendState(t *testing.T) {
+	backend := &StorageBackend{
+		driver:             nil,
+		name:               "fake",
+		backendUUID:        "1234",
+		online:             true,
+		state:              Online,
+		userState:          UserNormal,
+		stateReason:        "",
+		storage:            nil,
+		volumes:            nil,
+		configRef:          "",
+		nodeAccessUpToDate: false,
+	}
+
+	tests := map[string]struct {
+		input     UserBackendState
+		output    string
+		predicate func(UserBackendState) bool
+	}{
+		"UserSuspended State": {
+			input:  UserSuspended,
+			output: "suspended",
+			predicate: func(input UserBackendState) bool {
+				return input.IsSuspended()
+			},
+		},
+
+		"UserNormal State": {
+			input:  UserNormal,
+			output: "normal",
+			predicate: func(input UserBackendState) bool {
+				return input.IsNormal()
+			},
+		},
+
+		"Unknown State": {
+			input:  "",
+			output: "unknown",
+			predicate: func(input UserBackendState) bool {
+				return true
+			},
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(
+			testName, func(t *testing.T) {
+				backend.SetUserState(test.input)
+				state := backend.UserState()
+				assert.Equal(t, test.input, backend.userState, "Strings not equal")
+				assert.Equal(t, test.input, state, "Strings not equal")
+				assert.Equal(t, test.input.String(), test.output, "Strings not equal")
+				assert.True(t, test.predicate(test.input), "Predicate failed")
+			},
+		)
+	}
+}
+
+func TestValidate(t *testing.T) {
+	tests := map[string]struct {
+		input UserBackendState
+	}{
+		"UserSuspended State": {
+			input: UserSuspended,
+		},
+
+		"UserNormal State": {
+			input: UserNormal,
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(
+			testName, func(t *testing.T) {
+				err := test.input.Validate()
+				assert.NoError(t, err, "Expected no error")
+			},
+		)
+	}
+}
+
+func TestValidateNegative(t *testing.T) {
+	tests := map[string]struct {
+		input UserBackendState
+	}{
+		"Unknown State": {
+			input: UserBackendState("unknown"),
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(
+			testName, func(t *testing.T) {
+				err := test.input.Validate()
+				assert.Error(t, err, "Expected error")
+			},
+		)
+	}
+}
+
+func TestIsProvisioningAllowed(t *testing.T) {
+	backend := &StorageBackend{
+		driver:             nil,
+		name:               "fake",
+		backendUUID:        "1234",
+		online:             true,
+		state:              Online,
+		userState:          UserNormal,
+		stateReason:        "",
+		storage:            nil,
+		volumes:            nil,
+		configRef:          "",
+		nodeAccessUpToDate: false,
+	}
+
+	// For cases where provisioning is allowed.
+	tests := map[string]struct {
+		input UserBackendState
+	}{
+		"UserNormal State": {
+			input: UserNormal,
+		},
+
+		// Need to improve the isProvisioningAllowed() function to handle this case.
+		"Unknown State": {
+			input: "unknown",
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(
+			testName, func(t *testing.T) {
+				backend.userState = test.input
+				boolValue := backend.isProvisioningAllowed()
+				assert.True(t, boolValue, "Expected true")
+			},
+		)
+	}
+
+	// For cases where provisioning is not allowed.
+	tests = map[string]struct {
+		input UserBackendState
+	}{
+		"UserSuspended State": {
+			input: UserSuspended,
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(
+			testName, func(t *testing.T) {
+				backend.userState = test.input
+				boolValue := backend.isProvisioningAllowed()
+				assert.False(t, boolValue, "Expected false")
+			},
+		)
+	}
+}

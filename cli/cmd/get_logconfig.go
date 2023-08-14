@@ -40,8 +40,9 @@ var getLogConfigCmd = &cobra.Command{
 			if getAllLayers {
 				command = append(command, "--get-available-log-layers")
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return getLogConfig()
 		}

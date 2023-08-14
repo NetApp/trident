@@ -1147,18 +1147,18 @@ func (mr *MockOrchestratorMockRecorder) UpdateBackendByBackendUUID(arg0, arg1, a
 }
 
 // UpdateBackendState mocks base method.
-func (m *MockOrchestrator) UpdateBackendState(arg0 context.Context, arg1, arg2 string) (*storage.BackendExternal, error) {
+func (m *MockOrchestrator) UpdateBackendState(arg0 context.Context, arg1, arg2, arg3 string) (*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBackendState", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateBackendState", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*storage.BackendExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateBackendState indicates an expected call of UpdateBackendState.
-func (mr *MockOrchestratorMockRecorder) UpdateBackendState(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) UpdateBackendState(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockOrchestrator)(nil).UpdateBackendState), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockOrchestrator)(nil).UpdateBackendState), arg0, arg1, arg2, arg3)
 }
 
 // UpdateMirror mocks base method.

@@ -25,8 +25,10 @@ type Backend interface {
 	Online() bool
 	SetOnline(Online bool)
 	State() BackendState
+	UserState() UserBackendState
 	StateReason() string
 	SetState(State BackendState)
+	SetUserState(State UserBackendState)
 	Storage() map[string]Pool
 	SetStorage(Storage map[string]Pool)
 	Volumes() map[string]*Volume

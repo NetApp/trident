@@ -74,8 +74,9 @@ var updateNodeCmd = &cobra.Command{
 				command = append(command, "--provisionerReady="+strconv.FormatBool(provisionerReady))
 			}
 
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return nodeUpdate(args[0], ready, adminReady, cleaned)
 		}

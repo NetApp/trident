@@ -262,6 +262,13 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 		newBackend, found := o.backends[b.BackendUUID]
 		if found {
 			newBackend.SetOnline(b.Online)
+
+			if b.UserState != "" {
+				newBackend.SetUserState(b.UserState)
+			} else {
+				newBackend.SetUserState(storage.UserNormal)
+			}
+
 			if backendErr != nil {
 				newBackend.SetState(storage.Failed)
 			} else {
@@ -1253,6 +1260,10 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	if err != nil {
 		return nil, err
 	}
+
+	// Preserving user-state.
+	backend.SetUserState(originalBackend.UserState())
+
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
 		return nil, err
 	}
@@ -1395,7 +1406,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 
 // UpdateBackendState updates an existing backend's state.
 func (o *TridentOrchestrator) UpdateBackendState(
-	ctx context.Context, backendName, backendState string,
+	ctx context.Context, backendName, backendState, userBackendState string,
 ) (backendExternal *storage.BackendExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -1405,34 +1416,76 @@ func (o *TridentOrchestrator) UpdateBackendState(
 
 	defer recordTiming("backend_update_state", &err)()
 
+	// Extra check to ensure exactly one is set.
+	if (backendState == "" && userBackendState == "") || (backendState != "" && userBackendState != "") {
+		return nil, fmt.Errorf("exactly one of backendState or userBackendState must be set")
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
-
-	return o.updateBackendState(ctx, backendName, backendState)
-}
-
-// updateBackendState updates an existing backend's state. It assumes the mutex lock is already held.
-func (o *TridentOrchestrator) updateBackendState(
-	ctx context.Context, backendName, backendState string,
-) (backendExternal *storage.BackendExternal, err error) {
-	var backend storage.Backend
-
-	Logc(ctx).WithFields(LogFields{
-		"backendName":  backendName,
-		"backendState": backendState,
-	}).Debug("UpdateBackendState")
 
 	// First, check whether the backend exists.
 	backendUUID, err := o.getBackendUUIDByBackendName(backendName)
 	if err != nil {
 		return nil, err
 	}
+
 	backend, found := o.backends[backendUUID]
 	if !found {
 		return nil, errors.NotFoundError("backend %v was not found", backendName)
 	}
 
+	if userBackendState != "" {
+		backendExternal, err = o.updateUserBackendState(ctx, backend, userBackendState)
+	}
+	if backendState != "" {
+		backendExternal, err = o.updateBackendState(ctx, backend, backendState)
+	}
+
+	return backendExternal, err
+}
+
+func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, backend storage.Backend, userBackendState string) (backendExternal *storage.BackendExternal, err error) {
+	Logc(ctx).WithFields(LogFields{
+		"backendName":      backend.Name(),
+		"userBackendState": userBackendState,
+	}).Debug("updateUserBackendState")
+
+	userBackendState = strings.ToLower(userBackendState)
+	newUserBackendState := storage.UserBackendState(userBackendState)
+
+	// An extra check to ensure that the user-backend state is valid.
+	if err = newUserBackendState.Validate(); err != nil {
+		return nil, err
+	}
+
+	// Idempotent check.
+	if backend.UserState() == newUserBackendState {
+		return backend.ConstructExternal(ctx), nil
+	}
+
+	// If the user requested for the backend to be suspended.
+	if newUserBackendState.IsSuspended() {
+		// Backend is only suspended when its current state is either online, offline or failed.
+		if !backend.State().IsOnline() && !backend.State().IsOffline() && !backend.State().IsFailed() {
+			return nil, fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(), backend.State())
+		}
+	}
+
+	// Update the user-backend state.
+	backend.SetUserState(newUserBackendState)
+
+	return backend.ConstructExternal(ctx), o.storeClient.UpdateBackend(ctx, backend)
+}
+
+func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backend storage.Backend, backendState string) (backendExternal *storage.BackendExternal, err error) {
+	Logc(ctx).WithFields(LogFields{
+		"backendName":      backend.Name(),
+		"userBackendState": backendState,
+	}).Debug("updateBackendState")
+
+	backendState = strings.ToLower(backendState)
 	newBackendState := storage.BackendState(backendState)
 
 	// Limit the command to Failed

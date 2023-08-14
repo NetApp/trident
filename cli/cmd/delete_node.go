@@ -29,8 +29,9 @@ var deleteNodeCmd = &cobra.Command{
 			if allVolumes {
 				command = append(command, "--all")
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return nodeDelete(args)
 		}

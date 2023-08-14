@@ -47,8 +47,9 @@ var getImageCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"images"}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 
 			if err := InitLogLevel("warn"); err != nil {
