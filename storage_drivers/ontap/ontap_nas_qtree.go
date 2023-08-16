@@ -1113,7 +1113,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 
 	// Disable '.snapshot' as needed
 	if !enableSnapshotDir {
-		err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, flexvol)
+		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
 		if err != nil {
 			if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
 				Logc(ctx).Error(err)

@@ -220,20 +220,6 @@ func (mr *MockOntapAPIMockRecorder) FlexgroupDestroy(arg0, arg1, arg2 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupDestroy", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupDestroy), arg0, arg1, arg2)
 }
 
-// FlexgroupDisableSnapshotDirectoryAccess mocks base method.
-func (m *MockOntapAPI) FlexgroupDisableSnapshotDirectoryAccess(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexgroupDisableSnapshotDirectoryAccess", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// FlexgroupDisableSnapshotDirectoryAccess indicates an expected call of FlexgroupDisableSnapshotDirectoryAccess.
-func (mr *MockOntapAPIMockRecorder) FlexgroupDisableSnapshotDirectoryAccess(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupDisableSnapshotDirectoryAccess", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupDisableSnapshotDirectoryAccess), arg0, arg1)
-}
-
 // FlexgroupExists mocks base method.
 func (m *MockOntapAPI) FlexgroupExists(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -291,6 +277,20 @@ func (m *MockOntapAPI) FlexgroupModifyExportPolicy(arg0 context.Context, arg1, a
 func (mr *MockOntapAPIMockRecorder) FlexgroupModifyExportPolicy(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupModifyExportPolicy", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupModifyExportPolicy), arg0, arg1, arg2)
+}
+
+// FlexgroupModifySnapshotDirectoryAccess mocks base method.
+func (m *MockOntapAPI) FlexgroupModifySnapshotDirectoryAccess(arg0 context.Context, arg1 string, arg2 bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlexgroupModifySnapshotDirectoryAccess", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FlexgroupModifySnapshotDirectoryAccess indicates an expected call of FlexgroupModifySnapshotDirectoryAccess.
+func (mr *MockOntapAPIMockRecorder) FlexgroupModifySnapshotDirectoryAccess(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupModifySnapshotDirectoryAccess", reflect.TypeOf((*MockOntapAPI)(nil).FlexgroupModifySnapshotDirectoryAccess), arg0, arg1, arg2)
 }
 
 // FlexgroupModifyUnixPermissions mocks base method.
@@ -1782,20 +1782,6 @@ func (mr *MockOntapAPIMockRecorder) VolumeDestroy(arg0, arg1, arg2 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeDestroy), arg0, arg1, arg2)
 }
 
-// VolumeDisableSnapshotDirectoryAccess mocks base method.
-func (m *MockOntapAPI) VolumeDisableSnapshotDirectoryAccess(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeDisableSnapshotDirectoryAccess", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// VolumeDisableSnapshotDirectoryAccess indicates an expected call of VolumeDisableSnapshotDirectoryAccess.
-func (mr *MockOntapAPIMockRecorder) VolumeDisableSnapshotDirectoryAccess(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDisableSnapshotDirectoryAccess", reflect.TypeOf((*MockOntapAPI)(nil).VolumeDisableSnapshotDirectoryAccess), arg0, arg1)
-}
-
 // VolumeExists mocks base method.
 func (m *MockOntapAPI) VolumeExists(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -1883,6 +1869,20 @@ func (m *MockOntapAPI) VolumeModifyExportPolicy(arg0 context.Context, arg1, arg2
 func (mr *MockOntapAPIMockRecorder) VolumeModifyExportPolicy(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyExportPolicy", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifyExportPolicy), arg0, arg1, arg2)
+}
+
+// VolumeModifySnapshotDirectoryAccess mocks base method.
+func (m *MockOntapAPI) VolumeModifySnapshotDirectoryAccess(arg0 context.Context, arg1 string, arg2 bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeModifySnapshotDirectoryAccess", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeModifySnapshotDirectoryAccess indicates an expected call of VolumeModifySnapshotDirectoryAccess.
+func (mr *MockOntapAPIMockRecorder) VolumeModifySnapshotDirectoryAccess(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockOntapAPI)(nil).VolumeModifySnapshotDirectoryAccess), arg0, arg1, arg2)
 }
 
 // VolumeModifyUnixPermissions mocks base method.

@@ -972,13 +972,12 @@ func (c Client) FlexGroupSetSize(ctx context.Context, name, newSize string) (*az
 	return response, err
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context, name string,
+// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c Client) FlexGroupVolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, name string, enable bool,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
 	volattr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
-	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
+	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(enable)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
 	volattr.SetVolumeAttributes(*volSnapshotAttrs)
 
@@ -1328,11 +1327,10 @@ func (c Client) VolumeCloneSplitStart(name string) (*azgo.VolumeCloneSplitStartR
 	return response, err
 }
 
-// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c Client) VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeModifyIterResponse, error) {
+// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c Client) VolumeModifySnapshotDirectoryAccess(name string, enable bool) (*azgo.VolumeModifyIterResponse, error) {
 	volattr := &azgo.VolumeModifyIterRequestAttributes{}
-	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
+	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(enable)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
 	volattr.SetVolumeAttributes(*volSnapshotAttrs)
 

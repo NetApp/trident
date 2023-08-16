@@ -1116,8 +1116,15 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		"sizeBytes":     volume.QuotaInBytes,
 	}).Debug("Found volume to import.")
 
+	var snapshotDirAccess bool
 	// Modify the volume if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
+		if volConfig.SnapshotDir != "" {
+			if snapshotDirAccess, err = strconv.ParseBool(volConfig.SnapshotDir); err != nil {
+				return fmt.Errorf("could not import volume %s, snapshot directory access is set to %s",
+					originalName, volConfig.SnapshotDir)
+			}
+		}
 
 		// Update the volume labels
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, volume.Labels[storage.ProvisioningLabelTag]) {
@@ -1126,7 +1133,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		labels := d.updateTelemetryLabels(ctx, volume)
 
 		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == api.ProtocolTypeCIFS {
-			if err = d.SDK.ModifyVolume(ctx, volume, labels, nil); err != nil {
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1154,7 +1161,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 					return fmt.Errorf("could not import volume %s; %v", originalName, err)
 				}
 			}
-			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions); err != nil {
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)

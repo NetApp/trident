@@ -133,10 +133,9 @@ type ZapiClientInterface interface {
 	FlexGroupSize(name string) (int, error)
 	// FlexGroupSetSize sets the size of the specified FlexGroup
 	FlexGroupSetSize(ctx context.Context, name, newSize string) (*azgo.VolumeSizeAsyncResponse, error)
-	// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	FlexGroupVolumeDisableSnapshotDirectoryAccess(
-		ctx context.Context, name string,
+	// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	FlexGroupVolumeModifySnapshotDirectoryAccess(
+		ctx context.Context, name string, enable bool,
 	) (*azgo.VolumeModifyIterAsyncResponse, error)
 	FlexGroupModifyUnixPermissions(
 		ctx context.Context, volumeName, unixPermissions string,
@@ -167,9 +166,8 @@ type ZapiClientInterface interface {
 	VolumeCloneCreateAsync(name, source, snapshot string) (*azgo.VolumeCloneCreateAsyncResponse, error)
 	// VolumeCloneSplitStart splits a cloned volume from its parent
 	VolumeCloneSplitStart(name string) (*azgo.VolumeCloneSplitStartResponse, error)
-	// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeModifyIterResponse, error)
+	// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	VolumeModifySnapshotDirectoryAccess(name string, enable bool) (*azgo.VolumeModifyIterResponse, error)
 	// Use this to set the QoS Policy Group for volume clones since
 	// we can't set adaptive policy groups directly during volume clone creation.
 	VolumeSetQosPolicyGroupName(name string, qosPolicyGroup QosPolicyGroup) (*azgo.VolumeModifyIterResponse, error)

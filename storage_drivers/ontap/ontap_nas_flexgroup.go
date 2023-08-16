@@ -658,9 +658,8 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !enableSnapshotDir {
-		if err := d.API.FlexgroupDisableSnapshotDirectoryAccess(ctx, name); err != nil {
+		if err := d.API.FlexgroupModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
 			createErrors = append(createErrors,
 				fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
 					storagePool.Name(), name, err))

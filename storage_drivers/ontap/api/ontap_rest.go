@@ -1648,9 +1648,8 @@ func (c RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, 
 	return c.restoreSnapshotByNameAndStyle(ctx, snapshotName, volumeName, models.VolumeStyleFlexgroup)
 }
 
-// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
+// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 	if err != nil {
 		return err
@@ -1670,7 +1669,7 @@ func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, vo
 	params.UUID = uuid
 
 	volumeInfo := &models.Volume{}
-	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(false)
+	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
 	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
@@ -3852,7 +3851,9 @@ func (c RestClient) FlexGroupCreate(
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
 ) error {
-	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, models.VolumeStyleFlexgroup, false)
+	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
+		models.VolumeStyleFlexgroup, false)
 }
 
 // FlexgroupCloneSplitStart starts splitting the flexgroup clone
@@ -3912,10 +3913,9 @@ func (c RestClient) FlexgroupSetQosPolicyGroupName(
 	return c.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, volumeName, qosPolicyGroup, models.VolumeStyleFlexgroup)
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context, flexGroupVolumeName string,
+// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, flexGroupVolumeName string, enable bool,
 ) error {
 	volume, err := c.getVolumeByNameAndStyle(ctx, flexGroupVolumeName, models.VolumeStyleFlexgroup)
 	if err != nil {
@@ -3936,7 +3936,7 @@ func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 	params.UUID = uuid
 
 	volumeInfo := &models.Volume{}
-	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(false)
+	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
 	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
@@ -4046,7 +4046,8 @@ func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName stri
 	checkStatus := func() error {
 		qtree, err := c.QtreeGetByName(ctx, qtreeName, volumeName)
 		if qtree == nil {
-			return fmt.Errorf("Qtree '%v' does not exit within volume '%v', will continue checking", qtreeName, volumeName)
+			return fmt.Errorf("Qtree '%v' does not exit within volume '%v', will continue checking", qtreeName,
+				volumeName)
 		}
 		return err
 	}
@@ -4061,8 +4062,7 @@ func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName stri
 
 	// Run the existence check using an exponential backoff
 	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
-		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.",
-			statusBackoff.MaxElapsedTime.Seconds())
+		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.", statusBackoff.MaxElapsedTime.Seconds())
 		return err
 	}
 
@@ -5727,8 +5727,7 @@ func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string) (*nvm
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords,
-				resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
+			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords, resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true

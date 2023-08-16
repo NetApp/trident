@@ -2930,8 +2930,11 @@ func ConstructOntapNASVolumeAccessPath(
 	switch protocol {
 	case sa.NFS:
 		if volConfig.ReadOnlyClone {
-			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot",
-				volConfig.CloneSourceSnapshot)
+			if volConfig.ImportOriginalName != "" {
+				// For an imported volume, use junction path for the mount
+				return fmt.Sprintf("/%s/%s/%s", volumeName, ".snapshot", volConfig.CloneSourceSnapshot)
+			}
+			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot", volConfig.CloneSourceSnapshot)
 		} else if volumeName != utils.UnixPathSeparator+volConfig.InternalName && strings.HasPrefix(volumeName,
 			utils.UnixPathSeparator) {
 			// For managed import, return the original junction path

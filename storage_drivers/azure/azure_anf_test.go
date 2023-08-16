@@ -2828,6 +2828,7 @@ func TestImport_Managed(t *testing.T) {
 	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
+	var snapshotDirAccess bool
 
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
@@ -2840,7 +2841,83 @@ func TestImport_Managed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestImport_ManagedWithSnapshotDir(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+
+	volConfig.SnapshotDir = "true"
+	snapshotDirAccess := true
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+	expectedUnixPermissions := "0770"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+
+	volConfig.SnapshotDir = "false"
+	snapshotDirAccess := false
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+	expectedUnixPermissions := "0770"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2862,6 +2939,7 @@ func TestImport_SMB_Managed(t *testing.T) {
 	driver.Config.NASType = "smb"
 
 	originalName := "importMe"
+	var snapshotDirAccess bool
 
 	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
 
@@ -2873,7 +2951,7 @@ func TestImport_SMB_Managed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		nil).Return(nil).Times(1)
+		nil, &snapshotDirAccess).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2896,6 +2974,7 @@ func TestImport_SMB_Failed(t *testing.T) {
 	driver.Config.UnixPermissions = "0770"
 
 	originalName := "importMe"
+	var snapshotDirAccess bool
 
 	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
 
@@ -2907,7 +2986,7 @@ func TestImport_SMB_Failed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		nil).Return(errors.New("unix permissions not applicable for SMB")).Times(1)
+		nil, &snapshotDirAccess).Return(errors.New("unix permissions not applicable for SMB")).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -2950,6 +3029,7 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
+	var snapshotDirAccess bool
 
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 	originalFilesystem.UnixPermissions = "0700"
@@ -2967,7 +3047,7 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -3114,6 +3194,7 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
+	var snapshotDirAccess bool
 
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
@@ -3126,7 +3207,7 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions).Return(errFailed).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess).Return(errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -3147,6 +3228,7 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	driver.Config.NASType = "nfs"
 
 	originalName := "importMe"
+	var snapshotDirAccess bool
 
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
@@ -3159,7 +3241,7 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return("", errFailed).Times(1)
 

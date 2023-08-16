@@ -596,7 +596,7 @@ func TestOntapSanEconomyVolumeCreate(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -880,7 +880,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeFailed(t *testing.T) {
 			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil).Times(2)
 			mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-			mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+			mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("error resizing volume"))
 			if test.destroyError {
@@ -920,7 +920,7 @@ func TestOntapSanEconomyVolumeCreate_LUNCreateFailed(t *testing.T) {
 			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 			mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-			mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+			mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(fmt.Errorf("failed to create lun"))
@@ -952,7 +952,7 @@ func TestOntapSanEconomyVolumeCreate_TooManyLUNs(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(3).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(2).Return(api.Volumes{}, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(2).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(2).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(2).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(2).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(2).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(api.TooManyLunsError("too many luns"))
@@ -981,7 +981,7 @@ func TestOntapSanEconomyVolumeCreate_GetLUNFailed(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1017,7 +1017,7 @@ func TestOntapSanEconomyVolumeCreate_LUNSetAttributeFailed(t *testing.T) {
 			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 			mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-			mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+			mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1065,7 +1065,7 @@ func TestOntapSanEconomyVolumeCreate_Resize(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(2).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(2)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1100,7 +1100,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeVolumeSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1135,7 +1135,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeSetSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil).Times(2)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -1171,7 +1171,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeVolumeSizeFailed2(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil).Times(2)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
@@ -4204,7 +4204,7 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_Failed(t *testing.T) {
 	assert.Equal(t, "", volName)
 }
 
-func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_VolumeDisableSnapshotDirectoryAccessFailed(t *testing.T) {
+func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_VolumeModifySnapshotDirectoryAccessFailed(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	vol := &api.Volume{
 		Name:       "storagePrefix_vol1",
@@ -4215,8 +4215,8 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_VolumeDisableSnapshotDire
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx,
-		gomock.Any()).Return(fmt.Errorf("failed to disable snapshot directory access"))
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
+		gomock.Any(), false).Return(fmt.Errorf("failed to disable snapshot directory access"))
 	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("failed to destroy volume"))
 
 	volName, err := d.createFlexvolForLUN(ctx, vol, opts, pool1)

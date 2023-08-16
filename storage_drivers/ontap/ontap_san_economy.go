@@ -1580,9 +1580,8 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		return "", fmt.Errorf("error creating volume: %v", err)
 	}
 
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !volumeAttributes.SnapshotDir {
-		err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, flexvol)
+		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
 		if err != nil {
 			if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
 				Logc(ctx).Error(err)

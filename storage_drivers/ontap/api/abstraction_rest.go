@@ -551,9 +551,9 @@ func (d OntapAPIREST) FlexgroupCloneSplitStart(ctx context.Context, cloneName st
 	return nil
 }
 
-func (d OntapAPIREST) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
-	if err := d.api.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, volumeName); err != nil {
-		return fmt.Errorf("error disabling snapshot directory access; %v", err)
+func (d OntapAPIREST) FlexgroupModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
+	if err := d.api.FlexGroupVolumeModifySnapshotDirectoryAccess(ctx, volumeName, enable); err != nil {
+		return fmt.Errorf("error modifying snapshot directory access; %v", err)
 	}
 
 	return nil
@@ -877,9 +877,9 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 	return svmAggregateSpaceList, nil
 }
 
-func (d OntapAPIREST) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
-	if err := d.api.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
-		return fmt.Errorf("error disabling snapshot directory access; %v", err)
+func (d OntapAPIREST) VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error {
+	if err := d.api.VolumeModifySnapshotDirectoryAccess(ctx, name, enable); err != nil {
+		return fmt.Errorf("error modifying snapshot directory access; %v", err)
 	}
 
 	return nil
@@ -1343,9 +1343,7 @@ func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceNa
 	return nil
 }
 
-func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string,
-	maxElapsedTime time.Duration,
-) (string, error) {
+func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string, maxElapsedTime time.Duration) (string, error) {
 	fields := LogFields{
 		"method":        "VolumeWaitForStates",
 		"type":          "OntapAPIREST",
@@ -1354,8 +1352,7 @@ func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string
 		"abortStates":   abortStates,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeWaitForStates")
-	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeWaitForStates")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeWaitForStates")
 
 	var volumeState string
 
@@ -1445,7 +1442,8 @@ func (d OntapAPIREST) VolumeSnapshotInfo(ctx context.Context, snapshotName, sour
 	}
 
 	if len(snapListResponse.Payload.SnapshotResponseInlineRecords) > 1 {
-		return emptyResult, fmt.Errorf("should have exactly 1 record, not: %v", len(snapListResponse.Payload.SnapshotResponseInlineRecords))
+		return emptyResult, fmt.Errorf("should have exactly 1 record, not: %v",
+			len(snapListResponse.Payload.SnapshotResponseInlineRecords))
 	}
 
 	snap := snapListResponse.Payload.SnapshotResponseInlineRecords[0]
@@ -3048,7 +3046,8 @@ func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, 
 	// In case of multiple hosts attached to a subsystem (e.g. in RWX case), do not delete the namespace,
 	// subsystem or the published info
 	if len(subsystemHosts) > 1 {
-		Logc(ctx).Infof("Multiple hosts are attached to this subsystem %v. Do not delete namespace or subsystem", subsystemUUID)
+		Logc(ctx).Infof("Multiple hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
+			subsystemUUID)
 		// Remove HostNQN from the subsystem using api call
 		if err := d.api.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID); err != nil {
 			Logc(ctx).Errorf("Remove host from subsystem failed; %v", err)

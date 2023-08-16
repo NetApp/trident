@@ -381,18 +381,18 @@ func (mr *MockRestClientInterfaceMockRecorder) FlexGroupUsedSize(arg0, arg1 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupUsedSize", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupUsedSize), arg0, arg1)
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess mocks base method.
-func (m *MockRestClientInterface) FlexGroupVolumeDisableSnapshotDirectoryAccess(arg0 context.Context, arg1 string) error {
+// FlexGroupVolumeModifySnapshotDirectoryAccess mocks base method.
+func (m *MockRestClientInterface) FlexGroupVolumeModifySnapshotDirectoryAccess(arg0 context.Context, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupVolumeDisableSnapshotDirectoryAccess", arg0, arg1)
+	ret := m.ctrl.Call(m, "FlexGroupVolumeModifySnapshotDirectoryAccess", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess indicates an expected call of FlexGroupVolumeDisableSnapshotDirectoryAccess.
-func (mr *MockRestClientInterfaceMockRecorder) FlexGroupVolumeDisableSnapshotDirectoryAccess(arg0, arg1 interface{}) *gomock.Call {
+// FlexGroupVolumeModifySnapshotDirectoryAccess indicates an expected call of FlexGroupVolumeModifySnapshotDirectoryAccess.
+func (mr *MockRestClientInterfaceMockRecorder) FlexGroupVolumeModifySnapshotDirectoryAccess(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupVolumeDisableSnapshotDirectoryAccess", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupVolumeDisableSnapshotDirectoryAccess), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupVolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupVolumeModifySnapshotDirectoryAccess), arg0, arg1, arg2)
 }
 
 // FlexgroupCloneSplitStart mocks base method.
@@ -2180,20 +2180,6 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeDestroy(arg0, arg1 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeDestroy), arg0, arg1)
 }
 
-// VolumeDisableSnapshotDirectoryAccess mocks base method.
-func (m *MockRestClientInterface) VolumeDisableSnapshotDirectoryAccess(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeDisableSnapshotDirectoryAccess", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// VolumeDisableSnapshotDirectoryAccess indicates an expected call of VolumeDisableSnapshotDirectoryAccess.
-func (mr *MockRestClientInterfaceMockRecorder) VolumeDisableSnapshotDirectoryAccess(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDisableSnapshotDirectoryAccess", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeDisableSnapshotDirectoryAccess), arg0, arg1)
-}
-
 // VolumeExists mocks base method.
 func (m *MockRestClientInterface) VolumeExists(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -2281,6 +2267,20 @@ func (m *MockRestClientInterface) VolumeModifyExportPolicy(arg0 context.Context,
 func (mr *MockRestClientInterfaceMockRecorder) VolumeModifyExportPolicy(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyExportPolicy", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeModifyExportPolicy), arg0, arg1, arg2)
+}
+
+// VolumeModifySnapshotDirectoryAccess mocks base method.
+func (m *MockRestClientInterface) VolumeModifySnapshotDirectoryAccess(arg0 context.Context, arg1 string, arg2 bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeModifySnapshotDirectoryAccess", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeModifySnapshotDirectoryAccess indicates an expected call of VolumeModifySnapshotDirectoryAccess.
+func (mr *MockRestClientInterfaceMockRecorder) VolumeModifySnapshotDirectoryAccess(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeModifySnapshotDirectoryAccess), arg0, arg1, arg2)
 }
 
 // VolumeModifyUnixPermissions mocks base method.

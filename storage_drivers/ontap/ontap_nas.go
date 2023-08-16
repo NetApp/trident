@@ -380,9 +380,8 @@ func (d *NASStorageDriver) Create(
 			continue
 		}
 
-		// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 		if !enableSnapshotDir {
-			if err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
 				createErrors = append(createErrors,
 					fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
 						storagePool.Name(), name, err))
@@ -643,6 +642,18 @@ func (d *NASStorageDriver) Import(
 			ctx, volConfig.InternalName, originalName, unixPerms,
 		); err != nil {
 			return err
+		}
+	}
+
+	// Update the snapshot directory access for managed volume import
+	if !volConfig.ImportNotManaged && volConfig.SnapshotDir != "" {
+		if enable, err := strconv.ParseBool(volConfig.SnapshotDir); err != nil {
+			return fmt.Errorf("could not import volume %s, invalid snapshotDirectory annotation; %s",
+				originalName, volConfig.SnapshotDir)
+		} else {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, volConfig.InternalName, enable); err != nil {
+				return err
+			}
 		}
 	}
 

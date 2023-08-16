@@ -2852,8 +2852,8 @@ func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
 	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	mockAPI.EXPECT().VolumeDisableSnapshotDirectoryAccess(ctx,
-		"vol1").Return(fmt.Errorf("failed to disable snapshot directory access"))
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
+		"vol1", false).Return(fmt.Errorf("failed to disable snapshot directory access"))
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -3273,6 +3273,64 @@ func TestOntapNasStorageDriverVolumeImport_UnixPermissions(t *testing.T) {
 			assert.Error(t, result)
 		})
 	}
+}
+
+func TestOntapNasStorageDriverVolumeImport_ModifySnapshotAccess(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		SnapshotDir:      "true",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "SVM1:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	flexVol := &api.Volume{
+		Name:    "flexvol",
+		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol2", true).Return(nil)
+
+	result := driver.Import(ctx, volConfig, "vol1")
+
+	assert.NoError(t, result, "An error occurred")
+}
+
+func TestOntapNasStorageDriverVolumeImport_FailedModifySnapshotAccess(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		SnapshotDir:      "true",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "SVM1:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	flexVol := &api.Volume{
+		Name:    "flexvol",
+		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, "vol2", "vol1", "").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol2", true).Return(mockError)
+
+	result := driver.Import(ctx, volConfig, "vol1")
+
+	assert.Error(t, result, "An error is expected")
 }
 
 func TestOntapNasStorageDriverVolumeImport_SMBShareCreateFail(t *testing.T) {
