@@ -1222,6 +1222,7 @@ spec:
                     values:
                       - node.csi.trident.netapp.io
               topologyKey: kubernetes.io/hostname
+      {NODE_TOLERATIONS}
       volumes:
         - name: trident-tracking-dir
           hostPath:

@@ -800,6 +800,82 @@ func TestGetCSIDaemonSetYAMLWindowsImagePullPolicy(t *testing.T) {
 	}
 }
 
+func TestGetCSIDaemonSetYAMLWindows_Tolerations(t *testing.T) {
+	daemonsetArgs := &DaemonsetYAMLArguments{
+		Version: versionutils.MustParseSemantic("1.26.0"),
+		Tolerations: []map[string]string{
+			{"key": "foo", "value": "bar", "operator": "Exists", "effect": "NoSchedule"},
+			{"key": "foo2", "value": "bar2", "operator": "Equals", "effect": "NoExecute", "tolerationSeconds": "20"},
+		},
+	}
+	expectedTolerationString := `
+      tolerations:
+      - key: "foo"
+        value: "bar"
+        effect: "NoSchedule"
+        operator: "Exists"
+      - key: "foo2"
+        value: "bar2"
+        effect: "NoExecute"
+        operator: "Equals"
+        tolerationSeconds: 20
+`
+
+	yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
+	_, err := yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+
+	// Test default
+	daemonsetArgs = &DaemonsetYAMLArguments{
+		Version: versionutils.MustParseSemantic("1.26.0"),
+	}
+	expectedTolerationString = `
+      tolerations:
+      - effect: "NoExecute"
+        operator: "Exists"
+      - effect: "NoSchedule"
+        operator: "Exists"
+`
+
+	yamlData = GetCSIDaemonSetYAMLWindows(daemonsetArgs)
+	_, err = yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+
+	// Test empty tolerations specified
+	daemonsetArgs = &DaemonsetYAMLArguments{
+		Version:     versionutils.MustParseSemantic("1.26.0"),
+		Tolerations: []map[string]string{},
+	}
+	expectedTolerationString = `
+      tolerations: []
+`
+	defaultTolerationString := `
+      tolerations:
+      - effect: "NoExecute"
+        operator: "Exists"
+      - effect: "NoSchedule"
+        operator: "Exists"
+`
+
+	yamlData = GetCSIDaemonSetYAMLWindows(daemonsetArgs)
+	_, err = yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+	assert.Contains(t, yamlData, expectedTolerationString,
+		fmt.Sprintf("expected toleration in final YAML: %s", yamlData))
+	assert.NotContains(t, yamlData, defaultTolerationString,
+		fmt.Sprintf("expected default tolerations to not appear in final YAML: %s", yamlData))
+}
+
 func TestConstructNodeSelector(t *testing.T) {
 	nodeSelMap := map[string]string{"node-label-name": "master"}
 
