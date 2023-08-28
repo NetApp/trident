@@ -48,15 +48,16 @@ var (
 
 // ClientConfig holds the configuration data for Client objects
 type ClientConfig struct {
-	ManagementLIF           string
-	Username                string
-	Password                string
-	ClientPrivateKey        string
-	ClientCertificate       string
-	TrustedCACertificate    string
-	DriverContext           tridentconfig.DriverContext
-	ContextBasedZapiRecords int
-	DebugTraceFlags         map[string]bool
+	ManagementLIF                  string
+	Username                       string
+	Password                       string
+	ClientPrivateKey               string
+	ClientCertificate              string
+	TrustedCACertificate           string
+	DriverContext                  tridentconfig.DriverContext
+	ContextBasedZapiRecords        int
+	DebugTraceFlags                map[string]bool
+	unitTestTransportConfigSchemes string
 }
 
 // Client is the object to use for interacting with ONTAP controllers

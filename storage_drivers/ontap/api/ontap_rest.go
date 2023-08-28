@@ -140,6 +140,9 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 
 	transportConfig := client.DefaultTransportConfig()
 	transportConfig.Host = config.ManagementLIF
+	if config.unitTestTransportConfigSchemes != "" {
+		transportConfig.Schemes = []string{config.unitTestTransportConfigSchemes}
+	}
 
 	result.api = client.NewHTTPClientWithConfig(formats, transportConfig)
 
