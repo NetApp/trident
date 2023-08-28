@@ -73,6 +73,9 @@ var (
 	enableForceDetach   = new(bool)
 	nodePrep            = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
 
+	// Trident-ACP
+	enableACP = flag.Bool("enable_acp", false, "Enable the trident-acp premium features.")
+
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")

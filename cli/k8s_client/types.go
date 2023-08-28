@@ -165,6 +165,8 @@ type DeploymentYAMLArguments struct {
 	ServiceAccountName      string                `json:"serviceAccountName"`
 	ImagePullPolicy         string                `json:"imagePullPolicy"`
 	EnableForceDetach       bool                  `json:"enableForceDetach"`
+	ACPImage                string                `json:"acpImage"`
+	EnableACP               bool                  `json:"enableACP"`
 }
 
 type DaemonsetYAMLArguments struct {

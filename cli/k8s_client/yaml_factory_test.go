@@ -91,6 +91,7 @@ func TestYAMLFactory(t *testing.T) {
 		Version:                 version,
 		TopologyEnabled:         false,
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
+		EnableACP:               true,
 	}
 
 	yamlsOutputs := []string{
@@ -166,6 +167,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		TopologyEnabled:         true,
 		UseIPv6:                 true,
 		SilenceAutosupport:      false,
+		EnableACP:               true,
 	}
 
 	yamlsOutputs := []string{

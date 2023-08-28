@@ -358,6 +358,24 @@ spec:
       values: ["system-node-critical"]
 `
 
+const acpContainerYAMLTemplate = `
+      - name: trident-acp
+        image: {ACP_IMAGE}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          runAsNonRoot: false
+          capabilities:
+            drop:
+            - all
+        command:
+        - /bin/trident-acp
+        args:
+        - "--k8s_pod"
+        - "--log_format={LOG_FORMAT}"
+        - "--log_level={LOG_LEVEL}"
+        {DEBUG}
+`
+
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	var debugLine, sideCarLogLevel, ipLocalhost string
 	Log().WithFields(LogFields{
@@ -433,6 +451,13 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		autosupportDebugLine = "#" + autosupportDebugLine
 	}
 
+	if args.EnableACP {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_IMAGE}", args.ACPImage)
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", "")
+	}
+
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
@@ -462,6 +487,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", strconv.FormatBool(args.EnableACP))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -521,6 +547,7 @@ spec:
         - "--address={IP_LOCALHOST}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
+        - "--enable_acp={ENABLE_ACP}"
         - "--metrics"
         {DEBUG}
         livenessProbe:
@@ -642,6 +669,7 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      {ACP_YAML}
       {IMAGE_PULL_SECRETS}
       affinity:
         nodeAffinity:
