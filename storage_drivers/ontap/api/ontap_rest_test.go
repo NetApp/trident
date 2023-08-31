@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 
+	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
@@ -299,20 +300,6 @@ func mockIscsiCredentialsNumRecordsNil(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(iscsiCred)
 }
 
-func mockSVM(w http.ResponseWriter, r *http.Request) {
-	svm := models.Svm{
-		UUID:  utils.Ptr("1234"),
-		Name:  utils.Ptr("svm0"),
-		State: utils.Ptr("running"),
-		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
-			{Name: utils.Ptr("aggr1")},
-		},
-	}
-
-	setHTTPResponseHeader(w, http.StatusOK)
-	json.NewEncoder(w).Encode(svm)
-}
-
 func mockIscsiCredentialsFailure(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/svm/svms/1234" {
 		mockSVM(w, r)
@@ -377,7 +364,9 @@ func mockSVMUUIDNil(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/svm/svms/1234" {
 		setHTTPResponseHeader(w, http.StatusOK)
 		json.NewEncoder(w).Encode(svm)
-	} else if r.URL.Path == "/api/svm/svms" {
+	}
+
+	if r.URL.Path == "/api/svm/svms" {
 		svmResponse := models.SvmResponse{
 			SvmResponseInlineRecords: []*models.Svm{&svm},
 			NumRecords:               utils.Ptr(int64(1)),
@@ -404,7 +393,9 @@ func mockIscsiService(w http.ResponseWriter, r *http.Request) {
 func mockIscsiNodeGetName(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/svm/svms/1234" {
 		mockSVM(w, r)
-	} else if r.URL.Path == "/api/protocols/san/iscsi/services/1234" {
+	}
+
+	if r.URL.Path == "/api/protocols/san/iscsi/services/1234" {
 		mockIscsiService(w, r)
 	}
 }
@@ -2043,6 +2034,2159 @@ func TestOntapREST_NetworkInterfaceGetDataLIFs(t *testing.T) {
 				assert.Equal(t, "1.1.1.1", dataLifs[0], "data lifs does not match")
 			} else {
 				assert.Error(t, err, "get the data lifs")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockJobResponse(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobStatus := models.JobStateSuccess
+	jobLink := models.Job{UUID: &jobId, State: &jobStatus}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockSvmPeerResponse(w http.ResponseWriter, r *http.Request) {
+	svmPeerResponse := models.SvmPeerResponse{
+		SvmPeerResponseInlineRecords: []*models.SvmPeer{
+			{
+				Peer: &models.SvmPeerInlinePeer{
+					Svm: &models.SvmPeerInlinePeerInlineSvm{Name: utils.Ptr("svm1")},
+				},
+			},
+		},
+	}
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	} else {
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(svmPeerResponse)
+	}
+}
+
+func TestOntapRest_GetPeeredVservers(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"GetPeerVserver_Success", mockSvmPeerResponse, false},
+		{"GetPeerVserver_Fail", mockGetSVMError, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			svmPeerName, err := rs.GetPeeredVservers(ctx)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get peer vserver")
+				assert.Equal(t, "svm1", svmPeerName[0])
+			} else {
+				assert.Error(t, err, "get the peer vserver")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockIsVserverInSVMDR(w http.ResponseWriter, r *http.Request) {
+	snapMirrorRelationshipResponse := &models.SnapmirrorRelationshipResponse{
+		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
+			{
+				Destination: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm0:"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				Source: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm1:"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm1"),
+					},
+				},
+				UUID: utils.Ptr(strfmt.UUID("1")),
+			},
+			{Source: &models.
+				SnapmirrorEndpoint{Svm: &models.SnapmirrorEndpointInlineSvm{}}},
+			{Source: &models.
+				SnapmirrorEndpoint{Path: utils.Ptr("svm0:")}},
+			{},
+		},
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+}
+
+func TestOntapRest_IsVserverDRDestination(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"CheckVserverDestination_Success", mockIsVserverInSVMDR, false},
+		{"CheckVserverDestination_Fail", mockGetSVMError, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			isVserverDRDestination, err := rs.IsVserverDRDestination(ctx)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not verify svm on DR destination")
+				assert.Equal(t, true, isVserverDRDestination)
+			} else {
+				assert.Error(t, err, "verified svm on DR destination")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_IsVserverDRSource(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"CheckVserverInSource_Success", mockIsVserverInSVMDR, false},
+		{"CheckVserverInSource_Fail", mockGetSVMError, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			isVserverDRSource, err := rs.IsVserverDRSource(ctx)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not verify svm on DR destination")
+				assert.Equal(t, true, isVserverDRSource)
+			} else {
+				assert.Error(t, err, "verified svm on DR destination")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_IsVserverInSVMDR(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"IsInSVMDR_Success", mockIsVserverInSVMDR, false},
+		{"IsInSVMDR_Fail", mockGetSVMError, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			isVserverInSVMDR := rs.IsVserverInSVMDR(ctx)
+			if !test.isErrorExpected {
+				assert.Equal(t, true, isVserverInSVMDR)
+			} else {
+				assert.Equal(t, false, isVserverInSVMDR)
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSVMListNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	svmUUID := "1234"
+	svmName := "svm0"
+
+	svm := models.Svm{
+		UUID:  &svmUUID,
+		Name:  &svmName,
+		State: utils.Ptr("running"),
+		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
+			{Name: utils.Ptr("aggr1")},
+		},
+	}
+
+	url := "/api/svm/svms"
+	var hrefLink *models.SvmResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.SvmResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	svmResponse := models.SvmResponse{
+		SvmResponseInlineRecords: []*models.Svm{&svm},
+		Links:                    hrefLink,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(svmResponse)
+}
+
+func mockSvmPeerResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	svmPeerResponse := models.SvmPeerResponse{}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(svmPeerResponse)
+}
+
+func TestOntapRest_IsVserverDRCapable(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		response        bool
+		isErrorExpected bool
+	}{
+		{"IsVserverDRCapable_Success", mockSvmPeerResponse, true, false},
+		{"NumberOfRecordsFieldNil", mockSvmPeerResponseNumRecordsNil, false, false},
+		{"GettingErrorFromBackend", mockGetSVMError, false, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			isVserverDRCapable, err := rs.IsVserverDRCapable(ctx)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "vserver is not DR capable")
+				assert.Equal(t, test.response, isVserverDRCapable)
+			} else {
+				assert.Error(t, err, "vserver is DR capable")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockRequestAccepted(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+	setHTTPResponseHeader(w, http.StatusAccepted)
+	json.NewEncoder(w).Encode(jobResponse)
+}
+
+func mockSnapshotCreate(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		mockRequestAccepted(w, r)
+	} else if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	}
+}
+
+func mockSnapshotResourceNotFound(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
+func TestSnapshotCreateAndWait(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapshotCreate, false},
+		{"CreationFailedOnBackend", mockSnapshotResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapshotCreateAndWait(ctx, "fakeUUID", "fakeSnapshot")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create the snapshot")
+			} else {
+				assert.Error(t, err, "snapshot created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func getSnapshot() *models.Snapshot {
+	snapshotName := "fake-snapshot"
+	snapshotUUID := "fake-snapshotUUID"
+	createTime1 := strfmt.NewDateTime()
+
+	snapshot := models.Snapshot{Name: &snapshotName, CreateTime: &createTime1, UUID: &snapshotUUID}
+	return &snapshot
+}
+
+func mockSnapshot(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/storage/volume"
+	var hrefLink *models.SnapshotResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.SnapshotResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+
+	snapShot := getSnapshot()
+	numRecords := int64(1)
+	volumeResponse := models.SnapshotResponse{
+		SnapshotResponseInlineRecords: []*models.Snapshot{snapShot},
+		NumRecords:                    &numRecords,
+		Links:                         hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockSnapshotNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/storage/volume"
+	var hrefLink *models.SnapshotResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.SnapshotResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+
+	snapShot := getSnapshot()
+	volumeResponse := models.SnapshotResponse{
+		SnapshotResponseInlineRecords: []*models.Snapshot{snapShot},
+		Links:                         hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockSnapshotInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/storage/volume"
+	var hrefLink *models.SnapshotResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.SnapshotResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+
+	snapShot := getSnapshot()
+	numRecords := int64(1)
+	volumeResponse := models.SnapshotResponse{
+		SnapshotResponseInlineRecords: []*models.Snapshot{snapShot},
+		NumRecords:                    &numRecords,
+		Links:                         hrefLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func TestOntapREST_SnapshotList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapshot, false, false},
+		{"ErrorInFetchingHrefLink", mockSnapshotInternalError, false, true},
+		{"NumRecordsFieldInResponseIsNil", mockSnapshotNumRecordsNil, false, false},
+		{"backendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			snapshot, err := rs.SnapshotList(ctx, "fakeUUID")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the snapshot")
+				assert.Equal(t, "fake-snapshot", *snapshot.Payload.SnapshotResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get the snapshot")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSnapshotList(w http.ResponseWriter, r *http.Request) {
+	snapShot := getSnapshot()
+	numRecords := int64(1)
+	snapshotResponse := models.SnapshotResponse{
+		SnapshotResponseInlineRecords: []*models.Snapshot{snapShot},
+		NumRecords:                    &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapshotResponse)
+}
+
+func TestOntapREST_SnapshotListByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapshotList, false},
+		{"backendReturnError", mockSnapshotResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			snapshot, err := rs.SnapshotListByName(ctx, "fakeUUID", "fake-snapshot")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the snapshot")
+				assert.Equal(t, "fake-snapshot", *snapshot.Payload.SnapshotResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get the snapshot")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSnapshotGet(w http.ResponseWriter, r *http.Request) {
+	snapShot := getSnapshot()
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapShot)
+}
+
+func mockGetVolumeResponseAccepted(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	} else {
+		switch r.Method {
+		case "PATCH", "DELETE":
+			mockRequestAccepted(w, r)
+		default:
+			volume := &models.Volume{
+				UUID: utils.Ptr("fakeUUID"),
+				Name: utils.Ptr("fakeName"),
+			}
+			numRecords := int64(1)
+			volumeResponse := models.VolumeResponse{
+				VolumeResponseInlineRecords: []*models.Volume{volume},
+				NumRecords:                  &numRecords,
+			}
+
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(volumeResponse)
+		}
+	}
+}
+
+func TestOntapREST_SnapshotGet(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapshotGet, false},
+		{"BackendReturnError", mockSnapshotResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			snapshot, err := rs.SnapshotGet(ctx, "fakeUUID", "fake-snapshotUUID")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the snapshot")
+				assert.Equal(t, "fake-snapshot", *snapshot.Payload.Name)
+			} else {
+				assert.Error(t, err, "get the snapshot")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSnapshotListInvalidNumRecords(w http.ResponseWriter, r *http.Request) {
+	snapShot := getSnapshot()
+	snapshotResponse := models.SnapshotResponse{
+		SnapshotResponseInlineRecords: []*models.Snapshot{snapShot},
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapshotResponse)
+}
+
+func TestOntapREST_SnapshotGetByName(t *testing.T) {
+	tests := []struct {
+		name          string
+		mockFunction  func(w http.ResponseWriter, r *http.Request)
+		isResponseNil bool
+	}{
+		{"PositiveTest", mockSnapshotList, false},
+		{"BackendReturnError", mockSnapshotListInvalidNumRecords, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			snapshot, err := rs.SnapshotGetByName(ctx, "fakeUUID", "fake-snapshot")
+			assert.NoError(t, err, "could not get the snapshot by name")
+			if !test.isResponseNil {
+				assert.Equal(t, "fake-snapshot", *snapshot.Name)
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_SnapshotDelete(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockSnapshotResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			snapshot, err := rs.SnapshotDelete(ctx, "fakeUUID", "fake-snapshot")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete snapshot")
+				assert.Equal(t, strfmt.UUID("1234"), *snapshot.Payload.Job.UUID)
+			} else {
+				assert.Error(t, err, "snapshot deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_SnapshotRestoreVolume(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockSnapshotResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapshotRestoreVolume(ctx, "fakeSnapshot", "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not restore snapshot")
+			} else {
+				assert.Error(t, err, "snapshot restored")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_SnapshotRestoreFlexgroup(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockSnapshotResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapshotRestoreFlexgroup(ctx, "fakeSnapshot", "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not restore snapshot")
+			} else {
+				assert.Error(t, err, "snapshot restored")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeListAllBackedBySnapshot(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			_, err := rs.VolumeListAllBackedBySnapshot(ctx, "fakeVolume", "fakeSnapshot")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get volume backend by snapshot")
+			} else {
+				assert.Error(t, err, "get the volume backend by snapshot")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeCloneCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockRequestAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volume, err := rs.VolumeCloneCreate(ctx, "fakeClone", "fakeVolume", "fakeSnapshot")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create clone of a volume")
+				assert.Equal(t, strfmt.UUID("1234"), *volume.Payload.Job.UUID)
+			} else {
+				assert.Error(t, err, "clone created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockRequestAcceptedJobFailed(w http.ResponseWriter, r *http.Request) {
+	jobResponse := models.JobLinkResponse{}
+	setHTTPResponseHeader(w, http.StatusAccepted)
+	json.NewEncoder(w).Encode(jobResponse)
+}
+
+func TestOntapREST_VolumeCloneCreateAsync(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockRequestAcceptedJobFailed, true},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeCloneCreateAsync(ctx, "fakeClone", "fakeVolume", "fakeSnapshot")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create clone of a volume")
+			} else {
+				assert.Error(t, err, "clone created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockJobResponseStateNil(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.Job{UUID: &jobId}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockJobResponseInternalError(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.Job{UUID: &jobId}
+	setHTTPResponseHeader(w, http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockJobResponseJobStateFailure(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStateFailure)}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockJobResponseJobStatePaused(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStatePaused)}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockJobResponseJobStateRunning(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStateRunning)}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockJobResponseJobStateQueued(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.Job{UUID: &jobId, State: utils.Ptr(models.JobStateQueued)}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockJobResponseInvalidState(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.Job{UUID: &jobId, State: utils.Ptr("InvalidState")}
+	sc := http.StatusOK
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func TestOntapREST_IsJobFinished(t *testing.T) {
+	payload1 := &models.JobLinkResponse{}
+	payload2 := &models.JobLinkResponse{Job: &models.JobLink{}}
+
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		payload         *models.JobLinkResponse
+		isErrorExpected bool
+		response        bool
+	}{
+		{"ResponsePayloadNil", mockJobResponse, nil, true, false},
+		{"ResponsePayloadEmpty", mockJobResponse, payload1, true, false},
+		{"ResponsePayloadJobLinkEmpty", mockJobResponse, payload2, true, false},
+		{"ResponseStatusNil", mockJobResponseStateNil, &jobResponse, true, false},
+		{"PositiveTest", mockJobResponse, &jobResponse, false, true},
+		{"ResponseStatusFailure", mockJobResponseJobStateFailure, &jobResponse, false, true},
+		{"ResponseStatusQueued", mockJobResponseJobStateQueued, &jobResponse, false, false},
+		{"ResponseStatusPaused", mockJobResponseJobStatePaused, &jobResponse, false, false},
+		{"ResponseStatusRunning", mockJobResponseJobStateRunning, &jobResponse, false, false},
+		{"ResponseStatusInternalError", mockJobResponseInternalError, &jobResponse, true, false},
+		{"ResponseStatusInvalidState", mockJobResponseInvalidState, &jobResponse, true, false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			isJobFinish, err := rs.IsJobFinished(ctx, test.payload)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get job status")
+				assert.Equal(t, test.response, isJobFinish)
+			} else {
+				assert.Error(t, err, "get the job status")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_PollJobStatus(t *testing.T) {
+	payload1 := &models.JobLinkResponse{}
+	payload2 := &models.JobLinkResponse{Job: &models.JobLink{}}
+
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		payload         *models.JobLinkResponse
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockJobResponse, &jobResponse, false},
+		{"PayloadEmpty", mockJobResponse, payload1, true},
+		{"JobObjectEmptyInPayload", mockJobResponse, payload2, true},
+		{"JabResponseFailure", mockJobResponseJobStateFailure, &jobResponse, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.PollJobStatus(ctx, test.payload)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get job status")
+			} else {
+				assert.Error(t, err, "get the job status")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockAggregateListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	aggrResponse := getAggregateResponse(hasNextLink)
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(aggrResponse)
+}
+
+func mockAggregateListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	aggrResponse := getAggregateResponse(hasNextLink)
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		sc = http.StatusOK
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(aggrResponse)
+}
+
+func getAggregateResponse(hasNextLink bool) *models.AggregateResponse {
+	size := int64(3221225472)
+	usedSize := int64(2147483648)
+
+	aggrSpace := models.AggregateInlineSpace{
+		BlockStorage: &models.AggregateInlineSpaceInlineBlockStorage{
+			Size: &size,
+			Used: &usedSize,
+		},
+	}
+	aggregate := models.Aggregate{
+		Name: utils.Ptr("aggr1"),
+		BlockStorage: &models.AggregateInlineBlockStorage{
+			Primary: &models.AggregateInlineBlockStorageInlinePrimary{DiskType: utils.Ptr("fc")},
+		},
+		Space: &aggrSpace,
+	}
+	url := ""
+	var hrefLink *models.AggregateResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.AggregateResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+
+	return &models.AggregateResponse{
+		AggregateResponseInlineRecords: []*models.Aggregate{&aggregate},
+		NumRecords:                     utils.Ptr(int64(1)),
+		Links:                          hrefLink,
+	}
+}
+
+func mockAggregateListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	aggrResponse := getAggregateResponse(hasNextLink)
+	aggrResponse.NumRecords = nil
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(aggrResponse)
+}
+
+func TestOntapREST_AggregateList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockAggregateListResponse, false, false},
+		{"NumOfRecordsFieldIsNil", mockAggregateListResponseNumRecordsNil, false, false},
+		{"BackendReturnErrorForSecondHrefLink", mockAggregateListResponseInternalError, false, true},
+		{"BackendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			aggrList, err := rs.AggregateList(ctx, "aggr1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the aggregate list")
+				assert.Equal(t, "aggr1", *aggrList.Payload.AggregateResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get the svm")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSVMList(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	svmUUID := "1234"
+	svmName := "svm0"
+
+	svm := models.Svm{
+		UUID:  &svmUUID,
+		Name:  &svmName,
+		State: utils.Ptr("running"),
+		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
+			{Name: utils.Ptr("aggr1")},
+		},
+	}
+
+	url := "/api/svm/svms"
+	var hrefLink *models.SvmResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.SvmResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	svmResponse := models.SvmResponse{
+		SvmResponseInlineRecords: []*models.Svm{&svm},
+		NumRecords:               utils.Ptr(int64(1)),
+		Links:                    hrefLink,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(svmResponse)
+}
+
+func mockSVMListInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	svmUUID := "1234"
+	svmName := "svm0"
+
+	svm := models.Svm{
+		UUID:  &svmUUID,
+		Name:  &svmName,
+		State: utils.Ptr("running"),
+		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
+			{Name: utils.Ptr("aggr1")},
+		},
+	}
+
+	url := "/api/svm/svms"
+	var hrefLink *models.SvmResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.SvmResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+
+	svmResponse := models.SvmResponse{
+		SvmResponseInlineRecords: []*models.Svm{&svm},
+		NumRecords:               utils.Ptr(int64(1)),
+		Links:                    hrefLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(svmResponse)
+}
+
+func TestOntapREST_SvmList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSVMList, false, false},
+		{"NumOfRecordsFieldIsNil", mockSVMListNumRecordsNil, false, false},
+		{"BackendReturnErrorForSecondHrefLink", mockSVMListInternalError, false, true},
+		{"BackendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			svm, err := rs.SvmList(ctx, "svm0")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get svm")
+				assert.Equal(t, "svm0", *svm.Payload.SvmResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get the svm")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_SvmGetByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSVM, false},
+		{"BackendReturnError", mockGetSVMError, true},
+		{"NumOfRecordsFieldIsNil", mockSVMNumRecordsNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			svm, err := rs.SvmGetByName(ctx, "svm0")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get svm by name")
+				assert.Equal(t, "svm0", *svm.Name)
+			} else {
+				assert.Error(t, err, "get the svm by name")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSVMSvmStateNil(w http.ResponseWriter, r *http.Request) {
+	svmUUID := "1234"
+	svmName := "svm0"
+
+	svm := models.Svm{
+		UUID: &svmUUID,
+		Name: &svmName,
+		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
+			{Name: utils.Ptr("aggr1")},
+		},
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(svm)
+}
+
+func TestOntapREST_GetSVMState(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSVM, false},
+		{"NumOfRecordsFieldIsNil", mockSVMNumRecordsNil, true},
+		{"SvmUUIDFieldIsNil", mockSVMUUIDNil, true},
+		{"SvmStateFieldIsNil", mockSVMSvmStateNil, true},
+		{"BackendReturnError", mockGetSVMError, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			svmState, err := rs.GetSVMState(ctx)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get svm state")
+				assert.Equal(t, "running", svmState)
+			} else {
+				assert.Error(t, err, "get the svm state")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_SVMGetAggregateNames(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSVM, false},
+		{"BackendReturnError", mockGetSVMError, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			aggr, err := rs.SVMGetAggregateNames(ctx)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the system aggregates name")
+				assert.Equal(t, "aggr1", aggr[0])
+			} else {
+				assert.Error(t, err, "get the system aggregates name")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockNodeListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/cluster/nodes"
+	var hrefLink *models.NodeResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.NodeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	nodeResponse := models.NodeResponse{
+		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
+			{SerialNumber: utils.Ptr("4048820-60-9")},
+		},
+		NumRecords: utils.Ptr(int64(1)),
+		Links:      hrefLink,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nodeResponse)
+}
+
+func mockNodeListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/cluster/nodes"
+	var hrefLink *models.NodeResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.NodeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+	nodeResponse := models.NodeResponse{
+		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
+			{SerialNumber: utils.Ptr("4048820-60-9")},
+		},
+		NumRecords: utils.Ptr(int64(1)),
+		Links:      hrefLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(nodeResponse)
+}
+
+func mockNodeListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/cluster/nodes"
+	var hrefLink *models.NodeResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.NodeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+	nodeResponse := models.NodeResponse{
+		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
+			{SerialNumber: utils.Ptr("4048820-60-9")},
+		},
+		Links: hrefLink,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nodeResponse)
+}
+
+func TestOntapREST_NodeList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNodeListResponse, false, false},
+		{"ResponseNumOfRecordsFieldIsNil", mockNodeListResponseNumRecordsNil, false, false},
+		{"BackendReturnErrorForSecondHrefLink", mockNodeListResponseInternalError, false, true},
+		{"BackendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			nodeResponses, err := rs.NodeList(ctx, "node1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the node serial number")
+				assert.Equal(t, "4048820-60-9", *nodeResponses.Payload.NodeResponseInlineRecords[0].SerialNumber)
+			} else {
+				assert.Error(t, err, "get the node serial number")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockNodeResponse(w http.ResponseWriter, r *http.Request) {
+	nodeResponse := models.NodeResponse{
+		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
+			{SerialNumber: utils.Ptr("4048820-60-9")},
+		},
+		NumRecords: utils.Ptr(int64(1)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nodeResponse)
+}
+
+func mockNodeResponseSerialNumberNil(w http.ResponseWriter, r *http.Request) {
+	nodeResponse := models.NodeResponse{
+		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
+			{},
+		},
+		NumRecords: utils.Ptr(int64(1)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nodeResponse)
+}
+
+func mockNodeResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	nodeResponse := models.NodeResponse{
+		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
+			{SerialNumber: utils.Ptr("4048820-60-9")},
+		},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nodeResponse)
+}
+
+func mockNodeResponseNumRecordsZero(w http.ResponseWriter, r *http.Request) {
+	nodeResponse := models.NodeResponse{
+		NodeResponseInlineRecords: []*models.NodeResponseInlineRecordsInlineArrayItem{
+			{SerialNumber: utils.Ptr("4048820-60-9")},
+		},
+		NumRecords: utils.Ptr(int64(0)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nodeResponse)
+}
+
+func TestOntapREST_GetNodeSerialNumbers(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNodeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+		{"ResponseNumOfRecordsFieldIsNil", mockNodeResponseNumRecordsNil, true},
+		{"ResponseNumOfRecordsZero", mockNodeResponseNumRecordsZero, true},
+		{"ResponseSerialNumberFieldNil", mockNodeResponseSerialNumberNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			serialNumber, err := rs.NodeListSerialNumbers(ctx)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not the node serial number")
+				assert.Equal(t, "4048820-60-9", serialNumber[0])
+			} else {
+				assert.Error(t, err, "get the node serial number")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_EmsAutosupportLog(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNodeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.EmsAutosupportLog(ctx, "", true, "", "", "", 0, "", 0)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not generate a log message")
+			} else {
+				assert.Error(t, err, "log message generated")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_TieringPolicy(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+	tieringPolicy := rs.TieringPolicyValue(ctx)
+	assert.Equal(t, "none", tieringPolicy)
+	server.Close()
+}
+
+func mockNvmeNamespaceListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	size := int64(1073741824)
+
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.NvmeNamespaceResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.NvmeNamespaceResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+
+	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
+		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
+			{
+				Name:  utils.Ptr("namespace1"),
+				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
+			},
+		},
+		NumRecords: &numRecords,
+		Links:      hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+}
+
+func mockNvmeNamespaceListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	size := int64(1073741824)
+
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.NvmeNamespaceResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.NvmeNamespaceResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+
+	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
+		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
+			{
+				Name:  utils.Ptr("namespace1"),
+				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
+			},
+		},
+		NumRecords: &numRecords,
+		Links:      hrefLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+}
+
+func mockNvmeNamespaceListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	size := int64(1073741824)
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.NvmeNamespaceResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.NvmeNamespaceResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
+		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
+			{
+				Name:  utils.Ptr("namespace1"),
+				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
+			},
+		},
+		Links: hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+}
+
+func mockNvmeSubsystemListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	url := "/api/fake"
+
+	var hrefLink *models.NvmeSubsystemResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.NvmeSubsystemResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+
+	nvmeSubsystemResponse := models.NvmeSubsystemResponse{
+		NvmeSubsystemResponseInlineRecords: []*models.NvmeSubsystem{
+			{
+				Name: utils.Ptr("subsystemName"),
+			},
+		},
+		NumRecords: &numRecords,
+		Links:      hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nvmeSubsystemResponse)
+}
+
+func mockNvmeSubsystemListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	url := "/api/fake"
+
+	var hrefLink *models.NvmeSubsystemResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.NvmeSubsystemResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+
+	nvmeSubsystemResponse := models.NvmeSubsystemResponse{
+		NvmeSubsystemResponseInlineRecords: []*models.NvmeSubsystem{
+			{
+				Name: utils.Ptr("subsystemName"),
+			},
+		},
+		NumRecords: &numRecords,
+		Links:      hrefLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(nvmeSubsystemResponse)
+}
+
+func mockNvmeNamespaceResponse(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	size := int64(1073741824)
+
+	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
+		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
+			{
+				Name:  utils.Ptr("namespace1"),
+				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
+			},
+		},
+		NumRecords: &numRecords,
+	}
+
+	switch r.Method {
+	case "POST":
+		setHTTPResponseHeader(w, http.StatusCreated)
+		json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+	default:
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+	}
+}
+
+func mockNvmeNamespaceResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	size := int64(1073741824)
+
+	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
+		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
+			{
+				Name:  utils.Ptr("namespace1"),
+				UUID:  utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				Space: &models.NvmeNamespaceInlineSpace{Size: &size},
+			},
+		},
+	}
+
+	switch r.Method {
+	case "POST":
+		setHTTPResponseHeader(w, http.StatusCreated)
+		json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+	default:
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+	}
+}
+
+func mockNvmeNamespaceResponseNil(w http.ResponseWriter, r *http.Request) {
+	nvmeNamespaceResponse := models.NvmeNamespaceResponse{
+		NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{
+			nil,
+		},
+		NumRecords: utils.Ptr(int64(1)),
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+}
+
+func mockNvmeSubsystemMapResponse(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+
+	nvmeSubsystemMapResponse := models.NvmeSubsystemMapResponse{
+		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{
+			{
+				Namespace: &models.NvmeSubsystemMapInlineNamespace{
+					UUID: utils.Ptr("1cd8a442-86d1-11e0-ae1c-123478563412"),
+				},
+			},
+		},
+		NumRecords: &numRecords,
+	}
+
+	nvmeSubsystemResponse := models.NvmeSubsystemResponse{
+		NvmeSubsystemResponseInlineRecords: []*models.NvmeSubsystem{
+			{
+				Name: utils.Ptr("subsystemName"),
+			},
+		},
+		NumRecords: &numRecords,
+	}
+
+	nvmeSubsystemHostResponse := models.NvmeSubsystemHostResponse{
+		NvmeSubsystemHostResponseInlineRecords: []*models.NvmeSubsystemHost{
+			{
+				Subsystem: &models.NvmeSubsystemHostInlineSubsystem{
+					Name: utils.Ptr("nvmeSubsystemName"),
+				},
+			},
+		},
+	}
+
+	switch r.Method {
+	case "POST":
+		switch r.URL.Path {
+		case "/api/protocols/nvme/subsystems":
+			setHTTPResponseHeader(w, http.StatusCreated)
+			json.NewEncoder(w).Encode(nvmeSubsystemResponse)
+		case "/api/protocols/nvme/subsystems/subsystemName/hosts":
+			setHTTPResponseHeader(w, http.StatusCreated)
+			json.NewEncoder(w).Encode(nvmeSubsystemHostResponse)
+		default:
+			setHTTPResponseHeader(w, http.StatusCreated)
+			json.NewEncoder(w).Encode(nvmeSubsystemMapResponse)
+		}
+	case "DELETE":
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(nil)
+	case "GET":
+		switch r.URL.Path {
+		case "/api/protocols/nvme/subsystems/subsystemName/hosts":
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(nvmeSubsystemHostResponse)
+		case "/api/protocols/nvme/subsystem-maps":
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(nvmeSubsystemMapResponse)
+		default:
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(nvmeSubsystemResponse)
+		}
+	}
+}
+
+func mockNvmeResourceNotFound(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
+func TestOntapRestNVMeNamespaceCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeNamespaceResponse, false},
+		{"NumRecordsNilInResponse", mockNvmeNamespaceResponseNumRecordsNil, true},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			ns := NVMeNamespace{
+				Name:      "namespace1",
+				UUID:      "1cd8a442-86d1-11e0-ae1c-123478563412",
+				OsType:    "linux",
+				Size:      "99999",
+				BlockSize: 4096,
+				State:     "online",
+			}
+			uuid, err := rs.NVMeNamespaceCreate(ctx, ns)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create the NVMe namespace")
+				assert.Equal(t, "1cd8a442-86d1-11e0-ae1c-123478563412", uuid)
+			} else {
+				assert.Error(t, err, "NVMe namespace list created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestNVMeNamespaceSetSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeNamespaceResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			ns := NVMeNamespace{
+				Name:      "namespace1",
+				UUID:      "1cd8a442-86d1-11e0-ae1c-123478563412",
+				OsType:    "linux",
+				Size:      "99999",
+				BlockSize: 4096,
+				State:     "online",
+			}
+			err := rs.NVMeNamespaceSetSize(ctx, ns.UUID, int64(100000000))
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the NVMe namespace size")
+			} else {
+				assert.Error(t, err, "get the NVMe namespace size")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeNamespaceList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeNamespaceListResponse, false, false},
+		{"ResponseNumOfRecordsFieldIsNil", mockNvmeNamespaceListResponseNumRecordsNil, false, false},
+		{"BackendReturnErrorForSecondHrefLink", mockNvmeNamespaceListResponseInternalError, false, true},
+		{"BackendReturnError", mockNvmeNamespaceListResponse, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			nvmeResponse, err := rs.NVMeNamespaceList(ctx, "namespace1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the NVMe namespace list")
+				assert.Equal(t, "namespace1", *nvmeResponse.Payload.NvmeNamespaceResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get the NVMe namespace list")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeNamespaceGetByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeNamespaceResponse, false},
+		{"ResponseNumOfRecordsFieldIsNil", mockNvmeNamespaceResponseNumRecordsNil, true},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			defer server.Close()
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			nvmeResponse, err := rs.NVMeNamespaceGetByName(ctx, "namespace1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the NVMe namespace by name")
+				assert.Equal(t, "namespace1", *nvmeResponse.Name)
+			} else {
+				assert.Error(t, err, "get the NVMe namespace by name")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeSubsystemAddNamespace(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			defer server.Close()
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.NVMeSubsystemAddNamespace(ctx, "subsystemUUID", "nsUUID")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not add subsystem in NVMe namespace")
+			} else {
+				assert.Error(t, err, "subsystem is added in NVMe namespace")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeSubsystemRemoveNamespace(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.NVMeSubsystemRemoveNamespace(ctx, "subsystemUUID", "nsUUID")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete NVMe namespace")
+			} else {
+				assert.Error(t, err, "NVMe namespace deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeIsNamespaceMapped(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			isMapped, err := rs.NVMeIsNamespaceMapped(ctx, "subsystemUUID", "1cd8a442-86d1-11e0-ae1c-123478563412")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "NVMe namespace is not mapped")
+				assert.Equal(t, true, isMapped)
+			} else {
+				assert.Error(t, err, "NVMe namespace is mapped")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeNamespaceCount(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			count, err := rs.NVMeNamespaceCount(ctx, "subsystemUUID")
+			if !test.isErrorExpected {
+				assert.NoError(t, err)
+				assert.Equal(t, int64(1), count, "could not nvme subsystem count")
+			} else {
+				assert.Error(t, err, "get the nvme subsystem count")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeSubsystemList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		pattern         string
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemListResponse, "subsystemUUID", false, false},
+		{"BackendReturnErrorForSecondHrefLink", mockNvmeSubsystemListResponseInternalError, "subsystemUUID", false, true},
+		{"BackendReturnError", mockInternalServerError, "", true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			_, err := rs.NVMeSubsystemList(ctx, test.pattern)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "failed to get NVMe subsystem list")
+			} else {
+				assert.Error(t, err, "get the NVMe subsystem")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeSubsystemGetByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			nvmeSubsystemList, err := rs.NVMeSubsystemGetByName(ctx, "subsystemUUID")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "failed to get NVMe subsystem by name")
+				assert.Equal(t, "subsystemName", *nvmeSubsystemList.Name)
+			} else {
+				assert.Error(t, err, "get the NVMe subsystem")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeSubsystemCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			nvmeSubsystem, err := rs.NVMeSubsystemCreate(ctx, "subsystemName")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "issue while creating subsystem")
+				assert.Equal(t, "subsystemName", *nvmeSubsystem.Name)
+			} else {
+				assert.Error(t, err, "subsystem is created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestNVMeSubsystemDelete(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.NVMeSubsystemDelete(ctx, "subsystemName")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "issue while deleting subsystem")
+			} else {
+				assert.Error(t, err, "subsystem is deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestNVMeAddHostNqnToSubsystem(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.NVMeAddHostNqnToSubsystem(ctx, "hostiqn", "subsystemName")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "issue while adding host to subsystem")
+			} else {
+				assert.Error(t, err, "host added to subsystem")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestNVMeGetHostsOfSubsystem(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeSubsystemMapResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			nvmeGetHostsOfSubsystem, err := rs.NVMeGetHostsOfSubsystem(ctx, "subsystemName")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the host of NVMe subsystem")
+				assert.Equal(t, "nvmeSubsystemName", *nvmeGetHostsOfSubsystem[0].Subsystem.Name)
+			} else {
+				assert.Error(t, err, "get the host of NVMe subsystem")
+			}
+
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestNVMeNamespaceSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeNamespaceResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+		{"BackendReturnNilResponse", mockNvmeNamespaceResponseNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			size, err := rs.NVMeNamespaceSize(ctx, "namespace1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "failed to get NVMe namespace size")
+				assert.Equal(t, 1073741824, size)
+			} else {
+				assert.Error(t, err, "get the NVMe namespace size")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSVM(w http.ResponseWriter, r *http.Request) {
+	svmUUID := "1234"
+	svmName := "svm0"
+
+	svm := models.Svm{
+		UUID:  &svmUUID,
+		Name:  &svmName,
+		State: utils.Ptr("running"),
+		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
+			{Name: utils.Ptr("aggr1")},
+		},
+	}
+	if r.URL.Path == "/api/svm/svms/1234" {
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(svm)
+	}
+
+	if r.URL.Path == "/api/svm/svms" {
+		svmResponse := models.SvmResponse{
+			SvmResponseInlineRecords: []*models.Svm{&svm},
+			NumRecords:               utils.Ptr(int64(1)),
+		}
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(svmResponse)
+	}
+}
+
+func mockSVMNameNil(w http.ResponseWriter, r *http.Request) {
+	svm := models.Svm{
+		UUID:  utils.Ptr("fake-uuid"),
+		State: utils.Ptr("running"),
+		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
+			{UUID: utils.Ptr("fake-uuid")},
+		},
+	}
+
+	svmResponse := models.SvmResponse{
+		SvmResponseInlineRecords: []*models.Svm{&svm},
+		NumRecords:               utils.Ptr(int64(1)),
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(svmResponse)
+}
+
+func mockSVMNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	svm := models.Svm{
+		Name: utils.Ptr("svm0"),
+		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
+			{Name: utils.Ptr("aggr1")},
+		},
+	}
+	svmResponse := models.SvmResponse{
+		SvmResponseInlineRecords: []*models.Svm{&svm},
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(svmResponse)
+}
+
+func mockGetSVMError(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
+func TestOntapRest_EnsureSVMWithRest(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		svm             string
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSVM, "svm0", false},
+		{"PositiveTest_SVMNameEmptyInOntapConfig", mockSVM, "", false},
+		{"SVMNameEmptyInOntapConfig_NumRecordsFieldNilInResponse", mockSVMNumRecordsNil, "", true},
+		{"SVMNameEmptyInOntapConfig_UUIDNilInResponse", mockSVMUUIDNil, "", true},
+		{"SVMNameEmptyInOntapConfig_SVMNameNilInResponse", mockSVMNameNil, "", true},
+		{"SVMNameEmptyInOntapConfig_BackendReturnError", mockGetSVMError, "", true},
+		{"BackendReturnError", mockGetSVMError, "svm0", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			storageDriverConfig := drivers.OntapStorageDriverConfig{SVM: test.svm}
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := EnsureSVMWithRest(ctx, &storageDriverConfig, rs)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "failed to get svm")
+			} else {
+				assert.Error(t, err, "get the svm")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockJobScheduleResponse(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	scheduleResponse := &models.ScheduleResponse{
+		ScheduleResponseInlineRecords: []*models.Schedule{{}},
+		NumRecords:                    &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(scheduleResponse)
+}
+
+func mockJobScheduleResponseRecordNil(w http.ResponseWriter, r *http.Request) {
+	scheduleResponse := &models.ScheduleResponse{}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(scheduleResponse)
+}
+
+func mockJobScheduleResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	scheduleResponse := &models.ScheduleResponse{
+		ScheduleResponseInlineRecords: []*models.Schedule{{}},
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(scheduleResponse)
+}
+
+func mockJobScheduleResponseNumRecordsGrt1(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(2)
+	scheduleResponse := &models.ScheduleResponse{
+		ScheduleResponseInlineRecords: []*models.Schedule{{}},
+		NumRecords:                    &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(scheduleResponse)
+}
+
+func TestOntapRest_JobScheduleExists(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockJobScheduleResponse, false},
+		{"JobIsNilInResponse", mockJobScheduleResponseRecordNil, true},
+		{"NumRecordFieldNil", mockJobScheduleResponseNumRecordsNil, true},
+		{"NumRecordMoreThanOne", mockJobScheduleResponseNumRecordsGrt1, true},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			jobExists, err := rs.JobScheduleExists(ctx, "fake-job")
+			if !test.isErrorExpected {
+				assert.Equal(t, true, jobExists)
+				assert.NoError(t, err, "schedule job does not exists")
+			} else {
+				assert.Error(t, err, "schedule job exists")
 			}
 			server.Close()
 		})

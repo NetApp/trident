@@ -5657,7 +5657,7 @@ func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (
 	if nsCreateAccepted.IsSuccess() {
 		nsResponse := nsCreateAccepted.GetPayload()
 		// Verify that the created namespace is the same as the one we requested.
-		if nsResponse != nil && *nsResponse.NumRecords == 1 &&
+		if nsResponse != nil && nsResponse.NumRecords != nil && *nsResponse.NumRecords == 1 &&
 			*nsResponse.NvmeNamespaceResponseInlineRecords[0].Name == ns.Name {
 			return *nsResponse.NvmeNamespaceResponseInlineRecords[0].UUID, nil
 		}
