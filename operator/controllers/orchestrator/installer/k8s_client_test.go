@@ -3508,7 +3508,7 @@ func TestRemoveMultipleDaemonSets(t *testing.T) {
 				// mock out the k8s client calls needed to test this
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
-				err := extendedK8sClient.RemoveMultipleDaemonSets(test.input, false)
+				err := extendedK8sClient.RemoveMultipleDaemonSets(test.input)
 				assert.Equal(t, test.output, err)
 			},
 		)
