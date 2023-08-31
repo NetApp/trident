@@ -2240,7 +2240,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 func (p *Plugin) nodeUnstageNVMeVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
-	p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
+	disconnect := p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
 		publishInfo.NVMeNamespaceUUID)
 
 	// Get the device using 'nvme-cli' commands. Flush the device IOs.
@@ -2252,7 +2252,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 
 	if !nvmeDev.IsNil() {
 		// If device is found, proceed to flush and clean up.
-		err := nvmeDev.FlushDevice(ctx)
+		err := nvmeDev.FlushDevice(ctx, p.unsafeDetach, force)
 		// If flush fails, give a grace period of 6 minutes (nvmeMaxFlushWaitDuration) before giving up.
 		if err != nil {
 			if NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID].IsZero() {
@@ -2297,8 +2297,10 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 			}).Debug("Error getting Namespace count.")
 	}
 
-	// If number of namespaces is more than 1, don't disconnect the subsystem
-	if err == nil && numNs <= 1 {
+	// If number of namespaces is more than 1, don't disconnect the subsystem. If we get any issues while getting the
+	// number of namespaces through the CLI, we can rely on the disconnect flag from NVMe self-healing sessions (if
+	// NVMe self-healing is enabled), which keeps track of namespaces associated with the subsystem.
+	if (err == nil && numNs <= 1) || (p.nvmeSelfHealingInterval > 0 && err != nil && disconnect) {
 		if err := nvmeSubsys.Disconnect(ctx); err != nil {
 			Logc(ctx).WithFields(
 				LogFields{

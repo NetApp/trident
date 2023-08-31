@@ -132,7 +132,7 @@ type NVMeSubsystemInterface interface {
 
 type NVMeDeviceInterface interface {
 	GetPath() string
-	FlushDevice(ctx context.Context) error
+	FlushDevice(ctx context.Context, ignoreErrors, force bool) error
 	IsNil() bool
 }
 
@@ -147,7 +147,7 @@ type NVMeInterface interface {
 	NewNVMeSubsystem(ctx context.Context, subsNqn string) NVMeSubsystemInterface
 	NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
 	AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *VolumePublishInfo)
-	RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string)
+	RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string) bool
 	PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error
 	InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *NVMeSessions) []NVMeSubsystem
 	RectifyNVMeSession(ctx context.Context, subsystemToFix NVMeSubsystem, pubSessions *NVMeSessions)

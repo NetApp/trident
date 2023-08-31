@@ -1006,6 +1006,10 @@ func (d *NVMeStorageDriver) GetInternalVolumeName(_ context.Context, name string
 
 // CreatePrepare sets appropriate config/attributes values before calling volume create.
 func (d *NVMeStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+	if !volConfig.ImportNotManaged && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+		// All new CSI ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
+		volConfig.AccessInfo.PublishEnforcement = true
+	}
 	createPrepareCommon(ctx, d, volConfig)
 }
 
@@ -1523,4 +1527,15 @@ func createNamespacePath(flexvolName, namespaceName string) string {
 func (d *NVMeStorageDriver) namespaceSize(ctx context.Context, name string) (int, error) {
 	nsPath := "/vol/" + name + "/*"
 	return d.API.NVMeNamespaceGetSize(ctx, nsPath)
+}
+
+// EnablePublishEnforcement sets the publishEnforcement on older NVMe volumes.
+func (d *NVMeStorageDriver) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
+	volume.Config.AccessInfo.PublishEnforcement = true
+	return nil
+}
+
+// CanEnablePublishEnforcement dictates if any NVMe volume will get published on a node, depending on the node state.
+func (d *NVMeStorageDriver) CanEnablePublishEnforcement() bool {
+	return true
 }

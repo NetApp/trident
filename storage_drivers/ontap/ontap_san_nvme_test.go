@@ -1073,7 +1073,8 @@ func TestCreatePrepare(t *testing.T) {
 	d.CreatePrepare(ctx, volConfig)
 	tridentconfig.CurrentDriverContext = ""
 
-	assert.Equal(t, "test_fakeVolName", volConfig.InternalName)
+	assert.Equal(t, "test_fakeVolName", volConfig.InternalName, "Incorrect volume internal name.")
+	assert.True(t, volConfig.AccessInfo.PublishEnforcement, "Publish enforcement not enabled.")
 }
 
 func TestNVMeResize_VolumeExistsErrors(t *testing.T) {
@@ -1471,4 +1472,15 @@ func TestGetBackendState(t *testing.T) {
 
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
 	assert.NotNil(t, changeMap, "should not be nil")
+}
+
+func TestEnablePublishEnforcement(t *testing.T) {
+	d := newNVMeDriver(nil)
+	vol := storage.Volume{Config: getVolumeConfig()}
+
+	assert.True(t, d.CanEnablePublishEnforcement(), "Cannot enable publish enforcement.")
+
+	d.EnablePublishEnforcement(ctx, &vol)
+
+	assert.True(t, vol.Config.AccessInfo.PublishEnforcement, "Incorrect publish enforcement value.")
 }

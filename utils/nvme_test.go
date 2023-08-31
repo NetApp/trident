@@ -150,16 +150,18 @@ func TestNVMeHandler_RemovePublishedNVMeSession(t *testing.T) {
 
 	// Uninitialized published sessions case.
 	var pubSessions *NVMeSessions
-	nh.RemovePublishedNVMeSession(pubSessions, testSubsystem1.NQN, "test")
+	disconnect := nh.RemovePublishedNVMeSession(pubSessions, testSubsystem1.NQN, "test")
 
 	assert.Nil(t, pubSessions, "Published sessions initialized.")
+	assert.False(t, disconnect, "Don't disconnect subsystem.")
 
 	// Initialized published sessions case.
 	pubSessions = NewNVMeSessions()
 	nh.AddPublishedNVMeSession(pubSessions, volPubInfo)
-	nh.RemovePublishedNVMeSession(pubSessions, testSubsystem1.NQN, volPubInfo.NVMeNamespaceUUID)
+	disconnect = nh.RemovePublishedNVMeSession(pubSessions, testSubsystem1.NQN, volPubInfo.NVMeNamespaceUUID)
 
 	assert.False(t, pubSessions.CheckNVMeSessionExists(testSubsystem1.NQN), "NVMe session not deleted.")
+	assert.True(t, disconnect, "Disconnect subsystem.")
 }
 
 func TestNVMeHandler_InspectNVMeSessions_EmptyPublishedSessions(t *testing.T) {

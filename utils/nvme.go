@@ -180,8 +180,20 @@ func (d *NVMeDevice) GetPath() string {
 }
 
 // FlushDevice flushes any ongoing IOs on the device.
-func (d *NVMeDevice) FlushDevice(ctx context.Context) error {
-	return FlushNVMeDevice(ctx, d.GetPath())
+func (d *NVMeDevice) FlushDevice(ctx context.Context, ignoreErrors, force bool) error {
+	// Force is set in forced detach use case. We don't flush in that scenario and return success.
+	if force {
+		return nil
+	}
+
+	err := FlushNVMeDevice(ctx, d.GetPath())
+
+	// When ignoreErrors is set, we try to flush but ignore any errors encountered during the flush.
+	if ignoreErrors {
+		return nil
+	}
+
+	return err
 }
 
 // IsNil returns true if Device and NamespacePath are not set.
@@ -515,16 +527,21 @@ func (nh *NVMeHandler) AddPublishedNVMeSession(pubSessions *NVMeSessions, publis
 	pubSessions.AddNamespaceToSession(publishInfo.NVMeSubsystemNQN, publishInfo.NVMeNamespaceUUID)
 }
 
-// RemovePublishedNVMeSession deletes the  published NVMeSession from the given session map.
-func (nh *NVMeHandler) RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string) {
+// RemovePublishedNVMeSession deletes the namespace from the published NVMeSession. If the number of namespaces
+// associated with a session comes down to 0, we delete that session and send a disconnect signal for that subsystem.
+func (nh *NVMeHandler) RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string) bool {
+	disconnect := false
 	if pubSessions == nil {
-		return
+		return disconnect
 	}
 
 	pubSessions.RemoveNamespaceFromSession(subNQN, nsUUID)
 	if pubSessions.GetNamespaceCountForSession(subNQN) < 1 {
+		disconnect = true
 		pubSessions.RemoveNVMeSession(subNQN)
 	}
+
+	return disconnect
 }
 
 // PopulateCurrentNVMeSessions populates the given session map with the current session present on the k8s node. This
