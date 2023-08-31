@@ -38,7 +38,8 @@ type Orchestrator interface {
 	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
 
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
-	UpdateVolume(ctx context.Context, volume string, passphraseNames *[]string) error
+	UpdateVolume(ctx context.Context, volume string, volumeUpdateInfo *utils.VolumeUpdateInfo) error
+	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames *[]string) error
 	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
 	CloneVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	DetachVolume(ctx context.Context, volumeName, mountpoint string) error

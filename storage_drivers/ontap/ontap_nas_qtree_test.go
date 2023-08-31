@@ -4316,3 +4316,254 @@ func TestNASQtreeStorageDriver_RestoreSnapshot(t *testing.T) {
 
 	assert.Error(t, result)
 }
+
+func TestNASQtreeStorageDriver_GetQtreesInPool(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+
+	internalID1 := "/vol/trident_pvc_b4010eee_8b95_42c2_b7fb_9f6cd79f06df/namespace0"
+	internalID2 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
+	internalID3 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f877"
+	internalID4 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCQT/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f843"
+
+	mockVol1 := getMockVolume("pvc-b4010eee-8b95-42c2-b7fb-9f6cd79f06df", internalID1)
+	mockVol2 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f854", internalID2)
+	mockVol3 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f877", internalID3)
+	mockVol4 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f843", internalID4)
+
+	allVolumes := map[string]*storage.Volume{
+		"pvc-b4010eee-8b95-42c2-b7fb-9f6cd79f06df": mockVol1,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f854": mockVol2,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f877": mockVol3,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol4,
+	}
+
+	tests := []struct {
+		name         string
+		qPoolName    string
+		expectedVols int
+	}{
+		{"no-vol-in qtreepool", "trident_qtree_pool_trident_XHPULXSABC", 0},
+		{"vol-in-qtreepool", "trident_qtree_pool_trident_XHPULXSCYE", 2},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			result := driver.getQtreesInPool(test.qPoolName, allVolumes)
+			assert.Equal(tt, test.expectedVols, len(result))
+		})
+	}
+}
+
+func TestNASQtreeStorageDriver_UpdateVolume_Success(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	internalID1 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
+	internalID2 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f877"
+	internalID3 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCQT/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f843"
+
+	mockVol1 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f854", internalID1)
+	mockVol2 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f877", internalID2)
+	mockVol3 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f843", internalID3)
+
+	mockVol1.Config.SnapshotDir = "true"
+	mockVol2.Config.SnapshotDir = "true"
+	mockVol3.Config.SnapshotDir = "true"
+
+	allVolumes := map[string]*storage.Volume{
+		"pvc-99138d85-6259-4830-ada0-30e45e21f854": mockVol1,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f877": mockVol2,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
+	}
+
+	updateInfo := &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "false",
+		PoolLevel:         true,
+	}
+
+	mockAPI.EXPECT().QtreeExists(gomock.Any(), "trident_pvc_99138d85_6259_4830_ada0_30e45e21f854", gomock.Any()).Return(true, "trident_qtree_pool_trident_XHPULXSCYE", nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(nil)
+
+	result, resultErr := driver.Update(ctx, mockVol1.Config, updateInfo, allVolumes)
+
+	assert.NoError(t, resultErr)
+	assert.NotNil(t, result)
+	for _, v := range result {
+		assert.True(t, strings.HasPrefix(v.Config.InternalID, "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree"))
+		assert.Equal(t, updateInfo.SnapshotDirectory, v.Config.SnapshotDir)
+	}
+}
+
+func TestNASQtreeStorageDriver_UpdateVolume_Failure(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	fakeErr := errors.New("fake error")
+
+	internalID1 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
+	internalID2 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f877"
+	internalID3 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCQT/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f843"
+
+	mockVol1 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f854", internalID1)
+	mockVol2 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f877", internalID2)
+	mockVol3 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f843", internalID3)
+
+	mockVol1.Config.SnapshotDir = "true"
+	mockVol2.Config.SnapshotDir = "true"
+	mockVol3.Config.SnapshotDir = "true"
+
+	allVolumes := map[string]*storage.Volume{
+		"pvc-99138d85-6259-4830-ada0-30e45e21f854": mockVol1,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f877": mockVol2,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
+	}
+
+	updateInfo := &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "false",
+		PoolLevel:         true,
+	}
+
+	// CASE 1: No volume update info provided
+	result, resultErr := driver.Update(ctx, mockVol1.Config, nil, allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.True(t, errors.IsInvalidInputError(resultErr))
+	assert.Nil(t, result)
+
+	// CASE 2: Invalid Internal ID
+	mockVol1.Config.InternalID = "invalid"
+
+	result, resultErr = driver.Update(ctx, mockVol1.Config, updateInfo, allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.Nil(t, result)
+
+	// CASE 3: Error in checking if qtree exists
+	mockVol1.Config.InternalID = internalID1
+	mockAPI.EXPECT().QtreeExists(gomock.Any(), "trident_pvc_99138d85_6259_4830_ada0_30e45e21f854", gomock.Any()).Return(false, "", fakeErr)
+
+	result, resultErr = driver.Update(ctx, mockVol1.Config, updateInfo, allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.Equal(t, fakeErr.Error(), resultErr.Error())
+	assert.Nil(t, result)
+
+	// CASE 4: Qtree does not exist
+	mockVol1.Config.InternalID = internalID1
+	mockAPI.EXPECT().QtreeExists(gomock.Any(), "trident_pvc_99138d85_6259_4830_ada0_30e45e21f854", gomock.Any()).Return(false, "", nil)
+
+	result, resultErr = driver.Update(ctx, mockVol1.Config, updateInfo, allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.Equal(t, "volume trident_pvc_99138d85_6259_4830_ada0_30e45e21f854 does not exist", resultErr.Error())
+	assert.Nil(t, result)
+
+	// CASE 5: Error while modifying snapshot directory
+	mockVol1.Config.InternalID = internalID1
+	mockAPI.EXPECT().QtreeExists(gomock.Any(), "trident_pvc_99138d85_6259_4830_ada0_30e45e21f854", gomock.Any()).Return(true, "trident_qtree_pool_trident_XHPULXSCYE", nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(fakeErr)
+
+	result, resultErr = driver.Update(ctx, mockVol1.Config, updateInfo, allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.Equal(t, fakeErr.Error(), resultErr.Error())
+	assert.Nil(t, result)
+}
+
+func TestNASQtreeStorageDriver_SetSnapshotDirectory_Success(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	internalID1 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
+	internalID2 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f877"
+	internalID3 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCQT/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f843"
+
+	mockVol1 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f854", internalID1)
+	mockVol2 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f877", internalID2)
+	mockVol3 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f843", internalID3)
+
+	mockVol1.Config.SnapshotDir = "true"
+	mockVol2.Config.SnapshotDir = "true"
+	mockVol3.Config.SnapshotDir = "true"
+
+	allVolumes := map[string]*storage.Volume{
+		"pvc-99138d85-6259-4830-ada0-30e45e21f854": mockVol1,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f877": mockVol2,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
+	}
+
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(nil)
+
+	result, resultErr := driver.setSnapshotDirectory(ctx, mockVol1.Config, "false", true, "trident_qtree_pool_trident_XHPULXSCYE", allVolumes)
+
+	assert.NoError(t, resultErr)
+	assert.NotNil(t, result)
+	for _, v := range result {
+		assert.True(t, strings.HasPrefix(v.Config.InternalID, "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree"))
+		assert.Equal(t, "false", v.Config.SnapshotDir)
+	}
+}
+
+func TestNASQtreeStorageDriver_SetSnapshotDirectory_Failure(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	fakeErr := errors.New("fake error")
+
+	internalID1 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
+	internalID2 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f877"
+	internalID3 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCQT/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f843"
+
+	mockVol1 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f854", internalID1)
+	mockVol2 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f877", internalID2)
+	mockVol3 := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f843", internalID3)
+
+	mockVol1.Config.SnapshotDir = "true"
+	mockVol2.Config.SnapshotDir = "true"
+	mockVol3.Config.SnapshotDir = "true"
+
+	allVolumes := map[string]*storage.Volume{
+		"pvc-99138d85-6259-4830-ada0-30e45e21f854": mockVol1,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f877": mockVol2,
+		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
+	}
+
+	// CASE 1: Invalid snapshot dir value
+	result, resultErr := driver.setSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.True(t, errors.IsInvalidInputError(resultErr))
+	assert.Nil(t, result)
+
+	// CASE 2: Pool level value is false
+	result, resultErr = driver.setSnapshotDirectory(ctx, mockVol1.Config, "false", false, "", allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.True(t, errors.IsInvalidInputError(resultErr))
+	assert.Equal(t, fmt.Sprintf("pool level must be set to true for updating snapshot directory of %v volume", driver.Config.StorageDriverName), resultErr.Error())
+	assert.Nil(t, result)
+
+	// CASE 3: Error while modifying snapshot directory
+	mockVol1.Config.InternalID = internalID1
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(fakeErr)
+
+	result, resultErr = driver.setSnapshotDirectory(
+		ctx, mockVol1.Config, "false", true,
+		"trident_qtree_pool_trident_XHPULXSCYE", allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.Equal(t, fakeErr.Error(), resultErr.Error())
+	assert.Nil(t, result)
+}
+
+func getMockVolume(name, internalID string) *storage.Volume {
+	return &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Version:       "v1",
+			Name:          name,
+			InternalName:  name,
+			Size:          "10Mi",
+			AccessInfo:    utils.VolumeAccessInfo{},
+			ReadOnlyClone: false,
+			InternalID:    internalID,
+		},
+		BackendUUID: BackendUUID,
+		Pool:        "",
+		Orphaned:    false,
+		State:       "",
+	}
+}

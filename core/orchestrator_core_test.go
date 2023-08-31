@@ -825,7 +825,139 @@ func TestAddStorageClassVolumes(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
-func TestUpdateVolume_LUKSPassphraseNames(t *testing.T) {
+func TestUpdateVolume_SnapshotDir_Success(t *testing.T) {
+	ctx := context.Background()
+	backendUUID := "45e44b30-8f53-498d-8555-2cf006760ba6"
+
+	volName := "test"
+	internalId := "/svm/fakesvm/flexvol/fakevol/qtree/" + volName
+	vol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:        volName,
+			InternalID:  internalId,
+			SnapshotDir: "false",
+		},
+		BackendUUID: backendUUID,
+	}
+
+	updateInfo := &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}
+
+	updatedVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:        volName,
+			InternalID:  internalId,
+			SnapshotDir: "true",
+		},
+		BackendUUID: backendUUID,
+	}
+
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.volumes[volName] = vol
+
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	orchestrator.backends[backendUUID] = mockBackend
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("ontap-nas-economy").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+	mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).Return(map[string]*storage.Volume{volName: updatedVol}, nil)
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator.storeClient = mockStoreClient
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), updatedVol).Return(nil)
+
+	// Update volume
+	result := orchestrator.UpdateVolume(ctx, volName, updateInfo)
+
+	assert.NoError(t, result)
+	assert.NotNil(t, orchestrator.volumes[volName])
+	assert.Equal(t, updatedVol.Config.SnapshotDir, orchestrator.volumes[volName].Config.SnapshotDir)
+}
+
+func TestUpdateVolume_SnapshotDir_Failure(t *testing.T) {
+	ctx := context.Background()
+	backendUUID := "45e44b30-8f53-498d-8555-2cf006760ba6"
+	fakeErr := errors.New("fake error")
+	volName := "test"
+	internalId := "/svm/fakesvm/flexvol/fakevol/qtree/" + volName
+	vol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:        volName,
+			InternalID:  internalId,
+			SnapshotDir: "false",
+		},
+		BackendUUID: backendUUID,
+	}
+
+	updateInfo := &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}
+
+	updatedVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:        volName,
+			InternalID:  internalId,
+			SnapshotDir: "true",
+		},
+		BackendUUID: backendUUID,
+	}
+
+	orchestrator := getOrchestrator(t, false)
+	orchestrator.volumes[vol.Config.Name] = vol
+
+	// CASE 1: No volume update information provided
+	result := orchestrator.UpdateVolume(ctx, volName, nil)
+
+	assert.Error(t, result)
+	assert.Equal(t, true, errors.IsInvalidInputError(result))
+
+	// CASE 2: Volume not found
+	result = orchestrator.UpdateVolume(ctx, "not-found-vol", updateInfo)
+
+	assert.Error(t, result)
+	assert.Equal(t, true, errors.IsNotFoundError(result))
+
+	// CASE 3: Backend not found
+	result = orchestrator.UpdateVolume(ctx, volName, updateInfo)
+
+	assert.Error(t, result)
+	assert.Equal(t, true, errors.IsNotFoundError(result))
+
+	// CASE 4: Backend failed to update volume
+	mockCtrl := gomock.NewController(t)
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	orchestrator.backends[backendUUID] = mockBackend
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+	mockBackend.EXPECT().GetDriverName().Return("ontap-nas-economy").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
+	mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).Return(nil, fakeErr)
+
+	result = orchestrator.UpdateVolume(ctx, volName, updateInfo)
+
+	assert.Error(t, result)
+	assert.Equal(t, fakeErr.Error(), result.Error())
+
+	// CASE 5: Persistence failed to update volume
+	mockBackend.EXPECT().UpdateVolume(gomock.Any(), vol.Config, updateInfo).Return(map[string]*storage.Volume{volName: updatedVol}, nil)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator.storeClient = mockStoreClient
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), updatedVol).Return(fakeErr)
+
+	result = orchestrator.UpdateVolume(ctx, volName, updateInfo)
+
+	assert.Error(t, result)
+	assert.Equal(t, fakeErr.Error(), result.Error())
+}
+
+func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: luksPassphraseNames field updated
 	orchestrator := getOrchestrator(t, false)
@@ -838,7 +970,7 @@ func TestUpdateVolume_LUKSPassphraseNames(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
 
-	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", &[]string{"A"})
+	err = orchestrator.UpdateVolumeLUKSPassphraseNames(context.TODO(), "test-vol", &[]string{"A"})
 	desiredPassphraseNames := []string{"A"}
 	assert.NoError(t, err)
 	assert.Equal(t, desiredPassphraseNames, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
@@ -862,7 +994,7 @@ func TestUpdateVolume_LUKSPassphraseNames(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
 
-	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", nil)
+	err = orchestrator.UpdateVolumeLUKSPassphraseNames(context.TODO(), "test-vol", nil)
 	desiredPassphraseNames = []string{}
 	assert.NoError(t, err)
 	assert.Equal(t, desiredPassphraseNames, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
@@ -883,7 +1015,7 @@ func TestUpdateVolume_LUKSPassphraseNames(t *testing.T) {
 	}
 	orchestrator.volumes[vol.Config.Name] = vol
 
-	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", &[]string{"A"})
+	err = orchestrator.UpdateVolumeLUKSPassphraseNames(context.TODO(), "test-vol", &[]string{"A"})
 	desiredPassphraseNames = []string{}
 	assert.Error(t, err)
 	assert.Equal(t, desiredPassphraseNames, orchestrator.volumes[vol.Config.Name].Config.LUKSPassphraseNames)
@@ -898,7 +1030,7 @@ func TestUpdateVolume_LUKSPassphraseNames(t *testing.T) {
 	bootstrapError := fmt.Errorf("my bootstrap error")
 	orchestrator.bootstrapError = bootstrapError
 
-	err = orchestrator.UpdateVolume(context.TODO(), "test-vol", &[]string{"A"})
+	err = orchestrator.UpdateVolumeLUKSPassphraseNames(context.TODO(), "test-vol", &[]string{"A"})
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, bootstrapError)
 }
@@ -951,7 +1083,7 @@ func TestCloneVolume_SnapshotDataSource_LUKS(t *testing.T) {
 	defer orchestrator.DeleteSnapshot(ctx(), volConfig.Name, snapshotConfig.Name)
 
 	// "rotate" the luksPassphraseNames of the volume
-	err = orchestrator.UpdateVolume(ctx(), volConfig.Name, &[]string{"A"})
+	err = orchestrator.UpdateVolumeLUKSPassphraseNames(ctx(), volConfig.Name, &[]string{"A"})
 	assert.NoError(t, err)
 	vol, err := orchestrator.GetVolume(ctx(), volConfig.Name)
 	assert.NoError(t, err)

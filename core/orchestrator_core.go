@@ -2036,8 +2036,81 @@ func (o *TridentOrchestrator) addVolumeFinish(
 	return externalVol, nil
 }
 
-// UpdateVolume updates the LUKS passphrase names stored on a volume in the cache and persistent store.
-func (o *TridentOrchestrator) UpdateVolume(ctx context.Context, volume string, passphraseNames *[]string) error {
+// UpdateVolume updates the allowed fields of a volume in the backend, persistent store and cache.
+func (o *TridentOrchestrator) UpdateVolume(
+	ctx context.Context, volumeName string,
+	volumeUpdateInfo *utils.VolumeUpdateInfo,
+) error {
+	fields := LogFields{
+		"Method":     "UpdateVolume",
+		"Type":       "TridentOrchestrator",
+		"volume":     volumeName,
+		"updateInfo": volumeUpdateInfo,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> UpdateVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< UpdateVolume")
+
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	if volumeUpdateInfo == nil {
+		err := errors.InvalidInputError(fmt.Sprintf("no volume update information provided for volume %v", volumeName))
+		Logc(ctx).WithError(err).Error("Failed to update volume")
+		return err
+	}
+
+	genericUpdateErr := fmt.Sprintf("failed to update volume %v", volumeName)
+
+	// Get the volume
+	volume, found := o.volumes[volumeName]
+	if !found {
+		err := errors.NotFoundError("volume %v was not found", volumeName)
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	// Get the backend
+	backend, err := o.getBackendByBackendUUID(volume.BackendUUID)
+	if err != nil {
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	// Update volume
+	updatedVols, err := backend.UpdateVolume(ctx, volume.Config, volumeUpdateInfo)
+	if err != nil {
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	if updatedVols != nil {
+		// Update persistent layer
+		for _, v := range updatedVols {
+			err := o.updateVolumeOnPersistentStore(ctx, v)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf(genericUpdateErr)
+				return err
+			}
+		}
+
+		// Update cache
+		for name, updatedVol := range updatedVols {
+			o.volumes[name] = updatedVol
+		}
+	}
+
+	return nil
+}
+
+// UpdateVolumeLUKSPassphraseNames updates the LUKS passphrase names stored on a volume in the cache and persistent store.
+func (o *TridentOrchestrator) UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames *[]string) error {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {

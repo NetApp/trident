@@ -153,6 +153,11 @@ func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 	}
 }
 
+type VolumeUpdateInfo struct {
+	SnapshotDirectory string `json:"snapshotDirectory"`
+	PoolLevel         bool   `json:"poolLevel"`
+}
+
 type Node struct {
 	Name             string               `json:"name"`
 	IQN              string               `json:"iqn,omitempty"`

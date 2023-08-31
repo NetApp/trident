@@ -101,6 +101,14 @@ type StateGetter interface {
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
 }
 
+// VolumeUpdater provides a common interface for backends that support updating the volume
+type VolumeUpdater interface {
+	Update(
+		ctx context.Context, volConfig *VolumeConfig,
+		updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*Volume,
+	) (map[string]*Volume, error)
+}
+
 type StorageBackend struct {
 	driver             Driver
 	name               string
@@ -113,6 +121,16 @@ type StorageBackend struct {
 	volumes            map[string]*Volume
 	configRef          string
 	nodeAccessUpToDate bool
+}
+
+func (b *StorageBackend) UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo) (map[string]*Volume, error) {
+	volUpdateDriver, ok := b.driver.(VolumeUpdater)
+	if !ok {
+		return nil, errors.UnsupportedError(
+			fmt.Sprintf("volume update is not supported for backend of type %v", b.driver.Name()))
+	}
+
+	return volUpdateDriver.Update(ctx, volConfig, updateInfo, b.volumes)
 }
 
 func (b *StorageBackend) Driver() Driver {
