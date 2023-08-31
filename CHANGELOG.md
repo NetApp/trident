@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v23.04.0
+## Changes since v23.07.0
+
+**Fixes:**
+
+- **Kubernetes:** Fixed daemonset deletion to support zero-downtime upgrades (Issue [#740](https://github.com/NetApp/trident/issues/740)).
+
+## v23.07.0
 
 **Fixes:**
 
