@@ -176,13 +176,13 @@ type TridentActionMirrorUpdateSpec struct {
 
 // TridentActionMirrorUpdateStatus defines the result of TridentActionMirrorUpdate
 type TridentActionMirrorUpdateStatus struct {
-	LocalVolumeHandle  string       `json:"localVolumeHandle"`
-	RemoteVolumeHandle string       `json:"remoteVolumeHandle"`
-	SnapshotHandle     string       `json:"snapshotHandle,omitempty"`
-	State              string       `json:"state,omitempty"`
-	Message            string       `json:"message,omitempty"`
-	CompletionTime     *metav1.Time `json:"completionTime,omitempty"`
-	StartTime          *metav1.Time `json:"startTime,omitempty"`
+	LocalVolumeHandle    string       `json:"localVolumeHandle"`
+	RemoteVolumeHandle   string       `json:"remoteVolumeHandle"`
+	SnapshotHandle       string       `json:"snapshotHandle,omitempty"`
+	State                string       `json:"state,omitempty"`
+	Message              string       `json:"message,omitempty"`
+	CompletionTime       *metav1.Time `json:"completionTime,omitempty"`
+	PreviousTransferTime *metav1.Time `json:"previousTransferTime,omitempty"`
 }
 
 // TridentActionMirrorUpdateList is a list of TridentActionMirrorUpdate objects.
@@ -260,6 +260,8 @@ type TridentBackend struct {
 	Online bool `json:"online"`
 	// State records the TridentBackend's state
 	State string `json:"state"`
+	// UserState records the TridentBackend's user-defined state
+	UserState string `json:"userState"`
 	// StateReason records the reason if TridentBackend's state is offline
 	StateReason string `json:"stateReason,omitempty"`
 	// ConfigRef is a reference to the TridentBackendConfig object
@@ -362,6 +364,8 @@ type TridentNode struct {
 	NodeName string `json:"name"`
 	// IQN is the iqn of the node
 	IQN string `json:"iqn,omitempty"`
+	// NQN is the nqn of the node
+	NQN string `json:"nqn,omitempty"`
 	// IPs is a list of IP addresses for the TridentNode
 	IPs []string `json:"ips,omitempty"`
 	// NodePrep is the current status of node preparation for this node
@@ -471,4 +475,47 @@ type TridentVolumeReferenceList struct {
 
 	// List of TridentVolumeReference objects
 	Items []*TridentVolumeReference `json:"items"`
+}
+
+// TridentActionSnapshotRestore defines an imperative action to restore a volume to a snapshot.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentActionSnapshotRestore struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Input spec for TridentActionSnapshotRestore
+	Spec TridentActionSnapshotRestoreSpec `json:"spec"`
+
+	// Completion status for TridentActionSnapshotRestore
+	Status TridentActionSnapshotRestoreStatus `json:"status"`
+}
+
+// TridentActionSnapshotRestoreSpec defines the arguments of TridentActionSnapshotRestore
+type TridentActionSnapshotRestoreSpec struct {
+	// PVCName is the name of the PVC (not the PV) whose bound volume is to be restored
+	PVCName string `json:"pvcName"`
+	// VolumeSnapshotName is the name of the volume snapshot (not the VSC) to restore
+	VolumeSnapshotName string `json:"volumeSnapshotName"`
+}
+
+// TridentActionSnapshotRestoreStatus defines the result of TridentActionSnapshotRestore
+type TridentActionSnapshotRestoreStatus struct {
+	State          string       `json:"state,omitempty"`
+	Message        string       `json:"message,omitempty"`
+	StartTime      *metav1.Time `json:"startTime,omitempty"`
+	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
+}
+
+// TridentActionSnapshotRestoreList is a list of TridentActionSnapshotRestore objects.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentActionSnapshotRestoreList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	// List of TridentActionSnapshotRestore objects
+	Items []*TridentActionSnapshotRestore `json:"items"`
 }

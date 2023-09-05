@@ -3,6 +3,7 @@ package csi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"path"
 	"testing"
@@ -104,7 +105,8 @@ func TestReadTrackingInfo(t *testing.T) {
 	assert.NoError(t, err, "tracking file should have been written")
 
 	emptyTrackInfo = &utils.VolumeTrackingInfo{}
-	mockJSONUtils.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, "volume tracking info").Return(errors.New("foo"))
+	mockJSONUtils.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName,
+		"volume tracking info").Return(errors.New("foo"))
 	_, err = v.ReadTrackingInfo(context.Background(), volId)
 	assert.Error(t, err, "expected error when reading the file results in an error")
 	assert.Equal(t, "foo", err.Error(), "expected the error we threw in the mock")
@@ -294,7 +296,7 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 	_, err := osFs.Create(tmpTrackingInfoFile)
 	assert.NoError(t, err, "expected a test tmp file to be created without error")
 
-	needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths)
+	needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
 	assert.False(t, needsDelete, "expected to be told to keep tracking file")
 	assert.NoError(t, err, "expected tracking file upgrade to work")
 
@@ -304,7 +306,7 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 		Return(nil)
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
 		Return(errors.NotFoundError("foo"))
-	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths)
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
 	assert.True(t, needsDelete, "failure to upgrade should cause the tracking file to be deleted")
 	assert.NoError(t, err, "did not expect error if tracking file upgrade failed due to missing file")
 
@@ -314,16 +316,255 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 		Return(nil)
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
 		Return(errors.InvalidJSONError("foo"))
-	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths)
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
 	assert.True(t, needsDelete, "failure to upgrade should cause the tracking file to be deleted")
 	assert.NoError(t, err, "did not expect error if tracking file upgrade failed to find json in file")
 
 	// Legacy tracking file exists, and staging path exists, but tracking file is not valid JSON!
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
 		Return(errors.InvalidJSONError("foo"))
-	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths)
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
 	assert.True(t, needsDelete, "failure to upgrade should cause the tracking file to be deleted")
 	assert.NoError(t, err, "did not expect error if tracking file upgrade failed to find json in file")
+}
+
+func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	original := utils.JsonReaderWriter
+	defer func() { utils.JsonReaderWriter = original }()
+	utils.JsonReaderWriter = jsonReaderWriter
+	defer func() { osFs = afero.NewOsFs() }()
+	osFs = afero.NewMemMapFs()
+
+	stagePath := "/foo"
+	trackPath := "/bar"
+
+	basePubInfo := utils.VolumePublishInfo{}
+	basePubInfo.NfsServerIP = "1.1.1.1"
+	basePubInfo.FilesystemType = "somefs"
+
+	trackInfoAndPath := utils.VolumeTrackingInfo{}
+	trackInfoAndPath.StagingTargetPath = stagePath
+
+	volName := "pvc-123"
+	fName := volName + ".json"
+	pubPaths := map[string]struct{}{}
+	v := NewVolumePublishManager(trackPath)
+	trackingInfoFile := path.Join(trackPath, fName)
+	stagedDeviceInfo := path.Join(stagePath, volumePublishInfoFilename)
+	tmpTrackingInfoFile := path.Join(trackPath, "tmp-"+fName)
+
+	// Happy path where rawDevicePath exist but not devicePath
+	copyPublishInfo := basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = ""
+	copyPublishInfo.RawDevicePath = "/dev/dm-0"
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
+		SetArg(1, copyPublishInfo).
+		Return(nil)
+	jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
+		Return(nil)
+	_, err := osFs.Create(tmpTrackingInfoFile)
+	assert.NoError(t, err, "expected a test tmp file to be created without error")
+
+	needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+	_, err = afero.ReadFile(osFs, trackingInfoFile)
+	assert.NoError(t, err, "expected a tracking file to be present")
+
+	// Missing devicePath, rawDevicePath
+	copyPublishInfo = basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = ""
+	copyPublishInfo.RawDevicePath = ""
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
+		SetArg(1, copyPublishInfo).
+		Return(nil)
+	jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
+		Return(nil)
+	_, err = osFs.Create(tmpTrackingInfoFile)
+
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+
+	// Present both devicePath and rawDevicePath
+	copyPublishInfo = basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = "/dev/dm-0"
+	copyPublishInfo.RawDevicePath = "/dev/dm-1"
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), stagedDeviceInfo, "publish info").
+		SetArg(1, copyPublishInfo).
+		Return(nil)
+	jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
+		Return(nil)
+	_, err = osFs.Create(tmpTrackingInfoFile)
+
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+}
+
+func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	original := utils.JsonReaderWriter
+	defer func() { utils.JsonReaderWriter = original }()
+	utils.JsonReaderWriter = jsonReaderWriter
+	defer func() { osFs = afero.NewOsFs() }()
+	osFs = afero.NewMemMapFs()
+
+	stagePath := "/foo"
+	trackPath := "/bar"
+
+	basePubInfo := utils.VolumePublishInfo{}
+	basePubInfo.NfsServerIP = "1.1.1.1"
+	basePubInfo.FilesystemType = "somefs"
+
+	trackInfoAndPath := utils.VolumeTrackingInfo{}
+	trackInfoAndPath.StagingTargetPath = stagePath
+	trackInfoAndPath.PublishedPaths = map[string]struct{}{
+		"path1": {},
+		"path2": {},
+		"path3": {},
+	}
+
+	pvToDeviceMappings := map[string]string{
+		"path1": "/dev/dm-0",
+		"path4": "/dev/dm-1",
+	}
+
+	volName := "pvc-123"
+	fName := volName + ".json"
+	pubPaths := map[string]struct{}{}
+	v := NewVolumePublishManager(trackPath)
+	trackingInfoFile := path.Join(trackPath, fName)
+	tmpTrackingInfoFile := path.Join(trackPath, "tmp-"+fName)
+
+	// Happy path where rawDevicePath exist but not devicePath
+	copyPublishInfo := basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = ""
+	copyPublishInfo.RawDevicePath = "/dev/dm-0"
+
+	trackInfoAndPath.VolumePublishInfo = copyPublishInfo
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+	jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
+		Return(nil)
+	_, err := osFs.Create(tmpTrackingInfoFile)
+	assert.NoError(t, err, "expected a test tmp file to be created without error")
+
+	needsDelete, err := v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+	_, err = afero.ReadFile(osFs, trackingInfoFile)
+	assert.NoError(t, err, "expected a tracking file to be present")
+
+	// Happy path where rawDevicePath and devicePath do not exist, but published paths do
+	copyPublishInfo = basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = ""
+	copyPublishInfo.RawDevicePath = ""
+
+	trackInfoAndPath.VolumePublishInfo = copyPublishInfo
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+	jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
+		Return(nil)
+	_, err = osFs.Create(tmpTrackingInfoFile)
+	assert.NoError(t, err, "expected a test tmp file to be created without error")
+
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, pvToDeviceMappings)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+	_, err = afero.ReadFile(osFs, trackingInfoFile)
+	assert.NoError(t, err, "expected a tracking file to be present")
+
+	// Happy path not iSCSI
+	copyPublishInfo = basePubInfo
+	copyPublishInfo.IscsiTargetPortal = ""
+
+	trackInfoAndPath.VolumePublishInfo = copyPublishInfo
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, nil)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+
+	// Fail to write JSON file error
+	copyPublishInfo = basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = ""
+	copyPublishInfo.RawDevicePath = ""
+
+	trackInfoAndPath.VolumePublishInfo = copyPublishInfo
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+	jsonReaderWriter.EXPECT().WriteJSONFile(gomock.Any(), gomock.Any(), tmpTrackingInfoFile, "volume tracking info").
+		Return(fmt.Errorf("some error"))
+
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, pvToDeviceMappings)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+
+	// Missing devicePath, rawDevicePath and pvToDeviceMappings
+	copyPublishInfo = basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = ""
+	copyPublishInfo.RawDevicePath = ""
+
+	copyTrackInfoAndPath := trackInfoAndPath
+	copyTrackInfoAndPath.PublishedPaths = map[string]struct{}{}
+
+	copyTrackInfoAndPath.VolumePublishInfo = copyPublishInfo
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, copyTrackInfoAndPath).
+		Return(nil)
+
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, pvToDeviceMappings)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
+
+	// Present both devicePath and rawDevicePath
+	copyPublishInfo = basePubInfo
+	copyPublishInfo.IscsiTargetPortal = "someportal"
+	copyPublishInfo.DevicePath = "/dev/dm-0"
+	copyPublishInfo.RawDevicePath = "/dev/dm-1"
+
+	trackInfoAndPath.VolumePublishInfo = copyPublishInfo
+
+	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), gomock.Any(), trackingInfoFile, "volume tracking info").
+		SetArg(1, trackInfoAndPath).
+		Return(nil)
+
+	needsDelete, err = v.UpgradeVolumeTrackingFile(context.Background(), volName, pubPaths, pvToDeviceMappings)
+	assert.False(t, needsDelete, "expected to be told to keep tracking file")
+	assert.NoError(t, err, "expected tracking file upgrade to work")
 }
 
 func TestValidateTrackingFile(t *testing.T) {

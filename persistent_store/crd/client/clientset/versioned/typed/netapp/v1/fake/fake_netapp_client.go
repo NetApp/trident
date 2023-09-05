@@ -18,6 +18,10 @@ func (c *FakeTridentV1) TridentActionMirrorUpdates(namespace string) v1.TridentA
 	return &FakeTridentActionMirrorUpdates{c, namespace}
 }
 
+func (c *FakeTridentV1) TridentActionSnapshotRestores(namespace string) v1.TridentActionSnapshotRestoreInterface {
+	return &FakeTridentActionSnapshotRestores{c, namespace}
+}
+
 func (c *FakeTridentV1) TridentBackends(namespace string) v1.TridentBackendInterface {
 	return &FakeTridentBackends{c, namespace}
 }

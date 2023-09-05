@@ -4,12 +4,16 @@ package csi
 
 import (
 	"context"
+	"fmt"
+	"math"
 	"sync"
 	"testing"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
@@ -193,7 +197,7 @@ func TestControllerPublishVolume_NVMeProtocol(t *testing.T) {
 		"filesystemType":    "",
 		"LUKSEncryption":    "",
 		"mountOptions":      "",
-		"nvmeNamespacePath": "",
+		"nvmeNamespaceUUID": "",
 		"nvmeSubsystemNqn":  "",
 		"protocol":          "block",
 		"SANType":           sa.NVMe,
@@ -258,4 +262,459 @@ func TestControllerUnpublishVolume_NotFoundErrors(t *testing.T) {
 
 	_, err = controllerServer.ControllerUnpublishVolume(ctx, req)
 	assert.Nil(t, err, "unexpected error unpublishing volume")
+}
+
+func TestControllerListSnapshots_CoreListsSnapshots(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	volume := &storage.Volume{Config: &storage.VolumeConfig{Size: "1Gi"}}
+	snapshotID := "snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj"
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:       snapshotID,
+		VolumeName: volumeID,
+	}
+	snapshot := storage.Snapshot{
+		Config:    snapshotConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	mockOrchestrator.EXPECT().ListSnapshots(
+		gomock.Any(),
+	).Return([]*storage.SnapshotExternal{snapshot.ConstructExternal()}, nil)
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), volumeID).Return(volume.ConstructExternal(), nil)
+
+	// No snapshot ID or source volume ID will force Trident to list all snapshots.
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: "", SourceVolumeId: ""}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Entries)
+}
+
+func TestControllerListSnapshots_CoreListsSnapshotsForVolume(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	volume := &storage.Volume{Config: &storage.VolumeConfig{Size: "1Gi"}}
+	snapshotID := "snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj"
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:       snapshotID,
+		VolumeName: volumeID,
+	}
+	snapshot := storage.Snapshot{
+		Config:    snapshotConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	mockOrchestrator.EXPECT().ListSnapshotsForVolume(
+		gomock.Any(), volumeID,
+	).Return([]*storage.SnapshotExternal{snapshot.ConstructExternal()}, nil)
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), volumeID).Return(volume.ConstructExternal(), nil)
+
+	// No snapshot ID or source volume ID will force Trident to list all snapshots.
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: "", SourceVolumeId: volumeID}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Entries)
+}
+
+func TestControllerListSnapshots_CoreFailsToFindSnapshotsForVolume(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+
+	mockOrchestrator.EXPECT().ListSnapshotsForVolume(
+		gomock.Any(), volumeID,
+	).Return(nil, errors.NotFoundError("snapshots not found"))
+
+	// No snapshot ID or source volume ID will force Trident to list all snapshots.
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: "", SourceVolumeId: volumeID}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Empty(t, resp.Entries)
+	assert.Empty(t, resp.NextToken)
+}
+
+func TestControllerListSnapshots_CoreFailsToListsSnapshotsForVolume(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+
+	mockOrchestrator.EXPECT().ListSnapshotsForVolume(
+		gomock.Any(), volumeID,
+	).Return(nil, fmt.Errorf("core error"))
+
+	// No snapshot ID or source volume ID will force Trident to list all snapshots.
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: "", SourceVolumeId: volumeID}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+}
+
+func TestControllerListSnapshots_SnapshotImport_FailsWithInvalidID(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	snapshotID := "snap-content-01"
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s--%s", volumeID, snapshotID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+
+	// CSI spec calls for empty return and error if snapshot is not found.
+	assert.Nil(t, resp.Entries)
+	assert.NoError(t, err)
+}
+
+func TestControllerListSnapshots_SnapshotImport_FailsWithInvalidIDComponents(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	snapContentID := "snap_content-01!"
+
+	mockHelper.EXPECT().IsValidResourceName(volumeID).Return(true)
+	mockHelper.EXPECT().IsValidResourceName(snapContentID).Return(false)
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s/%s", volumeID, snapContentID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+
+	// CSI spec calls for empty return and error if snapshot is not found.
+	assert.Nil(t, resp.Entries)
+	assert.NoError(t, err)
+}
+
+func TestControllerListSnapshots_SnapshotImport_FailsToGetSnapshots(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	snapContentID := "snap-content-01"
+
+	mockOrchestrator.EXPECT().GetSnapshot(
+		gomock.Any(), volumeID, snapContentID,
+	).Return(nil, fmt.Errorf("core error"))
+	mockHelper.EXPECT().IsValidResourceName(volumeID).Return(true)
+	mockHelper.EXPECT().IsValidResourceName(snapContentID).Return(true)
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s/%s", volumeID, snapContentID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.Nil(t, resp.Entries)
+	assert.Error(t, err)
+
+	// Get the CSI status code from the returned error.
+	status, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Unknown, status.Code())
+}
+
+func TestControllerListSnapshots_SnapshotImport_FailsToGetSnapshotConfig(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	snapContentID := "snap-content-01"
+
+	// If a snapshotID isn't found, ListSnapshots will try to import it.
+	mockOrchestrator.EXPECT().GetSnapshot(
+		gomock.Any(), volumeID, snapContentID,
+	).Return(nil, errors.NotFoundError("snapshotID not found"))
+	mockHelper.EXPECT().IsValidResourceName(volumeID).Return(true)
+	mockHelper.EXPECT().IsValidResourceName(snapContentID).Return(true)
+	mockHelper.EXPECT().GetSnapshotConfigForImport(
+		gomock.Any(), volumeID, snapContentID,
+	).Return(nil, fmt.Errorf("helper err"))
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s/%s", volumeID, snapContentID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.Nil(t, resp.Entries)
+	assert.Error(t, err)
+
+	// Get the CSI status code from the returned error.
+	status, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Unknown, status.Code())
+}
+
+func TestControllerListSnapshots_SnapshotImport_CoreFailsToImportSnapshot(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	snapshotID := "snap-content-01"
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:       snapshotID,
+		VolumeName: volumeID,
+	}
+
+	// If a snapshotID isn't found, ListSnapshots will try to import it.
+	mockOrchestrator.EXPECT().GetSnapshot(
+		gomock.Any(), volumeID, snapshotID,
+	).Return(nil, errors.NotFoundError("snapshotID not found"))
+	mockHelper.EXPECT().IsValidResourceName(volumeID).Return(true)
+	mockHelper.EXPECT().IsValidResourceName(snapshotID).Return(true)
+	mockHelper.EXPECT().GetSnapshotConfigForImport(gomock.Any(), volumeID, snapshotID).Return(snapshotConfig, nil)
+	mockOrchestrator.EXPECT().ImportSnapshot(gomock.Any(), snapshotConfig).Return(nil, fmt.Errorf("core error"))
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s/%s", volumeID, snapshotID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.Nil(t, resp.Entries)
+	assert.Error(t, err)
+
+	// Get the CSI status code from the returned error.
+	status, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Unknown, status.Code())
+}
+
+func TestControllerListSnapshots_SnapshotImport_CoreFailsToFindParentVolume(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	snapContentID := "snap-content-01"
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:         snapContentID,
+		VolumeName:   volumeID,
+		InternalName: "snap.2023-05-23_175116",
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapshotConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	// If a snapshot isn't found, ListSnapshots will try to import it.
+	mockOrchestrator.EXPECT().GetSnapshot(
+		gomock.Any(), volumeID, snapContentID,
+	).Return(nil, errors.NotFoundError("snapshot not found"))
+	mockHelper.EXPECT().IsValidResourceName(volumeID).Return(true)
+	mockHelper.EXPECT().IsValidResourceName(snapContentID).Return(true)
+	mockHelper.EXPECT().GetSnapshotConfigForImport(gomock.Any(), volumeID, snapContentID).Return(snapshotConfig, nil)
+	mockOrchestrator.EXPECT().ImportSnapshot(gomock.Any(), snapshotConfig).Return(snapshot.ConstructExternal(), nil)
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), volumeID).Return(nil, fmt.Errorf("core error"))
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s/%s", volumeID, snapContentID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.Nil(t, resp.Entries)
+	assert.Error(t, err)
+
+	// Get the CSI status code from the returned error.
+	status, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Internal, status.Code())
+}
+
+func TestControllerListSnapshots_SnapshotImport_CoreFailsToFindSnapshot(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	snapContentID := "snap-content-01"
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:         snapContentID,
+		VolumeName:   volumeID,
+		InternalName: "snap.2023-05-23_175116",
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapshotConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+	notFoundErr := errors.NotFoundError("snapshot not found")
+
+	// If a snapshot isn't found, ListSnapshots will try to import it.
+	mockOrchestrator.EXPECT().GetSnapshot(gomock.Any(), volumeID, snapContentID).Return(nil, notFoundErr)
+	mockHelper.EXPECT().IsValidResourceName(volumeID).Return(true)
+	mockHelper.EXPECT().IsValidResourceName(snapContentID).Return(true)
+	mockHelper.EXPECT().GetSnapshotConfigForImport(gomock.Any(), volumeID, snapContentID).Return(snapshotConfig, nil)
+	mockOrchestrator.EXPECT().ImportSnapshot(gomock.Any(), snapshotConfig).Return(snapshot.ConstructExternal(), notFoundErr)
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s/%s", volumeID, snapContentID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+
+	// CSI spec calls for empty return and error if snapshot is not found.
+	assert.Nil(t, resp.Entries)
+	assert.NoError(t, err)
+}
+
+func TestControllerListSnapshots_SnapshotImport_Succeeds(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	volume := &storage.Volume{Config: &storage.VolumeConfig{Size: "1Gi"}}
+	snapContentID := "snap-content-01"
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:         snapContentID,
+		VolumeName:   volumeID,
+		InternalName: "snap.2023-05-23_175116",
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapshotConfig,
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+	}
+
+	// If a snapshot isn't found, ListSnapshots will try to import it.
+	mockOrchestrator.EXPECT().GetSnapshot(
+		gomock.Any(), volumeID, snapContentID,
+	).Return(nil, errors.NotFoundError("snapshot not found"))
+	mockHelper.EXPECT().IsValidResourceName(volumeID).Return(true)
+	mockHelper.EXPECT().IsValidResourceName(snapContentID).Return(true)
+	mockHelper.EXPECT().GetSnapshotConfigForImport(gomock.Any(), volumeID, snapContentID).Return(snapshotConfig, nil)
+	mockOrchestrator.EXPECT().ImportSnapshot(gomock.Any(), snapshotConfig).Return(snapshot.ConstructExternal(), nil)
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), volumeID).Return(volume.ConstructExternal(), nil)
+
+	fakeReq := &csi.ListSnapshotsRequest{SnapshotId: fmt.Sprintf("%s/%s", volumeID, snapContentID)}
+	resp, err := controllerServer.ListSnapshots(ctx, fakeReq)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Entries)
+
+	csiSnapshot := resp.Entries[0]
+	assert.NotNil(t, csiSnapshot)
+	assert.Equal(t, snapshot.ID(), csiSnapshot.GetSnapshot().GetSnapshotId())
+}
+
+func TestControllerGetListSnapshots_FailsWhenRequestIsInvalid(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	var snapshots []*storage.SnapshotExternal
+
+	fakeReq := &csi.ListSnapshotsRequest{MaxEntries: -1}
+	snapshotResp, err := controllerServer.getListSnapshots(ctx, fakeReq, snapshots)
+	assert.Error(t, err)
+
+	status, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, status.Code())
+	assert.Nil(t, snapshotResp)
+}
+
+func TestControllerGetListSnapshots_AddsSnapshotToCSISnapshotResponse(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	volume := &storage.Volume{Config: &storage.VolumeConfig{Size: "1Gi"}}
+	snapshotID := "snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj"
+	snapshots := []*storage.SnapshotExternal{
+		{
+			Snapshot: storage.Snapshot{
+				Config: &storage.SnapshotConfig{
+					Name:       snapshotID,
+					VolumeName: volumeID,
+				},
+			},
+		},
+	}
+
+	mockOrchestrator.EXPECT().GetVolume(
+		gomock.Any(), volumeID,
+	).Return(volume.ConstructExternal(), nil).Times(len(snapshots))
+
+	fakeReq := &csi.ListSnapshotsRequest{MaxEntries: int32(len(snapshots) + 1), StartingToken: snapshots[0].ID()}
+	listSnapshotResp, err := controllerServer.getListSnapshots(ctx, fakeReq, snapshots)
+	assert.NoError(t, err)
+	assert.NotNil(t, listSnapshotResp)
+
+	entries := listSnapshotResp.GetEntries()
+	assert.NotEmpty(t, entries)
+
+	csiSnapshot := entries[0].GetSnapshot()
+	assert.NotNil(t, csiSnapshot)
+	assert.Equal(t, snapshots[0].ID(), csiSnapshot.GetSnapshotId())
+}
+
+func TestControllerGetListSnapshots_DoesNotExceedMaxEntries(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	// Set up variables for mocks.
+	volumeID := "pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278"
+	volume := &storage.Volume{Config: &storage.VolumeConfig{Size: "1Gi"}}
+	snapshotID := "snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj"
+	snapshots := []*storage.SnapshotExternal{
+		{
+			Snapshot: storage.Snapshot{
+				Config: &storage.SnapshotConfig{
+					Name:       snapshotID,
+					VolumeName: volumeID,
+				},
+			},
+		},
+		{
+			Snapshot: storage.Snapshot{
+				Config: &storage.SnapshotConfig{
+					Name:       snapshotID,
+					VolumeName: volumeID,
+				},
+			},
+		},
+	}
+
+	mockOrchestrator.EXPECT().GetVolume(
+		gomock.Any(), volumeID,
+	).Return(volume.ConstructExternal(), nil).Times(len(snapshots))
+
+	fakeReq := &csi.ListSnapshotsRequest{MaxEntries: 0, StartingToken: ""}
+	listSnapshotResp, err := controllerServer.getListSnapshots(ctx, fakeReq, snapshots)
+	assert.NoError(t, err)
+	assert.NotNil(t, listSnapshotResp)
+
+	entries := listSnapshotResp.GetEntries()
+	assert.NotEmpty(t, entries)
+	assert.NotEqual(t, math.MaxInt16, len(entries))
 }

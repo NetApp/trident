@@ -409,7 +409,7 @@ func (p *Plugin) ControllerPublishVolume(
 		if volumePublishInfo.SANType == sa.NVMe {
 			// fill in only NVMe specific fields in publishInfo
 			publishInfo["nvmeSubsystemNqn"] = volumePublishInfo.NVMeSubsystemNQN
-			publishInfo["nvmeNamespacePath"] = volumePublishInfo.NVMeNamespacePath
+			publishInfo["nvmeNamespaceUUID"] = volumePublishInfo.NVMeNamespaceUUID
 			publishInfo["nvmeTargetIPs"] = strings.Join(volumePublishInfo.NVMeTargetIPs, ",")
 			publishInfo["SANType"] = sa.NVMe
 		} else {
@@ -720,7 +720,7 @@ func (p *Plugin) CreateSnapshot(
 	}
 
 	// Convert snapshot creation options into a Trident snapshot config
-	snapshotConfig, err := p.controllerHelper.GetSnapshotConfig(volumeName, snapshotName)
+	snapshotConfig, err := p.controllerHelper.GetSnapshotConfigForCreate(volumeName, snapshotName)
 	if err != nil {
 		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
@@ -811,7 +811,7 @@ func (p *Plugin) ListSnapshots(
 		sourceVolume := req.GetSourceVolumeId()
 		if sourceVolume != "" {
 			snapshots, err = p.orchestrator.ListSnapshotsForVolume(ctx, sourceVolume)
-			// CSI spec expects empty return if source volume is not found
+			// CSI spec expects empty return if source volume is not found.
 			if err != nil && errors.IsNotFoundError(err) {
 				err = nil
 				snapshots = make([]*storage.SnapshotExternal, 0)
@@ -825,32 +825,60 @@ func (p *Plugin) ListSnapshots(
 		return p.getListSnapshots(ctx, req, snapshots)
 	}
 
-	volumeName, snapshotName, err := storage.ParseSnapshotID(snapshotID)
+	volumeName, snapName, err := storage.ParseSnapshotID(snapshotID)
 	if err != nil {
-		Logc(ctx).WithFields(fields).Warnf("Snapshot %s not found.", snapshotID)
-		// CSI spec calls for empty return if snapshot is not found
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Could not parse snapshot ID: %s.", snapshotID)
+
+		// CSI spec calls for empty return if snapshot is not found; invalid ID implies the snapshot won't be found.
 		return &csi.ListSnapshotsResponse{}, nil
 	}
 
-	// Get the snapshot
-	snapshot, err := p.orchestrator.GetSnapshot(ctx, volumeName, snapshotName)
-	if err != nil {
+	fields = LogFields{
+		"snapshotID": snapshotID,
+		"volumeName": volumeName,
+		"snapName":   snapName,
+	}
 
-		Logc(ctx).WithFields(LogFields{
-			"volumeName":   volumeName,
-			"snapshotName": snapshotName,
-			"error":        err,
-		}).Debugf("Could not find snapshot.")
+	// Ensure the components of the snapshot ID are valid for the CO.
+	if !p.controllerHelper.IsValidResourceName(volumeName) || !p.controllerHelper.IsValidResourceName(snapName) {
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Invalid values in snapshot ID: %s.", snapshotID)
 
-		// CSI spec calls for empty return if snapshot is not found
+		// CSI spec calls for empty return if snapshot is not found; invalid ID implies the snapshot won't be found.
 		return &csi.ListSnapshotsResponse{}, nil
 	}
 
-	if csiSnapshot, err := p.getCSISnapshotFromTridentSnapshot(ctx, snapshot); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	} else {
-		entries = append(entries, &csi.ListSnapshotsResponse_Entry{Snapshot: csiSnapshot})
+	// Check if Trident is already tracking this snapshot.
+	snapshot, err := p.orchestrator.GetSnapshot(ctx, volumeName, snapName)
+	if err != nil && !errors.IsNotFoundError(err) {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not get snapshot.")
+		return &csi.ListSnapshotsResponse{}, p.getCSIErrorForOrchestratorError(err)
 	}
+
+	// If no snapshot can be found by this point, try snapshot import.
+	if snapshot == nil {
+		snapshotConfig, err := p.controllerHelper.GetSnapshotConfigForImport(ctx, volumeName, snapName)
+		if err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not expand snapshot config.")
+			return &csi.ListSnapshotsResponse{}, p.getCSIErrorForOrchestratorError(err)
+		}
+
+		snapshot, err = p.orchestrator.ImportSnapshot(ctx, snapshotConfig)
+		if err != nil || snapshot == nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not import snapshot.")
+
+			// CSI spec calls for empty return if snapshot is not found.
+			if errors.IsNotFoundError(err) {
+				return &csi.ListSnapshotsResponse{}, nil
+			}
+			return &csi.ListSnapshotsResponse{}, p.getCSIErrorForOrchestratorError(err)
+		}
+	}
+
+	csiSnapshot, err := p.getCSISnapshotFromTridentSnapshot(ctx, snapshot)
+	if err != nil {
+		return &csi.ListSnapshotsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	entries = append(entries, &csi.ListSnapshotsResponse_Entry{Snapshot: csiSnapshot})
 
 	return &csi.ListSnapshotsResponse{Entries: entries}, nil
 }

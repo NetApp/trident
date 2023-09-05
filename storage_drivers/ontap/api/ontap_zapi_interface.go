@@ -133,10 +133,9 @@ type ZapiClientInterface interface {
 	FlexGroupSize(name string) (int, error)
 	// FlexGroupSetSize sets the size of the specified FlexGroup
 	FlexGroupSetSize(ctx context.Context, name, newSize string) (*azgo.VolumeSizeAsyncResponse, error)
-	// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	FlexGroupVolumeDisableSnapshotDirectoryAccess(
-		ctx context.Context, name string,
+	// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	FlexGroupVolumeModifySnapshotDirectoryAccess(
+		ctx context.Context, name string, enable bool,
 	) (*azgo.VolumeModifyIterAsyncResponse, error)
 	FlexGroupModifyUnixPermissions(
 		ctx context.Context, volumeName, unixPermissions string,
@@ -167,9 +166,8 @@ type ZapiClientInterface interface {
 	VolumeCloneCreateAsync(name, source, snapshot string) (*azgo.VolumeCloneCreateAsyncResponse, error)
 	// VolumeCloneSplitStart splits a cloned volume from its parent
 	VolumeCloneSplitStart(name string) (*azgo.VolumeCloneSplitStartResponse, error)
-	// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeModifyIterResponse, error)
+	// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	VolumeModifySnapshotDirectoryAccess(name string, enable bool) (*azgo.VolumeModifyIterResponse, error)
 	// Use this to set the QoS Policy Group for volume clones since
 	// we can't set adaptive policy groups directly during volume clone creation.
 	VolumeSetQosPolicyGroupName(name string, qosPolicyGroup QosPolicyGroup) (*azgo.VolumeModifyIterResponse, error)
@@ -275,6 +273,8 @@ type ZapiClientInterface interface {
 	SnapshotCreate(snapshotName, volumeName string) (*azgo.SnapshotCreateResponse, error)
 	// SnapshotList returns the list of snapshots associated with a volume
 	SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, error)
+	// SnapshotInfo returns a snapshot by name for a volume
+	SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error)
 	// SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 	SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error)
 	// DeleteSnapshot deletes a snapshot of a volume
@@ -336,6 +336,9 @@ type ZapiClientInterface interface {
 	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 	// Intended to be used on the source vserver
 	SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
+	// SnapmirrorDestinationRelease removes all local snapmirror relationship metadata of the destination volume
+	// Intended to be used on the destination vserver
+	SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error)
 	// Intended to be from the destination vserver
 	SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName string) (*azgo.SnapmirrorDestroyResponse,
 		error)

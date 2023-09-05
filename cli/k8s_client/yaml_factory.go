@@ -80,31 +80,15 @@ metadata:
 {SECRETS}
 `
 
-func GetClusterRoleYAML(
-	flavor OrchestratorFlavor, clusterRoleName string, labels, controllingCRDetails map[string]string, csi bool,
-) string {
-	var clusterRoleYAML string
+func GetClusterRoleYAML(clusterRoleName string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{
 		"ClusterRoleName":      clusterRoleName,
 		"Labels":               labels,
 		"ControllingCRDetails": controllingCRDetails,
-		"CSI":                  csi,
 	}).Trace(">>>> GetClusterRoleYAML")
 	defer func() { Log().Trace("<<<< GetClusterRoleYAML") }()
 
-	if csi {
-		clusterRoleYAML = controllerClusterRoleCSIYAMLTemplate
-	} else {
-		clusterRoleYAML = clusterRoleYAMLTemplate
-	}
-
-	// authorization.openshift.io/v1 is applicable to OCP 3.x only
-	if flavor == FlavorOpenShift && !csi {
-		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "authorization.openshift.io/v1")
-	} else {
-		clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{API_VERSION}", "rbac.authorization.k8s.io/v1")
-	}
-
+	clusterRoleYAML := controllerClusterRoleCSIYAMLTemplate
 	clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{CLUSTER_ROLE_NAME}", clusterRoleName)
 	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "LABELS", constructLabels(labels))
 	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
@@ -112,59 +96,13 @@ func GetClusterRoleYAML(
 	return clusterRoleYAML
 }
 
-const clusterRoleYAMLTemplate = `---
-kind: ClusterRole
-apiVersion: {API_VERSION}
-metadata:
-  name: {CLUSTER_ROLE_NAME}
-  {LABELS}
-  {OWNER_REF}
-rules:
-  - apiGroups: [""]
-    resources: ["namespaces"]
-    verbs: ["get", "list"]
-  - apiGroups: [""]
-    resources: ["persistentvolumes", "persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims/status"]
-    verbs: ["update", "patch"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["watch", "create", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["resourcequotas"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
-"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
-"tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-  - apiGroups: ["policy"]
-    resources: ["podsecuritypolicies"]
-    verbs: ["use"]
-    resourceNames:
-      - tridentpods
-`
-
 // Specific permissions for sidecars
 // csi-resizer needs 'list' for pods
 // csi-snapshotter needs 'watch' for volumesnapshotclasses
 // trident-autosupport needs 'get' for namespace resource cluster-wide
 const controllerClusterRoleCSIYAMLTemplate = `---
 kind: ClusterRole
-apiVersion: {API_VERSION}
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {CLUSTER_ROLE_NAME}
   {LABELS}
@@ -220,7 +158,8 @@ rules:
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
 "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status"]
+"tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
+"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -229,10 +168,7 @@ rules:
       - {CLUSTER_ROLE_NAME}
 `
 
-func GetRoleYAML(
-	flavor OrchestratorFlavor, namespace, roleName string, labels, controllingCRDetails map[string]string,
-	csi bool,
-) string {
+func GetRoleYAML(namespace, roleName string, labels, controllingCRDetails map[string]string) string {
 	var roleYAML string
 
 	if isControllerRBACResource(labels) {
@@ -252,7 +188,7 @@ func GetRoleYAML(
 // trident-autosupport needs 'get' for pod/log resources in the 'trident' namespace
 const controllerRoleCSIYAMLTemplate = `---
 kind: Role
-apiVersion: "rbac.authorization.k8s.io/v1"
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: {NAMESPACE}
   name: {ROLE_NAME}
@@ -283,10 +219,7 @@ rules:
       - {ROLE_NAME}
 `
 
-func GetRoleBindingYAML(
-	flavor OrchestratorFlavor, namespace, name string,
-	labels, controllingCRDetails map[string]string, csi bool,
-) string {
+func GetRoleBindingYAML(namespace, name string, labels, controllingCRDetails map[string]string) string {
 	rbYAML := roleBindingKubernetesV1YAMLTemplate
 	rbYAML = strings.ReplaceAll(rbYAML, "{NAMESPACE}", namespace)
 	rbYAML = strings.ReplaceAll(rbYAML, "{NAME}", name)
@@ -314,26 +247,18 @@ roleRef:
 `
 
 func GetClusterRoleBindingYAML(
-	namespace, name string, flavor OrchestratorFlavor,
-	labels, controllingCRDetails map[string]string, csi bool,
+	namespace, name string, flavor OrchestratorFlavor, labels, controllingCRDetails map[string]string,
 ) string {
-	var crbYAML string
 	Log().WithFields(LogFields{
 		"Namespace":            namespace,
 		"Name":                 name,
 		"Flavor":               flavor,
 		"Labels":               labels,
 		"ControllingCRDetails": controllingCRDetails,
-		"CSI":                  csi,
 	}).Trace(">>>> GetClusterRoleBindingYAML")
 	defer func() { Log().Trace("<<<< GetClusterRoleBindingYAML") }()
 
-	// authorization.openshift.io/v1 is applicable to OCP 3.x only
-	if flavor == FlavorOpenShift && !csi {
-		crbYAML = clusterRoleBindingOpenShiftYAMLTemplate
-	} else {
-		crbYAML = clusterRoleBindingKubernetesV1YAMLTemplate
-	}
+	crbYAML := clusterRoleBindingKubernetesV1YAMLTemplate
 
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAMESPACE}", namespace)
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAME}", name)
@@ -343,21 +268,6 @@ func GetClusterRoleBindingYAML(
 	Log().WithField("yaml", crbYAML).Trace("Cluster role binding YAML.")
 	return crbYAML
 }
-
-const clusterRoleBindingOpenShiftYAMLTemplate = `---
-kind: ClusterRoleBinding
-apiVersion: authorization.openshift.io/v1
-metadata:
-  name: {NAME}
-  {LABELS}
-  {OWNER_REF}
-subjects:
-  - kind: ServiceAccount
-    name: {NAME}
-    namespace: {NAMESPACE}
-roleRef:
-  name: {NAME}
-`
 
 const clusterRoleBindingKubernetesV1YAMLTemplate = `---
 kind: ClusterRoleBinding
@@ -448,6 +358,24 @@ spec:
       values: ["system-node-critical"]
 `
 
+const acpContainerYAMLTemplate = `
+      - name: trident-acp
+        image: {ACP_IMAGE}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          runAsNonRoot: false
+          capabilities:
+            drop:
+            - all
+        command:
+        - /bin/trident-acp
+        args:
+        - "--k8s_pod"
+        - "--log_format={LOG_FORMAT}"
+        - "--log_level={LOG_LEVEL}"
+        {DEBUG}
+`
+
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	var debugLine, sideCarLogLevel, ipLocalhost string
 	Log().WithFields(LogFields{
@@ -480,11 +408,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	}
 
 	deploymentYAML := csiDeployment120YAMLTemplate
-
-	csiSnapshotterVersion := "v3.0.3"
-	if args.SnapshotCRDVersion == "v1" {
-		csiSnapshotterVersion = "v6.2.1"
-	}
 
 	if args.ImageRegistry == "" {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
@@ -528,10 +451,16 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		autosupportDebugLine = "#" + autosupportDebugLine
 	}
 
+	if args.EnableACP {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_IMAGE}", args.ACPImage)
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", "")
+	}
+
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SNAPSHOTTER_VERSION}", csiSnapshotterVersion)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SIDECAR_LOG_LEVEL}", sideCarLogLevel)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", args.LogFormat)
@@ -558,6 +487,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", strconv.FormatBool(args.EnableACP))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -591,6 +521,11 @@ spec:
       - name: trident-main
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          runAsNonRoot: false
+          capabilities:
+            drop:
+            - all
         ports:
         - containerPort: 8443
         - containerPort: 8001
@@ -612,6 +547,7 @@ spec:
         - "--address={IP_LOCALHOST}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
+        - "--enable_acp={ENABLE_ACP}"
         - "--metrics"
         {DEBUG}
         livenessProbe:
@@ -644,6 +580,10 @@ spec:
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -662,8 +602,12 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.4.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v3.5.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=600s"
@@ -678,8 +622,12 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.2.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-attacher:v4.3.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=60s"
@@ -692,7 +640,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.7.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-resizer:v1.8.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
@@ -705,8 +653,12 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:{CSI_SNAPSHOTTER_VERSION}
+        image: {CSI_SIDECAR_REGISTRY}/csi-snapshotter:v6.2.2
         imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
@@ -717,6 +669,7 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      {ACP_YAML}
       {IMAGE_PULL_SECRETS}
       affinity:
         nodeAffinity:
@@ -932,6 +885,11 @@ spec:
         securityContext:
           privileged: true
           allowPrivilegeEscalation: true
+          capabilities:
+            drop:
+            - all
+            add:
+            - SYS_ADMIN
         image: {TRIDENT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         command:
@@ -1012,7 +970,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.7.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.8.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
@@ -1048,6 +1006,15 @@ spec:
                     values:
                     - linux
                   {NODE_SELECTOR}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - node.csi.trident.netapp.io
+              topologyKey: kubernetes.io/hostname
       {NODE_TOLERATIONS}
       volumes:
       - name: plugin-dir
@@ -1205,7 +1172,7 @@ spec:
             cpu: 10m
             memory: 20Mi
       - name: node-driver-registrar
-        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.7.0
+        image: {CSI_SIDECAR_REGISTRY}/csi-node-driver-registrar:v2.8.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - --v=2
@@ -1274,6 +1241,16 @@ spec:
                     values:
                     - windows
                   {NODE_SELECTOR}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - node.csi.trident.netapp.io
+              topologyKey: kubernetes.io/hostname
+      {NODE_TOLERATIONS}
       volumes:
         - name: trident-tracking-dir
           hostPath:
@@ -1318,30 +1295,28 @@ spec:
             type: DirectoryOrCreate
 `
 
-func GetTridentVersionPodYAML(
-	name, tridentImage, serviceAccountName, imagePullPolicy string, imagePullSecrets []string, labels,
-	controllingCRDetails map[string]string,
-) string {
+func GetTridentVersionPodYAML(args *TridentVersionPodYAMLArguments) string {
 	Log().WithFields(LogFields{
-		"Name":                 name,
-		"TridentImae":          tridentImage,
-		"ServiceAccountName":   serviceAccountName,
-		"Labels":               labels,
-		"ControllingCRDetails": controllingCRDetails,
+		"Name":                 args.TridentVersionPodName,
+		"TridentImae":          args.TridentImage,
+		"ServiceAccountName":   args.ServiceAccountName,
+		"Labels":               args.Labels,
+		"ControllingCRDetails": args.ControllingCRDetails,
 	}).Trace(">>>> GetTridentVersionPodYAML")
 	defer func() { Log().Trace("<<<< GetTridentVersionPodYAML") }()
 
-	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", name)
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", tridentImage)
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", serviceAccountName)
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(labels))
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", args.TridentVersionPodName)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", args.TridentImage)
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(args.Labels))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", versionPodYAML).Trace("Trident Version Pod YAML.")
 	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS",
-		constructImagePullSecrets(imagePullSecrets))
-	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", imagePullPolicy)
+		constructImagePullSecrets(args.ImagePullSecrets))
+	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 
 	return versionPodYAML
 }
@@ -1362,7 +1337,12 @@ spec:
     image: {TRIDENT_IMAGE}
     command: ["tridentctl"]
     args: ["pause"]
+    securityContext:
+      capabilities:
+        drop:
+        - all
   {IMAGE_PULL_SECRETS}
+  {NODE_TOLERATIONS}
   affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1413,6 +1393,8 @@ allowHostPID: true
 allowHostPorts: false
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
+allowedCapabilities:
+- SYS_ADMIN
 allowedUnsafeSysctls: null
 defaultAddCapabilities: null
 fsGroup:
@@ -1627,6 +1609,12 @@ func GetVolumeReferenceCRDYAML() string {
 	return tridentVolumeReferenceCRDYAMLv1
 }
 
+func GetActionSnapshotRestoreCRDYAML() string {
+	Log().Trace(">>>> GetActionSnapshotRestoreCRDYAML")
+	defer func() { Log().Trace("<<<< GetActionSnapshotRestoreCRDYAML") }()
+	return tridentActionSnapshotRestoreCRDYAMLv1
+}
+
 func GetOrchestratorCRDYAML() string {
 	Log().Trace(">>>> GetOrchestratorCRDYAML")
 	defer func() { Log().Trace("<<<< GetOrchestratorCRDYAML") }()
@@ -1646,6 +1634,7 @@ kubectl delete crd tridentnodes.trident.netapp.io --wait=false
 kubectl delete crd tridenttransactions.trident.netapp.io --wait=false
 kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumereferences.trident.netapp.io --wait=false
+kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io --wait=false
 
 kubectl patch crd tridentversions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentbackends.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
@@ -1659,6 +1648,7 @@ kubectl patch crd tridentnodes.trident.netapp.io -p '{"metadata":{"finalizers": 
 kubectl patch crd tridenttransactions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumereferences.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentactionsnapshotrestores.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 
 kubectl delete crd tridentversions.trident.netapp.io
 kubectl delete crd tridentbackends.trident.netapp.io
@@ -1672,6 +1662,7 @@ kubectl delete crd tridentnodes.trident.netapp.io
 kubectl delete crd tridenttransactions.trident.netapp.io
 kubectl delete crd tridentsnapshots.trident.netapp.io
 kubectl delete crd tridentvolumereferences.trident.netapp.io
+kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io
 */
 
 const tridentVersionCRDYAMLv1 = `
@@ -2324,6 +2315,63 @@ spec:
     - trident-external
     - trident-internal`
 
+const tridentActionSnapshotRestoreCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentactionsnapshotrestores.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - description: Namespace
+        jsonPath: .metadata.namespace
+        name: Namespace
+        type: string
+        priority: 0
+      - description: PVC
+        jsonPath: .spec.pvcName
+        name: PVC
+        type: string
+        priority: 0
+      - description: Snapshot
+        jsonPath: .spec.volumeSnapshotName
+        name: Snapshot
+        type: string
+        priority: 0
+      - description: State
+        jsonPath: .status.state
+        name: State
+        type: string
+        priority: 0
+      - description: CompletionTime
+        jsonPath: .status.completionTime
+        name: CompletionTime
+        type: date
+        priority: 0
+      - description: Message
+        jsonPath: .status.message
+        name: Message
+        type: string
+        priority: 1
+  scope: Namespaced
+  names:
+    plural: tridentactionsnapshotrestores
+    singular: tridentactionsnapshotrestore
+    kind: TridentActionSnapshotRestore
+    shortNames:
+    - tasr
+    categories:
+    - trident
+    - trident-external`
+
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
@@ -2336,7 +2384,8 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 +
-	"\n---" + tridentVolumeReferenceCRDYAMLv1 + "\n"
+	"\n---" + tridentVolumeReferenceCRDYAMLv1 +
+	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{
@@ -2391,6 +2440,8 @@ metadata:
 spec:
   privileged: true
   allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - SYS_ADMIN
   hostIPC: true
   hostPID: true
   hostNetwork: true

@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	policy "k8s.io/api/policy/v1beta1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -26,7 +25,6 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
@@ -35,23 +33,22 @@ import (
 
 const (
 	PreferredNamespace = tridentconfig.OrchestratorName
-	DefaultPVCName     = tridentconfig.OrchestratorName
-	DefaultPVName      = tridentconfig.OrchestratorName
 
 	// CRD names
-	ActionMirrorUpdateCRDName = "tridentactionmirrorupdates.trident.netapp.io"
-	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
-	BackendCRDName            = "tridentbackends.trident.netapp.io"
-	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
-	NodeCRDName               = "tridentnodes.trident.netapp.io"
-	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
-	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
-	StorageClassCRDName       = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
-	VersionCRDName            = "tridentversions.trident.netapp.io"
-	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
-	VolumeReferenceCRDName    = "tridentvolumereferences.trident.netapp.io"
+	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
+	BackendCRDName               = "tridentbackends.trident.netapp.io"
+	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
+	NodeCRDName                  = "tridentnodes.trident.netapp.io"
+	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
+	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
+	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
+	VersionCRDName               = "tridentversions.trident.netapp.io"
+	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
+	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -81,8 +78,6 @@ const (
 	TridentEncryptionKeys = "trident-encryption-keys"
 
 	TridentCSI           = "trident-csi"
-	TridentCSIWindows    = "trident-csi-windows"
-	TridentLegacy        = "trident"
 	TridentMainContainer = "trident-main"
 
 	TridentControllerResourceName  = "trident-controller"
@@ -95,11 +90,9 @@ const (
 
 var (
 	// CLI flags
-	debugFlag               bool
 	generateYAML            bool
 	useYAML                 bool
 	silent                  bool
-	csi                     bool
 	useIPv6                 bool
 	silenceAutosupport      bool
 	enableNodePrep          bool
@@ -107,8 +100,6 @@ var (
 	windows                 bool
 	enableForceDetach       bool
 	disableAuditLog         bool
-	pvName                  string
-	pvcName                 string
 	tridentImage            string
 	autosupportImage        string
 	autosupportProxy        string
@@ -124,6 +115,8 @@ var (
 	probePort               int64
 	k8sTimeout              time.Duration
 	httpRequestTimeout      time.Duration
+	acpImage                string
+	enableACP               bool
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -161,9 +154,6 @@ var (
 	persistentObjectLabelKey   string
 	persistentObjectLabelValue string
 
-	dns1123LabelRegex  = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
-	dns1123DomainRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
-
 	CRDnames = []string{
 		ActionMirrorUpdateCRDName,
 		BackendConfigCRDName,
@@ -178,11 +168,8 @@ var (
 		VersionCRDName,
 		VolumeCRDName,
 		VolumePublicationCRDName,
+		ActionSnapshotRestoreCRDName,
 	}
-
-	TridentDeploymentName       = TridentControllerResourceName
-	TridentLinuxDaemonsetName   = TridentNodeLinuxResourceName
-	TridentWindowsDaemonsetName = TridentNodeWindowsResourceName
 )
 
 func init() {
@@ -203,11 +190,6 @@ func init() {
 	installCmd.Flags().BoolVar(&enableForceDetach, "enable-force-detach", false,
 		"Enable the force detach feature.")
 	installCmd.Flags().BoolVar(&disableAuditLog, "disable-audit-log", true, "Disable the audit logger.")
-
-	installCmd.Flags().StringVar(&pvcName, "pvc", DefaultPVCName,
-		"The name of the legacy PVC used by Trident, will ensure this does not exist.")
-	installCmd.Flags().StringVar(&pvName, "pv", DefaultPVName,
-		"The name of the legacy PV used by Trident, will ensure this does not exist.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "",
 		"Trident container image. When installing Trident from a private image registry, this flag must be set to the path of the container image.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
@@ -239,6 +221,9 @@ func init() {
 		"The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout,
 		"Override the HTTP request timeout for Trident controller’s REST API")
+
+	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the trident-acp premium features.")
+	installCmd.Flags().StringVar(&acpImage, "acp-image", "", "Override the default trident-acp container image.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -410,7 +395,6 @@ func initClient() (k8sclient.KubernetesClient, error) {
 }
 
 func processInstallationArguments(_ *cobra.Command) {
-	csi = true
 	appLabel = TridentCSILabel
 	appLabelKey = TridentCSILabelKey
 	appLabelValue = TridentCSILabelValue
@@ -422,17 +406,9 @@ func processInstallationArguments(_ *cobra.Command) {
 func validateInstallationArguments() error {
 	labelFormat := "a DNS-1123 label must consist of lower case alphanumeric characters or '-', " +
 		"and must start and end with an alphanumeric character"
-	subdomainFormat := "a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', " +
-		"and must start and end with an alphanumeric character"
 
-	if !dns1123LabelRegex.MatchString(TridentPodNamespace) {
+	if !utils.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("'%s' is not a valid namespace name; %s", TridentPodNamespace, labelFormat)
-	}
-	if !dns1123DomainRegex.MatchString(pvcName) {
-		return fmt.Errorf("'%s' is not a valid PVC name; %s", pvcName, subdomainFormat)
-	}
-	if !dns1123DomainRegex.MatchString(pvName) {
-		return fmt.Errorf("'%s' is not a valid PV name; %s", pvName, subdomainFormat)
 	}
 
 	switch logFormat {
@@ -537,8 +513,6 @@ func prepareYAMLFiles() error {
 	daemonSetlabels := make(map[string]string)
 	daemonSetlabels[appLabelKey] = TridentNodeLabelValue
 
-	snapshotCRDVersion := client.GetSnapshotterCRDVersion()
-
 	topologyEnabled, err := client.IsTopologyInUse()
 	if err != nil {
 		return fmt.Errorf("could not determine node topology; %v", err)
@@ -551,42 +525,41 @@ func prepareYAMLFiles() error {
 
 	// Creating Controller RBAC objects
 	// Creating service account for controller
-	controllerServiceAccountYAML := k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(csi), nil, labels,
+	controllerServiceAccountYAML := k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels,
 		nil)
 	if err = writeFile(controllerServiceAccountPath, controllerServiceAccountYAML); err != nil {
 		return fmt.Errorf("could not write controller service account YAML file; %v", err)
 	}
 	// Creating cluster role for controller service account
-	controllerClusterRoleYAML := k8sclient.GetClusterRoleYAML(client.Flavor(), getControllerRBACResourceName(true),
-		labels, nil, true)
+	controllerClusterRoleYAML := k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil)
 	if err = writeFile(controllerClusterRolePath, controllerClusterRoleYAML); err != nil {
 		return fmt.Errorf("could not write controller cluster role YAML file; %v", err)
 	}
 
 	// Creating role (trident-namespaced) for controller
-	controllerRoleYAML := k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace,
-		getControllerRBACResourceName(csi), labels, nil, csi)
+	controllerRoleYAML := k8sclient.GetRoleYAML(TridentPodNamespace, getControllerRBACResourceName(), labels, nil)
 	if err = writeFile(controllerRolePath, controllerRoleYAML); err != nil {
 		return fmt.Errorf("could not write controller role YAML file; %v", err)
 	}
 
 	// Creating role-binding (trident-namespaced) for controller
-	controllerRoleBindingYAML := k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace,
-		getControllerRBACResourceName(csi), labels, nil, csi)
+	controllerRoleBindingYAML := k8sclient.GetRoleBindingYAML(TridentPodNamespace,
+		getControllerRBACResourceName(), labels, nil)
 	if err = writeFile(controllerRoleBindingPath, controllerRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write controller role binding YAML file; %v", err)
 	}
 
 	// Creating cluster role binding for controller service account
 	controllerClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace,
-		getControllerRBACResourceName(true), client.Flavor(), labels, nil, true)
+		getControllerRBACResourceName(), client.Flavor(), labels, nil)
 	if err = writeFile(controllerClusterRoleBindingPath, controllerClusterRoleBindingYAML); err != nil {
 		return fmt.Errorf("could not write controller cluster role binding YAML file; %v", err)
 	}
 
 	// Creating Linux Node RBAC objects
 	// Creating service account for node linux
-	nodeServiceAccountYAML := k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false), nil, daemonSetlabels, nil)
+	nodeServiceAccountYAML := k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false),
+		nil, daemonSetlabels, nil)
 	if err = writeFile(nodeLinuxServiceAccountPath, nodeServiceAccountYAML); err != nil {
 		return fmt.Errorf("could not write node linux service account YAML file; %v", err)
 	}
@@ -609,7 +582,7 @@ func prepareYAMLFiles() error {
 	}
 
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
-		DeploymentName:          getDeploymentName(true),
+		DeploymentName:          getDeploymentName(),
 		TridentImage:            tridentImage,
 		AutosupportImage:        autosupportImage,
 		AutosupportProxy:        autosupportProxy,
@@ -623,7 +596,6 @@ func prepareYAMLFiles() error {
 		LogLevel:                LogLevel,
 		LogLayers:               logLayers,
 		LogWorkflows:            logWorkflows,
-		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        []string{},
 		Labels:                  labels,
 		ControllingCRDetails:    nil,
@@ -632,9 +604,11 @@ func prepareYAMLFiles() error {
 		Version:                 client.ServerVersion(),
 		TopologyEnabled:         topologyEnabled,
 		HTTPRequestTimeout:      httpRequestTimeout.String(),
-		ServiceAccountName:      getControllerRBACResourceName(true),
+		ServiceAccountName:      getControllerRBACResourceName(),
 		ImagePullPolicy:         imagePullPolicy,
 		EnableForceDetach:       enableForceDetach,
+		ACPImage:                acpImage,
+		EnableACP:               enableACP,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -669,8 +643,8 @@ func prepareYAMLFiles() error {
 
 	if isPSPSupported() {
 		// Creating controller PodSecurityPolicy
-		controllerPodSecurityPolicyYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(csi),
-			labels, nil)
+		controllerPodSecurityPolicyYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(
+			getControllerRBACResourceName(), labels, nil)
 		if err = writeFile(controllerPodSecurityPolicyPath, controllerPodSecurityPolicyYAML); err != nil {
 			return fmt.Errorf("could not write controller pod security policy YAML file; %v", err)
 		}
@@ -678,16 +652,15 @@ func prepareYAMLFiles() error {
 		// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
 		// This way it is made more clear that the service account isn't supposed to have access to anything
 		// Creating role (trident-namespaced) for node linux service account
-		nodeRoleYAML := k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(false),
-			daemonSetlabels, nil, csi)
+		nodeRoleYAML := k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(false),
+			daemonSetlabels, nil)
 		if err = writeFile(nodeLinuxRolePath, nodeRoleYAML); err != nil {
 			return fmt.Errorf("could not write node linux role YAML file; %v", err)
 		}
 
 		// Creating role-binding (trident-namespaced) for node linux service account
-		nodeRoleBindingYAML := k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace,
-			getNodeRBACResourceName(false),
-			daemonSetlabels, nil, csi)
+		nodeRoleBindingYAML := k8sclient.GetRoleBindingYAML(TridentPodNamespace,
+			getNodeRBACResourceName(false), daemonSetlabels, nil)
 		if err = writeFile(nodeLinuxRoleBindingPath, nodeRoleBindingYAML); err != nil {
 			return fmt.Errorf("could not write node linux role binding YAML file; %v", err)
 		}
@@ -736,15 +709,14 @@ func prepareYAMLFiles() error {
 			// Create node role & rolebinding only if PSP is supported instead of creating an empty resource
 			// This way it is made more clear that the service account isn't supposed to have access to anything
 			// Creating role (trident-namespaced) for node windows service account
-			nodeWindowsRoleYAML := k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace,
-				getNodeRBACResourceName(true),
-				daemonSetlabels, nil, csi)
+			nodeWindowsRoleYAML := k8sclient.GetRoleYAML(TridentPodNamespace,
+				getNodeRBACResourceName(true), daemonSetlabels, nil)
 			if err = writeFile(nodeWindowsRolePath, nodeWindowsRoleYAML); err != nil {
 				return fmt.Errorf("could not write node windows role YAML file; %v", err)
 			}
 			// Creating role-binding (trident-namespaced) for node windows service account
-			nodeWindowsRoleBindingYAML := k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace,
-				getNodeRBACResourceName(true), daemonSetlabels, nil, csi)
+			nodeWindowsRoleBindingYAML := k8sclient.GetRoleBindingYAML(TridentPodNamespace,
+				getNodeRBACResourceName(true), daemonSetlabels, nil)
 			if err = writeFile(nodeWindowsRoleBindingPath, nodeWindowsRoleBindingYAML); err != nil {
 				return fmt.Errorf("could not write node windows role binding YAML file; %v", err)
 			}
@@ -780,12 +752,7 @@ func ensureSetupDirExists() error {
 }
 
 func installTrident() (returnError error) {
-	var (
-		logFields LogFields
-		pvcExists bool
-		pvExists  bool
-		crd       *apiextensionv1.CustomResourceDefinition
-	)
+	var logFields LogFields
 
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
@@ -800,27 +767,12 @@ func installTrident() (returnError error) {
 	if client == nil {
 		return fmt.Errorf("not able to connect to Kubernetes API server")
 	}
-	snapshotCRDVersion := client.GetSnapshotterCRDVersion()
 
 	topologyEnabled, err := client.IsTopologyInUse()
-
-	// Ensure legacy Trident isn't already installed
-	if installed, namespace, err := isTridentInstalled(); err != nil {
-		return fmt.Errorf("could not check if Trident deployment exists; %v", err)
-	} else if installed {
-		return fmt.Errorf("trident is already installed in namespace %s", namespace)
-	}
 
 	// Ensure CSI Trident isn't already installed
 	if installed, namespace, err := isCSITridentInstalled(); err != nil {
 		return fmt.Errorf("could not check if CSI Trident deployment exists; %v", err)
-	} else if installed {
-		return fmt.Errorf("CSI Trident is already installed in namespace %s", namespace)
-	}
-
-	// Ensure preview CSI Trident isn't already installed
-	if installed, namespace, err := isPreviewCSITridentInstalled(); err != nil {
-		return fmt.Errorf("could not check if preview CSI Trident deployment exists; %v", err)
 	} else if installed {
 		return fmt.Errorf("CSI Trident is already installed in namespace %s", namespace)
 	}
@@ -837,45 +789,6 @@ func installTrident() (returnError error) {
 		Log().WithField("namespace", TridentPodNamespace).Debug("Namespace does not exist.")
 	}
 
-	// Check for alpha snapshot CRDs
-	crdNames := []string{
-		"volumesnapshotclasses.snapshot.storage.k8s.io",
-		"volumesnapshotcontents.snapshot.storage.k8s.io",
-		"volumesnapshots.snapshot.storage.k8s.io",
-	}
-
-	for _, crdName := range crdNames {
-		// See if CRD exists
-		var crdExists bool
-		crdExists, returnError = client.CheckCRDExists(crdName)
-		if returnError != nil {
-			return
-		}
-		if !crdExists {
-			Log().WithField("CRD", crdName).Debug("CRD not present.")
-			continue
-		}
-
-		// Get the CRD and check version
-		crd, returnError = client.GetCRD(crdName)
-		if returnError != nil {
-			return
-		}
-		alphaSnapshotErrorString := "Kubernetes snapshot beta feature is not backwards compatible; run `tridentctl" +
-			" obliviate alpha-snapshot-crd` to remove previous Kubernetes snapshot CRDs, " +
-			"then retry installation; for details, please refer to Trident’s online documentation"
-		if strings.Contains(strings.ToLower(crd.APIVersion), "alpha") {
-			returnError = fmt.Errorf(alphaSnapshotErrorString)
-			return
-		}
-		for _, version := range crd.Spec.Versions {
-			if strings.ToLower(version.Name) == "v1alpha1" {
-				returnError = fmt.Errorf(alphaSnapshotErrorString)
-				return
-			}
-		}
-	}
-
 	// Discover CRD data
 	var installedCRDs []string
 	for _, crdName := range CRDnames {
@@ -890,44 +803,6 @@ func installTrident() (returnError error) {
 			installedCRDs = append(installedCRDs, crdName)
 		} else {
 			Log().WithField("CRD", crdName).Debug("CRD not present.")
-		}
-	}
-
-	// Let TridentVersions CRD be the deciding factor if the CRDs exist, since
-	// TridentVersions is the last CRD created during installation.
-	if utils.SliceContainsString(installedCRDs, VersionCRDName) {
-		Log().Debug("Trident Version CRD present, skipping PVC/PV check.")
-	} else {
-
-		// We didn't find any CRD data, so look for legacy etcd data
-		pvcExists, pvExists, returnError = discoverLegacyEtcdData()
-		if returnError != nil {
-			return
-		}
-
-		logFields = LogFields{"pv": pvName, "pvc": pvcName}
-
-		if pvcExists && pvExists {
-			Log().WithFields(logFields).Debug("PV and PVC exist from a pre-19.07 Trident installation.")
-			returnError = errors.New("PV and PVC exist from a pre-19.07 Trident installation.  This data " +
-				"must be migrated to CRDs.  Install Trident 20.07 to accomplish this migration, and then upgrade " +
-				"to any Trident version newer than 20.07")
-			return
-		} else if !pvcExists && !pvExists {
-			Log().WithFields(logFields).Debug("PV and PVC do not exist, installer will create a fresh " +
-				"CRD-based deployment.")
-		} else if pvcExists && !pvExists {
-			Log().WithFields(logFields).Error("PVC exists but PV does not.")
-			returnError = fmt.Errorf("PVC %s exists but PV %s does not; if you have data from a previous "+
-				"Trident installation, please use the installer from that version to recreate the missing PV, "+
-				"else delete the PVC and try again", pvcName, pvName)
-			return
-		} else if !pvcExists && pvExists {
-			Log().WithFields(logFields).Error("PV exists but PVC does not.")
-			returnError = fmt.Errorf("PV %s exists but PVC %s does not; if you have data from a previous "+
-				"Trident installation, please use the installer from that version to recreate the missing PVC, "+
-				"else delete the PV and try again", pvName, pvcName)
-			return
 		}
 	}
 
@@ -962,12 +837,6 @@ func installTrident() (returnError error) {
 		return
 	}
 
-	// Ensure we can create a CRD client.
-	if _, returnError = getCRDClient(); returnError != nil {
-		Log().Errorf("Could not create CRD client; %v", returnError)
-		return
-	}
-
 	if isPSPSupported() {
 		// Create pod security policy for controller & node pods
 		// Creating a closure to perform the repeated set of actions to check for a previously existing YAML file, so
@@ -991,7 +860,7 @@ func installTrident() (returnError error) {
 			return nil
 		}
 		// Check and install controller PSP
-		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels, nil)
+		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(), labels, nil)
 		if err := installPSP(controllerPodSecurityPolicyPath, pspYAML); err != nil {
 			returnError = fmt.Errorf("could not create Trident controller pod security policy; %v", err)
 			return
@@ -1117,8 +986,8 @@ func installTrident() (returnError error) {
 	Log().WithFields(logFields).Info("Created Trident resource quota.")
 
 	// Remove any previous deployments found of name 'trident-csi'
-	if found, _ := client.CheckDeploymentExists(getDeploymentName(true), TridentPodNamespace); found {
-		if err := client.DeleteDeployment(getDeploymentName(true), TridentPodNamespace, true); err != nil {
+	if found, _ := client.CheckDeploymentExists(getDeploymentName(), TridentPodNamespace); found {
+		if err := client.DeleteDeployment(getDeploymentName(), TridentPodNamespace, true); err != nil {
 			returnError = fmt.Errorf("could not delete previous Trident deployment; %v", err)
 			return
 		}
@@ -1135,7 +1004,7 @@ func installTrident() (returnError error) {
 		logFields = LogFields{"path": deploymentPath}
 	} else {
 		deploymentArgs := &k8sclient.DeploymentYAMLArguments{
-			DeploymentName:          getDeploymentName(true),
+			DeploymentName:          getDeploymentName(),
 			TridentImage:            tridentImage,
 			AutosupportImage:        autosupportImage,
 			AutosupportProxy:        autosupportProxy,
@@ -1149,7 +1018,6 @@ func installTrident() (returnError error) {
 			LogLevel:                LogLevel,
 			LogWorkflows:            logWorkflows,
 			LogLayers:               logLayers,
-			SnapshotCRDVersion:      snapshotCRDVersion,
 			ImagePullSecrets:        []string{},
 			Labels:                  labels,
 			ControllingCRDetails:    nil,
@@ -1158,9 +1026,11 @@ func installTrident() (returnError error) {
 			Version:                 client.ServerVersion(),
 			TopologyEnabled:         topologyEnabled,
 			HTTPRequestTimeout:      httpRequestTimeout.String(),
-			ServiceAccountName:      getControllerRBACResourceName(true),
+			ServiceAccountName:      getControllerRBACResourceName(),
 			ImagePullPolicy:         imagePullPolicy,
 			EnableForceDetach:       enableForceDetach,
+			ACPImage:                acpImage,
+			EnableACP:               enableACP,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
@@ -1293,103 +1163,6 @@ func installTrident() (returnError error) {
 	return nil
 }
 
-func discoverLegacyEtcdData() (pvcExists, pvExists bool, returnError error) {
-	var (
-		pvc *v1.PersistentVolumeClaim
-		pv  *v1.PersistentVolume
-	)
-
-	// Check for PVC (also returns (false, nil) if namespace does not exist)
-	pvcExists, returnError = client.CheckPVCExists(pvcName)
-	if returnError != nil {
-		returnError = fmt.Errorf("could not establish the presence of PVC %s; %v", pvcName, returnError)
-		return
-	}
-	if pvcExists {
-		pvc, returnError = client.GetPVC(pvcName)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not retrieve PVC %s; %v", pvcName, returnError)
-			return
-		}
-
-		// Ensure that the PVC is in a state that we can work with
-		if pvc.Status.Phase == v1.ClaimLost {
-			returnError = fmt.Errorf("PVC %s phase is Lost; please delete it and try again", pvcName)
-			return
-		}
-		if pvc.Status.Phase == v1.ClaimBound && pvc.Spec.VolumeName != pvName {
-			returnError = fmt.Errorf("PVC %s is Bound to PV %s, does not match expected PV name %s; "+
-				"please specify a different PV and/or PVC", pvcName, pvc.Spec.VolumeName, pvName)
-			return
-		}
-		if pvc.Labels == nil || pvc.Labels[TridentLegacyLabelKey] != TridentLegacyLabelValue {
-			returnError = fmt.Errorf("PVC %s does not have %s label; "+
-				"please add label or delete PVC and try again", pvcName, TridentLegacyLabel)
-			return
-		}
-
-		Log().WithFields(LogFields{
-			"pvc":       pvcName,
-			"namespace": pvc.Namespace,
-			"phase":     pvc.Status.Phase,
-		}).Debug("PVC already exists.")
-
-	} else {
-		Log().WithField("pvc", pvcName).Debug("PVC does not exist.")
-	}
-
-	// Check for PV
-	pvExists, returnError = client.CheckPVExists(pvName)
-	if returnError != nil {
-		returnError = fmt.Errorf("could not establish the presence of PV %s; %v", pvName, returnError)
-		return
-	}
-	if pvExists {
-		pv, returnError = client.GetPV(pvName)
-		if returnError != nil {
-			returnError = fmt.Errorf("could not retrieve PV %s; %v", pvName, returnError)
-			return
-		}
-
-		// Ensure that the PV is in a state we can work with
-		if pv.Status.Phase == v1.VolumeReleased {
-			returnError = fmt.Errorf("PV %s phase is Released; please delete it and try again", pvName)
-			return
-		}
-		if pv.Status.Phase == v1.VolumeFailed {
-			returnError = fmt.Errorf("PV %s phase is Failed; please delete it and try again", pvName)
-			return
-		}
-		if pv.Status.Phase == v1.VolumeBound && pv.Spec.ClaimRef != nil {
-			if pv.Spec.ClaimRef.Name != pvcName {
-				returnError = fmt.Errorf("PV %s is Bound to PVC %s, does not match expected PVC name %s; "+
-					"please specify a different PV and/or PVC", pvName, pv.Spec.ClaimRef.Name, pvcName)
-				return
-			}
-			if pv.Spec.ClaimRef.Namespace != TridentPodNamespace {
-				returnError = fmt.Errorf("PV %s is Bound to a PVC in namespace %s; "+
-					"please delete PV and try again", pvName, pv.Spec.ClaimRef.Namespace)
-				return
-			}
-		}
-		if pv.Labels == nil || pv.Labels[TridentLegacyLabelKey] != TridentLegacyLabelValue {
-			returnError = fmt.Errorf("PV %s does not have %s label; "+
-				"please add label or delete PV and try again", pvName, TridentLegacyLabel)
-			return
-		}
-
-		Log().WithFields(LogFields{
-			"pv":    pvName,
-			"phase": pv.Status.Phase,
-		}).Debug("PV already exists.")
-
-	} else {
-		Log().WithField("pv", pvName).Debug("PV does not exist.")
-	}
-
-	return
-}
-
 func patchNamespace() error {
 	labels := map[string]string{
 		tridentconfig.PodSecurityStandardsEnforceLabel: tridentconfig.PodSecurityStandardsEnforceProfile,
@@ -1469,7 +1242,7 @@ func createAndEnsureCRDs() error {
 
 // getCRDMapFromBundle creates a map of CRD name to CRD definition from the bundle
 func getCRDMapFromBundle(bundle string) map[string]string {
-	labelEqualRegex := regexp.MustCompile(`(?m)^\s*name:\s*(?P<crdName>[\w\.]+)$`)
+	labelEqualRegex := regexp.MustCompile(`(?m)^\s*name:\s*(?P<crdName>[\w.]+)$`)
 	yamls := strings.Split(bundle, "---")
 	crdMap := make(map[string]string)
 
@@ -1690,7 +1463,7 @@ func createRBACObjects() (returnError error) {
 	// Creating controller RBAC Objects
 	// Create service account for controller
 	if createObjectFunc(controllerServiceAccountPath,
-		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(csi), nil, labels, nil)) != nil {
+		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller service account; %v", returnError)
 		return
 	}
@@ -1698,8 +1471,8 @@ func createRBACObjects() (returnError error) {
 
 	// Create role (trident-namespaced) for controller
 	if createObjectFunc(controllerRolePath,
-		k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getControllerRBACResourceName(csi),
-			labels, nil, csi)) != nil {
+		k8sclient.GetRoleYAML(TridentPodNamespace, getControllerRBACResourceName(),
+			labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller role; %v", returnError)
 		return
 	}
@@ -1707,8 +1480,7 @@ func createRBACObjects() (returnError error) {
 
 	// Create role binding (trident-namespaced) for controller
 	if createObjectFunc(controllerRoleBindingPath,
-		k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace, getControllerRBACResourceName(csi),
-			labels, nil, csi)) != nil {
+		k8sclient.GetRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(), labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller role binding; %v", returnError)
 		return
 	}
@@ -1716,7 +1488,7 @@ func createRBACObjects() (returnError error) {
 
 	// Create cluster role for controller
 	if createObjectFunc(controllerClusterRolePath,
-		k8sclient.GetClusterRoleYAML(client.Flavor(), getControllerRBACResourceName(csi), labels, nil, csi)) != nil {
+		k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller cluster role; %v", returnError)
 		return
 	}
@@ -1724,8 +1496,8 @@ func createRBACObjects() (returnError error) {
 
 	// Create cluster role binding for controller
 	if createObjectFunc(controllerClusterRoleBindingPath,
-		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(csi), client.Flavor(),
-			labels, nil, csi)) != nil {
+		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(), client.Flavor(),
+			labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller cluster role binding; %v", returnError)
 		return
 	}
@@ -1745,8 +1517,8 @@ func createRBACObjects() (returnError error) {
 	if isPSPSupported() {
 		// Create role (trident-namespaced) for node linux
 		if createObjectFunc(nodeLinuxRolePath,
-			k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(false),
-				daemonSetlabels, nil, csi)) != nil {
+			k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(false),
+				daemonSetlabels, nil)) != nil {
 			returnError = fmt.Errorf("could not create node linux role; %v", returnError)
 			return
 		}
@@ -1754,8 +1526,8 @@ func createRBACObjects() (returnError error) {
 
 		// Create role binding (trident-namespaced) for node linux
 		if createObjectFunc(nodeLinuxRoleBindingPath,
-			k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(false),
-				daemonSetlabels, nil, csi)) != nil {
+			k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(false),
+				daemonSetlabels, nil)) != nil {
 			returnError = fmt.Errorf("could not create node linux role binding; %v", returnError)
 			return
 		}
@@ -1776,8 +1548,8 @@ func createRBACObjects() (returnError error) {
 		if isPSPSupported() {
 			// Create role (trident-namespaced) for node windows
 			if createObjectFunc(nodeWindowsRolePath,
-				k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(true),
-					daemonSetlabels, nil, csi)) != nil {
+				k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(true),
+					daemonSetlabels, nil)) != nil {
 				returnError = fmt.Errorf("could not create node windows role; %v", returnError)
 				return
 			}
@@ -1785,8 +1557,8 @@ func createRBACObjects() (returnError error) {
 
 			// Create role binding (trident-namespaced) for node windows
 			if createObjectFunc(nodeWindowsRoleBindingPath,
-				k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(true),
-					daemonSetlabels, nil, csi)) != nil {
+				k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(true),
+					daemonSetlabels, nil)) != nil {
 				returnError = fmt.Errorf("could not create node windows role binding; %v", returnError)
 				return
 			}
@@ -1796,7 +1568,7 @@ func createRBACObjects() (returnError error) {
 
 	// If OpenShift, add Trident to security context constraint(s)
 	if client.Flavor() == k8sclient.FlavorOpenShift {
-		sccUsers := []string{getControllerRBACResourceName(true), getNodeRBACResourceName(false)}
+		sccUsers := []string{getControllerRBACResourceName(), getNodeRBACResourceName(false)}
 		if windows {
 			sccUsers = append(sccUsers, getNodeRBACResourceName(true))
 		}
@@ -1846,22 +1618,22 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	// Remove RBAC objects of name 'trident-csi' from previous installations if found
 	// Delete service account
 	deleteObjectFunc(
-		k8sclient.GetServiceAccountYAML(getServiceAccountName(true), nil, nil, nil),
+		k8sclient.GetServiceAccountYAML(getServiceAccountName(), nil, nil, nil),
 		"Could not delete trident-csi service account.",
 		"Deleted trident-csi service account.",
 	)
 
 	// Delete cluster role
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(client.Flavor(), getClusterRoleName(true), nil, nil, csi),
+		k8sclient.GetClusterRoleYAML(getClusterRoleName(), nil, nil),
 		"Could not delete trident-csi cluster role.",
 		"Deleted trident-csi cluster role.",
 	)
 
 	// Delete cluster role binding
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getClusterRoleBindingName(true), client.Flavor(), nil,
-			nil, csi),
+		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getClusterRoleBindingName(), client.Flavor(), nil,
+			nil),
 		"Could not delete trident-csi cluster role binding.",
 		"Deleted trident-csi cluster role binding.",
 	)
@@ -1872,38 +1644,36 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	// DELETING Controller RBAC objects
 	// Delete controller service account
 	deleteObjectFunc(
-		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(csi), nil, labels, nil),
+		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels, nil),
 		"Could not delete controller service account.",
 		"Deleted controller service account.",
 	)
 
 	// Delete controller cluster role
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(client.Flavor(), getControllerRBACResourceName(csi), labels, nil, csi),
+		k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil),
 		"Could not delete controller cluster role.",
 		"Deleted controller cluster role.",
 	)
 
 	// Delete controller cluster role binding
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(csi),
-			client.Flavor(), labels, nil, csi),
+		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(),
+			client.Flavor(), labels, nil),
 		"Could not delete controller cluster role binding.",
 		"Deleted controller cluster role binding.",
 	)
 
 	// Delete controller role
 	deleteObjectFunc(
-		k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getControllerRBACResourceName(csi), labels, nil,
-			csi),
+		k8sclient.GetRoleYAML(TridentPodNamespace, getControllerRBACResourceName(), labels, nil),
 		"Could not delete controller role.",
 		"Deleted controller role.",
 	)
 
 	// Delete controller role binding
 	deleteObjectFunc(
-		k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace, getControllerRBACResourceName(csi),
-			labels, nil, csi),
+		k8sclient.GetRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(), labels, nil),
 		"Could not delete controller role binding.",
 		"Deleted controller role binding.",
 	)
@@ -1918,31 +1688,28 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete node linux cluster role, role bindings
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(client.Flavor(), getNodeRBACResourceName(false),
-			daemonSetlabels, nil, csi),
+		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil),
 		"Could not delete node linux cluster role.",
 		"Deleted node linux cluster role.",
 	)
 
 	deleteObjectFunc(
 		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(false), client.Flavor(),
-			daemonSetlabels, nil, csi),
+			daemonSetlabels, nil),
 		"Could not delete node linux cluster role binding.",
 		"Deleted node linux cluster role binding.",
 	)
 
 	// Delete node linux role
 	deleteObjectFunc(
-		k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(false),
-			daemonSetlabels, nil, csi),
+		k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(false), daemonSetlabels, nil),
 		"Could not delete node linux role.",
 		"Deleted node linux role.",
 	)
 
 	// Delete node linux role binding
 	deleteObjectFunc(
-		k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(false),
-			daemonSetlabels, nil, csi),
+		k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(false), daemonSetlabels, nil),
 		"Could not delete node linux role binding.",
 		"Deleted node linux role binding.",
 	)
@@ -1957,62 +1724,51 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 
 	// Delete node windows cluster role, role bindings
 	deleteObjectFunc(
-		k8sclient.GetClusterRoleYAML(client.Flavor(), getNodeRBACResourceName(true),
-			daemonSetlabels, nil, csi),
+		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil),
 		"Could not delete node windows cluster role.",
 		"Deleted node windows cluster role.",
 	)
 
 	deleteObjectFunc(
 		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(true), client.Flavor(),
-			daemonSetlabels, nil, csi),
+			daemonSetlabels, nil),
 		"Could not delete node windows cluster role binding.",
 		"Deleted node windows cluster role binding.",
 	)
 
 	// Delete node windows role
 	deleteObjectFunc(
-		k8sclient.GetRoleYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(true),
-			daemonSetlabels, nil, csi),
+		k8sclient.GetRoleYAML(TridentPodNamespace, getNodeRBACResourceName(true), daemonSetlabels, nil),
 		"Could not delete node windows role.",
 		"Deleted node windows role.",
 	)
 
 	// Delete node windows role binding
 	deleteObjectFunc(
-		k8sclient.GetRoleBindingYAML(client.Flavor(), TridentPodNamespace, getNodeRBACResourceName(true),
-			daemonSetlabels, nil, csi),
+		k8sclient.GetRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(true), daemonSetlabels, nil),
 		"Could not delete node windows role binding.",
 		"Deleted node windows role binding.",
 	)
 
 	// If OpenShift, delete Trident's security context constraint
 	if client.Flavor() == k8sclient.FlavorOpenShift {
-		user := TridentLegacy
-		if csi {
-			user = TridentCSI
-		}
 		sccUsers := []string{
-			user,
-			getControllerRBACResourceName(true),
+			TridentCSI,
+			getControllerRBACResourceName(),
 			getNodeRBACResourceName(false),
 			getNodeRBACResourceName(true),
 		}
-		for _, user := range sccUsers {
-			var label string
-			if user == TridentLegacy {
-				label = TridentLegacyLabelValue
-			} else {
-				_, label = getAppLabelForResource(user)
-				label = strings.Split(label, "=")[1]
-			}
-			if err := DeleteOpenShiftTridentSCC(user, label); err != nil {
+		for _, sccUser := range sccUsers {
+			_, label := getAppLabelForResource(sccUser)
+			label = strings.Split(label, "=")[1]
+
+			if err := DeleteOpenShiftTridentSCC(sccUser, label); err != nil {
 				Log().WithField("error", err).Warning("Could not delete security context constraint.")
 				anyErrors = true
 			} else {
 				logFunc(LogFields{
 					"scc":  "trident",
-					"user": user,
+					"user": sccUser,
 				})("Deleted Trident's security context constraint.")
 			}
 		}
@@ -2051,33 +1807,6 @@ func validateTridentDeployment() error {
 		return fmt.Errorf("the Trident deployment must define the %s container", tridentconfig.ContainerTrident)
 	} else {
 		Log().WithField("image", tridentImage).Debug("Read Trident image from custom YAML.")
-	}
-
-	return nil
-}
-
-func validateTridentPodSecurityPolicy(podSecurityPolicyPath string) error {
-	securityPolicy, err := readPodSecurityPolicyFromFile(podSecurityPolicyPath)
-	if err != nil {
-		return fmt.Errorf("could not load pod security policy YAML file; %v", err)
-	}
-
-	// Check the security settings, CSI Trident requires enhanced privileges for performing mounts
-	spec := securityPolicy.Spec
-	if !spec.Privileged {
-		return fmt.Errorf("trident's pod security policy must allow privileged pods")
-	}
-	if spec.AllowPrivilegeEscalation != nil && !*spec.AllowPrivilegeEscalation {
-		return fmt.Errorf("trident's pod security policy must allow privilege escalation")
-	}
-	if !spec.HostIPC {
-		return fmt.Errorf("trident's pod security policy must allow hostIPC")
-	}
-	if !spec.HostPID {
-		return fmt.Errorf("trident's pod security policy must allow hostPID")
-	}
-	if !spec.HostNetwork {
-		return fmt.Errorf("trident's pod security policy must allow hostNetwork")
 	}
 
 	return nil
@@ -2293,21 +2022,6 @@ func readDeploymentFromFile(filePath string) (*appsv1.Deployment, error) {
 }
 
 // readServiceFromFile parses and returns a service object from a file.
-func readPodSecurityPolicyFromFile(filePath string) (*policy.PodSecurityPolicy, error) {
-	var securityPolicy policy.PodSecurityPolicy
-
-	yamlBytes, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(yamlBytes, &securityPolicy)
-	if err != nil {
-		return nil, err
-	}
-	return &securityPolicy, nil
-}
-
-// readServiceFromFile parses and returns a service object from a file.
 func readServiceFromFile(filePath string) (*v1.Service, error) {
 	var service v1.Service
 
@@ -2372,45 +2086,8 @@ func DeleteOpenShiftTridentSCC(user, labelVal string) error {
 	return nil
 }
 
-func getCRDClient() (*crdclient.Clientset, error) {
-	var crdClient *crdclient.Clientset
-
-	createCRDClient := func() error {
-		var err error
-		crdClient, err = client.GetCRDClient()
-		return err
-	}
-
-	createCRDClientNotify := func(err error, duration time.Duration) {
-		Log().WithFields(LogFields{
-			"increment": duration.Truncate(100 * time.Millisecond),
-			"message":   err.Error(),
-		}).Debug("CRD client not yet created, waiting.")
-	}
-
-	createCRDClientBackoff := backoff.NewExponentialBackOff()
-	createCRDClientBackoff.InitialInterval = 1 * time.Second
-	createCRDClientBackoff.RandomizationFactor = 0.1
-	createCRDClientBackoff.Multiplier = 1.414
-	createCRDClientBackoff.MaxInterval = 5 * time.Second
-	createCRDClientBackoff.MaxElapsedTime = k8sTimeout
-
-	Log().Debug("Creating CRD client.")
-
-	if err := backoff.RetryNotify(createCRDClient, createCRDClientBackoff, createCRDClientNotify); err != nil {
-		return nil, err
-	}
-
-	Log().Debug("Created CRD client.")
-
-	return crdClient, nil
-}
-
-func getControllerRBACResourceName(csi bool) string {
-	if csi {
-		return TridentControllerResourceName
-	}
-	return TridentLegacy
+func getControllerRBACResourceName() string {
+	return TridentControllerResourceName
 }
 
 func getNodeRBACResourceName(windows bool) string {
@@ -2420,28 +2097,16 @@ func getNodeRBACResourceName(windows bool) string {
 	return TridentNodeLinuxResourceName
 }
 
-func getServiceAccountName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
+func getServiceAccountName() string {
+	return TridentCSI
 }
 
-func getClusterRoleName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
+func getClusterRoleName() string {
+	return TridentCSI
 }
 
-func getClusterRoleBindingName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
+func getClusterRoleBindingName() string {
+	return TridentCSI
 }
 
 func getPSPName() string {
@@ -2464,19 +2129,15 @@ func getResourceQuotaName() string {
 	return TridentCSI
 }
 
-func getDeploymentName(csi bool) string {
-	if csi {
-		return TridentDeploymentName
-	} else {
-		return TridentLegacy
-	}
+func getDeploymentName() string {
+	return TridentControllerResourceName
 }
 
 func getDaemonSetName(windows bool) string {
 	if windows {
-		return TridentWindowsDaemonsetName
+		return TridentNodeWindowsResourceName
 	} else {
-		return TridentLinuxDaemonsetName
+		return TridentNodeLinuxResourceName
 	}
 }
 

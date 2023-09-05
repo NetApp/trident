@@ -143,7 +143,7 @@ func TestGetVolumeConfig(t *testing.T) {
 	}
 }
 
-func TestGetSnapshotConfig(t *testing.T) {
+func TestGetSnapshotConfigForCreate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)
 	p := NewHelper(orchestrator)
@@ -171,7 +171,43 @@ func TestGetSnapshotConfig(t *testing.T) {
 				Name:       test.snapshotName,
 				VolumeName: test.volumeName,
 			}
-			snapshotConfig, err := plugin.GetSnapshotConfig(test.volumeName, test.snapshotName)
+			snapshotConfig, err := plugin.GetSnapshotConfigForCreate(test.volumeName, test.snapshotName)
+			assert.Nil(t, err, "Error is not nil")
+			assert.Equal(t, expected, snapshotConfig, "The snapshotConfig does not match")
+		})
+	}
+}
+
+func TestGetSnapshotConfigForImport(t *testing.T) {
+	ctx := context.TODO()
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mock.NewMockOrchestrator(mockCtrl)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
+
+	type snapshotConfigTest struct {
+		volumeName   string
+		snapshotName string
+	}
+
+	tests := map[string]snapshotConfigTest{
+		"validVolumeSnapshotValue":  {"volume", "snapshot"},
+		"volumeNameIsEmpty":         {"", "snapshot"},
+		"snapshotNameIsEmpty":       {"volume", ""},
+		"bothVolumeSnapshotIsEmpty": {"", ""},
+	}
+
+	for testName, test := range tests {
+		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+			expected := &storage.SnapshotConfig{
+				Version:    config.OrchestratorAPIVersion,
+				Name:       test.snapshotName,
+				VolumeName: test.volumeName,
+			}
+			snapshotConfig, err := plugin.GetSnapshotConfigForImport(ctx, test.volumeName, test.snapshotName)
 			assert.Nil(t, err, "Error is not nil")
 			assert.Equal(t, expected, snapshotConfig, "The snapshotConfig does not match")
 		})

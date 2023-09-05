@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -11,6 +11,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils"
 )
 
 func init() {
@@ -72,33 +73,13 @@ func discoverUninstallationEnvironment() error {
 	return nil
 }
 
-func isTridentInstalled() (installed bool, namespace string, err error) {
-	return client.CheckDeploymentExistsByLabel(TridentLegacyLabel, true)
-}
-
-func isPreviewCSITridentInstalled() (installed bool, namespace string, err error) {
-	return client.CheckStatefulSetExistsByLabel(TridentCSILabel, true)
-}
-
 func isCSITridentInstalled() (installed bool, namespace string, err error) {
 	return client.CheckDeploymentExistsByLabel(TridentCSILabel, true)
 }
 
-func discoverTrident() (legacy, csi, csiPreview bool, err error) {
-	// Check if legacy Trident is installed
-	if legacy, _, err = isTridentInstalled(); err != nil {
-		err = fmt.Errorf("could not check if legacy Trident is installed; %v", err)
-		return
-	}
-
-	// Check if preview CSI Trident is installed
-	if csiPreview, _, err = isPreviewCSITridentInstalled(); err != nil {
-		err = fmt.Errorf("could not check if preview CSI Trident is installed; %v", err)
-		return
-	}
-
-	// Check if CSI Trident is installed
-	if csi, _, err = isCSITridentInstalled(); err != nil {
+// discoverTrident checks whether CSI Trident is installed
+func discoverTrident() (installed bool, err error) {
+	if installed, _, err = isCSITridentInstalled(); err != nil {
 		err = fmt.Errorf("could not check if CSI Trident is installed; %v", err)
 		return
 	}
@@ -107,7 +88,7 @@ func discoverTrident() (legacy, csi, csiPreview bool, err error) {
 }
 
 func validateUninstallationArguments() error {
-	if !dns1123LabelRegex.MatchString(TridentPodNamespace) {
+	if !utils.DNS1123LabelRegex.MatchString(TridentPodNamespace) {
 		return fmt.Errorf("%s is not a valid namespace name; a DNS-1123 label must consist "+
 			"of lower case alphanumeric characters or '-', and must start and end with an alphanumeric "+
 			"character", TridentPodNamespace)
@@ -117,116 +98,55 @@ func validateUninstallationArguments() error {
 }
 
 func uninstallTrident() error {
-	// 1. preview CSI Trident --> uninstall preview CSI Trident
-	// 2. preview CSI Trident & legacy Trident --> uninstall preview CSI Trident
-	// 3. CSI Trident --> uninstall CSI Trident
-	// 4. legacy Trident --> uninstall legacy Trident
-	//
-	// if csiPreview, uninstall csiPreview
-	// else if csi, uninstall csi
-	// else if legacy, uninstall legacy
-
 	if client == nil {
 		return fmt.Errorf("not able to connect to Kubernetes API server")
 	}
 
 	anyErrors := false
 
-	legacyTridentInstalled, csiTridentInstalled, csiPreviewTridentInstalled, err := discoverTrident()
+	_, err := discoverTrident()
 	if err != nil {
 		return err
 	}
 
-	if legacyTridentInstalled && csiPreviewTridentInstalled {
-		Log().Warning("Both legacy and CSI Trident are installed.  CSI Trident will be uninstalled, and " +
-			"you must run the uninstaller again to remove legacy Trident before running the Trident installer.")
-	}
+	// Set the app labels
+	appLabel = TridentCSILabel
+	appLabelKey = TridentCSILabelKey
+	appLabelValue = TridentCSILabelValue
 
-	// Set the global csi variable, which controls things like RBAC and app labels
-	csi = csiTridentInstalled || csiPreviewTridentInstalled
-
-	// Set the app labels (CSI takes precedence)
-	if csi {
-		appLabel = TridentCSILabel
-		appLabelKey = TridentCSILabelKey
-		appLabelValue = TridentCSILabelValue
+	// Delete Trident deployment
+	if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
+		Log().WithFields(LogFields{
+			"label": appLabel,
+			"error": err,
+		}).Warn("Trident deployment not found.")
 	} else {
-		appLabel = TridentLegacyLabel
-		appLabelKey = TridentLegacyLabelKey
-		appLabelValue = TridentLegacyLabelValue
-	}
-
-	// First handle the deployment (legacy, CSI) / statefulset (preview CSI)
-
-	if csiPreviewTridentInstalled {
-		// Delete Trident statefulset
-		if statefulset, err := client.GetStatefulSetByLabel(appLabel, true); err != nil {
-			Log().WithFields(LogFields{
-				"label": appLabel,
-				"error": err,
-			}).Warn("Trident statefulset not found.")
-		} else {
-			// Statefulset found by label, so ensure there isn't a namespace clash
-			if TridentPodNamespace != statefulset.Namespace {
-				return fmt.Errorf("a Trident statefulset was found in namespace '%s', "+
-					"not in specified namespace '%s'", statefulset.Namespace, TridentPodNamespace)
-			}
-
-			Log().WithFields(LogFields{
-				"statefulset": statefulset.Name,
-				"namespace":   statefulset.Namespace,
-			}).Debug("Trident statefulset found by label.")
-
-			// Delete the statefulset
-			if err = client.DeleteStatefulSetByLabel(appLabel); err != nil {
-				Log().WithFields(LogFields{
-					"statefulset": statefulset.Name,
-					"namespace":   statefulset.Namespace,
-					"label":       appLabel,
-					"error":       err,
-				}).Warning("Could not delete Trident statefulset.")
-				anyErrors = true
-			} else {
-				Log().Info("Deleted Trident statefulset.")
-			}
+		// Deployment found by label, so ensure there isn't a namespace clash
+		if TridentPodNamespace != deployment.Namespace {
+			return fmt.Errorf("a Trident deployment was found in namespace '%s', "+
+				"not in specified namespace '%s'", deployment.Namespace, TridentPodNamespace)
 		}
-	} else {
-		// Delete Trident deployment
-		if deployment, err := client.GetDeploymentByLabel(appLabel, true); err != nil {
-			Log().WithFields(LogFields{
-				"label": appLabel,
-				"error": err,
-			}).Warn("Trident deployment not found.")
-		} else {
-			// Deployment found by label, so ensure there isn't a namespace clash
-			if TridentPodNamespace != deployment.Namespace {
-				return fmt.Errorf("a Trident deployment was found in namespace '%s', "+
-					"not in specified namespace '%s'", deployment.Namespace, TridentPodNamespace)
-			}
 
+		Log().WithFields(LogFields{
+			"deployment": deployment.Name,
+			"namespace":  deployment.Namespace,
+		}).Debug("Trident deployment found by label.")
+
+		// Delete the deployment
+		if err = client.DeleteDeploymentByLabel(appLabel); err != nil {
 			Log().WithFields(LogFields{
 				"deployment": deployment.Name,
 				"namespace":  deployment.Namespace,
-			}).Debug("Trident deployment found by label.")
-
-			// Delete the deployment
-			if err = client.DeleteDeploymentByLabel(appLabel); err != nil {
-				Log().WithFields(LogFields{
-					"deployment": deployment.Name,
-					"namespace":  deployment.Namespace,
-					"label":      appLabel,
-					"error":      err,
-				}).Warning("Could not delete Trident deployment.")
-				anyErrors = true
-			} else {
-				Log().Info("Deleted Trident deployment.")
-			}
+				"label":      appLabel,
+				"error":      err,
+			}).Warning("Could not delete Trident deployment.")
+			anyErrors = true
+		} else {
+			Log().Info("Deleted Trident deployment.")
 		}
 	}
 
-	// Next handle all the other common CSI components (DaemonSet(s), service).  Some/all of these may
-	// not be present if uninstalling legacy Trident or preview CSI Trident, in which case we log
-	// warnings only.
+	// Next handle all the other common CSI components (DaemonSet(s), service).
 	if daemonsets, err := client.GetDaemonSetsByLabel(TridentNodeLabel, true); err != nil {
 		Log().WithFields(LogFields{
 			"label": TridentNodeLabel,
@@ -369,9 +289,7 @@ func uninstallTrident() error {
 	// Delete pod security policy
 	if isPSPSupported() {
 		podSecurityPolicyYAML := k8sclient.GetPrivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
-		if !csi {
-			podSecurityPolicyYAML = k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getPSPName(), nil, nil)
-		}
+
 		if err = client.DeleteObjectByYAML(podSecurityPolicyYAML, true); err != nil {
 			Log().WithField("error", err).Warning("Could not delete pod security policy.")
 			anyErrors = true
@@ -379,19 +297,17 @@ func uninstallTrident() error {
 			Log().WithField("podSecurityPolicy", "tridentpods").Info("Deleted pod security policy.")
 		}
 
-		labels := make(map[string]string)
-		labels[TridentCSILabelKey] = TridentCSILabelValue
-		daemonSetlabels := make(map[string]string)
-		daemonSetlabels[TridentNodeLabelKey] = TridentNodeLabelValue
+		labels := map[string]string{TridentCSILabelKey: TridentCSILabelValue}
+		daemonSetlabels := map[string]string{TridentNodeLabelKey: TridentNodeLabelValue}
 
 		// Delete PodSecurityPolicy for controller, linux & windows nodes
-		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels, nil)
+		pspYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(), labels, nil)
 		if err := client.DeleteObjectByYAML(pspYAML, true); err != nil {
 			Log().WithField("error", err).Warning("Could not delete controller pod security policy.")
 			anyErrors = true
 		} else {
 			Log().WithField("podSecurityPolicy",
-				getControllerRBACResourceName(true)).Info("Deleted controller pod security policy.")
+				getControllerRBACResourceName()).Info("Deleted controller pod security policy.")
 		}
 		// Deletion of Linux node PSP
 		pspYAML = k8sclient.GetPrivilegedPodSecurityPolicyYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
@@ -414,15 +330,13 @@ func uninstallTrident() error {
 		}
 	}
 
-	if csi {
-		CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil)
+	CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), nil, nil)
 
-		if err = client.DeleteObjectByYAML(CSIDriverYAML, true); err != nil {
-			Log().WithField("error", err).Warning("Could not delete csidriver custom resource.")
-			anyErrors = true
-		} else {
-			Log().WithField("CSIDriver", getCSIDriverName()).Info("Deleted csidriver custom resource.")
-		}
+	if err = client.DeleteObjectByYAML(CSIDriverYAML, true); err != nil {
+		Log().WithField("error", err).Warning("Could not delete csidriver custom resource.")
+		anyErrors = true
+	} else {
+		Log().WithField("CSIDriver", getCSIDriverName()).Info("Deleted csidriver custom resource.")
 	}
 
 	Log().Info("The uninstaller did not delete Trident's namespace in case it is going to be reused.")

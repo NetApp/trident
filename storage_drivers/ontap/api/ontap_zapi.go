@@ -48,15 +48,16 @@ var (
 
 // ClientConfig holds the configuration data for Client objects
 type ClientConfig struct {
-	ManagementLIF           string
-	Username                string
-	Password                string
-	ClientPrivateKey        string
-	ClientCertificate       string
-	TrustedCACertificate    string
-	DriverContext           tridentconfig.DriverContext
-	ContextBasedZapiRecords int
-	DebugTraceFlags         map[string]bool
+	ManagementLIF                  string
+	Username                       string
+	Password                       string
+	ClientPrivateKey               string
+	ClientCertificate              string
+	TrustedCACertificate           string
+	DriverContext                  tridentconfig.DriverContext
+	ContextBasedZapiRecords        int
+	DebugTraceFlags                map[string]bool
+	unitTestTransportConfigSchemes string
 }
 
 // Client is the object to use for interacting with ONTAP controllers
@@ -618,7 +619,8 @@ func (c Client) LunGet(path string) (*azgo.LunInfoType, error) {
 		SetSize(0).
 		SetCreationTimestamp(0).
 		SetOnline(false).
-		SetMapped(false)
+		SetMapped(false).
+		SetSerialNumber("")
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
@@ -971,13 +973,12 @@ func (c Client) FlexGroupSetSize(ctx context.Context, name, newSize string) (*az
 	return response, err
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context, name string,
+// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c Client) FlexGroupVolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, name string, enable bool,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
 	volattr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
-	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
+	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(enable)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
 	volattr.SetVolumeAttributes(*volSnapshotAttrs)
 
@@ -1327,11 +1328,10 @@ func (c Client) VolumeCloneSplitStart(name string) (*azgo.VolumeCloneSplitStartR
 	return response, err
 }
 
-// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c Client) VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeModifyIterResponse, error) {
+// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c Client) VolumeModifySnapshotDirectoryAccess(name string, enable bool) (*azgo.VolumeModifyIterResponse, error) {
 	volattr := &azgo.VolumeModifyIterRequestAttributes{}
-	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
+	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(enable)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
 	volattr.SetVolumeAttributes(*volSnapshotAttrs)
 
@@ -2158,6 +2158,21 @@ func (c Client) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, 
 	return response, err
 }
 
+// SnapshotInfo returns a snapshot by name for a volume
+func (c Client) SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error) {
+	query := &azgo.SnapshotGetIterRequestQuery{}
+	snapshotInfo := azgo.NewSnapshotInfoType().
+		SetVolume(volumeName).
+		SetName(snapshotName)
+	query.SetSnapshotInfo(*snapshotInfo)
+
+	response, err := azgo.NewSnapshotGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
 // SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 func (c Client) SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error) {
 	response, err := azgo.NewSnapshotRestoreVolumeRequest().
@@ -2731,6 +2746,8 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			_, err = releaseRequest.ExecuteUsing(c.zr)
 			if err != nil {
 				return err
+			} else {
+				return nil
 			}
 		} else {
 			Logc(context.Background()).WithFields(LogFields{
@@ -2738,7 +2755,17 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			}).Warn("Missing destination location.")
 		}
 	}
-	return nil
+	return errors.NotFoundError("could not find snapmirror relationship to release")
+}
+
+// SnapmirrorDestinationRelease removes all local snapmirror relationship metadata of the destination volume
+// Intended to be used on the destination vserver
+func (c Client) SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error) {
+	request := azgo.NewSnapmirrorReleaseRequest()
+	request.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	request.SetRelationshipInfoOnly(true)
+
+	return request.ExecuteUsing(c.zr)
 }
 
 // Intended to be from the destination vserver
@@ -2825,7 +2852,7 @@ func (c Client) SnapmirrorPolicyGet(
 
 	switch len(policies) {
 	case 0:
-		return nil, errors.NotFoundError(fmt.Sprintf("could not find snapmirror policy %v", policyName))
+		return nil, errors.NotFoundError("could not find snapmirror policy %v", policyName)
 	case 1:
 		return &policies[0], nil
 	default:
@@ -2860,7 +2887,6 @@ func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, er
 func (c Client) SnapmirrorUpdate(
 	localInternalVolumeName, snapshotName string,
 ) (*azgo.SnapmirrorUpdateResponse, error) {
-	// TODO (victorir): verify implementation TRID-12901
 	query := azgo.NewSnapmirrorUpdateRequest()
 	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
 

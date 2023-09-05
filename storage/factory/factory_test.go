@@ -143,6 +143,7 @@ func TestCreateNewStorageBackend_WithMockDriver(t *testing.T) {
 	dummyBackend.SetDriver(mockDriver)
 	dummyBackend.SetState("online")
 	dummyBackend.SetOnline(true)
+	dummyBackend.SetUserState(storage.UserNormal)
 	dummyBackend.SetStorage(make(map[string]storage.Pool))
 	dummyBackend.SetVolumes(make(map[string]*storage.Volume))
 	mockDriver.EXPECT().GetStorageBackendSpecs(ctx, &dummyBackend).Return(fmt.Errorf("couldn't get backend specs"))

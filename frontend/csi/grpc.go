@@ -7,8 +7,8 @@ package csi
 import (
 	"net"
 	"os"
+	"path"
 	"runtime"
-	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"google.golang.org/grpc"
@@ -58,12 +58,27 @@ func (s *nonBlockingGRPCServer) serve(
 		Log().Fatal(err.Error())
 	}
 
+	// Check whether we are in a container using a variable we always set.
+	_, inCSIContainer := os.LookupEnv("CSI_ENDPOINT")
+
 	if proto == "unix" {
 		if runtime.GOOS != "windows" {
 			addr = "/" + addr
 		}
+		if inCSIContainer {
+			// Ensure socket dir exists
+			socketDir := path.Dir(addr)
+			if err := os.MkdirAll(socketDir, config.CSISocketDirPermissions); err != nil {
+				Log().Fatalf("Failed to make socket dir %s, error: %v", socketDir, err)
+			}
+			// Ensure socket dir has minimum permissions if it already existed
+			if err := os.Chmod(socketDir, config.CSISocketDirPermissions); err != nil {
+				Log().Fatalf("Failed to chmod socket dir %s, error: %v", socketDir, err)
+			}
+		}
+		// Remove existing socket
 		if err := os.Remove(addr); err != nil && !os.IsNotExist(err) {
-			Log().Fatalf("Failed to remove %s, error: %s", addr, err.Error())
+			Log().Fatalf("Failed to remove %s, error: %v", addr, err)
 		}
 	}
 
@@ -79,19 +94,10 @@ func (s *nonBlockingGRPCServer) serve(
 		"net":  listener.Addr().Network(),
 	}).Info("Listening for GRPC connections.")
 
-	// Check whether we are in a container using a variable we always set.
-	_, inCSIContainer := os.LookupEnv("CSI_ENDPOINT")
-
 	if listener.Addr().Network() == "unix" && inCSIContainer {
-		pluginDir := strings.ReplaceAll(addrString, "csi.sock", "")
-		// Plugins directory only needs to be accessed by Container Orchestrator components or Trident, so set to 600.
-		if err := os.Chmod(pluginDir, config.CSISocketDirPermissions); err != nil {
-			Log().Fatal(err)
-		}
-
-		// CSI socket file only needs read+write access to Container Orchestrator components or Trident, so set to 600.
+		// Ensure minimum permissions on socket
 		if err := os.Chmod(addrString, config.CSIUnixSocketPermissions); err != nil {
-			Log().Fatal(err)
+			Log().Fatalf("Failed to chmod %s, error: %v", addrString, err)
 		}
 	}
 

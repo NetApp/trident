@@ -45,7 +45,8 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
 	mockOrchestrator.EXPECT().GetVolume(request.Context(), volume.Config.Name).Return(volume, nil)
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volume.Config.Name, &[]string{}).Return(nil)
+	mockOrchestrator.EXPECT().UpdateVolumeLUKSPassphraseNames(
+		request.Context(), volume.Config.Name, &[]string{}).Return(nil)
 
 	rc := volumeLUKSPassphraseNamesUpdater(writer, request, response, map[string]string{"volume": volume.Config.Name}, []byte(body))
 
@@ -66,7 +67,8 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
 	mockOrchestrator.EXPECT().GetVolume(request.Context(), volume.Config.Name).Return(volume, nil)
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(nil)
+	mockOrchestrator.EXPECT().UpdateVolumeLUKSPassphraseNames(
+		request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(nil)
 
 	rc = volumeLUKSPassphraseNamesUpdater(writer, request, response, map[string]string{"volume": volume.Config.Name}, []byte(body))
 
@@ -79,7 +81,7 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	// Negative case: Invalid response object provided
 	volume = &storage.VolumeExternal{Config: &storage.VolumeConfig{Name: "test"}}
 	writer = &http_test.TestResponseWriter{}
-	invalidResponse := &UpgradeVolumeResponse{} // Wrong type!
+	invalidResponse := &ImportVolumeResponse{} // Wrong type!
 	body = `[]`
 	request = generateHTTPRequest(http.MethodPut, body)
 
@@ -155,7 +157,8 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
 	mockOrchestrator.EXPECT().GetVolume(request.Context(), volume.Config.Name).Return(volume, nil)
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(fmt.Errorf("test error"))
+	mockOrchestrator.EXPECT().UpdateVolumeLUKSPassphraseNames(
+		request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(fmt.Errorf("test error"))
 
 	rc = volumeLUKSPassphraseNamesUpdater(writer, request, response, map[string]string{"volume": volume.Config.Name}, []byte(body))
 
@@ -175,13 +178,190 @@ func TestVolumeLUKSPassphraseNamesUpdater(t *testing.T) {
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
 	mockOrchestrator.EXPECT().GetVolume(request.Context(), volume.Config.Name).Return(volume, nil)
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(errors.NotFoundError("test error"))
+	mockOrchestrator.EXPECT().UpdateVolumeLUKSPassphraseNames(
+		request.Context(), volume.Config.Name, &[]string{"super-secret-passphrase-1"}).Return(errors.NotFoundError("test error"))
 
 	rc = volumeLUKSPassphraseNamesUpdater(writer, request, response, map[string]string{"volume": volume.Config.Name}, []byte(body))
 
 	assert.Equal(t, http.StatusNotFound, rc)
 	assert.Equal(t, volume, response.Volume)
 	mockCtrl.Finish()
+}
+
+func TestUpdateVolume(t *testing.T) {
+	volName := "test"
+	internalId := "/svm/fakesvm/flexvol/fakevol/qtree/" + volName
+	vol := &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name:        volName,
+			InternalID:  internalId,
+			SnapshotDir: "true",
+		},
+	}
+	body := `
+		{
+			"snapshotDirectory" : "true",
+			"poolLevel" : true
+		}
+	`
+	r := generateHTTPRequest(http.MethodPut, body)
+	w := &http_test.TestResponseWriter{}
+
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolume(r.Context(), gomock.Any(), &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}).Return(nil)
+	mockOrchestrator.EXPECT().GetVolume(r.Context(), gomock.Any()).Return(vol, nil).AnyTimes()
+
+	UpdateVolume(w, r)
+
+	assert.Equal(t, http.StatusOK, w.StatusCode)
+}
+
+func TestVolumeUpdater_Success(t *testing.T) {
+	// Create request
+	body := `
+		{
+			"snapshotDirectory" : "true",
+			"poolLevel" : true
+		}
+	`
+	request := generateHTTPRequest(http.MethodPut, body)
+
+	// Create empty response
+	writer := &http_test.TestResponseWriter{}
+	response := &UpdateVolumeResponse{}
+
+	// Create updated mock volume to be returned by mockOrchestrator
+	volName := "test"
+	internalId := "/svm/fakesvm/flexvol/fakevol/qtree/" + volName
+	updatedVolume := &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name:        volName,
+			InternalID:  internalId,
+			SnapshotDir: "true",
+		},
+	}
+
+	// Creat mock controller and orchestrator and inject it
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolume(
+		request.Context(), volName, &utils.VolumeUpdateInfo{
+			SnapshotDirectory: "true",
+			PoolLevel:         true,
+		}).Return(nil)
+	mockOrchestrator.EXPECT().GetVolume(request.Context(), volName).Return(updatedVolume, nil)
+
+	// Call volumeUpdater
+	responseCode := volumeUpdater(writer, request, response, map[string]string{"volume": volName}, []byte(body))
+
+	assert.Equal(t, http.StatusOK, responseCode)
+	assert.Equal(t, updatedVolume.Config.Name, response.Volume.Config.Name)
+	assert.Equal(t, updatedVolume.Config.SnapshotDir, response.Volume.Config.SnapshotDir)
+	assert.Equal(t, "", response.Error)
+}
+
+func TestVolumeUpdater_Failure(t *testing.T) {
+	volName := "test"
+	body := `
+		{
+			"snapshotDirectory" : "true",
+			"poolLevel" : true
+		}
+	`
+	// Create request and writer
+	request := generateHTTPRequest(http.MethodPost, body)
+	writer := &http_test.TestResponseWriter{}
+
+	// Creat mock controller and orchestrator and inject it
+	mockCtrl := gomock.NewController(t)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+
+	// CASE 1: Invalid response object sent
+	responseCode := volumeUpdater(writer, request, &UpdateBackendResponse{}, map[string]string{"volume": volName}, []byte(body))
+
+	assert.Equal(t, http.StatusInternalServerError, responseCode)
+
+	// CASE 2: Invalid body of the request
+	invalidBody := `
+		{
+			fake-key" : "fake-value",
+		}
+	`
+	response := &UpdateVolumeResponse{}
+	responseCode = volumeUpdater(writer, request, response, map[string]string{"volume": volName}, []byte(invalidBody))
+
+	assert.Equal(t, http.StatusBadRequest, responseCode)
+	assert.Contains(t, response.Error, "invalid JSON:")
+
+	// CASE 3: Failed to update the volume: Invalid input
+	invalidInputErr := errors.InvalidInputError("fake invalid input")
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}).Return(invalidInputErr)
+	response = &UpdateVolumeResponse{}
+
+	responseCode = volumeUpdater(writer, request, response, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusBadRequest, responseCode)
+
+	// CASE 4: Failed to update the volume: Volume not found
+	notFoundErr := errors.NotFoundError(fmt.Sprintf("volume %s was not found", volName))
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}).Return(notFoundErr)
+	response = &UpdateVolumeResponse{}
+
+	responseCode = volumeUpdater(writer, request, response, map[string]string{"volume": "test"}, []byte(body))
+
+	assert.Equal(t, http.StatusNotFound, responseCode)
+	assert.Equal(t, notFoundErr.Error(), response.Error)
+
+	// Case 5: Failed to update the volume: other error
+	fakeErr := errors.New("fake error")
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}).Return(fakeErr)
+	response = &UpdateVolumeResponse{}
+
+	responseCode = volumeUpdater(writer, request, response, map[string]string{"volume": volName}, []byte(body))
+
+	assert.Equal(t, http.StatusInternalServerError, responseCode)
+	assert.Equal(t, fakeErr.Error(), response.Error)
+
+	// Case 6: Failed to get updated volume
+	mockCtrl = gomock.NewController(t)
+	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator = mockOrchestrator
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "true",
+		PoolLevel:         true,
+	}).Return(nil)
+	mockOrchestrator.EXPECT().GetVolume(request.Context(), volName).Return(nil, fakeErr)
+	response = &UpdateVolumeResponse{}
+
+	responseCode = volumeUpdater(writer, request, response, map[string]string{"volume": volName}, []byte(body))
+
+	assert.Equal(t, http.StatusInternalServerError, responseCode)
+	assert.Equal(t, fakeErr.Error(), response.Error)
 }
 
 // TestUpdateNodeIsAsync tests that UpdateNode is called when it can get the core lock, after

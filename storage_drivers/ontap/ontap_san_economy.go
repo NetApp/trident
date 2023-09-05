@@ -24,11 +24,12 @@ import (
 )
 
 const (
-	maxLunNameLength      = 254
-	minLUNsPerFlexvol     = 50
-	defaultLUNsPerFlexvol = 100
-	maxLUNsPerFlexvol     = 200
-	snapshotNameSeparator = "_snapshot_"
+	maxLunNameLength       = 254
+	minLUNsPerFlexvol      = 50
+	defaultLUNsPerFlexvol  = 100
+	maxLUNsPerFlexvol      = 200
+	snapshotNameSeparator  = "_snapshot_"
+	snapshotCopyNameSuffix = "_copy"
 )
 
 func GetLUNPathEconomy(bucketName, volNameInternal string) string {
@@ -329,10 +330,9 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 
 	err = InitializeSANDriver(ctx, driverContext, d.API, &d.Config, d.validate, backendUUID)
-
-	// clean up igroup for failed driver
 	if err != nil {
 		if d.Config.DriverContext == tridentconfig.ContextCSI {
+			// Clean up igroup for failed driver.
 			err := d.API.IgroupDestroy(ctx, d.Config.IgroupName)
 			if err != nil {
 				Logc(ctx).WithError(err).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
@@ -340,6 +340,13 @@ func (d *SANEconomyStorageDriver) Initialize(
 		}
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
+
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
 
 	// Set up the autosupport heartbeat
 	d.telemetry = NewOntapTelemetry(ctx, d)
@@ -719,7 +726,7 @@ func (d *SANEconomyStorageDriver) CreateClone(
 ) error {
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	name := cloneVolConfig.InternalName
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 	isFromSnapshot := snapshot != ""
 	qosPolicy := cloneVolConfig.QosPolicy
 	adaptiveQosPolicy := cloneVolConfig.AdaptiveQosPolicy
@@ -877,8 +884,18 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
 		}
 		if lunID >= 0 {
+			publishInfo := utils.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: utils.VolumeAccessInfo{
+					IscsiAccessInfo: utils.IscsiAccessInfo{
+						IscsiTargetIQN: iSCSINodeName,
+						IscsiLunNumber: int32(lunID),
+					},
+				},
+			}
+
 			// Inform the host about the device removal
-			if _, err := utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true, false); err != nil {
+			if _, err := utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
 				Logc(ctx).Error(err)
 			}
 		}
@@ -1037,7 +1054,7 @@ func (d *SANEconomyStorageDriver) Unpublish(
 		// If the LUN doesn't exist at this point, there's nothing left to do for unpublish at this level.
 		// However, this scenario could indicate unexpected tampering or unknown states with the backend,
 		// so log a warning and return a NotFoundError.
-		err := errors.NotFoundError(fmt.Sprintf("LUN %v does not exist", name))
+		err := errors.NotFoundError("LUN %v does not exist", name)
 		Logc(ctx).WithError(err).Warningf("Unable to unpublish LUN: %s.", name)
 		return err
 	}
@@ -1194,7 +1211,7 @@ func (d *SANEconomyStorageDriver) getSnapshotsEconomy(
 					VolumeName:         externalVolumeName,
 					VolumeInternalName: internalVolumeName,
 				},
-				Created:   snap.VolumeName,
+				Created:   snap.CreateTime,
 				SizeBytes: int64(sizeBytes),
 				State:     storage.SnapshotStateOnline,
 			}
@@ -1277,13 +1294,17 @@ func (d *SANEconomyStorageDriver) CreateSnapshot(
 			State:     storage.SnapshotStateOnline,
 		}, nil
 	}
-	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolumeName)
+	return nil, fmt.Errorf("could not find snapshot %s for source volume %s", internalSnapName, internalVolumeName)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
 func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
+	volLunName := snapConfig.VolumeInternalName
+	snapLunName := d.helper.GetSnapshotName(snapConfig.VolumeInternalName, snapConfig.InternalName)
+	snapLunCopyName := snapLunName + snapshotCopyNameSuffix
+
 	fields := LogFields{
 		"Method":       "RestoreSnapshot",
 		"Type":         "SANEconomyStorageDriver",
@@ -1293,7 +1314,105 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	// Check to see if volume LUN exists
+	volLunExists, volBucketVol, err := d.LUNExists(ctx, volLunName, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Error checking for existing volume LUN: %v", err)
+		return err
+	}
+	if !volLunExists {
+		message := fmt.Sprintf("volume LUN %v does not exist", volLunName)
+		Logc(ctx).Warnf(message)
+		return errors.NotFoundError(message)
+	}
+
+	// Check to see if the snapshot LUN exists
+	snapLunExists, snapBucketVol, err := d.LUNExists(ctx, snapLunName, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).Errorf("Error checking for existing snapshot LUN: %v", err)
+		return err
+	}
+	if !snapLunExists {
+		return fmt.Errorf("snapshot LUN %v does not exist", snapLunName)
+	}
+
+	// Sanity check to ensure both LUNs are in the same Flexvol
+	if volBucketVol != snapBucketVol {
+		return fmt.Errorf("snapshot LUN %s and volume LUN %s are in different Flexvols", snapLunName, volLunName)
+	}
+
+	// Check to see if the snapshot LUN copy exists
+	snapLunCopyExists, snapCopyBucketVol, err := d.LUNExists(ctx, snapLunCopyName, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).Errorf("Error checking for existing snapshot copy LUN: %v", err)
+		return err
+	}
+
+	// Delete any copy so we can create a fresh one
+	if snapLunCopyExists {
+
+		// Sanity check to ensure both LUNs are in the same Flexvol
+		if snapCopyBucketVol != snapBucketVol {
+			return fmt.Errorf("snapshot LUN %s and snapshot copy LUN %s are in different Flexvols",
+				snapLunName, snapLunCopyName)
+		}
+
+		snapLunCopyPath := GetLUNPathEconomy(snapCopyBucketVol, snapLunCopyName)
+
+		if err = LunUnmapAllIgroups(ctx, d.GetAPI(), snapLunCopyPath); err != nil {
+			msg := "error removing all mappings from LUN"
+			Logc(ctx).WithError(err).Error(msg)
+			return fmt.Errorf(msg)
+		}
+
+		if err = d.API.LunDestroy(ctx, snapLunCopyPath); err != nil {
+			return fmt.Errorf("could not delete snapshot copy LUN %s", snapLunCopyName)
+		}
+	}
+
+	// Get the snapshot LUN
+	snapLunPath := GetLUNPathEconomy(snapBucketVol, snapLunName)
+	snapLunInfo, err := d.API.LunGetByName(ctx, snapLunPath)
+	if err != nil {
+		return fmt.Errorf("could not get existing LUN %s; %v", snapLunPath, err)
+	}
+
+	// Clone the snapshot LUN
+	if err = d.API.LunCloneCreate(ctx, snapBucketVol, snapLunName, snapLunCopyName, snapLunInfo.Qos); err != nil {
+		return fmt.Errorf("could not clone snapshot LUN %s: %v", snapLunPath, err)
+	}
+
+	// Rename the original LUN
+	volLunPath := GetLUNPathEconomy(volBucketVol, volLunName)
+	tempVolLunPath := volLunPath + "_original"
+	if err = d.API.LunRename(ctx, volLunPath, tempVolLunPath); err != nil {
+		return fmt.Errorf("could not rename LUN %s: %v", volLunPath, err)
+	}
+
+	// Rename snapshot copy to original LUN path
+	snapLunCopyPath := GetLUNPathEconomy(snapBucketVol, snapLunCopyName)
+	if err = d.API.LunRename(ctx, snapLunCopyPath, volLunPath); err != nil {
+
+		// Attempt to recover by restoring the original LUN
+		if recoverErr := d.API.LunRename(ctx, tempVolLunPath, volLunPath); recoverErr != nil {
+			Logc(ctx).WithError(recoverErr).Errorf("Could not recover RestoreSnapshot by renaming LUN %s to %s.",
+				tempVolLunPath, volLunPath)
+		}
+
+		return fmt.Errorf("could not rename LUN %s: %v", snapLunCopyPath, err)
+	}
+
+	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), tempVolLunPath); err != nil {
+		Logc(ctx).WithError(err).Warning("Could not remove all mappings from original LUN %s after RestoreSnapshot",
+			tempVolLunPath)
+	}
+
+	// Delete original LUN
+	if err = d.API.LunDestroy(ctx, tempVolLunPath); err != nil {
+		Logc(ctx).WithError(err).Warningf("Could not delete original LUN %s after RestoreSnapshot", tempVolLunPath)
+	}
+
+	return nil
 }
 
 // DeleteSnapshot deletes a LUN snapshot.
@@ -1461,9 +1580,8 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		return "", fmt.Errorf("error creating volume: %v", err)
 	}
 
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !volumeAttributes.SnapshotDir {
-		err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, flexvol)
+		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
 		if err != nil {
 			if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
 				Logc(ctx).Error(err)
@@ -1608,6 +1726,31 @@ func (d *SANEconomyStorageDriver) GetStorageBackendSpecs(_ context.Context, back
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *SANEconomyStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *SANEconomyStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.OntapEconomyStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "SANEconomyStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// 2. Aggregate (physical pool)
+	// 3. FlexVol Name Prefix
+	svmUUID := d.GetAPI().GetSVMUUID()
+	flexVolPrefix := d.FlexvolNamePrefix()
+	backendPools := make([]drivers.OntapEconomyStorageBackendPool, 0)
+	for _, pool := range d.physicalPools {
+		backendPool := drivers.OntapEconomyStorageBackendPool{
+			SvmUUID:       svmUUID,
+			Aggregate:     pool.Name(),
+			FlexVolPrefix: flexVolPrefix,
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
 }
 
 func (d *SANEconomyStorageDriver) getStoragePoolAttributes() map[string]sa.Offer {
@@ -2051,7 +2194,7 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 // in physical pools list.
 func (d *SANEconomyStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	Logc(ctx).Debug(">>>> GetBackendState")
-	defer Logc(ctx).Debugf("<<<< GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
 
 	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx))
 }

@@ -6,6 +6,8 @@ package v1
 
 type TridentActionMirrorUpdateExpansion interface{}
 
+type TridentActionSnapshotRestoreExpansion interface{}
+
 type TridentBackendExpansion interface{}
 
 type TridentBackendConfigExpansion interface{}

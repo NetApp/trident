@@ -382,7 +382,7 @@ func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, err
 	}
 
 	if len(matchingVolumes) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("volume with name %s not found", name))
+		return nil, errors.NotFoundError("volume with name %s not found", name)
 	} else if len(matchingVolumes) > 1 {
 		return nil, fmt.Errorf("multiple volumes with name %s found", name)
 	}
@@ -410,7 +410,7 @@ func (d *Client) GetVolumeByCreationToken(ctx context.Context, creationToken str
 	}
 
 	if len(volumes) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("volume with creationToken %s not found", creationToken))
+		return nil, errors.NotFoundError("volume with creationToken %s not found", creationToken)
 	} else if len(volumes) > 1 {
 		return nil, fmt.Errorf("multiple volumes with creationToken %s found", creationToken)
 	}
@@ -951,8 +951,7 @@ func (d *Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *
 	resourcePath := fmt.Sprintf("/Volumes/%s/Revert", volume.VolumeID)
 
 	snapshotRevertRequest := &SnapshotRevertRequest{
-		Name:   snapshot.Name,
-		Region: volume.Region,
+		SnapshotID: snapshot.SnapshotID,
 	}
 
 	jsonRequest, err := json.Marshal(snapshotRevertRequest)

@@ -1,4 +1,4 @@
-// Copyright 2018 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -39,7 +38,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 
 	. "github.com/netapp/trident/logging"
-	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -83,6 +82,7 @@ var (
 type KubeClient struct {
 	clientset    kubernetes.Interface
 	extClientset apiextension.Interface
+	crdClientset tridentv1clientset.Interface
 	apiResources map[string]*metav1.APIResourceList
 	restConfig   *rest.Config
 	namespace    string
@@ -110,13 +110,20 @@ func NewKubeClient(config *rest.Config, namespace string, k8sTimeout time.Durati
 		return nil, err
 	}
 
+	crdClientset, err := tridentv1clientset.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	versionInfo, err = clientset.Discovery().ServerVersion()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't retrieve API server's version: %v", err)
 	}
+
 	kubeClient := &KubeClient{
 		clientset:    clientset,
 		extClientset: extClientset,
+		crdClientset: crdClientset,
 		apiResources: make(map[string]*metav1.APIResourceList),
 		restConfig:   config,
 		namespace:    namespace,
@@ -311,7 +318,7 @@ func (k *KubeClient) GetDeploymentByLabel(label string, allNamespaces bool) (*ap
 	} else if len(deployments) > 1 {
 		return nil, fmt.Errorf("multiple deployments have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no deployments have the label %s", label))
+		return nil, errors.NotFoundError("no deployments have the label %s", label)
 	}
 }
 
@@ -492,7 +499,7 @@ func (k *KubeClient) GetServiceByLabel(label string, allNamespaces bool) (*v1.Se
 	} else if len(services) > 1 {
 		return nil, fmt.Errorf("multiple services have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no services have the label %s", label))
+		return nil, errors.NotFoundError("no services have the label %s", label)
 	}
 }
 
@@ -591,96 +598,6 @@ func (k *KubeClient) PatchServiceByLabel(label string, patchBytes []byte, patchT
 	return nil
 }
 
-// GetStatefulSetByLabel returns a statefulset object matching the specified label if it is unique
-func (k *KubeClient) GetStatefulSetByLabel(label string, allNamespaces bool) (*appsv1.StatefulSet, error) {
-	statefulsets, err := k.GetStatefulSetsByLabel(label, allNamespaces)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(statefulsets) == 1 {
-		return &statefulsets[0], nil
-	} else if len(statefulsets) > 1 {
-		return nil, fmt.Errorf("multiple statefulsets have the label %s", label)
-	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no statefulsets have the label %s", label))
-	}
-}
-
-// GetStatefulSetsByLabel returns all stateful objects matching the specified label
-func (k *KubeClient) GetStatefulSetsByLabel(label string, allNamespaces bool) ([]appsv1.StatefulSet, error) {
-	listOptions, err := k.listOptionsFromLabel(label)
-	if err != nil {
-		return nil, err
-	}
-
-	namespace := k.namespace
-	if allNamespaces {
-		namespace = ""
-	}
-
-	statefulSetList, err := k.clientset.AppsV1().StatefulSets(namespace).List(reqCtx(), listOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return statefulSetList.Items, nil
-}
-
-// CheckStatefulSetExistsByLabel returns true if one or more statefulset objects
-// matching the specified label exist.
-func (k *KubeClient) CheckStatefulSetExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
-	statefulsets, err := k.GetStatefulSetsByLabel(label, allNamespaces)
-	if err != nil {
-		return false, "", err
-	}
-
-	switch len(statefulsets) {
-	case 0:
-		return false, "", nil
-	case 1:
-		return true, statefulsets[0].Namespace, nil
-	default:
-		return true, "<multiple>", nil
-	}
-}
-
-// DeleteStatefulSetByLabel deletes a statefulset object matching the specified label
-// in the namespace of the client.
-func (k *KubeClient) DeleteStatefulSetByLabel(label string) error {
-	statefulset, err := k.GetStatefulSetByLabel(label, false)
-	if err != nil {
-		return err
-	}
-
-	err = k.clientset.AppsV1().StatefulSets(k.namespace).Delete(reqCtx(), statefulset.Name, k.deleteOptions())
-	if err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"label":       label,
-		"statefulset": statefulset.Name,
-		"namespace":   k.namespace,
-	}).Debug("Deleted Kubernetes statefulset.")
-
-	return nil
-}
-
-// DeleteStatefulSet deletes a statefulset object matching the specified name and namespace.
-func (k *KubeClient) DeleteStatefulSet(name, namespace string) error {
-	if err := k.clientset.AppsV1().StatefulSets(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"statefulset": name,
-		"namespace":   k.namespace,
-	}).Trace("Deleted Kubernetes statefulset.")
-
-	return nil
-}
-
 // GetDaemonSetByLabel returns a daemonset object matching the specified label if it is unique
 func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*appsv1.DaemonSet, error) {
 	daemonsets, err := k.GetDaemonSetsByLabel(label, allNamespaces)
@@ -693,7 +610,7 @@ func (k *KubeClient) GetDaemonSetByLabel(label string, allNamespaces bool) (*app
 	} else if len(daemonsets) > 1 {
 		return nil, fmt.Errorf("multiple daemonsets have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no daemonsets have the label %s", label))
+		return nil, errors.NotFoundError("no daemonsets have the label %s", label)
 	}
 }
 
@@ -821,6 +738,11 @@ func (k *KubeClient) DeleteDaemonSet(name, namespace string, foreground bool) er
 // with a background propagation policy, so it returns immediately and the Kubernetes garbage collector reaps any
 // associated pod(s) asynchronously.
 func (k *KubeClient) deleteDaemonSetBackground(name, namespace string) error {
+	Logc(ctx).WithFields(LogFields{
+		"name":      name,
+		"namespace": namespace,
+	}).Debug("Starting background deletion of DaemonSet.")
+
 	if err := k.clientset.AppsV1().DaemonSets(namespace).Delete(reqCtx(), name, k.deleteOptions()); err != nil {
 		return err
 	}
@@ -927,85 +849,6 @@ func (k *KubeClient) PatchDaemonSetByLabel(label string, patchBytes []byte, patc
 	return nil
 }
 
-// GetConfigMapByLabel returns a configmap object matching the specified label if it is unique
-func (k *KubeClient) GetConfigMapByLabel(label string, allNamespaces bool) (*v1.ConfigMap, error) {
-	configMaps, err := k.GetConfigMapsByLabel(label, allNamespaces)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(configMaps) == 1 {
-		return &configMaps[0], nil
-	} else if len(configMaps) > 1 {
-		return nil, fmt.Errorf("multiple configmaps have the label %s", label)
-	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no configmaps have the label %s", label))
-	}
-}
-
-// GetConfigMapsByLabel returns all configmap objects matching the specified label
-func (k *KubeClient) GetConfigMapsByLabel(label string, allNamespaces bool) ([]v1.ConfigMap, error) {
-	listOptions, err := k.listOptionsFromLabel(label)
-	if err != nil {
-		return nil, err
-	}
-
-	namespace := k.namespace
-	if allNamespaces {
-		namespace = ""
-	}
-
-	configMapList, err := k.clientset.CoreV1().ConfigMaps(namespace).List(reqCtx(), listOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return configMapList.Items, nil
-}
-
-// CheckConfigMapExistsByLabel returns true if one or more configmap objects
-// matching the specified label exist.
-func (k *KubeClient) CheckConfigMapExistsByLabel(label string, allNamespaces bool) (bool, string, error) {
-	configMaps, err := k.GetConfigMapsByLabel(label, allNamespaces)
-	if err != nil {
-		return false, "", err
-	}
-
-	switch len(configMaps) {
-	case 0:
-		return false, "", nil
-	case 1:
-		return true, configMaps[0].Namespace, nil
-	default:
-		return true, "<multiple>", nil
-	}
-}
-
-// DeleteConfigMapByLabel deletes a configmap object matching the specified label
-func (k *KubeClient) DeleteConfigMapByLabel(label string) error {
-	configmap, err := k.GetConfigMapByLabel(label, false)
-	if err != nil {
-		return err
-	}
-
-	err = k.clientset.CoreV1().ConfigMaps(k.namespace).Delete(reqCtx(), configmap.Name, k.deleteOptions())
-	if err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"label":     label,
-		"configmap": configmap.Name,
-		"namespace": k.namespace,
-	}).Trace("Deleted Kubernetes configmap.")
-
-	return nil
-}
-
-func (k *KubeClient) CreateConfigMapFromDirectory(_, _, _ string) error {
-	return errors.New("not implemented")
-}
-
 // GetPodByLabel returns a pod object matching the specified label
 func (k *KubeClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, error) {
 	pods, err := k.GetPodsByLabel(label, allNamespaces)
@@ -1018,7 +861,7 @@ func (k *KubeClient) GetPodByLabel(label string, allNamespaces bool) (*v1.Pod, e
 	} else if len(pods) > 1 {
 		return nil, fmt.Errorf("multiple pods have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no pods have the label %s", label))
+		return nil, errors.NotFoundError("no pods have the label %s", label)
 	}
 }
 
@@ -1099,124 +942,6 @@ func (k *KubeClient) DeletePod(name, namespace string) error {
 	return nil
 }
 
-func (k *KubeClient) GetPVC(pvcName string) (*v1.PersistentVolumeClaim, error) {
-	var options metav1.GetOptions
-	return k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Get(reqCtx(), pvcName, options)
-}
-
-func (k *KubeClient) GetPVCByLabel(label string, allNamespaces bool) (*v1.PersistentVolumeClaim, error) {
-	listOptions, err := k.listOptionsFromLabel(label)
-	if err != nil {
-		return nil, err
-	}
-
-	namespace := k.namespace
-	if allNamespaces {
-		namespace = ""
-	}
-
-	pvcList, err := k.clientset.CoreV1().PersistentVolumeClaims(namespace).List(reqCtx(), listOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(pvcList.Items) == 1 {
-		return &pvcList.Items[0], nil
-	} else if len(pvcList.Items) > 1 {
-		return nil, fmt.Errorf("multiple PVCs have the label %s", label)
-	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no PVCs have the label %s", label))
-	}
-}
-
-func (k *KubeClient) CheckPVCExists(pvc string) (bool, error) {
-	if _, err := k.GetPVC(pvc); err != nil {
-		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
-func (k *KubeClient) CheckPVCBound(pvcName string) (bool, error) {
-	pvc, err := k.GetPVC(pvcName)
-	if err != nil {
-		return false, err
-	}
-
-	return pvc.Status.Phase == v1.ClaimBound, nil
-}
-
-func (k *KubeClient) DeletePVCByLabel(label string) error {
-	pvc, err := k.GetPVCByLabel(label, false)
-	if err != nil {
-		return err
-	}
-
-	err = k.clientset.CoreV1().PersistentVolumeClaims(k.namespace).Delete(reqCtx(), pvc.Name, k.deleteOptions())
-	if err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"label":     label,
-		"namespace": k.namespace,
-	}).Trace("Deleted PVC by label.")
-
-	return nil
-}
-
-func (k *KubeClient) GetPV(pvName string) (*v1.PersistentVolume, error) {
-	var options metav1.GetOptions
-	return k.clientset.CoreV1().PersistentVolumes().Get(reqCtx(), pvName, options)
-}
-
-func (k *KubeClient) GetPVByLabel(label string) (*v1.PersistentVolume, error) {
-	listOptions, err := k.listOptionsFromLabel(label)
-	if err != nil {
-		return nil, err
-	}
-
-	pvList, err := k.clientset.CoreV1().PersistentVolumes().List(reqCtx(), listOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(pvList.Items) == 1 {
-		return &pvList.Items[0], nil
-	} else if len(pvList.Items) > 1 {
-		return nil, fmt.Errorf("multiple PVs have the label %s", label)
-	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no PVs have the label %s", label))
-	}
-}
-
-func (k *KubeClient) CheckPVExists(pvName string) (bool, error) {
-	if _, err := k.GetPV(pvName); err != nil {
-		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
-func (k *KubeClient) DeletePVByLabel(label string) error {
-	pv, err := k.GetPVByLabel(label)
-	if err != nil {
-		return err
-	}
-
-	if err = k.clientset.CoreV1().PersistentVolumes().Delete(reqCtx(), pv.Name, k.deleteOptions()); err != nil {
-		return err
-	}
-
-	Logc(ctx).WithField("label", label).Debug("Deleted PV by label.")
-
-	return nil
-}
-
 func (k *KubeClient) GetCRD(crdName string) (*apiextensionv1.CustomResourceDefinition, error) {
 	var options metav1.GetOptions
 	return k.extClientset.ApiextensionsV1().CustomResourceDefinitions().Get(reqCtx(), crdName, options)
@@ -1248,7 +973,7 @@ func (k *KubeClient) GetPodSecurityPolicyByLabel(label string) (*v1beta1.PodSecu
 	} else if len(pspList) > 1 {
 		return nil, fmt.Errorf("multiple pod security policies have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no pod security policy have the label %s", label))
+		return nil, errors.NotFoundError("no pod security policy have the label %s", label)
 	}
 }
 
@@ -1406,7 +1131,7 @@ func (k *KubeClient) GetServiceAccountByLabel(label string, allNamespaces bool) 
 	} else if len(serviceAccounts) > 1 {
 		return nil, fmt.Errorf("multiple service accounts have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no service accounts have the label %s", label))
+		return nil, errors.NotFoundError("no service accounts have the label %s", label)
 	}
 }
 
@@ -1646,7 +1371,7 @@ func (k *KubeClient) GetClusterRoleByLabel(label string) (*v13.ClusterRole, erro
 	} else if len(clusterRoles) > 1 {
 		return nil, fmt.Errorf("multiple cluster roles have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no cluster roles have the label %s", label))
+		return nil, errors.NotFoundError("no cluster roles have the label %s", label)
 	}
 }
 
@@ -1867,7 +1592,7 @@ func (k *KubeClient) GetClusterRoleBindingByLabel(label string) (*v13.ClusterRol
 	} else if len(clusterRoleBindings) > 1 {
 		return nil, fmt.Errorf("multiple cluster role bindings have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no cluster role bindings have the label %s", label))
+		return nil, errors.NotFoundError("no cluster role bindings have the label %s", label)
 	}
 }
 
@@ -2051,7 +1776,7 @@ func (k *KubeClient) GetCSIDriverByLabel(label string) (*storagev1.CSIDriver, er
 	} else if len(CSIDrivers) > 1 {
 		return nil, fmt.Errorf("multiple CSI drivers have the label %s", label)
 	} else {
-		return nil, errors.NotFoundError(fmt.Sprintf("no CSI drivers have the label %s", label))
+		return nil, errors.NotFoundError("no CSI drivers have the label %s", label)
 	}
 }
 
@@ -2202,7 +1927,7 @@ func (k *KubeClient) GetResourceQuotaByLabel(label string) (*v1.ResourceQuota, e
 	}
 
 	if len(resourceQuotas) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("no resource quotas have the label %s", label))
+		return nil, errors.NotFoundError("no resource quotas have the label %s", label)
 	} else if len(resourceQuotas) > 1 {
 		return nil, fmt.Errorf("multiple resource quotas have the label %s", label)
 	}
@@ -2293,29 +2018,6 @@ func (k *KubeClient) CreateSecret(secret *v1.Secret) (*v1.Secret, error) {
 // UpdateSecret updates an existing Secret
 func (k *KubeClient) UpdateSecret(secret *v1.Secret) (*v1.Secret, error) {
 	return k.clientset.CoreV1().Secrets(k.namespace).Update(reqCtx(), secret, updateOpts)
-}
-
-// CreateCHAPSecret creates a new Secret for iSCSI CHAP mutual authentication
-func (k *KubeClient) CreateCHAPSecret(
-	secretName, accountName, initiatorSecret, targetSecret string,
-) (*v1.Secret, error) {
-	return k.CreateSecret(&v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: k.namespace,
-			Name:      secretName,
-		},
-		Type: "kubernetes.io/iscsi-chap",
-		Data: map[string][]byte{
-			"discovery.sendtargets.auth.username":    []byte(accountName),
-			"discovery.sendtargets.auth.password":    []byte(initiatorSecret),
-			"discovery.sendtargets.auth.username_in": []byte(accountName),
-			"discovery.sendtargets.auth.password_in": []byte(targetSecret),
-			"node.session.auth.username":             []byte(accountName),
-			"node.session.auth.password":             []byte(initiatorSecret),
-			"node.session.auth.username_in":          []byte(accountName),
-			"node.session.auth.password_in":          []byte(targetSecret),
-		},
-	})
 }
 
 // GetSecret looks up a Secret by name
@@ -3037,84 +2739,6 @@ func (k *KubeClient) IsTopologyInUse() (bool, error) {
 	return false, nil
 }
 
-func (k *KubeClient) GetSnapshotterCRDVersion() (snapshotterCRDVersion string) {
-	snapshotterCRDName := "volumesnapshots.snapshot.storage.k8s.io"
-	versionBeta := "v1beta1"
-	versionGA := "v1"
-
-	crd, err := k.GetCRD(snapshotterCRDName)
-	if err != nil {
-		Logc(ctx).WithField("CRD", snapshotterCRDName).Warnf("Unable to get VolumeSnapshot CRD: %v", err)
-		return
-	}
-
-	var servingBeta, servingGA bool
-	for _, snapshotterVersion := range crd.Spec.Versions {
-		if snapshotterVersion.Served {
-			if strings.ToLower(snapshotterVersion.Name) == versionBeta {
-				servingBeta = true
-			} else if strings.ToLower(snapshotterVersion.Name) == versionGA {
-				servingGA = true
-			}
-		}
-	}
-
-	// Both may be serving a Kubernetes version, select the GA version
-	if servingGA {
-		snapshotterCRDVersion = versionGA
-	} else if servingBeta {
-		snapshotterCRDVersion = versionBeta
-	}
-
-	Logc(ctx).WithField("CRD", snapshotterCRDName).Debugf("VolumeSnapshot CRD version '%s' found.",
-		snapshotterCRDVersion)
-
-	return
-}
-
-func (k *KubeClient) FollowPodLogs(pod, container, namespace string, logLineCallback LogLineCallback) {
-	logOptions := &v1.PodLogOptions{
-		Container:  container,
-		Follow:     true,
-		Previous:   false,
-		Timestamps: false,
-	}
-
-	req := k.clientset.CoreV1().RESTClient().
-		Get().
-		Namespace(namespace).
-		Name(pod).
-		Resource("pods").
-		SubResource("log").
-		Param("follow", strconv.FormatBool(logOptions.Follow)).
-		Param("container", logOptions.Container).
-		Param("previous", strconv.FormatBool(logOptions.Previous)).
-		Param("timestamps", strconv.FormatBool(logOptions.Timestamps))
-
-	readCloser, err := req.Stream(reqCtx())
-	if err != nil {
-		Logc(ctx).Errorf("Could not follow pod logs; %v", err)
-		return
-	}
-	defer func() {
-		_ = readCloser.Close()
-	}()
-
-	// Create a new scanner
-	buff := bufio.NewScanner(readCloser)
-
-	// Iterate over buff and handle one line at a time
-	for buff.Scan() {
-		line := buff.Text()
-		logLineCallback(line)
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"pod":       pod,
-		"container": container,
-	}).Debug("Received EOF from pod logs.")
-}
-
 // addFinalizerToCRDObject is a helper function that updates the CRD object to include our Trident finalizer (
 // definitions are not namespaced)
 func (k *KubeClient) addFinalizerToCRDObject(
@@ -3365,10 +2989,6 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	Logc(ctx).Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
 
 	return nil
-}
-
-func (k *KubeClient) GetCRDClient() (*crdclient.Clientset, error) {
-	return crdclient.NewForConfig(k.restConfig)
 }
 
 // GenericPatch merges an object with a new YAML definition.

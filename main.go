@@ -73,6 +73,9 @@ var (
 	enableForceDetach   = new(bool)
 	nodePrep            = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
 
+	// Trident-ACP
+	enableACP = flag.Bool("enable_acp", false, "Enable the trident-acp premium features.")
+
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
@@ -110,6 +113,10 @@ var (
 	iSCSISelfHealingWaitTime = flag.Duration("iscsi_self_healing_wait_time",
 		config.ISCSISelfHealingWaitTime,
 		"Wait time after which iSCSI self-healing attempts to fix stale sessions")
+
+	// NVMe
+	nvmeSelfHealingInterval = flag.Duration("nvme_self_healing_interval", config.NVMeSelfHealingInterval,
+		"Interval at which the NVMe self-healing thread is invoked")
 
 	// core
 	backendStoragePollInterval = flag.Duration("backend_storage_poll_interval", config.BackendStoragePollInterval,
@@ -438,14 +445,14 @@ func main() {
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 		}
 		if err != nil {
 			Log().Fatalf("Unable to start the CSI frontend. %v", err)

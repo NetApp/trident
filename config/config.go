@@ -39,14 +39,16 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "23.04.0"
+	DefaultOrchestratorVersion       = "23.10.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
 	DockerCreateTimeout              = 115 * time.Second
 	DockerDefaultTimeout             = 55 * time.Second
-	CSIUnixSocketPermissions         = 0o600
-	CSISocketDirPermissions          = 0o600
+	// CSIUnixSocketPermissions CSI socket file needs rw access only for user
+	CSIUnixSocketPermissions = 0o600
+	// CSISocketDirPermissions CSI socket directory needs rwx access only for user
+	CSISocketDirPermissions = 0o700
 
 	/* REST/HTTP constants */
 	HTTPTimeout       = 90 * time.Second
@@ -156,7 +158,7 @@ const (
 	Darwin  = "darwin"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.21"
+	KubernetesVersionMin = "v1.22"
 	KubernetesVersionMax = "v1.27"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
@@ -174,7 +176,7 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.01"
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.07"
 
 	// IscsiSelfHealingInterval is an interval with which the iSCSI self-healing thread is called periodically
 	IscsiSelfHealingInterval = 300 * time.Second
@@ -184,6 +186,9 @@ const (
 
 	// BackendStoragePollInterval is an interval  that core layer attempts to poll storage backend periodically
 	BackendStoragePollInterval = 300 * time.Second
+
+	// NVMeSelfHealingInterval is an interval with which the NVMe self-healing thread is called periodically
+	NVMeSelfHealingInterval = 300 * time.Second
 )
 
 var (
@@ -243,6 +248,10 @@ var (
 		6: "SINGLE_NODE_SINGLE_WRITER",
 		7: "SINGLE_NODE_MULTI_WRITER",
 	}
+
+	// DisableExtraFeatures makes a subset of Trident features disabled
+	// This can be removed when ACP replaces feature-gating
+	DisableExtraFeatures = false
 )
 
 func IsValidProtocol(p Protocol) bool {

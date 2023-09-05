@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"go.uber.org/multierr"
 )
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -59,21 +61,38 @@ func IsBootstrapError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type foundError struct {
+	inner   error
 	message string
 }
 
-func (e *foundError) Error() string { return e.message }
+func (e *foundError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
 
-func FoundError(message string) error {
-	return &foundError{message}
+func (e *foundError) Unwrap() error { return e.inner }
+
+func FoundError(message string, a ...any) error {
+	return &foundError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithFoundError(err error, message string, a ...any) error {
+	return &foundError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
 }
 
 func IsFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*foundError)
-	return ok
+	var errPtr *foundError
+	return errors.As(err, &errPtr)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -81,21 +100,38 @@ func IsFoundError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type notFoundError struct {
+	inner   error
 	message string
 }
 
-func (e *notFoundError) Error() string { return e.message }
+func (e *notFoundError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
 
-func NotFoundError(message string) error {
-	return &notFoundError{message}
+func (e *notFoundError) Unwrap() error { return e.inner }
+
+func NotFoundError(message string, a ...any) error {
+	return &notFoundError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithNotFoundError(err error, message string, a ...any) error {
+	return &notFoundError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
 }
 
 func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*notFoundError)
-	return ok
+	var errPtr *notFoundError
+	return errors.As(err, &errPtr)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -248,14 +284,32 @@ func IsTimeoutError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type reconcileDeferredError struct {
+	inner   error
 	message string
 }
 
-func (e *reconcileDeferredError) Error() string { return e.message }
+func (e *reconcileDeferredError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
 
-func ReconcileDeferredError(err error) error {
+func (e *reconcileDeferredError) Unwrap() error {
+	// Return the inner error.
+	return e.inner
+}
+
+func ReconcileDeferredError(message string, a ...any) error {
+	return &reconcileDeferredError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithReconcileDeferredError(err error, message string, a ...any) error {
 	return &reconcileDeferredError{
-		message: err.Error(),
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
 	}
 }
 
@@ -263,8 +317,8 @@ func IsReconcileDeferredError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*reconcileDeferredError)
-	return ok
+	var errPointer *reconcileDeferredError
+	return errors.As(err, &errPointer)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -272,20 +326,32 @@ func IsReconcileDeferredError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type reconcileIncompleteError struct {
+	inner   error
 	message string
 }
 
-func (e *reconcileIncompleteError) Error() string { return e.message }
-
-func ReconcileIncompleteError() error {
-	return &reconcileIncompleteError{
-		message: "reconcile incomplete",
+func (e *reconcileIncompleteError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
 	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
 }
 
-func ConvertToReconcileIncompleteError(err error) error {
+func (e *reconcileIncompleteError) Unwrap() error {
+	// Return the inner error.
+	return e.inner
+}
+
+func ReconcileIncompleteError(message string, a ...any) error {
+	return &reconcileIncompleteError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithReconcileIncompleteError(err error, message string, a ...any) error {
 	return &reconcileIncompleteError{
-		message: err.Error(),
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
 	}
 }
 
@@ -293,8 +359,8 @@ func IsReconcileIncompleteError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*reconcileIncompleteError)
-	return ok
+	var errPointer *reconcileIncompleteError
+	return errors.As(err, &errPointer)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -302,14 +368,32 @@ func IsReconcileIncompleteError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type reconcileFailedError struct {
+	inner   error
 	message string
 }
 
-func (e *reconcileFailedError) Error() string { return e.message }
+func (e *reconcileFailedError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
 
-func ReconcileFailedError(err error) error {
+func (e *reconcileFailedError) Unwrap() error {
+	// Return the inner error.
+	return e.inner
+}
+
+func ReconcileFailedError(message string, a ...any) error {
+	return &reconcileFailedError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithReconcileFailedError(err error, message string, a ...any) error {
 	return &reconcileFailedError{
-		message: fmt.Sprintf("reconcile failed; %s", err.Error()),
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
 	}
 }
 
@@ -317,8 +401,8 @@ func IsReconcileFailedError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*reconcileFailedError)
-	return ok
+	var errPointer *reconcileFailedError
+	return errors.As(err, &errPointer)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -331,18 +415,25 @@ type unsupportedConfigError struct {
 
 func (e *unsupportedConfigError) Error() string { return e.message }
 
-func UnsupportedConfigError(err error) error {
+func UnsupportedConfigError(message string, a ...any) error {
 	return &unsupportedConfigError{
-		message: fmt.Sprintf("unsupported configuration; %s", err.Error()),
+		message: fmt.Sprintf(message, a...),
 	}
+}
+
+func WrapUnsupportedConfigError(err error) error {
+	if err == nil {
+		return nil
+	}
+	return multierr.Combine(UnsupportedConfigError("unsupported config error"), err)
 }
 
 func IsUnsupportedConfigError(err error) bool {
 	if err == nil {
 		return false
 	}
-	_, ok := err.(*unsupportedConfigError)
-	return ok
+	var errPointer *unsupportedConfigError
+	return errors.As(err, &errPointer)
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -499,6 +590,28 @@ func IsISCSIDeviceFlushError(err error) bool {
 		return false
 	}
 	_, ok := err.(*iSCSIDeviceFlushError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// iSCSISameLunNumberError
+// ///////////////////////////////////////////////////////////////////////////
+
+type iSCSISameLunNumberError struct {
+	message string
+}
+
+func (e *iSCSISameLunNumberError) Error() string { return e.message }
+
+func ISCSISameLunNumberError(message string) error {
+	return &iSCSISameLunNumberError{message}
+}
+
+func IsISCSISameLunNumberError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*iSCSISameLunNumberError)
 	return ok
 }
 
@@ -676,4 +789,43 @@ func IsInProgressError(err error) bool {
 	}
 	_, ok := err.(*inProgressError)
 	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// notManagedError
+// ///////////////////////////////////////////////////////////////////////////
+
+type notManagedError struct {
+	inner   error
+	message string
+}
+
+func (e *notManagedError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *notManagedError) Unwrap() error { return e.inner }
+
+func NotManagedError(message string, a ...any) error {
+	return &notManagedError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithNotManagedError(err error, message string, a ...any) error {
+	return &notManagedError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsNotManagedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *notManagedError
+	return errors.As(err, &errPtr)
 }

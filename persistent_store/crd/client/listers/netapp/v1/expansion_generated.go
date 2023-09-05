@@ -12,6 +12,14 @@ type TridentActionMirrorUpdateListerExpansion interface{}
 // TridentActionMirrorUpdateNamespaceLister.
 type TridentActionMirrorUpdateNamespaceListerExpansion interface{}
 
+// TridentActionSnapshotRestoreListerExpansion allows custom methods to be added to
+// TridentActionSnapshotRestoreLister.
+type TridentActionSnapshotRestoreListerExpansion interface{}
+
+// TridentActionSnapshotRestoreNamespaceListerExpansion allows custom methods to be added to
+// TridentActionSnapshotRestoreNamespaceLister.
+type TridentActionSnapshotRestoreNamespaceListerExpansion interface{}
+
 // TridentBackendListerExpansion allows custom methods to be added to
 // TridentBackendLister.
 type TridentBackendListerExpansion interface{}

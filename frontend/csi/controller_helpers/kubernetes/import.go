@@ -39,8 +39,8 @@ func (h *helper) ImportVolume(
 
 	existingVol, err := h.orchestrator.GetVolumeByInternalName(ctx, request.InternalName)
 	if err == nil {
-		return nil, errors.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
-			existingVol, request.InternalName))
+		return nil, errors.FoundError("PV %s already exists for volume %s",
+			existingVol, request.InternalName)
 	}
 
 	claim := &v1.PersistentVolumeClaim{}

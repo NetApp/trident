@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package azure
 
@@ -33,6 +33,7 @@ const (
 
 	snapshotNameSeparator = "--"
 	pvcPrefix             = "pvc-"
+	tempCopySuffix        = "-og"
 )
 
 var (
@@ -43,10 +44,22 @@ var (
 	pollerResponseCache = make(map[PollerKey]api.PollerResponse)
 )
 
+type Operation int64
+
+const (
+	Create Operation = iota
+	Delete
+	Update
+	Restore
+)
+
 type PollerKey struct {
 	ID        string
-	Operation string
+	Operation Operation
 }
+
+// key is subvolume ID and value can be snapshot ID or empty
+var subvolumesToDelete map[string]string
 
 type SubvolumeHelper struct {
 	Config         drivers.AzureNASStorageDriverConfig
@@ -231,8 +244,10 @@ func (d *NASBlockStorageDriver) Initialize(
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 	fields := LogFields{"Method": "Initialize", "Type": "NASBlockStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	commonConfig.DriverContext = context
 
@@ -263,6 +278,13 @@ func (d *NASBlockStorageDriver) Initialize(
 	if err = d.validate(ctx); err != nil {
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
 	}
+
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
 
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
@@ -313,8 +335,10 @@ func (d *NASBlockStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) {
 	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "NASBlockStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	if config.StoragePrefix == nil {
 		defaultPrefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
@@ -487,8 +511,10 @@ func (d *NASBlockStorageDriver) initializeAzureConfig(
 	backendSecret map[string]string,
 ) (*drivers.AzureNASStorageDriverConfig, error) {
 	fields := LogFields{"Method": "initializeAzureConfig", "Type": "NASBlockStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureConfig")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureConfig")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureConfig")
 
 	config := &drivers.AzureNASStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
@@ -513,8 +539,10 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 	ctx context.Context, config *drivers.AzureNASStorageDriverConfig,
 ) error {
 	fields := LogFields{"Method": "initializeAzureSDKClient", "Type": "NASBlockStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureSDKClient")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureSDKClient")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> initializeAzureSDKClient")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< initializeAzureSDKClient")
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
@@ -657,13 +685,13 @@ func (d *NASBlockStorageDriver) Create(
 		// Get the reference object
 		pollerKey := PollerKey{
 			ID:        extantSubvolume.Name,
-			Operation: "add",
+			Operation: Create,
 		}
 
 		poller := pollerResponseCache[pollerKey]
 
 		// Wait for creation to complete
-		if err = d.waitForSubvolumeCreate(ctx, extantSubvolume, poller); err != nil {
+		if err = d.waitForSubvolumeCreate(ctx, extantSubvolume, poller, pollerKey.Operation, true); err != nil {
 			return err
 		}
 
@@ -727,13 +755,13 @@ func (d *NASBlockStorageDriver) Create(
 	// Save the Poller's reference for later uses (if needed)
 	pollerKey := PollerKey{
 		ID:        subvolume.Name,
-		Operation: "add",
+		Operation: Create,
 	}
 
 	pollerResponseCache[pollerKey] = poller
 
 	// Wait for creation to complete
-	return d.waitForSubvolumeCreate(ctx, subvolume, poller)
+	return d.waitForSubvolumeCreate(ctx, subvolume, poller, pollerKey.Operation, true)
 }
 
 // CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
@@ -769,7 +797,7 @@ func (d *NASBlockStorageDriver) CreateClone(
 
 	// Check if called from CreateClone and is from a snapshot
 	if isFromSnapshot {
-		snapshotInternalName := d.helper.GetSnapshotInternalName(source, snapshot)
+		snapshotInternalName := volConfig.CloneSourceSnapshotInternal
 
 		subscription, resourceGroup, _, netappAccount, cPoolName, volumeName, _, err := api.ParseSubvolumeID(sourceVolConfig.InternalID)
 		if err != nil {
@@ -804,13 +832,13 @@ func (d *NASBlockStorageDriver) CreateClone(
 		// Get the reference object
 		pollerKey := PollerKey{
 			ID:        extantSubvolume.Name,
-			Operation: "add",
+			Operation: Create,
 		}
 
 		poller := pollerResponseCache[pollerKey]
 
 		// Wait for creation to complete
-		if err = d.waitForSubvolumeCreate(ctx, extantSubvolume, poller); err != nil {
+		if err = d.waitForSubvolumeCreate(ctx, extantSubvolume, poller, pollerKey.Operation, true); err != nil {
 			return err
 		}
 
@@ -846,13 +874,13 @@ func (d *NASBlockStorageDriver) CreateClone(
 	// Save the Poller's reference for later uses (if needed)
 	pollerKey := PollerKey{
 		ID:        subvolume.Name,
-		Operation: "add",
+		Operation: Create,
 	}
 
 	pollerResponseCache[pollerKey] = poller
 
 	// Wait for creation to complete
-	return d.waitForSubvolumeCreate(ctx, subvolume, poller)
+	return d.waitForSubvolumeCreate(ctx, subvolume, poller, pollerKey.Operation, true)
 }
 
 // Import finds an existing subvolume and makes it available for containers. If ImportNotManaged is false, the
@@ -920,7 +948,7 @@ func (d *NASBlockStorageDriver) Rename(ctx context.Context, name, newName string
 // volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
 func (d *NASBlockStorageDriver) waitForSubvolumeCreate(ctx context.Context, subvolume *api.Subvolume,
-	poller api.PollerResponse,
+	poller api.PollerResponse, operation Operation, handleErrorInFollowup bool,
 ) error {
 	var pollForError bool
 
@@ -957,7 +985,7 @@ func (d *NASBlockStorageDriver) waitForSubvolumeCreate(ctx context.Context, subv
 
 			pollForError = true
 
-		case api.StateMoving:
+		case api.StateMoving, api.StateReverting:
 			fallthrough
 
 		default:
@@ -966,11 +994,11 @@ func (d *NASBlockStorageDriver) waitForSubvolumeCreate(ctx context.Context, subv
 		}
 	}
 
-	// If here, it mean volume might be successful, or in deleting, error, moving or unexpected state,
+	// If here, it means volume might be successful, or in deleting, error, moving or unexpected state,
 	// and not in creating state, so it should be safe to remove it from futures cache
 	pollerKey := PollerKey{
 		ID:        subvolume.Name,
-		Operation: "add",
+		Operation: operation,
 	}
 
 	delete(pollerResponseCache, pollerKey)
@@ -983,7 +1011,12 @@ func (d *NASBlockStorageDriver) waitForSubvolumeCreate(ctx context.Context, subv
 		}
 	}
 
-	return nil
+	// If followup exists to handler error, then return nil
+	if handleErrorInFollowup {
+		return nil
+	}
+
+	return err
 }
 
 // Destroy deletes a volume.
@@ -1034,25 +1067,7 @@ func (d *NASBlockStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 		}
 	}
 
-	// Delete the subvolume
-	poller, err := d.SDK.DeleteSubvolume(ctx, extantSubvolume)
-	if err != nil {
-		if !errors.IsNotFoundError(err) {
-			return fmt.Errorf("error deleting subvolume %s; %v", creationToken, err)
-		}
-	}
-
-	Logc(ctx).WithField("subvolume", extantSubvolume.Name).Info("subvolume deleted.")
-
-	// Wait for deletion to complete
-	state, err := d.SDK.WaitForSubvolumeState(ctx, extantSubvolume, api.StateDeleted, []string{api.StateError},
-		d.defaultTimeout())
-
-	if err != nil && state == api.StateError {
-		Logc(ctx).WithField("subvolume", extantSubvolume.Name).Errorf("failed to delete volume: %v", poller.Result(ctx))
-	}
-
-	return err
+	return d.deleteSubvolume(extantSubvolume)
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
@@ -1083,7 +1098,8 @@ func (d *NASBlockStorageDriver) Publish(
 	}
 
 	// Set the correct NFS mount option based on volume's protocol
-	NFSMountOption := fmt.Sprintf("vers=%s", strings.TrimPrefix(volume.ProtocolTypes[0], api.ProtocolTypeNFSPrefix))
+	NFSMountOption := fmt.Sprintf("vers=%s", strings.TrimPrefix(volume.ProtocolTypes[0],
+		api.ProtocolTypeNFSPrefix))
 	mountOptions := utils.SetNFSVersionMountOptions(d.Config.NfsMountOptions, NFSMountOption)
 
 	// Subvolume mount options can only be specified via tha storage class.
@@ -1128,13 +1144,13 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 ) (*storage.Snapshot, error) {
 	snapName := snapConfig.Name
 	internalVolName := snapConfig.VolumeInternalName
-	externalVolName := snapConfig.VolumeName
 
 	fields := LogFields{
-		"Method":       "GetSnapshot",
-		"Type":         "NASBlockStorageDriver",
-		"snapshotName": snapName,
-		"volumeName":   internalVolName,
+		"Method":               "GetSnapshot",
+		"Type":                 "NASBlockStorageDriver",
+		"snapshotName":         snapName,
+		"snapshotInternalName": snapConfig.InternalName,
+		"volumeName":           internalVolName,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
@@ -1148,10 +1164,10 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("source subvolume '%s' does not exist", volConfig.Name)
 	}
 
-	// Create the snapshot name/string
-	creationToken := d.helper.GetSnapshotInternalName(externalVolName, snapName)
+	// For snapshot imports, creation token should be the internal name for the backend snapshot.
+	creationToken := snapConfig.InternalName
 
-	// Based on volume's internal name, snapshot ID can be identified
+	// Build the backend snapshot ID from the source volume and config internal snap name.
 	snapshotInternalID := api.CreateSubvolumeID(d.Config.SubscriptionID, sourceSubvolume.ResourceGroup,
 		sourceSubvolume.NetAppAccount, sourceSubvolume.CapacityPool, sourceSubvolume.Volume, creationToken)
 
@@ -1175,7 +1191,7 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   time.Time{}.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   time.Time{}.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -1240,7 +1256,7 @@ func (d *NASBlockStorageDriver) GetSnapshots(
 				VolumeName:         externalVolName,
 				VolumeInternalName: internalVolName,
 			},
-			Created:   time.Time{}.UTC().Format(storage.SnapshotTimestampFormat),
+			Created:   time.Time{}.UTC().Format(utils.TimestampFormat),
 			SizeBytes: 0,
 			State:     storage.SnapshotStateOnline,
 		}
@@ -1337,12 +1353,12 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 	// Save the Poller's reference for later uses (if needed)
 	pollerKey := PollerKey{
 		ID:        subvolume.Name,
-		Operation: "add",
+		Operation: Create,
 	}
 
 	pollerResponseCache[pollerKey] = poller
 
-	if err = d.waitForSubvolumeCreate(ctx, subvolume, poller); err != nil {
+	if err = d.waitForSubvolumeCreate(ctx, subvolume, poller, pollerKey.Operation, false); err != nil {
 		return nil, err
 	}
 
@@ -1356,29 +1372,216 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   createdAt.UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   createdAt.UTC().Format(utils.TimestampFormat),
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
+// Subvolume driver does not support in-place restore or renaming of subvolumes, so the "snapshot restore"
+// operation works by deleting the original subvolume and replacing it with a clone of the snapshot copy.
 func (d *NASBlockStorageDriver) RestoreSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) error {
-	snapName := snapConfig.Name
-	internalVolName := snapConfig.VolumeInternalName
+	internalSnapName := snapConfig.InternalName
+	internalVolName := volConfig.InternalName
+	internalVolID := volConfig.InternalID
+	tempInternalVolName := volConfig.InternalName + tempCopySuffix
+	tempInternalVolID := volConfig.InternalID + tempCopySuffix
+
+	var subvolume *api.Subvolume
 
 	fields := LogFields{
-		"Method":       "RestoreSnapshot",
-		"Type":         "NASBlockStorageDriver",
-		"snapshotName": snapName,
-		"volumeName":   internalVolName,
+		"Method":              "RestoreSnapshot",
+		"Type":                "NASBlockStorageDriver",
+		"snapshotName":        internalSnapName,
+		"volumeName":          internalVolName,
+		"temporaryVolumeName": tempInternalVolName,
 	}
+
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	return errors.UnsupportedError(fmt.Sprintf("restoring snapshots is not supported by backend type %s", d.Name()))
+	if volConfig.InternalName != snapConfig.VolumeInternalName {
+		return fmt.Errorf("snapshot/volume mismatch")
+	}
+
+	_, resourceGroup, _, netappAccount, cPoolName, volumeName, _, err := api.ParseSubvolumeID(volConfig.InternalID)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("error parsing source volume config internal ID '%s'",
+			volConfig.InternalName)
+		return err
+	}
+
+	snapshotInternalID := api.CreateSubvolumeID(d.Config.SubscriptionID, resourceGroup,
+		netappAccount, cPoolName, volumeName, internalSnapName)
+
+	// Check to see if only remaining step is temporary subvolume deletion in current snapshot context,
+	// if so return after delete else proceed with the restore operation
+	deletedInCurrentSnapshotContext, err := d.deleteSubvolumeInSnapshotContext(ctx, tempInternalVolID,
+		snapshotInternalID)
+	if err != nil {
+		return err
+	} else if deletedInCurrentSnapshotContext {
+		// Being here signifies deletion of temporary subvolume after
+		// a successful restore operation; thus it can return nil
+		return nil
+	}
+
+	// Check if subvolume restore already in progress
+	pollerKey := PollerKey{
+		ID:        internalVolName,
+		Operation: Restore,
+	}
+
+	poller, ok := pollerResponseCache[pollerKey]
+
+	if !ok {
+		// Create name of the volume where this `-og` subvolume will live
+		filePoolVolume := api.CreateVolumeFullName(resourceGroup, netappAccount, cPoolName, volumeName)
+
+		// Check to see if `-og` subvolume already exists
+		tempSubvolumeExists, tempSubvolume, err := d.SDK.SubvolumeExistsByID(ctx, tempInternalVolID)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Error checking for existing subvolume: %v", err)
+			return errors.InProgressError(err.Error())
+		}
+
+		if !tempSubvolumeExists {
+			Logc(ctx).WithFields(LogFields{
+				"creationToken": tempInternalVolName,
+				"volume":        filePoolVolume,
+				"parentPath":    internalVolName,
+			}).Debug("Creating temporary subvolume.")
+
+			// Create an `-og` subvolume request
+			tempSubvolumeCreateRequest := &api.SubvolumeCreateRequest{
+				CreationToken: tempInternalVolName,
+				Volume:        filePoolVolume,
+				Parent:        internalVolName, // Needed only when cloning
+			}
+
+			// Create the subvolume
+			tempSubvolume, poller, err = d.SDK.CreateSubvolume(ctx, tempSubvolumeCreateRequest)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("error creating a temporary subvolume '%s'",
+					tempInternalVolName)
+				return errors.InProgressError(err.Error())
+			}
+		}
+
+		// Save the Poller's reference for later uses (if needed)
+		pollerKey = PollerKey{
+			ID:        tempSubvolume.Name,
+			Operation: Create,
+		}
+
+		pollerResponseCache[pollerKey] = poller
+
+		if err = d.waitForSubvolumeCreate(ctx, tempSubvolume, poller, pollerKey.Operation, false); err != nil {
+			if errors.IsVolumeCreatingError(err) {
+				return errors.InProgressError(err.Error())
+			}
+
+			return err
+		}
+
+		Logc(ctx).Debugf("Temporary subvolume '%s' created", tempInternalVolName)
+
+		// Delete the actual subvolume
+		subvolume = &api.Subvolume{
+			ID:            internalVolID,
+			ResourceGroup: resourceGroup,
+			NetAppAccount: netappAccount,
+			CapacityPool:  cPoolName,
+			Volume:        volumeName,
+			Name:          internalVolName,
+		}
+
+		if err = d.deleteSubvolume(subvolume); err != nil {
+			Logc(ctx).WithError(err).Errorf("failed to delete the actual subvolume '%s'", internalVolName)
+			return errors.InProgressError(err.Error())
+		}
+
+		// Create the subvolume again using snapshot
+		Logc(ctx).WithFields(LogFields{
+			"creationToken": internalVolName,
+			"volume":        filePoolVolume,
+			"parentPath":    internalSnapName,
+		}).Debug("Creating subvolume from snapshot.")
+
+		// Create a subvolume request using snapshot
+		subvolumeCreateRequest := &api.SubvolumeCreateRequest{
+			CreationToken: internalVolName,
+			Volume:        filePoolVolume,
+			Parent:        internalSnapName, // Needed only when cloning
+		}
+
+		// Create the subvolume using snapshot
+		subvolume, poller, err = d.SDK.CreateSubvolume(ctx, subvolumeCreateRequest)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("error creating subvolume '%s' from snapshot '%s'",
+				internalVolName, internalSnapName)
+			return errors.InProgressError(err.Error())
+		}
+
+		// Save the Poller's reference for later uses (if needed)
+		pollerKey = PollerKey{
+			ID:        subvolume.Name,
+			Operation: Restore,
+		}
+
+		pollerResponseCache[pollerKey] = poller
+	}
+
+	// Create Subvolume Object
+	subvolume = &api.Subvolume{
+		ID:            internalVolID,
+		ResourceGroup: resourceGroup,
+		NetAppAccount: netappAccount,
+		CapacityPool:  cPoolName,
+		Volume:        volumeName,
+		Name:          internalVolName,
+	}
+
+	if err = d.waitForSubvolumeCreate(ctx, subvolume, poller, pollerKey.Operation, false); err != nil {
+		if errors.IsVolumeCreatingError(err) {
+			return errors.InProgressError(err.Error())
+		}
+
+		return err
+	}
+
+	Logc(ctx).Debugf("Subvolume '%s' restored using snapshot '%s'.", internalVolName, internalSnapName)
+
+	// Delete temporary `-og` subvolume
+	subvolume = &api.Subvolume{
+		ID:            tempInternalVolID,
+		ResourceGroup: resourceGroup,
+		NetAppAccount: netappAccount,
+		CapacityPool:  cPoolName,
+		Volume:        volumeName,
+		Name:          tempInternalVolName,
+	}
+
+	// If temporary subvolume delete fails, then throwing an error would cause the complete
+	// restore process to repeat; thus adding a retry here to give best shot at deleting
+	// the temporary subvolume.
+	if err = d.deleteSubvolume(subvolume); err != nil {
+		Logc(ctx).WithError(err).Errorf("failed to delete the temporary subvolume '%s'; retrying", tempInternalVolName)
+
+		if err = d.deleteSubvolume(subvolume); err != nil {
+			Logc(ctx).WithError(err).Errorf("failed to delete the temporary subvolume '%s'", tempInternalVolName)
+
+			// Fail-safe mechanism to ensure temporary subvolume is definitely deleted.
+			d.ensureSubvolumeDelete(tempInternalVolID, snapshotInternalID)
+
+			return errors.InProgressError(err.Error())
+		}
+	}
+
+	return nil
 }
 
 // DeleteSnapshot creates a snapshot of a volume.
@@ -1397,7 +1600,7 @@ func (d *NASBlockStorageDriver) DeleteSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
-	creationToken := d.helper.GetSnapshotInternalName(snapConfig.VolumeName, snapName)
+	creationToken := snapConfig.InternalName
 
 	subscriptionID, resourceGroup, _, netappAccount, cPoolName, volumeName, _,
 		err := api.ParseSubvolumeID(volConfig.InternalID)
@@ -1417,25 +1620,7 @@ func (d *NASBlockStorageDriver) DeleteSnapshot(
 		Name:          creationToken,
 	}
 
-	// If the specified snapshot subvolume already exists, return an error
-	poller, err := d.SDK.DeleteSubvolume(ctx, subvolume)
-	if err != nil {
-		if !errors.IsNotFoundError(err) {
-			return fmt.Errorf("error deleting snapshot %s; %v", creationToken, err)
-		}
-	}
-
-	Logc(ctx).Debugf("Snapshot %s deleted.", creationToken)
-
-	// Wait for deletion to complete
-	state, err := d.SDK.WaitForSubvolumeState(ctx, subvolume, api.StateDeleted, []string{api.StateError},
-		d.defaultTimeout())
-
-	if err != nil && state == api.StateError {
-		Logc(ctx).WithField("subvolume", subvolume.Name).Errorf("failed to delete volume: %v", poller.Result(ctx))
-	}
-
-	return err
+	return d.deleteSubvolume(subvolume)
 }
 
 // Get tests for the existence of a volume
@@ -1536,6 +1721,31 @@ func (d *NASBlockStorageDriver) GetStorageBackendPhysicalPoolNames(context.Conte
 	return physicalPoolNames
 }
 
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NASBlockStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.ANFSubvolumeStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASBlockStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SubscriptionID
+	// 2. Location
+	// 3. FilePoolVolume Name - stored in the physical pools on the driver, the name is stored as:
+	//	<file pool volume name>_<hash based on RG/NA/CP and volume name>
+	filePoolVolumes := d.getAllFilePoolVolumes()
+	backendPools := make([]drivers.ANFSubvolumeStorageBackendPool, 0, len(filePoolVolumes))
+	for _, filePoolVolume := range filePoolVolumes {
+		backendPool := drivers.ANFSubvolumeStorageBackendPool{
+			SubscriptionID: d.Config.SubscriptionID,
+			Location:       d.Config.Location,
+			FilePoolVolume: filePoolVolume,
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
+}
+
 // GetInternalVolumeName accepts the name of a volume being created and returns what the internal name
 // should be, depending on backend requirements and Trident's operating context.
 func (d *NASBlockStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
@@ -1574,12 +1784,13 @@ func (d *NASBlockStorageDriver) CreateFollowup(ctx context.Context, volConfig *s
 	}
 
 	// Ensure subvolume is in a good state
-	if subvolume.ProvisioningState == api.StateError {
+	if subvolume.ProvisioningState != api.StateAvailable {
 		return fmt.Errorf("subvolume %s is in %s state", creationToken, subvolume.ProvisioningState)
 	}
 
 	// Set the correct NFS mount option based on volume's protocol
-	NFSMountOption := fmt.Sprintf("vers=%s", strings.TrimPrefix(volume.ProtocolTypes[0], api.ProtocolTypeNFSPrefix))
+	NFSMountOption := fmt.Sprintf("vers=%s", strings.TrimPrefix(volume.ProtocolTypes[0],
+		api.ProtocolTypeNFSPrefix))
 	mountOptions := utils.SetNFSVersionMountOptions(d.Config.NfsMountOptions, NFSMountOption)
 
 	if len(volume.MountTargets) == 0 {
@@ -1645,7 +1856,8 @@ func (d *NASBlockStorageDriver) GetVolumeExternalWrappers(
 ) {
 	fields := LogFields{"Method": "GetVolumeExternalWrappers", "Type": "NASBlockStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetVolumeExternalWrappers")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetVolumeExternalWrappers")
+	defer Logd(ctx, d.Name(),
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetVolumeExternalWrappers")
 
 	// Let the caller know we're done by closing the channel
 	defer close(channel)
@@ -1808,4 +2020,83 @@ func (d *NASBlockStorageDriver) createFilePoolVolumePathHash(filePoolVolume *api
 	sha256Hash := sha256.Sum256([]byte(volumePath))
 
 	return fmt.Sprintf("%032x", sha256Hash[:RequiredHashLength])
+}
+
+func (d *NASBlockStorageDriver) deleteSubvolume(subvolume *api.Subvolume) error {
+	poller, err := d.SDK.DeleteSubvolume(ctx, subvolume)
+	if err != nil {
+		if !errors.IsNotFoundError(err) {
+			return fmt.Errorf("error deleting snapshot %s; %v", subvolume.Name, err)
+		}
+	}
+
+	Logc(ctx).Debugf("Subvolume %s deleted.", subvolume.Name)
+
+	// Wait for deletion to complete
+	state, err := d.SDK.WaitForSubvolumeState(ctx, subvolume, api.StateDeleted, []string{api.StateError},
+		d.defaultTimeout())
+
+	if err != nil && state == api.StateError {
+		Logc(ctx).WithField("subvolume", subvolume.Name).Errorf("failed to delete volume: %v", poller.Result(ctx))
+	}
+
+	return err
+}
+
+func (d *NASBlockStorageDriver) ensureSubvolumeDelete(subvolumeID, snapshotID string) {
+	if subvolumesToDelete == nil {
+		subvolumesToDelete = make(map[string]string)
+	}
+
+	subvolumesToDelete[subvolumeID] = snapshotID
+}
+
+func (d *NASBlockStorageDriver) deleteSubvolumeInSnapshotContext(ctx context.Context, subvolumeID,
+	snapshotID string,
+) (bool, error) {
+	var deletedInCurrentSnapshotContext bool
+
+	if subvolumesToDelete == nil {
+		return deletedInCurrentSnapshotContext, nil
+	}
+
+	if existingSnapshotID, ok := subvolumesToDelete[subvolumeID]; ok {
+		// Subvolume deletion is needed
+		_, resourceGroup, _, netappAccount, cPoolName, volumeName, subvolumeName,
+			err := api.ParseSubvolumeID(subvolumeID)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Failed to parse the subvolume ID '%s'.", subvolumeID)
+			return deletedInCurrentSnapshotContext, err
+		}
+
+		subvolume := &api.Subvolume{
+			ID:            subvolumeID,
+			ResourceGroup: resourceGroup,
+			NetAppAccount: netappAccount,
+			CapacityPool:  cPoolName,
+			Volume:        volumeName,
+			Name:          subvolumeName,
+		}
+
+		if err = d.deleteSubvolume(subvolume); err != nil {
+			Logc(ctx).WithError(err).Errorf("Failed to delete the subvolume '%s'.", subvolumeName)
+			return deletedInCurrentSnapshotContext, errors.InProgressError(err.Error())
+		}
+
+		// Remove subvolumeID from list of subvolumes required deletion
+		delete(subvolumesToDelete, subvolumeID)
+
+		Logc(ctx).Debugf("Subvolume '%s' deleted.", subvolumeName)
+
+		if snapshotID != existingSnapshotID {
+			Logc(ctx).Errorf("Subvolume '%s' deleted not in context of snapshot '%s' instead of snapshot '%s'.",
+				subvolumeName, existingSnapshotID, snapshotID)
+			deletedInCurrentSnapshotContext = false
+		} else {
+			Logc(ctx).Debugf("Subvolume '%s' deleted in context of snapshot '%s'.", subvolumeName, snapshotID)
+			deletedInCurrentSnapshotContext = true
+		}
+	}
+
+	return deletedInCurrentSnapshotContext, nil
 }

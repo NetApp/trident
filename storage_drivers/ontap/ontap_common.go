@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -85,6 +85,7 @@ const (
 	QosPolicy             = "qosPolicy"
 	AdaptiveQosPolicy     = "adaptiveQosPolicy"
 	maxFlexGroupCloneWait = 120 * time.Second
+	maxFlexvolCloneWait   = 30 * time.Second
 
 	VolTypeRW  = "rw"  // read-write
 	VolTypeLS  = "ls"  // load-sharing
@@ -561,52 +562,6 @@ func GetOntapDriverRedactList() []string {
 	return clone[:]
 }
 
-// PopulateOntapLunMapping helper function to fill in volConfig with its LUN mapping values.
-// This function assumes that the list of data LIFs has not changed since driver initialization and volume creation
-func PopulateOntapLunMapping(
-	ctx context.Context, clientAPI api.OntapAPI, ips []string, volConfig *storage.VolumeConfig, lunID int,
-	lunPath, igroupName string,
-) error {
-	var targetIQN string
-	targetIQN, err := clientAPI.IscsiNodeGetNameRequest(ctx)
-	if err != nil {
-		return fmt.Errorf("problem retrieving iSCSI services: %v", err)
-	}
-
-	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
-	if err != nil || lunResponse == nil {
-		return fmt.Errorf("problem retrieving LUN info: %v", err)
-	}
-	serial := lunResponse.SerialNumber
-
-	filteredIPs, err := getISCSIDataLIFsForReportingNodes(ctx, clientAPI, ips, lunPath, igroupName,
-		volConfig.ImportNotManaged)
-	if err != nil {
-		return err
-	}
-
-	if len(filteredIPs) == 0 {
-		Logc(ctx).Warn("Unable to find reporting ONTAP nodes for discovered dataLIFs.")
-		filteredIPs = ips
-	}
-
-	volConfig.AccessInfo.IscsiTargetPortal = filteredIPs[0]
-	volConfig.AccessInfo.IscsiPortals = filteredIPs[1:]
-	volConfig.AccessInfo.IscsiTargetIQN = targetIQN
-	volConfig.AccessInfo.IscsiLunNumber = int32(lunID)
-	volConfig.AccessInfo.IscsiIgroup = igroupName
-	volConfig.AccessInfo.IscsiLunSerial = serial
-	Logc(ctx).WithFields(LogFields{
-		"volume":          volConfig.Name,
-		"volume_internal": volConfig.InternalName,
-		"targetIQN":       volConfig.AccessInfo.IscsiTargetIQN,
-		"lunNumber":       volConfig.AccessInfo.IscsiLunNumber,
-		"igroup":          volConfig.AccessInfo.IscsiIgroup,
-	}).Debug("Mapped ONTAP LUN.")
-
-	return nil
-}
-
 // getNodeSpecificIgroupName generates a distinct igroup name for node name.
 // Igroup names may collide if node names are over 59 characters.
 func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
@@ -680,6 +635,17 @@ func PublishLUN(
 		fstype = lunFSType
 	}
 
+	// Get LUN Serial Number
+	lunResponse, err := clientAPI.LunGetByName(ctx, lunPath)
+	if err != nil || lunResponse == nil {
+		return fmt.Errorf("problem retrieving LUN info: %v", err)
+	}
+	serial := lunResponse.SerialNumber
+
+	if serial == "" {
+		return fmt.Errorf("LUN '%v' serial number not found", lunPath)
+	}
+
 	if config.DriverContext == tridentconfig.ContextCSI {
 		// Get the info about the targeted node
 		var targetNode *utils.Node
@@ -728,9 +694,11 @@ func PublishLUN(
 
 	// Add fields needed by Attach
 	publishInfo.IscsiLunNumber = int32(lunID)
+	publishInfo.IscsiLunSerial = serial
 	publishInfo.IscsiTargetPortal = filteredIPs[0]
 	publishInfo.IscsiPortals = filteredIPs[1:]
 	publishInfo.IscsiTargetIQN = iSCSINodeName
+	publishInfo.SANType = sa.ISCSI
 
 	if igroupName != "" {
 		addUniqueIscsiIGroupName(publishInfo, igroupName)
@@ -2554,28 +2522,26 @@ func getVolumeSnapshot(
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-			"created":      snap.CreateTime,
-		}).Debug("Found snapshot.")
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
+		if errors.IsNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, err
 		}
 	}
 
-	return nil, nil
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(size),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // getVolumeSnapshotList returns the list of snapshots associated with the named volume.
@@ -2670,27 +2636,22 @@ func createFlexvolSnapshot(
 		return nil, err
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, snap := range snapshots {
-		if snap.Name == internalSnapName {
-			Logc(ctx).WithFields(LogFields{
-				"snapshotName": snapConfig.InternalName,
-				"volumeName":   snapConfig.VolumeInternalName,
-			}).Info("Snapshot created.")
-
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
-		}
-	}
-	return nil, fmt.Errorf("could not find snapshot %s for souce volume %s", internalSnapName, internalVolName)
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(size),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // cloneFlexvol creates a volume clone
@@ -2730,6 +2691,12 @@ func cloneFlexvol(
 	// Create the clone based on a snapshot
 	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, false); err != nil {
 		return err
+	}
+
+	desiredStates, abortStates := []string{"online"}, []string{"error"}
+	volState, err := client.VolumeWaitForStates(ctx, name, desiredStates, abortStates, maxFlexvolCloneWait)
+	if err != nil {
+		return fmt.Errorf("unable to create flexClone for volume %v, volState:%v", name, volState)
 	}
 
 	if err = client.VolumeSetComment(ctx, name, name, labels); err != nil {
@@ -2944,23 +2911,52 @@ func GetEncryptionValue(encryption string) (*bool, string, error) {
 	return nil, "", nil
 }
 
-// ConstructOntapNASSMBVolumePath returns windows compatible volume path for Ontap NAS.
+// ConstructOntapNASVolumeAccessPath returns volume path for ONTAP NAS.
 // Function accepts parameters in following way:
 // 1.smbShare : This takes the value given in backend config, without path prefix.
 // 2.volumeName : This takes the value of volume's internal name, it is always prefixed with unix styled path separator.
-// Example, ConstructOntapNASSMBVolumePath(ctx, "test_share", "/vol")
-func ConstructOntapNASSMBVolumePath(ctx context.Context, smbShare, volumeName string) string {
-	Logc(ctx).Debug(">>>> smb.ConstructOntapNASSMBVolumePath")
-	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASSMBVolumePath")
+// 3.volConfig : This takes value of volume configuration.
+// 4.Protocol : This takes the value of NAS protocol (NFS/SMB).
+// Example, ConstructOntapNASVolumeAccessPath(ctx, "test_share", "/vol" , volConfig, "nfs")
+func ConstructOntapNASVolumeAccessPath(
+	ctx context.Context, smbShare, volumeName string,
+	volConfig *storage.VolumeConfig, protocol string,
+) string {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASVolumeAccessPath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASVolumeAccessPath")
 
 	var completeVolumePath string
-	if smbShare != "" {
-		completeVolumePath = utils.WindowsPathSeparator + smbShare + volumeName
-	} else {
-		// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
-		completeVolumePath = volumeName
-	}
+	var smbSharePath string
+	switch protocol {
+	case sa.NFS:
+		if volConfig.ReadOnlyClone {
+			if volConfig.ImportOriginalName != "" {
+				// For an imported volume, use junction path for the mount
+				return fmt.Sprintf("/%s/%s/%s", volumeName, ".snapshot", volConfig.CloneSourceSnapshot)
+			}
+			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot", volConfig.CloneSourceSnapshot)
+		} else if volumeName != utils.UnixPathSeparator+volConfig.InternalName && strings.HasPrefix(volumeName,
+			utils.UnixPathSeparator) {
+			// For managed import, return the original junction path
+			return volumeName
+		}
+		return fmt.Sprintf("/%s", volConfig.InternalName)
+	case sa.SMB:
+		if smbShare != "" {
+			smbSharePath = fmt.Sprintf("\\%s", smbShare)
+		} else {
+			// Set share path as empty, volume name contains the path prefix.
+			smbSharePath = ""
+		}
 
+		if volConfig.ReadOnlyClone {
+			completeVolumePath = fmt.Sprintf("%s\\%s\\%s\\%s", smbSharePath, volConfig.CloneSourceVolumeInternal,
+				"~snapshot", volConfig.CloneSourceSnapshot)
+		} else {
+			// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
+			completeVolumePath = smbSharePath + volumeName
+		}
+	}
 	// Replace unix styled path separator, if exists
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
 }
@@ -2986,24 +2982,44 @@ func ConstructOntapNASFlexGroupSMBVolumePath(ctx context.Context, smbShare, volu
 	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
 }
 
-// ConstructOntapNASQTreeSMBVolumePath returns windows compatible volume path for Ontap NAS QTree
+// ConstructOntapNASQTreeVolumePath returns volume path for Ontap NAS QTree
 // Function accepts parameters in following way:
 // 1.smbShare : This takes the value given in backend config, without path prefix.
 // 2.flexVol : This takes the value of the parent volume, without path prefix.
-// 3.volumeName : This takes the value of volume's internal name,  without path prefix.
-// Example, ConstructOntapNASQTreeSMBVolumePath(ctx, "test_share", "flex-vol", "vol")
-func ConstructOntapNASQTreeSMBVolumePath(ctx context.Context, smbShare, flexVol, volumeName string) string {
-	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeSMBVolumePath")
-	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASQTreeSMBVolumePath")
+// 3.volConfig : This takes the value of volume configuration.
+// 4. protocol: This takes the value of the protocol for which the path needs to be created.
+// Example, ConstructOntapNASQTreeVolumePath(ctx, test.smbShare, "flex-vol", volConfig, sa.SMB)
+func ConstructOntapNASQTreeVolumePath(
+	ctx context.Context, smbShare, flexvol string,
+	volConfig *storage.VolumeConfig, protocol string,
+) (completeVolumePath string) {
+	Logc(ctx).Debug(">>>> smb.ConstructOntapNASQTreeVolumePath")
+	defer Logc(ctx).Debug("<<<< smb.ConstructOntapNASQTreeVolumePath")
 
-	var completeVolumePath string
-	if smbShare != "" {
-		completeVolumePath = utils.WindowsPathSeparator + smbShare + utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
-	} else {
-		// If the user does not specify an SMB Share, Trident creates it with the same name as the parent flexVol volume name.
-		completeVolumePath = utils.WindowsPathSeparator + flexVol + utils.WindowsPathSeparator + volumeName
+	switch protocol {
+	case sa.NFS:
+		if volConfig.ReadOnlyClone {
+			completeVolumePath = fmt.Sprintf("/%s/%s/%s/%s", flexvol, volConfig.CloneSourceVolumeInternal,
+				".snapshot", volConfig.CloneSourceSnapshot)
+		} else {
+			completeVolumePath = fmt.Sprintf("/%s/%s", flexvol, volConfig.InternalName)
+		}
+	case sa.SMB:
+		var smbSharePath string
+		if smbShare != "" {
+			smbSharePath = smbShare + utils.WindowsPathSeparator
+		}
+		if volConfig.ReadOnlyClone {
+			completeVolumePath = fmt.Sprintf("\\%s%s\\%s\\%s\\%s", smbSharePath, flexvol,
+				volConfig.CloneSourceVolumeInternal, "~snapshot", volConfig.CloneSourceSnapshot)
+		} else {
+			completeVolumePath = fmt.Sprintf("\\%s%s\\%s", smbSharePath, flexvol, volConfig.InternalName)
+		}
+
+		// Replace unix styled path separator, if exists
+		completeVolumePath = strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator,
+			-1)
 	}
 
-	// Replace unix styled path separator, if exists
-	return strings.Replace(completeVolumePath, utils.UnixPathSeparator, utils.WindowsPathSeparator, -1)
+	return
 }

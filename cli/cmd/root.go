@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	execCmd "github.com/netapp/trident/utils/exec"
 )
 
 const (
@@ -45,10 +46,6 @@ const (
 
 	ExitCodeSuccess = 0
 	ExitCodeFailure = 1
-
-	TridentLegacyLabelKey   = "app"
-	TridentLegacyLabelValue = "trident.netapp.io"
-	TridentLegacyLabel      = TridentLegacyLabelKey + "=" + TridentLegacyLabelValue
 
 	TridentCSILabelKey   = "app"
 	TridentCSILabelValue = "controller.csi.trident.netapp.io"
@@ -96,7 +93,8 @@ var (
 	updateOpts = metav1.UpdateOptions{}
 	deleteOpts = metav1.DeleteOptions{}
 
-	ctx = context.Background
+	ctx     = context.Background
+	command = execCmd.NewCommand()
 )
 
 func init() {
@@ -109,6 +107,7 @@ func init() {
 		"Output format. One of json|yaml|name|wide|ps (default)")
 	RootCmd.PersistentFlags().StringVarP(&TridentPodNamespace, "namespace", "n", "", "Namespace of Trident deployment")
 	RootCmd.PersistentFlags().StringVarP(&KubeConfigPath, "kubeconfig", "k", "", "Kubernetes config path")
+	RootCmd.SetOut(os.Stdout)
 }
 
 var RootCmd = &cobra.Command{
@@ -169,10 +168,7 @@ func discoverOperatingMode(_ *cobra.Command) error {
 
 	// Find the CSI Trident pod
 	if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentCSILabel); err != nil {
-		// Fall back to non-CSI Trident pod
-		if TridentPodName, err = getTridentPod(TridentPodNamespace, TridentLegacyLabel); err != nil {
-			return err
-		}
+		return err
 	}
 
 	OperatingMode = ModeTunnel
@@ -226,7 +222,14 @@ func discoverJustOperatingMode(_ *cobra.Command) error {
 	return nil
 }
 
-func execKubernetesCLI(args ...string) *exec.Cmd {
+func execKubernetesCLI(args ...string) ([]byte, error) {
+	if KubeConfigPath != "" {
+		args = append([]string{"--kubeconfig", KubeConfigPath}, args...)
+	}
+	return command.ExecuteWithoutLog(ctx(), KubernetesCLI, args...)
+}
+
+func execKubernetesCLIRaw(args ...string) *exec.Cmd {
 	if KubeConfigPath != "" {
 		args = append([]string{"--kubeconfig", KubeConfigPath}, args...)
 	}
@@ -259,20 +262,13 @@ func discoverKubernetesCLI() error {
 // getCurrentNamespace returns the default namespace from service account info
 func getCurrentNamespace() (string, error) {
 	// Get current namespace from service account info
-	cmd := execKubernetesCLI("get", "serviceaccount", "default", "-o=json")
-	stdout, err := cmd.StdoutPipe()
+	out, err := execKubernetesCLI("get", "serviceaccount", "default", "-o=json")
 	if err != nil {
-		return "", err
-	}
-	if err := cmd.Start(); err != nil {
 		return "", err
 	}
 
 	var serviceAccount k8s.ServiceAccount
-	if err := json.NewDecoder(stdout).Decode(&serviceAccount); err != nil {
-		return "", err
-	}
-	if err := cmd.Wait(); err != nil {
+	if err := json.Unmarshal(out, &serviceAccount); err != nil {
 		return "", err
 	}
 
@@ -301,26 +297,19 @@ func discoverAutosupportCollector() {
 // getTridentPod returns the name of the Trident pod in the specified namespace
 func getTridentPod(namespace, appLabel string) (string, error) {
 	// Get 'trident' pod info
-	cmd := execKubernetesCLI(
+	out, err := execKubernetesCLI(
 		"get", "pod",
 		"-n", namespace,
 		"-l", appLabel,
 		"-o=json",
 		"--field-selector=status.phase=Running",
 	)
-	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return "", err
-	}
-	if err = cmd.Start(); err != nil {
 		return "", err
 	}
 
 	var tridentPod k8s.PodList
-	if err = json.NewDecoder(stdout).Decode(&tridentPod); err != nil {
-		return "", err
-	}
-	if err = cmd.Wait(); err != nil {
+	if err = json.Unmarshal(out, &tridentPod); err != nil {
 		return "", err
 	}
 
@@ -338,26 +327,19 @@ func getTridentPod(namespace, appLabel string) (string, error) {
 // getTridentOperatorPod returns the name and namespace of the Trident pod
 func getTridentOperatorPod(appLabel string) (string, string, error) {
 	// Get 'trident-operator' pod info
-	cmd := execKubernetesCLI(
+	out, err := execKubernetesCLI(
 		"get", "pod",
 		"--all-namespaces",
 		"-l", appLabel,
 		"-o=json",
 		"--field-selector=status.phase=Running",
 	)
-	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return "", "", err
-	}
-	if err = cmd.Start(); err != nil {
 		return "", "", err
 	}
 
 	var tridentOperatorPod k8s.PodList
-	if err = json.NewDecoder(stdout).Decode(&tridentOperatorPod); err != nil {
-		return "", "", err
-	}
-	if err = cmd.Wait(); err != nil {
+	if err = json.Unmarshal(out, &tridentOperatorPod); err != nil {
 		return "", "", err
 	}
 
@@ -376,25 +358,18 @@ func getTridentOperatorPod(appLabel string) (string, string, error) {
 func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
 	// Get 'trident' pod info
 	var sidecarNames []string
-	cmd := execKubernetesCLI(
+	out, err := execKubernetesCLI(
 		"get", "pod",
 		podName,
 		"-n", podNameSpace,
 		"-o=json",
 	)
-	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return sidecarNames, err
-	}
-	if err = cmd.Start(); err != nil {
 		return sidecarNames, err
 	}
 
 	var tridentPod k8s.Pod
-	if err = json.NewDecoder(stdout).Decode(&tridentPod); err != nil {
-		return sidecarNames, err
-	}
-	if err = cmd.Wait(); err != nil {
+	if err = json.Unmarshal(out, &tridentPod); err != nil {
 		return sidecarNames, err
 	}
 
@@ -410,26 +385,19 @@ func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
 
 func getTridentNode(nodeName, namespace string) (string, error) {
 	selector := fmt.Sprintf("--field-selector=spec.nodeName=%s", nodeName)
-	cmd := execKubernetesCLI(
+	out, err := execKubernetesCLI(
 		"get", "pod",
 		"-n", namespace,
 		"-l", TridentNodeLabel,
 		"-o=json",
 		selector,
 	)
-	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return "", err
-	}
-	if err = cmd.Start(); err != nil {
 		return "", err
 	}
 
 	var tridentPods k8s.PodList
-	if err = json.NewDecoder(stdout).Decode(&tridentPods); err != nil {
-		return "", err
-	}
-	if err = cmd.Wait(); err != nil {
+	if err = json.Unmarshal(out, &tridentPods); err != nil {
 		return "", err
 	}
 
@@ -448,26 +416,19 @@ func getTridentNode(nodeName, namespace string) (string, error) {
 func listTridentNodes(namespace string) (map[string]string, error) {
 	// Get trident node pods info
 	tridentNodes := make(map[string]string)
-	cmd := execKubernetesCLI(
+	out, err := execKubernetesCLI(
 		"get", "pod",
 		"-n", namespace,
 		"-l", TridentNodeLabel,
 		"-o=json",
 		"--field-selector=status.phase=Running",
 	)
-	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return tridentNodes, err
-	}
-	if err = cmd.Start(); err != nil {
 		return tridentNodes, err
 	}
 
 	var tridentPods k8s.PodList
-	if err = json.NewDecoder(stdout).Decode(&tridentPods); err != nil {
-		return tridentNodes, err
-	}
-	if err = cmd.Wait(); err != nil {
+	if err = json.Unmarshal(out, &tridentPods); err != nil {
 		return tridentNodes, err
 	}
 
@@ -504,7 +465,7 @@ func BaseAutosupportURL() string {
 	return url
 }
 
-func TunnelCommand(commandArgs []string) {
+func TunnelCommand(commandArgs []string) ([]byte, error) {
 	// Build tunnel command to exec command in container
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 	// Build CLI command
@@ -526,13 +487,14 @@ func TunnelCommand(commandArgs []string) {
 	}
 
 	// Invoke tridentctl inside the Trident pod
-	out, err := execKubernetesCLI(execCommand...).CombinedOutput()
+	return execKubernetesCLI(execCommand...)
+}
 
-	SetExitCodeFromError(err)
+func printOutput(cmd *cobra.Command, out []byte, err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s", string(out))
+		cmd.PrintErr(string(out))
 	} else {
-		fmt.Print(string(out))
+		cmd.Print(string(out))
 	}
 }
 
@@ -554,7 +516,7 @@ func TunnelCommandRaw(commandArgs []string) ([]byte, []byte, error) {
 	// Invoke tridentctl inside the Trident pod and get Stdout and Stderr separately in two buffers
 	// Capture the Stdout for the command in outbuff which will later be unmarshalled and
 	// capture the Stderr for the command in os.Stderr
-	cmd := execKubernetesCLI(execCommand...)
+	cmd := execKubernetesCLIRaw(execCommand...)
 	var outbuff, stderrBuff bytes.Buffer
 	cmd.Stdout = &outbuff
 	cmd.Stderr = &stderrBuff

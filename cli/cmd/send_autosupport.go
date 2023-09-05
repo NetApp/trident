@@ -52,8 +52,9 @@ var sendAutosupportCmd = &cobra.Command{
 				args = append(args, "--since="+since.String())
 			}
 
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			if since != time.Duration(0) {
 				return triggerAutosupport(since.String())

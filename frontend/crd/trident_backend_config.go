@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"time"
 
+	"go.uber.org/multierr"
 	corev1 "k8s.io/api/core/v1"
 	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/cache"
@@ -22,7 +23,7 @@ import (
 // It then updates the Status block of the TridentBackendConfig resource with the current status of the resource.
 func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) error {
 	if keyItem == nil {
-		return errors.ReconcileDeferredError(fmt.Errorf("keyItem item is nil"))
+		return errors.ReconcileDeferredError("keyItem item is nil")
 	}
 
 	key := keyItem.key
@@ -53,7 +54,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 			Logx(ctx).WithField("key", key).Trace("Object in work queue no longer exists.")
 			return nil
 		}
-		return errors.ReconcileDeferredError(err)
+		return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	// Ensure backendconfig is not deleting, then ensure it has a finalizer
@@ -65,7 +66,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 			backendConfigCopy.AddTridentFinalizers()
 
 			if backendConfig, err = c.updateTridentBackendConfigCR(ctx, backendConfigCopy); err != nil {
-				return errors.ReconcileDeferredError(fmt.Errorf("error setting finalizer; %v", err))
+				return multierr.Combine(errors.ReconcileDeferredError("error setting finalizer"), err)
 			}
 		}
 	} else {
@@ -100,13 +101,15 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 			LastOperationStatus: OperationStatusFailed,
 		}
 
-		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Failed to process backend.",
+		var statusErr error
+		if _, statusErr = c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Failed to process backend.",
 			corev1.EventTypeWarning); statusErr != nil {
-			err = errors.ReconcileDeferredError(fmt.Errorf(
-				"validation error: %v, Also encountered error while updating the status: %v", err, statusErr))
+			err = errors.ReconcileDeferredError(
+				"validation error: %v, Also encountered error while updating the status: %v", err, statusErr,
+			)
 		}
 
-		return errors.UnsupportedConfigError(err)
+		return errors.WrapUnsupportedConfigError(err)
 	}
 
 	// Retrieve the deletion policy
@@ -126,7 +129,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 				"Also encountered error while updating the status: %v", err, statusErr)
 		}
 
-		return errors.ReconcileDeferredError(fmt.Errorf("encountered error while retrieving the deletion policy :%v", err))
+		return errors.ReconcileDeferredError("encountered error while retrieving the deletion policy :%v", err)
 	}
 
 	Logx(ctx).WithFields(LogFields{
@@ -147,7 +150,7 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 		// We add a new backend or bind to an existing one
 		err = c.addBackendConfig(ctx, backendConfig, deletionPolicy)
 		if err != nil {
-			return errors.ReconcileDeferredError(err)
+			return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 		}
 	case tridentv1.PhaseBound, tridentv1.PhaseLost, tridentv1.PhaseUnknown:
 		// We update the CR
@@ -156,17 +159,17 @@ func (c *TridentCrdController) handleTridentBackendConfig(keyItem *KeyItem) erro
 			if errors.IsUnsupportedConfigError(err) {
 				return err
 			}
-			return errors.ReconcileDeferredError(err)
+			return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 		}
 	case tridentv1.PhaseDeleting:
 		// We delete the CR
 		err = c.deleteBackendConfig(ctx, backendConfig, deletionPolicy)
 		if err != nil {
-			return errors.ReconcileDeferredError(err)
+			return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 		}
 	default:
 		// This should never be the case
-		return errors.UnsupportedConfigError(fmt.Errorf("backend config has an unsupported phase: '%v'", phase))
+		return errors.UnsupportedConfigError("backend config has an unsupported phase: '%v'", phase)
 	}
 
 	return nil
@@ -242,7 +245,7 @@ func (c *TridentCrdController) updateBackendConfig(
 		phase = tridentv1.PhaseUnknown
 	} else if backend == nil {
 		Logx(ctx).WithFields(logFields).Errorf("Could not find backend during update.")
-		err = errors.UnsupportedConfigError(fmt.Errorf("could not find backend during update"))
+		err = errors.UnsupportedConfigError("could not find backend during update")
 
 		phase = tridentv1.PhaseLost
 	} else {

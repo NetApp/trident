@@ -12,6 +12,8 @@ import (
 type Interface interface {
 	// TridentActionMirrorUpdates returns a TridentActionMirrorUpdateInformer.
 	TridentActionMirrorUpdates() TridentActionMirrorUpdateInformer
+	// TridentActionSnapshotRestores returns a TridentActionSnapshotRestoreInformer.
+	TridentActionSnapshotRestores() TridentActionSnapshotRestoreInformer
 	// TridentBackends returns a TridentBackendInformer.
 	TridentBackends() TridentBackendInformer
 	// TridentBackendConfigs returns a TridentBackendConfigInformer.
@@ -52,6 +54,11 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // TridentActionMirrorUpdates returns a TridentActionMirrorUpdateInformer.
 func (v *version) TridentActionMirrorUpdates() TridentActionMirrorUpdateInformer {
 	return &tridentActionMirrorUpdateInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentActionSnapshotRestores returns a TridentActionSnapshotRestoreInformer.
+func (v *version) TridentActionSnapshotRestores() TridentActionSnapshotRestoreInformer {
+	return &tridentActionSnapshotRestoreInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // TridentBackends returns a TridentBackendInformer.

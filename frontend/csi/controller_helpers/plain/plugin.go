@@ -97,9 +97,21 @@ func (h *helper) GetVolumeConfig(
 		volumeMode, requisiteTopology, preferredTopology)
 }
 
-// GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI
+// GetSnapshotConfigForCreate accepts the attributes of a snapshot being requested by the CSI
 // provisioner and returns a SnapshotConfig structure as needed by Trident to create a new snapshot.
-func (h *helper) GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
+func (h *helper) GetSnapshotConfigForCreate(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
+	return &storage.SnapshotConfig{
+		Version:    config.OrchestratorAPIVersion,
+		Name:       snapshotName,
+		VolumeName: volumeName,
+	}, nil
+}
+
+// GetSnapshotConfigForImport accepts the attributes of a snapshot being requested by the CSI
+// provisioner and returns a SnapshotConfig structure as needed by Trident to import a snapshot.
+func (h *helper) GetSnapshotConfigForImport(
+	_ context.Context, volumeName, snapshotName string,
+) (*storage.SnapshotConfig, error) {
 	return &storage.SnapshotConfig{
 		Version:    config.OrchestratorAPIVersion,
 		Name:       snapshotName,
@@ -138,6 +150,11 @@ func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 		"reason":    reason,
 		"message":   message,
 	}).Trace("Node event.")
+}
+
+// IsValidResourceName determines if a string meets the CO schema for naming objects.
+func (h *helper) IsValidResourceName(_ string) bool {
+	return true
 }
 
 // SupportsFeature accepts a CSI feature and returns true if the

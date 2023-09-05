@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -60,7 +61,7 @@ type OntapAPI interface {
 	FlexgroupCreate(ctx context.Context, volume Volume) error
 	FlexgroupExists(ctx context.Context, volumeName string) (bool, error)
 	FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error)
-	FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error
+	FlexgroupModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error
 	FlexgroupSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
 	FlexgroupModifyUnixPermissions(
 		ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
@@ -190,7 +191,7 @@ type OntapAPI interface {
 
 	VolumeCreate(ctx context.Context, volume Volume) error
 	VolumeDestroy(ctx context.Context, volumeName string, force bool) error
-	VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error
+	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)
 	VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error)
@@ -208,8 +209,11 @@ type OntapAPI interface {
 	VolumeSize(ctx context.Context, volumeName string) (uint64, error)
 	VolumeUsedSize(ctx context.Context, volumeName string) (int, error)
 	VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error)
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string,
+		maxElapsedTime time.Duration) (string, error)
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	SMBShareDestroy(ctx context.Context, shareName string) error
@@ -220,15 +224,17 @@ type OntapAPI interface {
 	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
 	NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error)
 	NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error)
+	NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error)
 	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error)
 	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
 	NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error
 	NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
 	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
 	NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error
-	NVMeEnsureNamespaceUnmapped(ctx context.Context, subsytemUUID, nsUUID string) error
+	NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsytemUUID, nsUUID string) (bool, error)
 }
 
 type AggregateSpace interface {

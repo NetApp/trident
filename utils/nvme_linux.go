@@ -92,15 +92,17 @@ func GetNVMeSubsystemList(ctx context.Context) (Subsystems, error) {
 	return subs, nil
 }
 
-// ConnectSubsystemToHost creates a path (or session) from the ONTAP subsystem to the k8s node using svmDataLIF.
-func ConnectSubsystemToHost(ctx context.Context, subsNqn, svmDataLIF string) error {
+// ConnectSubsystemToHost creates a path (or session) from the subsystem to the k8s node for the provided IP.
+func ConnectSubsystemToHost(ctx context.Context, subsNqn, IP string) error {
 	Logc(ctx).Debug(">>>> nvme_linux.ConnectSubsystemToHost")
 	defer Logc(ctx).Debug("<<<< nvme_linux.ConnectSubsystemToHost")
 
-	_, err := command.Execute(ctx, "nvme", "connect", "-t", "tcp", "-n", subsNqn, "-a", svmDataLIF, "-s", "4420")
+	// Specifying value of "l" (ctrl-loss-tmo) to -1 makes the NVMe session undroppable even if the IP goes down for infinity.
+	_, err := command.Execute(ctx, "nvme", "connect", "-t", "tcp", "-n", subsNqn, "-a", IP,
+		"-s", "4420", "-l", "-1")
 	if err != nil {
 		Logc(ctx).WithField("Error", err).Errorf("Failed to connect subsystem to host: %v", err)
-		return fmt.Errorf("failed to connect subsystem %s: %v", subsNqn, err)
+		return fmt.Errorf("failed to connect subsystem %s to %s: %v", subsNqn, IP, err)
 	}
 
 	return nil
@@ -149,15 +151,31 @@ func GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
 		return ontapDevs, fmt.Errorf("failed to exec list nvme ontap devices: %v", err)
 	}
 
-	// When no namespaces are associated with any subsystem, the output of this command is not a json.
-	// It is usually a string with this value - "No NVMe devices detected."
+	// There are 2 use cases where we may need to format the output before unmarshalling it.
+	// 1. When no namespaces are associated with any subsystem, the output of this command is not a json.
+	//    It is usually a string with this value - "No NVMe devices detected."
+	// 2. When any device is unreachable, we get the list of those devices stating the error reason and the available
+	//    list of devices is appended after that. For example -
+	//    # nvme netapp ontapdevices -o json
+	//    Identify Controller failed to /dev/nvme0n2 (Operation not permitted)
+	//    {
+	//       "ONTAPdevices":[ { ...,...} ]
+	//    }
+	//    In this case, we need to remove everything before valid json string starts from the string.
 	if !json.Valid(out) {
-		return ontapDevs, nil
+		_, afterBrace, found := strings.Cut(string(out), "{")
+		if found {
+			afterBrace = "{" + afterBrace
+		}
+		out = []byte(afterBrace)
 	}
 
-	if err = json.Unmarshal([]byte(out), &ontapDevs); err != nil {
-		Logc(ctx).WithField("Error", err).Errorf("Failed to unmarshal ontap nvme devices: %v", err)
-		return ontapDevs, fmt.Errorf("failed to unmarshal ontap nvme devices: %v", err)
+	if string(out) != "" {
+		// "out" would be empty string if there are no devices
+		if err = json.Unmarshal(out, &ontapDevs); err != nil {
+			Logc(ctx).WithField("Error", err).Errorf("Failed to unmarshal ontap nvme devices: %v", err)
+			return ontapDevs, fmt.Errorf("failed to unmarshal ontap nvme devices: %v", err)
+		}
 	}
 
 	return ontapDevs, nil

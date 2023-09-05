@@ -111,6 +111,7 @@ func NewStorageBackendForConfig(
 
 	if err == nil {
 		sb.SetState(storage.Online)
+		sb.SetUserState(storage.UserNormal)
 	}
 	sb.SetBackendUUID(backendUUID)
 	sb.SetConfigRef(configRef)

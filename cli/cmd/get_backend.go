@@ -30,8 +30,9 @@ var getBackendCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"get", "backend"}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return backendList(args)
 		}
@@ -196,7 +197,7 @@ func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drive
 
 func writeBackendTable(backends []storage.BackendExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Storage Driver", "UUID", "State", "Volumes"})
+	table.SetHeader([]string{"Name", "Storage Driver", "UUID", "State", "User-State", "Volumes"})
 
 	for _, b := range backends {
 		if b.Config == nil {
@@ -210,6 +211,7 @@ func writeBackendTable(backends []storage.BackendExternal) {
 				storageDriverName,
 				b.BackendUUID,
 				b.State.String(),
+				b.UserState.String(),
 				strconv.Itoa(len(b.Volumes)),
 			})
 		}

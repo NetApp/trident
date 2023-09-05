@@ -83,9 +83,8 @@ type RestClientInterface interface {
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, volumeName string) error
 	// SnapshotRestoreFlexgroup restores a volume to a snapshot as a non-blocking operation
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, volumeName string) error
-	// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	VolumeDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error
+	// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error
 	// VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
 	VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string, error)
 	// VolumeCloneCreate creates a clone
@@ -233,9 +232,8 @@ type RestClientInterface interface {
 	FlexGroupSetSize(ctx context.Context, volumeName, newSize string) error
 	// FlexgroupSetQosPolicyGroupName note: we can't set adaptive policy groups directly during volume clone creation.
 	FlexgroupSetQosPolicyGroupName(ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup) error
-	// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, flexGroupVolumeName string) error
+	// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	FlexGroupVolumeModifySnapshotDirectoryAccess(ctx context.Context, flexGroupVolumeName string, enable bool) error
 	FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error
 	// FlexGroupSetComment sets a flexgroup's comment to the supplied value
 	FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error
@@ -334,6 +332,12 @@ type RestClientInterface interface {
 	NVMeNamespaceGetByName(ctx context.Context, name string) (*models.NvmeNamespace, error)
 	// NVMeNamespaceList finds Namespaces with the specified pattern.
 	NVMeNamespaceList(ctx context.Context, pattern string) (*nvme.NvmeNamespaceCollectionGetOK, error)
+	// NVMeIsNamespaceMapped gets a namespace from subsystem map
+	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
+	// NVMeNamespaceCount gives the number of namespaces mapped to a Subsystem with the specified subsystem UUID.
+	NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
+	// NVMeNamespaceSize gives the size of the namespace.
+	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
 	// NVMeSubsystemList finds Subsystems with the specified pattern.
 	NVMeSubsystemList(ctx context.Context, pattern string) (*nvme.NvmeSubsystemCollectionGetOK, error)
 	// NVMeSubsystemGetByName finds Subsystem with the specified subsystem name.
@@ -350,8 +354,5 @@ type RestClientInterface interface {
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
 	// NVMeSubsystemRemoveNamespace ummaps a given namespace from a Subsystem with the specified subsystem UUID.
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
-	// NVMeIsNamespaceMapped gets a namespace from subsystem map
-	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
-	// NVMeNamespaceCount gives the number of namespaces mapped to a Subsystem with the specified subsystem UUID.
-	NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
+	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsystemUUID string) error
 }

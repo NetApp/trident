@@ -10,7 +10,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	versioned "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	version "github.com/netapp/trident/utils/version"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
@@ -150,22 +149,6 @@ func (mr *MockKubernetesClientMockRecorder) CheckClusterRoleExistsByLabel(arg0 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckClusterRoleExistsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).CheckClusterRoleExistsByLabel), arg0)
 }
 
-// CheckConfigMapExistsByLabel mocks base method.
-func (m *MockKubernetesClient) CheckConfigMapExistsByLabel(arg0 string, arg1 bool) (bool, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckConfigMapExistsByLabel", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// CheckConfigMapExistsByLabel indicates an expected call of CheckConfigMapExistsByLabel.
-func (mr *MockKubernetesClientMockRecorder) CheckConfigMapExistsByLabel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckConfigMapExistsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).CheckConfigMapExistsByLabel), arg0, arg1)
-}
-
 // CheckDaemonSetExists mocks base method.
 func (m *MockKubernetesClient) CheckDaemonSetExists(arg0, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -241,51 +224,6 @@ func (m *MockKubernetesClient) CheckNamespaceExists(arg0 string) (bool, error) {
 func (mr *MockKubernetesClientMockRecorder) CheckNamespaceExists(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckNamespaceExists", reflect.TypeOf((*MockKubernetesClient)(nil).CheckNamespaceExists), arg0)
-}
-
-// CheckPVCBound mocks base method.
-func (m *MockKubernetesClient) CheckPVCBound(arg0 string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckPVCBound", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckPVCBound indicates an expected call of CheckPVCBound.
-func (mr *MockKubernetesClientMockRecorder) CheckPVCBound(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPVCBound", reflect.TypeOf((*MockKubernetesClient)(nil).CheckPVCBound), arg0)
-}
-
-// CheckPVCExists mocks base method.
-func (m *MockKubernetesClient) CheckPVCExists(arg0 string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckPVCExists", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckPVCExists indicates an expected call of CheckPVCExists.
-func (mr *MockKubernetesClientMockRecorder) CheckPVCExists(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPVCExists", reflect.TypeOf((*MockKubernetesClient)(nil).CheckPVCExists), arg0)
-}
-
-// CheckPVExists mocks base method.
-func (m *MockKubernetesClient) CheckPVExists(arg0 string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckPVExists", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckPVExists indicates an expected call of CheckPVExists.
-func (mr *MockKubernetesClientMockRecorder) CheckPVExists(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPVExists", reflect.TypeOf((*MockKubernetesClient)(nil).CheckPVExists), arg0)
 }
 
 // CheckPodExistsByLabel mocks base method.
@@ -365,51 +303,6 @@ func (m *MockKubernetesClient) CheckServiceExistsByLabel(arg0 string, arg1 bool)
 func (mr *MockKubernetesClientMockRecorder) CheckServiceExistsByLabel(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckServiceExistsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).CheckServiceExistsByLabel), arg0, arg1)
-}
-
-// CheckStatefulSetExistsByLabel mocks base method.
-func (m *MockKubernetesClient) CheckStatefulSetExistsByLabel(arg0 string, arg1 bool) (bool, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckStatefulSetExistsByLabel", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// CheckStatefulSetExistsByLabel indicates an expected call of CheckStatefulSetExistsByLabel.
-func (mr *MockKubernetesClientMockRecorder) CheckStatefulSetExistsByLabel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckStatefulSetExistsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).CheckStatefulSetExistsByLabel), arg0, arg1)
-}
-
-// CreateCHAPSecret mocks base method.
-func (m *MockKubernetesClient) CreateCHAPSecret(arg0, arg1, arg2, arg3 string) (*v10.Secret, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCHAPSecret", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(*v10.Secret)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateCHAPSecret indicates an expected call of CreateCHAPSecret.
-func (mr *MockKubernetesClientMockRecorder) CreateCHAPSecret(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCHAPSecret", reflect.TypeOf((*MockKubernetesClient)(nil).CreateCHAPSecret), arg0, arg1, arg2, arg3)
-}
-
-// CreateConfigMapFromDirectory mocks base method.
-func (m *MockKubernetesClient) CreateConfigMapFromDirectory(arg0, arg1, arg2 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateConfigMapFromDirectory", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateConfigMapFromDirectory indicates an expected call of CreateConfigMapFromDirectory.
-func (mr *MockKubernetesClientMockRecorder) CreateConfigMapFromDirectory(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateConfigMapFromDirectory", reflect.TypeOf((*MockKubernetesClient)(nil).CreateConfigMapFromDirectory), arg0, arg1, arg2)
 }
 
 // CreateObjectByFile mocks base method.
@@ -553,20 +446,6 @@ func (mr *MockKubernetesClientMockRecorder) DeleteClusterRoleByLabel(arg0 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterRoleByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteClusterRoleByLabel), arg0)
 }
 
-// DeleteConfigMapByLabel mocks base method.
-func (m *MockKubernetesClient) DeleteConfigMapByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteConfigMapByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteConfigMapByLabel indicates an expected call of DeleteConfigMapByLabel.
-func (mr *MockKubernetesClientMockRecorder) DeleteConfigMapByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteConfigMapByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteConfigMapByLabel), arg0)
-}
-
 // DeleteDaemonSet mocks base method.
 func (m *MockKubernetesClient) DeleteDaemonSet(arg0, arg1 string, arg2 bool) error {
 	m.ctrl.T.Helper()
@@ -663,34 +542,6 @@ func (m *MockKubernetesClient) DeleteObjectByYAML(arg0 string, arg1 bool) error 
 func (mr *MockKubernetesClientMockRecorder) DeleteObjectByYAML(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteObjectByYAML", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteObjectByYAML), arg0, arg1)
-}
-
-// DeletePVByLabel mocks base method.
-func (m *MockKubernetesClient) DeletePVByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePVByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePVByLabel indicates an expected call of DeletePVByLabel.
-func (mr *MockKubernetesClientMockRecorder) DeletePVByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePVByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeletePVByLabel), arg0)
-}
-
-// DeletePVCByLabel mocks base method.
-func (m *MockKubernetesClient) DeletePVCByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePVCByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeletePVCByLabel indicates an expected call of DeletePVCByLabel.
-func (mr *MockKubernetesClientMockRecorder) DeletePVCByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePVCByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeletePVCByLabel), arg0)
 }
 
 // DeletePod mocks base method.
@@ -903,34 +754,6 @@ func (mr *MockKubernetesClientMockRecorder) DeleteServiceByLabel(arg0 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteServiceByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteServiceByLabel), arg0)
 }
 
-// DeleteStatefulSet mocks base method.
-func (m *MockKubernetesClient) DeleteStatefulSet(arg0, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteStatefulSet", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteStatefulSet indicates an expected call of DeleteStatefulSet.
-func (mr *MockKubernetesClientMockRecorder) DeleteStatefulSet(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteStatefulSet", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteStatefulSet), arg0, arg1)
-}
-
-// DeleteStatefulSetByLabel mocks base method.
-func (m *MockKubernetesClient) DeleteStatefulSetByLabel(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteStatefulSetByLabel", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteStatefulSetByLabel indicates an expected call of DeleteStatefulSetByLabel.
-func (mr *MockKubernetesClientMockRecorder) DeleteStatefulSetByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteStatefulSetByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).DeleteStatefulSetByLabel), arg0)
-}
-
 // Exec mocks base method.
 func (m *MockKubernetesClient) Exec(arg0, arg1 string, arg2 []string) ([]byte, error) {
 	m.ctrl.T.Helper()
@@ -960,18 +783,6 @@ func (mr *MockKubernetesClientMockRecorder) Flavor() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Flavor", reflect.TypeOf((*MockKubernetesClient)(nil).Flavor))
 }
 
-// FollowPodLogs mocks base method.
-func (m *MockKubernetesClient) FollowPodLogs(arg0, arg1, arg2 string, arg3 k8sclient.LogLineCallback) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "FollowPodLogs", arg0, arg1, arg2, arg3)
-}
-
-// FollowPodLogs indicates an expected call of FollowPodLogs.
-func (mr *MockKubernetesClientMockRecorder) FollowPodLogs(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FollowPodLogs", reflect.TypeOf((*MockKubernetesClient)(nil).FollowPodLogs), arg0, arg1, arg2, arg3)
-}
-
 // GetCRD mocks base method.
 func (m *MockKubernetesClient) GetCRD(arg0 string) (*v13.CustomResourceDefinition, error) {
 	m.ctrl.T.Helper()
@@ -985,21 +796,6 @@ func (m *MockKubernetesClient) GetCRD(arg0 string) (*v13.CustomResourceDefinitio
 func (mr *MockKubernetesClientMockRecorder) GetCRD(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCRD", reflect.TypeOf((*MockKubernetesClient)(nil).GetCRD), arg0)
-}
-
-// GetCRDClient mocks base method.
-func (m *MockKubernetesClient) GetCRDClient() (*versioned.Clientset, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCRDClient")
-	ret0, _ := ret[0].(*versioned.Clientset)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetCRDClient indicates an expected call of GetCRDClient.
-func (mr *MockKubernetesClientMockRecorder) GetCRDClient() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCRDClient", reflect.TypeOf((*MockKubernetesClient)(nil).GetCRDClient))
 }
 
 // GetCSIDriverByLabel mocks base method.
@@ -1122,36 +918,6 @@ func (mr *MockKubernetesClientMockRecorder) GetClusterRolesByLabel(arg0 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRolesByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetClusterRolesByLabel), arg0)
 }
 
-// GetConfigMapByLabel mocks base method.
-func (m *MockKubernetesClient) GetConfigMapByLabel(arg0 string, arg1 bool) (*v10.ConfigMap, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetConfigMapByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v10.ConfigMap)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetConfigMapByLabel indicates an expected call of GetConfigMapByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetConfigMapByLabel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfigMapByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetConfigMapByLabel), arg0, arg1)
-}
-
-// GetConfigMapsByLabel mocks base method.
-func (m *MockKubernetesClient) GetConfigMapsByLabel(arg0 string, arg1 bool) ([]v10.ConfigMap, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetConfigMapsByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v10.ConfigMap)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetConfigMapsByLabel indicates an expected call of GetConfigMapsByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetConfigMapsByLabel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfigMapsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetConfigMapsByLabel), arg0, arg1)
-}
-
 // GetDaemonSetByLabel mocks base method.
 func (m *MockKubernetesClient) GetDaemonSetByLabel(arg0 string, arg1 bool) (*v1.DaemonSet, error) {
 	m.ctrl.T.Helper()
@@ -1257,66 +1023,6 @@ func (m *MockKubernetesClient) GetOpenShiftSCCByName(arg0, arg1 string) (bool, b
 func (mr *MockKubernetesClientMockRecorder) GetOpenShiftSCCByName(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOpenShiftSCCByName", reflect.TypeOf((*MockKubernetesClient)(nil).GetOpenShiftSCCByName), arg0, arg1)
-}
-
-// GetPV mocks base method.
-func (m *MockKubernetesClient) GetPV(arg0 string) (*v10.PersistentVolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPV", arg0)
-	ret0, _ := ret[0].(*v10.PersistentVolume)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPV indicates an expected call of GetPV.
-func (mr *MockKubernetesClientMockRecorder) GetPV(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPV", reflect.TypeOf((*MockKubernetesClient)(nil).GetPV), arg0)
-}
-
-// GetPVByLabel mocks base method.
-func (m *MockKubernetesClient) GetPVByLabel(arg0 string) (*v10.PersistentVolume, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPVByLabel", arg0)
-	ret0, _ := ret[0].(*v10.PersistentVolume)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPVByLabel indicates an expected call of GetPVByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetPVByLabel(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPVByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetPVByLabel), arg0)
-}
-
-// GetPVC mocks base method.
-func (m *MockKubernetesClient) GetPVC(arg0 string) (*v10.PersistentVolumeClaim, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPVC", arg0)
-	ret0, _ := ret[0].(*v10.PersistentVolumeClaim)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPVC indicates an expected call of GetPVC.
-func (mr *MockKubernetesClientMockRecorder) GetPVC(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPVC", reflect.TypeOf((*MockKubernetesClient)(nil).GetPVC), arg0)
-}
-
-// GetPVCByLabel mocks base method.
-func (m *MockKubernetesClient) GetPVCByLabel(arg0 string, arg1 bool) (*v10.PersistentVolumeClaim, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPVCByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v10.PersistentVolumeClaim)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPVCByLabel indicates an expected call of GetPVCByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetPVCByLabel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPVCByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetPVCByLabel), arg0, arg1)
 }
 
 // GetPodByLabel mocks base method.
@@ -1587,50 +1293,6 @@ func (m *MockKubernetesClient) GetServicesByLabel(arg0 string, arg1 bool) ([]v10
 func (mr *MockKubernetesClientMockRecorder) GetServicesByLabel(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServicesByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetServicesByLabel), arg0, arg1)
-}
-
-// GetSnapshotterCRDVersion mocks base method.
-func (m *MockKubernetesClient) GetSnapshotterCRDVersion() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshotterCRDVersion")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetSnapshotterCRDVersion indicates an expected call of GetSnapshotterCRDVersion.
-func (mr *MockKubernetesClientMockRecorder) GetSnapshotterCRDVersion() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotterCRDVersion", reflect.TypeOf((*MockKubernetesClient)(nil).GetSnapshotterCRDVersion))
-}
-
-// GetStatefulSetByLabel mocks base method.
-func (m *MockKubernetesClient) GetStatefulSetByLabel(arg0 string, arg1 bool) (*v1.StatefulSet, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetStatefulSetByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v1.StatefulSet)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetStatefulSetByLabel indicates an expected call of GetStatefulSetByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetStatefulSetByLabel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatefulSetByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetStatefulSetByLabel), arg0, arg1)
-}
-
-// GetStatefulSetsByLabel mocks base method.
-func (m *MockKubernetesClient) GetStatefulSetsByLabel(arg0 string, arg1 bool) ([]v1.StatefulSet, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetStatefulSetsByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v1.StatefulSet)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetStatefulSetsByLabel indicates an expected call of GetStatefulSetsByLabel.
-func (mr *MockKubernetesClientMockRecorder) GetStatefulSetsByLabel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatefulSetsByLabel", reflect.TypeOf((*MockKubernetesClient)(nil).GetStatefulSetsByLabel), arg0, arg1)
 }
 
 // IsTopologyInUse mocks base method.

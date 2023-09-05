@@ -13,24 +13,26 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/netapp/trident/config"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
 const (
-	localVolHandle      = "vs2:vs2_pvc_456"
-	remoteVolHandle     = "vs1:vs1_pvc_123"
-	replicationPolicy   = "MirrorAllSnapshots"
-	replicationSchedule = "1min"
-	tmrName1            = "tmr1"
-	pvc1                = "pvc1"
-	pv1                 = "pvc-456"
-	snapName1           = "snapshot-123"
-	snapHandle1         = "pvc-1/snapshot-123"
-	namespace1          = "namespace1"
-	tamu1               = "tamu1"
-	transferFormat      = "2006-01-02 15:04:05 -0700 MST"
+	localVolHandle       = "vs2:vs2_pvc_456"
+	remoteVolHandle      = "vs1:vs1_pvc_123"
+	replicationPolicy    = "MirrorAllSnapshots"
+	replicationSchedule  = "1min"
+	tmrName1             = "tmr1"
+	pvc1                 = "pvc1"
+	pv1                  = "pvc-456"
+	snapName1            = "snapshot-123"
+	snapHandle1          = "pvc-1/snapshot-123"
+	namespace1           = "namespace1"
+	tamu1                = "tamu1"
+	previousTransferTime = "2023-05-22T19:56:33Z"
 )
 
 func fakePVC(pvcName, pvcNamespace, pvName string) *v1.PersistentVolumeClaim {
@@ -106,6 +108,9 @@ func fakeTAMU(name, namespace, tmrName, snapshotHandle string) *netappv1.Trident
 }
 
 func TestHandleActionMirrorUpdate(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -118,6 +123,7 @@ func TestHandleActionMirrorUpdate(t *testing.T) {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
 
+	orchestrator.EXPECT().GetMirrorTransferTime(gomock.Any(), pv1).Return(nil, nil).Times(1)
 	orchestrator.EXPECT().UpdateMirror(gomock.Any(), pv1, snapName1).Return(nil).Times(1)
 
 	// Activate the CRD controller and start monitoring
@@ -256,6 +262,9 @@ func TestHandleActionMirrorUpdate_ValidateFailure(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -274,6 +283,9 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 
 	orchestrator.EXPECT().CheckMirrorTransferState(gomock.Any(), pv1).Return(nil,
 		errors.InProgressError("transferring")).Times(2)
+
+	transferTime, _ := time.Parse(utils.TimestampFormat, previousTransferTime)
+	orchestrator.EXPECT().GetMirrorTransferTime(gomock.Any(), pv1).Return(&transferTime, nil).Times(1)
 
 	// Succeed on the third call to the driver
 	endTransferTime := time.Now()
@@ -311,11 +323,63 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 		}
 	}
 
-	assert.True(t, endTransferTime.After(tamu.Status.StartTime.Time), "End transfer time is not after start")
+	assert.True(t, endTransferTime.After(tamu.Status.PreviousTransferTime.Time), "End transfer time is not after start")
 	assert.True(t, tamu.Succeeded(), "TAMU operation failed")
 }
 
+func TestHandleActionMirrorUpdate_InProgress_Disabled(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = true
+
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	if err != nil {
+		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
+	}
+
+	// Activate the CRD controller and start monitoring
+	if err = crdController.Activate(); err != nil {
+		t.Fatalf("error while activating: %v", err.Error())
+	}
+	delaySeconds(1)
+
+	pvc := fakePVC(pvc1, namespace1, pv1)
+	_, _ = kubeClient.CoreV1().PersistentVolumeClaims(namespace1).Create(ctx(), pvc, createOpts)
+
+	tmr := fakeTMR(tmrName1, namespace1, pvc1)
+	_, _ = crdClient.TridentV1().TridentMirrorRelationships(namespace1).Create(ctx(), tmr, createOpts)
+
+	tamu := fakeTAMU(tamu1, namespace1, tmrName1, snapHandle1)
+	_, _ = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Create(ctx(), tamu, createOpts)
+
+	// Wait until the operation completes
+	for i := 0; i < 5; i++ {
+		time.Sleep(250 * time.Millisecond)
+
+		tamu, err = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Get(ctx(), tamu1, getOpts)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				continue
+			}
+			break
+		} else if tamu.IsComplete() {
+			break
+		}
+	}
+
+	assert.True(t, tamu.Failed(), "TAMU operation was not disabled")
+}
+
 func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -357,8 +421,12 @@ func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	transferTime, _ := time.Parse(utils.TimestampFormat, previousTransferTime)
 
 	tridentNamespace := "trident"
 	kubeClient := GetTestKubernetesClientset()
@@ -370,7 +438,7 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 	}
 
 	err = crdController.updateActionMirrorUpdateCRInProgress(ctx(), namespace1, tamu1, localVolHandle,
-		remoteVolHandle, snapName1)
+		remoteVolHandle, snapName1, &transferTime)
 
 	assert.True(t, apierrors.IsNotFound(err), "TAMU should not have been found")
 
@@ -378,7 +446,7 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 	_, _ = crdClient.TridentV1().TridentActionMirrorUpdates(namespace1).Create(ctx(), tamu, createOpts)
 
 	err = crdController.updateActionMirrorUpdateCRInProgress(ctx(), namespace1, tamu1, localVolHandle,
-		remoteVolHandle, snapName1)
+		remoteVolHandle, snapName1, &transferTime)
 
 	assert.NoError(t, err, "TAMU update should have succeeded")
 
@@ -391,6 +459,9 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -424,6 +495,9 @@ func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Failed(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = false
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 

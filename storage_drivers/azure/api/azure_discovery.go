@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 // Package api provides a high-level interface to the Azure NetApp Files SDK
 package api
@@ -6,6 +6,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -815,7 +816,7 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 }
 
 // CapacityPoolsForStoragePool returns all discovered capacity pools matching the specified
-// storage pool and service level.
+// storage pool and service level.  The pools are shuffled to enable easier random selection.
 func (c Client) CapacityPoolsForStoragePool(
 	ctx context.Context, sPool storage.Pool, serviceLevel string,
 ) []*CapacityPool {
@@ -880,28 +881,17 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// Build list of all capacity pools that have passed all filters
-	filteredCapacityPoolList := make([]*CapacityPool, 0)
+	cPools := make([]*CapacityPool, 0)
 	for cPoolFullName, match := range filteredCapacityPoolMap {
 		if match {
-			filteredCapacityPoolList = append(filteredCapacityPoolList, c.sdkClient.CapacityPoolMap[cPoolFullName])
+			cPools = append(cPools, c.sdkClient.CapacityPoolMap[cPoolFullName])
 		}
 	}
 
-	return filteredCapacityPoolList
-}
+	// Shuffle the pools
+	rand.Shuffle(len(cPools), func(i, j int) { cPools[i], cPools[j] = cPools[j], cPools[i] })
 
-// RandomCapacityPoolForStoragePool finds all discovered capacity pools matching the specified
-// storage pool and service level, and then returns one at random.
-func (c Client) RandomCapacityPoolForStoragePool(
-	ctx context.Context, sPool storage.Pool, serviceLevel string,
-) *CapacityPool {
-	filteredCapacityPools := c.CapacityPoolsForStoragePool(ctx, sPool, serviceLevel)
-
-	if len(filteredCapacityPools) == 0 {
-		return nil
-	}
-
-	return filteredCapacityPools[crypto.GetRandomNumber(len(filteredCapacityPools))]
+	return cPools
 }
 
 // EnsureVolumeInValidCapacityPool checks whether the specified volume exists in any capacity pool that is
@@ -924,8 +914,8 @@ func (c Client) EnsureVolumeInValidCapacityPool(ctx context.Context, volume *Fil
 		}
 	}
 
-	return errors.NotFoundError(fmt.Sprintf("volume %s is part of another capacity pool not referenced "+
-		"by this backend", volume.CreationToken))
+	return errors.NotFoundError("volume %s is part of another capacity pool not referenced "+
+		"by this backend", volume.CreationToken)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////

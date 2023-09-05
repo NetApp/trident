@@ -1,8 +1,9 @@
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
+
 package installer
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -1316,7 +1317,7 @@ func (k *K8sClient) DeleteTridentDaemonSet(nodeLabel string) error {
 	return nil
 }
 
-// RemoveMultipleDaemonSets removes a list of unwanted beta CSI drivers in a namespace
+// RemoveMultipleDaemonSets removes a list of Trident DaemonSet.
 func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonSet) error {
 	var err error
 	var anyError bool
@@ -1325,7 +1326,7 @@ func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonS
 	if len(unwantedDaemonSets) > 0 {
 		for _, daemonSetToRemove := range unwantedDaemonSets {
 			// Delete the daemonset
-			if err = k.DeleteDaemonSet(daemonSetToRemove.Name, daemonSetToRemove.Namespace, true); err != nil {
+			if err = k.DeleteDaemonSet(daemonSetToRemove.Name, daemonSetToRemove.Namespace, false); err != nil {
 				Log().WithFields(LogFields{
 					"deployment": daemonSetToRemove.Name,
 					"namespace":  daemonSetToRemove.Namespace,
@@ -1409,7 +1410,7 @@ func (k *K8sClient) GetDeploymentInformation(deploymentName, appLabel, namespace
 func (k *K8sClient) PutDeployment(
 	currentDeployment *appsv1.Deployment, createDeployment bool, newDeploymentYAML, appLabel string,
 ) error {
-	deploymentName := getDeploymentName(true)
+	deploymentName := getDeploymentName()
 	logFields := LogFields{
 		"deployment": deploymentName,
 		"namespace":  k.Namespace(),
@@ -2390,38 +2391,6 @@ func (k *K8sClient) DeleteMultipleOpenShiftSCC(
 	return nil
 }
 
-// DeleteTridentStatefulSet deletes an Operator-based StatefulSet associated with Trident.
-func (k *K8sClient) DeleteTridentStatefulSet(appLabel string) error {
-	// Delete Trident statefulSet
-	if statefulSets, err := k.GetStatefulSetsByLabel(appLabel, true); err != nil {
-		Log().WithFields(LogFields{
-			"label": appLabel,
-			"error": err,
-		}).Errorf("Unable to get list of statefulsets by label.")
-		return fmt.Errorf("unable to get list of statefulsets")
-	} else if len(statefulSets) == 0 {
-		Log().WithFields(LogFields{
-			"label": appLabel,
-			"error": err,
-		}).Warn("Trident Statefulset not found.")
-	} else {
-		if len(statefulSets) == 1 {
-			Log().WithFields(LogFields{
-				"statefulSet": statefulSets[0].Name,
-				"namespace":   statefulSets[0].Namespace,
-			}).Info("Trident Statefulset found by label.")
-		} else {
-			Log().WithField("label", appLabel).Warnf("Multiple Statefulsets found matching label; removing all.")
-		}
-
-		if err = k.RemoveMultipleStatefulSets(statefulSets); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // RemoveMultiplePods removes a list of unwanted pods in a namespace
 func (k *K8sClient) RemoveMultiplePods(unwantedPods []corev1.Pod) error {
 	var err error
@@ -2452,42 +2421,6 @@ func (k *K8sClient) RemoveMultiplePods(unwantedPods []corev1.Pod) error {
 
 	if anyError {
 		return fmt.Errorf("unable to delete pod(s): %v", undeletedPods)
-	}
-
-	return nil
-}
-
-// RemoveMultipleStatefulSets removes a list of unwanted statefulsets in a namespace
-func (k *K8sClient) RemoveMultipleStatefulSets(unwantedStatefulSets []appsv1.StatefulSet) error {
-	var err error
-	var anyError bool
-	var undeletedStatefulSets []string
-
-	if len(unwantedStatefulSets) > 0 {
-		for _, statefulSetToRemove := range unwantedStatefulSets {
-			// Delete the statefulset
-			if err = k.DeleteStatefulSet(statefulSetToRemove.Name, statefulSetToRemove.Namespace); err != nil {
-				Log().WithFields(LogFields{
-					"statefulset": statefulSetToRemove.Name,
-					"namespace":   statefulSetToRemove.Namespace,
-					"error":       err,
-				}).Errorf("Could not delete Statefulset.")
-
-				anyError = true
-				undeletedStatefulSets = append(undeletedStatefulSets,
-					fmt.Sprintf("%v/%v", statefulSetToRemove.Namespace,
-						statefulSetToRemove.Name))
-			} else {
-				Log().WithFields(LogFields{
-					"statefulset": statefulSetToRemove.Name,
-					"namespace":   statefulSetToRemove.Namespace,
-				}).Infof("Deleted Statefulset.")
-			}
-		}
-	}
-
-	if anyError {
-		return fmt.Errorf("unable to delete Statefulset(s): %v", undeletedStatefulSets)
 	}
 
 	return nil
@@ -2561,27 +2494,4 @@ func (k *K8sClient) ExecPodForVersionInformation(podName string, cmd []string, t
 	}).Infof("Trident version pod started.")
 
 	return execOutput, nil
-}
-
-// GetCSISnapshotterVersion uses the below approach to identify CSI Snapshotter Version:
-// If successful in retrieving the CSI Snapshotter CRD Version, use it as it is
-// Else if failed, then CSI Snapshotter CRD Version will be empty
-// then get existing CSI Snapshotter Version as v1.
-func (k *K8sClient) GetCSISnapshotterVersion(currentDeployment *appsv1.Deployment) string {
-	var snapshotCRDVersion string
-
-	if snapshotCRDVersion = k.GetSnapshotterCRDVersion(); snapshotCRDVersion == "" && currentDeployment != nil {
-		containers := currentDeployment.Spec.Template.Spec.Containers
-
-		for _, container := range containers {
-			if container.Name == "csi-snapshotter" {
-				Log().WithField("currentSnapshotterImage", container.Image).Debug("Found CSI Snapshotter image.")
-				if strings.Contains(container.Image, ":v4") {
-					snapshotCRDVersion = "v1"
-				}
-			}
-		}
-	}
-
-	return snapshotCRDVersion
 }

@@ -732,7 +732,7 @@ func (d *StorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	// Ensure source volume exists
 	sourceVolume, ok := d.Volumes[source]
@@ -950,7 +950,7 @@ func (d *StorageDriver) CreateSnapshot(
 
 	snapshot := &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   time.Now().UTC().Format(utils.TimestampFormat),
 		SizeBytes: int64(volume.SizeBytes),
 		State:     storage.SnapshotStateOnline,
 	}

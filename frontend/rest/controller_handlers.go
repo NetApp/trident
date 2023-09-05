@@ -351,7 +351,7 @@ func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
 			}
 			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate, LogLayerRESTFrontend)
 
-			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.State)
+			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.BackendState, request.UserBackendState)
 			if err != nil {
 				updateResponse.Error = err.Error()
 			}
@@ -620,7 +620,7 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 		return http.StatusBadRequest
 	}
 
-	err = orchestrator.UpdateVolume(r.Context(), vars["volume"], passphraseNames)
+	err = orchestrator.UpdateVolumeLUKSPassphraseNames(r.Context(), vars["volume"], passphraseNames)
 	if err != nil {
 		response.setError(fmt.Errorf("failed to update LUKS passphrase names for volume %s: %s", vars["volume"], err.Error()))
 		if errors.IsNotFoundError(err) {
@@ -635,6 +635,61 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 func UpdateVolumeLUKSPassphraseNames(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateVolumeResponse{}
 	UpdateGeneric(w, r, response, volumeLUKSPassphraseNamesUpdater)
+}
+
+func UpdateVolume(w http.ResponseWriter, r *http.Request) {
+	response := &UpdateVolumeResponse{}
+	UpdateGeneric(w, r, response, volumeUpdater)
+}
+
+func volumeUpdater(
+	_ http.ResponseWriter, r *http.Request,
+	response httpResponse, vars map[string]string, body []byte,
+) int {
+	ctx := r.Context()
+	Logc(ctx).Debug(">>>> volumeUpdater")
+	defer Logc(ctx).Debug("<<<< volumeUpdater")
+
+	updateResponse, ok := response.(*UpdateVolumeResponse)
+	if !ok {
+		response.setError(fmt.Errorf("response object must be of type UpdateVolumeResponse"))
+		return http.StatusInternalServerError
+	}
+
+	updateVolRequest := &utils.VolumeUpdateInfo{}
+	err := json.Unmarshal(body, updateVolRequest)
+	if err != nil {
+		updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+		return http.StatusBadRequest
+	}
+
+	volName := vars["volume"]
+
+	// Update the volume
+	Logc(ctx).Debugf("Updating volume %v with update info %v", volName, updateVolRequest)
+
+	err = orchestrator.UpdateVolume(ctx, volName, updateVolRequest)
+	if err != nil {
+		updateResponse.Error = err.Error()
+		if errors.IsInvalidInputError(err) {
+			return http.StatusBadRequest
+		} else if errors.IsNotFoundError(err) {
+			return http.StatusNotFound
+		} else {
+			return http.StatusInternalServerError
+		}
+	}
+
+	// Get the updated volume and set back in response
+	volumeExternal, err := orchestrator.GetVolume(ctx, volName)
+	if err != nil {
+		updateResponse.Error = err.Error()
+		return http.StatusInternalServerError
+	}
+
+	updateResponse.Volume = volumeExternal
+
+	return http.StatusOK
 }
 
 type ImportVolumeResponse struct {
@@ -705,77 +760,6 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.Volume = volume
 			}
 			return httpStatusCodeForAdd(err)
-		},
-	)
-}
-
-type UpgradeVolumeResponse struct {
-	Volume *storage.VolumeExternal `json:"volume"`
-	Error  string                  `json:"error,omitempty"`
-}
-
-func (i *UpgradeVolumeResponse) setError(err error) {
-	i.Error = err.Error()
-}
-
-func (i *UpgradeVolumeResponse) isError() bool {
-	return i.Error != ""
-}
-
-func (i *UpgradeVolumeResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(LogFields{
-		"handler": "UpgradeVolume",
-		"volume":  i.Volume.Config.Name,
-	}).Info("Upgraded an existing volume.")
-}
-
-func (i *UpgradeVolumeResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(LogFields{
-		"handler": "UpgradeVolume",
-	}).Error(i.Error)
-}
-
-func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
-	response := &UpgradeVolumeResponse{}
-	UpdateGeneric(w, r, response,
-		func(w http.ResponseWriter, r *http.Request, response httpResponse, _ map[string]string, body []byte) int {
-			updateResponse, ok := response.(*UpgradeVolumeResponse)
-			if !ok {
-				response.setError(fmt.Errorf("response object must be of type UpgradeVolumeResponse"))
-				return http.StatusInternalServerError
-			}
-			upgradeVolumeRequest := new(storage.UpgradeVolumeRequest)
-			err := json.Unmarshal(body, upgradeVolumeRequest)
-			if err != nil {
-				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
-				return httpStatusCodeForGetUpdateList(err)
-			}
-			if err = upgradeVolumeRequest.Validate(); err != nil {
-				updateResponse.setError(err)
-				return httpStatusCodeForAdd(err)
-			}
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeUpgrade, LogLayerRESTFrontend)
-
-			k8sHelperFrontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
-			if err != nil {
-				updateResponse.setError(err)
-				return httpStatusCodeForAdd(err)
-			}
-			k8sHelper, ok := k8sHelperFrontend.(k8shelper.K8SControllerHelperPlugin)
-			if !ok {
-				err = fmt.Errorf("unable to obtain K8S helper frontend")
-				updateResponse.setError(err)
-				return httpStatusCodeForAdd(err)
-			}
-
-			volume, err := k8sHelper.UpgradeVolume(ctx, upgradeVolumeRequest)
-			if err != nil {
-				updateResponse.Error = err.Error()
-			}
-			if volume != nil {
-				updateResponse.Volume = volume
-			}
-			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }

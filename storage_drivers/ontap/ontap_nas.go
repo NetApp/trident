@@ -19,6 +19,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +122,13 @@ func (d *NASStorageDriver) Initialize(
 	if err != nil {
 		return fmt.Errorf("error validating %s driver: %v", d.Name(), err)
 	}
+
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
 
 	// Set up the autosupport heartbeat
 	d.telemetry = NewOntapTelemetry(ctx, d)
@@ -372,9 +380,8 @@ func (d *NASStorageDriver) Create(
 			continue
 		}
 
-		// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 		if !enableSnapshotDir {
-			if err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
 				createErrors = append(createErrors,
 					fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
 						storagePool.Name(), name, err))
@@ -419,7 +426,7 @@ func (d *NASStorageDriver) CreateClone(
 		"Type":        "NASStorageDriver",
 		"name":        cloneVolConfig.InternalName,
 		"source":      cloneVolConfig.CloneSourceVolumeInternal,
-		"snapshot":    cloneVolConfig.CloneSourceSnapshot,
+		"snapshot":    cloneVolConfig.CloneSourceSnapshotInternal,
 		"storagePool": storagePool,
 	}
 	Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
@@ -454,6 +461,14 @@ func (d *NASStorageDriver) CreateClone(
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
 	}
 
+	if cloneVolConfig.ReadOnlyClone {
+		if !flexvol.SnapshotDir {
+			return fmt.Errorf("snapshot directory access is set to %t and readOnly clone is set to %t ",
+				flexvol.SnapshotDir, cloneVolConfig.ReadOnlyClone)
+		}
+		return nil
+	}
+
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
 	if storagePoolSplitOnCloneVal == "" {
 		storagePoolSplitOnCloneVal = d.GetConfig().SplitOnClone
@@ -472,8 +487,10 @@ func (d *NASStorageDriver) CreateClone(
 	}
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
-	if err := cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshot, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup); err != nil {
+
+	if err = cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
+		cloneVolConfig.CloneSourceSnapshotInternal, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup,
+	); err != nil {
 		return err
 	}
 
@@ -517,6 +534,13 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	// If flexvol has been a snapmirror destination
 	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
+	// If flexvol has been a snapmirror source
+	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
@@ -621,6 +645,18 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
+	// Update the snapshot directory access for managed volume import
+	if !volConfig.ImportNotManaged && volConfig.SnapshotDir != "" {
+		if enable, err := strconv.ParseBool(volConfig.SnapshotDir); err != nil {
+			return fmt.Errorf("could not import volume %s, invalid snapshotDirectory annotation; %s",
+				originalName, volConfig.SnapshotDir)
+		} else {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, volConfig.InternalName, enable); err != nil {
+				return err
+			}
+		}
+	}
+
 	if d.Config.NASType == sa.SMB {
 		if flexvol.JunctionPath != "" {
 			if err := d.EnsureSMBShare(ctx, originalName, "/"+originalName); err != nil {
@@ -718,30 +754,26 @@ func getFlexvolSnapshot(
 		return nil, fmt.Errorf("error reading volume size: %v", err)
 	}
 
-	snapshots, err := client.VolumeSnapshotList(ctx, internalVolName)
+	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
-		return nil, err
-	}
-
-	for _, snap := range snapshots {
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": internalSnapName,
-			"volumeName":   internalVolName,
-			"created":      snap.CreateTime,
-		}).Debug("Found snapshot.")
-
-		if snap.Name == internalSnapName {
-			return &storage.Snapshot{
-				Config:    snapConfig,
-				Created:   snap.CreateTime,
-				SizeBytes: int64(size),
-				State:     storage.SnapshotStateOnline,
-			}, nil
+		if errors.IsNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, err
 		}
 	}
 
-	return nil, nil
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      snap.CreateTime,
+	}).Debug("Found snapshot.")
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snap.CreateTime,
+		SizeBytes: int64(size),
+		State:     storage.SnapshotStateOnline,
+	}, nil
 }
 
 // GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
@@ -921,6 +953,28 @@ func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) [
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.OntapStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// 2. Aggregate (physical pool)
+	svmUUID := d.GetAPI().GetSVMUUID()
+	backendPools := make([]drivers.OntapStorageBackendPool, 0)
+	for _, pool := range d.physicalPools {
+		backendPool := drivers.OntapStorageBackendPool{
+			SvmUUID:   svmUUID,
+			Aggregate: pool.Name(),
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
+}
+
 func (d *NASStorageDriver) getStoragePoolAttributes(ctx context.Context) map[string]sa.Offer {
 	client := d.GetAPI()
 	mirroring, _ := client.IsSVMDRCapable(ctx)
@@ -950,6 +1004,8 @@ func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 
 func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	var accessPath string
+	var flexvol *api.Volume
+	var err error
 
 	fields := LogFields{
 		"Method":       "CreateFollowup",
@@ -970,9 +1026,17 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	}
 
 	// Set correct junction path
-	flexvol, err := d.API.VolumeInfo(ctx, volConfig.InternalName)
-	if err != nil {
-		return err
+	// If it's a RO clone, get source volume
+	if volConfig.ReadOnlyClone {
+		flexvol, err = d.API.VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal)
+		if err != nil {
+			return err
+		}
+	} else {
+		flexvol, err = d.API.VolumeInfo(ctx, volConfig.InternalName)
+		if err != nil {
+			return err
+		}
 	}
 
 	if flexvol.JunctionPath == "" {
@@ -982,13 +1046,14 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 			// 2. During Create/CreateClone there is a failure and mount is not performed.
 
 			if d.Config.NASType == sa.SMB {
-				volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
-					volConfig.InternalName)
+				volConfig.AccessInfo.SMBPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+					volConfig.InternalName, volConfig, sa.SMB)
 				// Overwriting mount path, mounting at root instead of admin share
 				volConfig.AccessInfo.SMBPath = "/" + volConfig.InternalName
 				accessPath = volConfig.AccessInfo.SMBPath
 			} else {
-				volConfig.AccessInfo.NfsPath = "/" + volConfig.InternalName
+				volConfig.AccessInfo.NfsPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+					volConfig.InternalName, volConfig, sa.NFS)
 				accessPath = volConfig.AccessInfo.NfsPath
 			}
 
@@ -1008,10 +1073,11 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 		}
 	} else {
 		if d.Config.NASType == sa.SMB {
-			volConfig.AccessInfo.SMBPath = ConstructOntapNASSMBVolumePath(ctx, d.Config.SMBShare,
-				flexvol.JunctionPath)
+			volConfig.AccessInfo.SMBPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+				flexvol.JunctionPath, volConfig, sa.SMB)
 		} else {
-			volConfig.AccessInfo.NfsPath = flexvol.JunctionPath
+			volConfig.AccessInfo.NfsPath = ConstructOntapNASVolumeAccessPath(ctx, d.Config.SMBShare,
+				flexvol.JunctionPath, volConfig, sa.NFS)
 		}
 	}
 	return nil
@@ -1183,7 +1249,7 @@ func (d *NASStorageDriver) ReconcileNodeAccess(
 // in physical pools list.
 func (d *NASStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	Logc(ctx).Debug(">>>> GetBackendState")
-	defer Logc(ctx).Debugf("<<<< GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
 
 	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
 }
@@ -1240,7 +1306,8 @@ func (d *NASStorageDriver) EstablishMirror(
 		replicationSchedule = ""
 	}
 
-	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // ReestablishMirror will attempt to resync a mirror relationship, if and only if the relationship existed previously
@@ -1279,7 +1346,8 @@ func (d *NASStorageDriver) ReestablishMirror(
 		replicationSchedule = ""
 	}
 
-	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // PromoteMirror will break the mirror relationship and make the destination volume RW,
@@ -1287,8 +1355,8 @@ func (d *NASStorageDriver) ReestablishMirror(
 func (d *NASStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
-		d.API)
+	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName,
+		d.GetConfig().ReplicationPolicy, d.API)
 }
 
 // GetMirrorStatus returns the current state of a mirror relationship
@@ -1304,7 +1372,9 @@ func (d *NASStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolum
 }
 
 // GetReplicationDetails returns the replication policy and schedule of a mirror relationship
-func (d *NASStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+func (d *NASStorageDriver) GetReplicationDetails(
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
@@ -1315,10 +1385,17 @@ func (d *NASStorageDriver) UpdateMirror(ctx context.Context, localInternalVolume
 
 // CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
 // succeeded or in progress
-func (d *NASStorageDriver) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time,
-	error,
-) {
+func (d *NASStorageDriver) CheckMirrorTransferState(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
 	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
+}
+
+// GetMirrorTransferTime will return the transfer time of the mirror relationship
+func (d *NASStorageDriver) GetMirrorTransferTime(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return getMirrorTransferTime(ctx, localInternalVolumeName, d.API)
 }
 
 // MountVolume returns the volume mount error(if any)

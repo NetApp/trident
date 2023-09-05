@@ -109,3 +109,23 @@ func (mr *MockCommandMockRecorder) ExecuteWithTimeoutAndInput(arg0, arg1, arg2, 
 	varargs := append([]interface{}{arg0, arg1, arg2, arg3, arg4}, arg5...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteWithTimeoutAndInput", reflect.TypeOf((*MockCommand)(nil).ExecuteWithTimeoutAndInput), varargs...)
 }
+
+// ExecuteWithoutLog mocks base method.
+func (m *MockCommand) ExecuteWithoutLog(arg0 context.Context, arg1 string, arg2 ...string) ([]byte, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ExecuteWithoutLog", varargs...)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExecuteWithoutLog indicates an expected call of ExecuteWithoutLog.
+func (mr *MockCommandMockRecorder) ExecuteWithoutLog(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteWithoutLog", reflect.TypeOf((*MockCommand)(nil).ExecuteWithoutLog), varargs...)
+}
