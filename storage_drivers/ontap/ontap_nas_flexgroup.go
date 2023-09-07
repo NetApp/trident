@@ -903,9 +903,6 @@ func (d *NASFlexGroupStorageDriver) Import(
 		return fmt.Errorf("could not import volume %s, type is %s, not rw", originalName, flexgroup.AccessType)
 	}
 
-	// Get the volume size
-	volConfig.Size = flexgroup.Size
-
 	// We cannot rename flexgroups, so internal name should match the imported originalName
 	volConfig.InternalName = originalName
 

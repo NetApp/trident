@@ -689,6 +689,9 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 		return nil, fmt.Errorf("driver import volume failed: %v", err)
 	}
 
+	// Ensure snapshot reserve is set to empty in case of volume import
+	volConfig.SnapshotReserve = ""
+
 	err = b.driver.CreateFollowup(ctx, volConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed post import volume operations : %v", err)

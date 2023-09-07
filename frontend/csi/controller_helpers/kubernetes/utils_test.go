@@ -31,3 +31,14 @@ func TestSupportsFeature(t *testing.T) {
 		}
 	}
 }
+
+func TestGetDataSizeFromTotalSize(t *testing.T) {
+	var totalSize uint64 = 100
+	var snapshotReservePercent int = 20
+	var expectedDataSize uint64 = 80
+
+	h := helper{}
+	result := h.getDataSizeFromTotalSize(context.Background(), totalSize, snapshotReservePercent)
+
+	assert.Equal(t, expectedDataSize, result, "Data size not as expected")
+}

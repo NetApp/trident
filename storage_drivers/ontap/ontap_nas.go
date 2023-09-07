@@ -596,13 +596,6 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
-	// Get the volume size
-	if api.IsVolumeSpaceAttributesReadError(err) {
-		Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, size not available")
-		return err
-	}
-	volConfig.Size = flexvol.Size
-
 	// Rename the volume if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
 		if err := d.API.VolumeRename(ctx, originalName, volConfig.InternalName); err != nil {

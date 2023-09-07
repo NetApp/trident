@@ -3091,6 +3091,7 @@ func TestOntapNasStorageDriverVolumeImport(t *testing.T) {
 	flexVol := &api.Volume{
 		Name:    "flexvol",
 		Comment: "flexvol",
+		Size:    "1",
 	}
 
 	tests := []struct {
@@ -3130,52 +3131,43 @@ func TestOntapNasStorageDriverVolumeImport_Failure(t *testing.T) {
 		UnixPermissions:  DefaultUnixPermissions,
 	}
 
-	flexVol := &api.Volume{
-		Name:    "flexvol",
-		Comment: "flexvol",
-	}
-
 	tests := []struct {
-		err     string
-		message string
+		name               string
+		mockFlexvol        *api.Volume
+		mockError          error
+		expectedErrMessage string
 	}{
-		{"VolumeReadError", "error reading volume"},
-		{"VolumeIdAttributesReadError", "error reading volume id attributes"},
-		{"VolumeSpaceAttributesReadError", "error reading volume space attributes"},
+		{
+			"VolumeReadError",
+			nil,
+			api.VolumeReadError("error reading volume"),
+			"error reading volume",
+		},
+		{
+			"VolumeIdAttributesReadError",
+			nil,
+			api.VolumeIdAttributesReadError("error reading volume id attributes"),
+			"error reading volume id attributes",
+		},
+		{
+			"Invalid Access type",
+			&api.Volume{Name: "flexvol", AccessType: "non-rw"},
+			fmt.Errorf("volume vol1 type is non-rw, not rw"),
+			"volume vol1 type is non-rw, not rw",
+		},
+		{
+			"Empty Junction path of volume",
+			&api.Volume{Name: "flexvol", AccessType: "rw", JunctionPath: ""},
+			fmt.Errorf("junction path is not set for volume vol1"),
+			"junction path is not set for volume vol1",
+		},
 	}
 	for _, test := range tests {
-		t.Run(test.err, func(t *testing.T) {
-			if test.err == "VolumeReadError" {
-				mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(nil, api.VolumeReadError(test.message))
-				result := driver.Import(ctx, volConfig, "vol1")
-				assert.EqualError(t, result, "error reading volume")
-			} else if test.err == "VolumeIdAttributesReadError" {
-				mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol,
-					api.VolumeIdAttributesReadError(test.message))
-				result := driver.Import(ctx, volConfig, "vol1")
-				assert.EqualError(t, result, "error reading volume id attributes")
-
-				// Access type is an invalid value
-				flexVol.AccessType = "fake"
-				mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol,
-					fmt.Errorf("volume vol1 type is fake, not rw"))
-				result = driver.Import(ctx, volConfig, "vol1")
-				assert.Error(t, result)
-
-				// Access type is a valid value
-				flexVol.AccessType = "rw"
-				mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol,
-					fmt.Errorf("junction path is not set for volume vol1"))
-				result = driver.Import(ctx, volConfig, "vol1")
-				assert.Error(t, result)
-			} else if test.err == "VolumeSpaceAttributesReadError" {
-				flexVol.AccessType = "rw"
-				mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol,
-					api.VolumeSpaceAttributesReadError(test.message))
-				volConfig.ImportNotManaged = false
-				result := driver.Import(ctx, volConfig, "vol1")
-				assert.EqualError(t, result, "error reading volume space attributes")
-			}
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(test.mockFlexvol, test.mockError)
+			result := driver.Import(ctx, volConfig, "vol1")
+			assert.Error(t, result)
+			assert.Contains(t, result.Error(), test.expectedErrMessage, "Error       message mismatch")
 		})
 	}
 }
@@ -3194,6 +3186,7 @@ func TestOntapNasStorageDriverVolumeImport_RenameFailed(t *testing.T) {
 	flexVol := &api.Volume{
 		Name:    "flexvol",
 		Comment: "flexvol",
+		Size:    "1",
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -3219,6 +3212,7 @@ func TestOntapNasStorageDriverVolumeImport_ModifyComment(t *testing.T) {
 	flexVol := &api.Volume{
 		Name:    "flexvol",
 		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
+		Size:    "1",
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -3245,6 +3239,7 @@ func TestOntapNasStorageDriverVolumeImport_UnixPermissions(t *testing.T) {
 	flexVol := &api.Volume{
 		Name:    "flexvol",
 		Comment: "flexvol",
+		Size:    "1",
 	}
 
 	tests := []struct {
@@ -3349,6 +3344,7 @@ func TestOntapNasStorageDriverVolumeImport_SMBShareCreateFail(t *testing.T) {
 		Name:         "flexvol",
 		Comment:      "flexvol",
 		JunctionPath: "/flexvol",
+		Size:         "1",
 	}
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)

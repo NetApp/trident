@@ -45,3 +45,22 @@ func (h *helper) checkValidStorageClassReceived(ctx context.Context, claim *v1.P
 
 	return nil
 }
+
+// getDataSizeFromTotalSize calculates the data size of by subtracting snapshot reserve from total size
+func (h *helper) getDataSizeFromTotalSize(
+	ctx context.Context, totalSize uint64, snapshotReserve int,
+) uint64 {
+	snapReserveMultiplier := 1.0 - (float64(snapshotReserve) / 100.0)
+	sizeWithoutSnapReserve := float64(totalSize) * snapReserveMultiplier
+	dataSizeBytes := uint64(sizeWithoutSnapReserve)
+
+	Logc(ctx).WithFields(LogFields{
+		"totalSize":              totalSize,
+		"snapshotReserve":        snapshotReserve,
+		"snapReserveMultiplier":  snapReserveMultiplier,
+		"sizeWithoutSnapReserve": sizeWithoutSnapReserve,
+		"dataSizeBytes":          dataSizeBytes,
+	}).Debug("Calculated data size after subtracting snapshot reserve from total size.")
+
+	return dataSizeBytes
+}

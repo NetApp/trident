@@ -1613,6 +1613,7 @@ func getVolumeExternalCommon(
 		Size:            volume.Size,
 		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  volume.SnapshotPolicy,
+		SnapshotReserve: strconv.Itoa(volume.SnapshotReserve),
 		ExportPolicy:    volume.ExportPolicy,
 		SnapshotDir:     strconv.FormatBool(volume.SnapshotDir),
 		UnixPermissions: volume.UnixPermissions,
