@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 
@@ -88,9 +89,12 @@ func (d *SANStorageDriver) Initialize(
 	}
 	d.Config = *config
 
-	d.API, err = InitializeOntapDriver(ctx, config)
-	if err != nil {
-		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.API == nil {
+		d.API, err = InitializeOntapDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
+		}
 	}
 	d.Config = *config
 
@@ -112,10 +116,9 @@ func (d *SANStorageDriver) Initialize(
 	}
 
 	err = InitializeSANDriver(ctx, driverContext, d.API, &d.Config, d.validate, backendUUID)
-
-	// clean up igroup for failed driver
 	if err != nil {
 		if d.Config.DriverContext == tridentconfig.ContextCSI {
+			// Clean up igroup for failed driver.
 			err := d.API.IgroupDestroy(ctx, d.Config.IgroupName)
 			if err != nil {
 				Logc(ctx).WithError(err).WithField("igroup", d.Config.IgroupName).Warn("Error deleting igroup.")
@@ -123,6 +126,13 @@ func (d *SANStorageDriver) Initialize(
 		}
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
+
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
 
 	// Set up the autosupport heartbeat
 	d.telemetry = NewOntapTelemetry(ctx, d)
@@ -474,7 +484,7 @@ func (d *SANStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":      "CreateClone",
@@ -641,9 +651,6 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		if lunInfo.Name != targetPath {
 			return fmt.Errorf("could not import volume, LUN is nammed incorrectly: %s", lunInfo.Name)
 		}
-		if !lunInfo.Mapped {
-			return fmt.Errorf("could not import volume, LUN is not mapped: %s", lunInfo.Name)
-		}
 	}
 
 	return nil
@@ -712,8 +719,18 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
 		}
 		if lunID >= 0 {
+			publishInfo := utils.VolumePublishInfo{
+				DevicePath: "",
+				VolumeAccessInfo: utils.VolumeAccessInfo{
+					IscsiAccessInfo: utils.IscsiAccessInfo{
+						IscsiTargetIQN: iSCSINodeName,
+						IscsiLunNumber: int32(lunID),
+					},
+				},
+			}
+
 			// Inform the host about the device removal
-			if _, err := utils.PrepareDeviceForRemoval(ctx, lunID, iSCSINodeName, true, false); err != nil {
+			if _, err := utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
 				Logc(ctx).Error(err)
 			}
 		}
@@ -721,6 +738,13 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	// If flexvol has been a snapmirror destination
 	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
+	// If flexvol has been a snapmirror source
+	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
@@ -764,7 +788,7 @@ func (d *SANStorageDriver) Publish(
 	igroupName := d.Config.IgroupName
 
 	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
-	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+	if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
 	}
@@ -801,8 +825,7 @@ func (d *SANStorageDriver) Unpublish(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
 
-	if !volConfig.AccessInfo.PublishEnforcement || tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
-		// Nothing to do if publish enforcement is not enabled
+	if tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
 		return nil
 	}
 
@@ -951,6 +974,28 @@ func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) [
 	return getStorageBackendPhysicalPoolNamesCommon(d.physicalPools)
 }
 
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *SANStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.OntapStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "SANStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. SVM UUID
+	// 2. Aggregate (physical pool)
+	svmUUID := d.GetAPI().GetSVMUUID()
+	backendPools := make([]drivers.OntapStorageBackendPool, 0)
+	for _, pool := range d.physicalPools {
+		backendPool := drivers.OntapStorageBackendPool{
+			SvmUUID:   svmUUID,
+			Aggregate: pool.Name(),
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+
+	return backendPools
+}
+
 func (d *SANStorageDriver) getStoragePoolAttributes(ctx context.Context) map[string]sa.Offer {
 	client := d.GetAPI()
 	mirroring, _ := client.IsSVMDRCapable(ctx)
@@ -991,40 +1036,7 @@ func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
-
-	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		Logc(ctx).Debug("No follow-up create actions for Docker.")
-		return nil
-	}
-
-	// Check if the volume is RW and don't map the lun if not RW
-	volIsRW, err := isFlexvolRW(ctx, d.GetAPI(), volConfig.InternalName)
-	if !volIsRW {
-		return err
-	}
-
-	// Don't map at create time if publish enforcement is enabled
-	if volConfig.AccessInfo.PublishEnforcement {
-		Logc(ctx).Debug("No follow-up create actions for published enforced volume.")
-		return nil
-	}
-
-	return d.mapOntapSANLun(ctx, volConfig)
-}
-
-func (d *SANStorageDriver) mapOntapSANLun(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	// get the lunPath and lunID
-	lunPath := fmt.Sprintf("/vol/%v/lun0", volConfig.InternalName)
-	lunID, err := d.API.EnsureLunMapped(ctx, d.Config.IgroupName, lunPath, volConfig.ImportNotManaged)
-	if err != nil {
-		return err
-	}
-
-	err = PopulateOntapLunMapping(ctx, d.API, d.ips, volConfig, lunID, lunPath,
-		d.Config.IgroupName)
-	if err != nil {
-		return fmt.Errorf("error mapping LUN for %s driver: %v", d.Name(), err)
-	}
+	Logc(ctx).Debug("No follow-up create actions for ontap-san volume.")
 
 	return nil
 }
@@ -1286,28 +1298,34 @@ func (d *SANStorageDriver) Resize(
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
-	// Discover known nodes
-	nodeNames := make([]string, 0)
-	nodeIQNs := make([]string, 0)
-	for _, node := range nodes {
-		nodeNames = append(nodeNames, node.Name)
-		if node.IQN != "" {
-			nodeIQNs = append(nodeIQNs, node.IQN)
-		}
+func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node,
+	backendUUID, tridentUUID string,
+) error {
+	nodeNames := make([]string, len(nodes))
+	for _, n := range nodes {
+		nodeNames = append(nodeNames, n.Name)
 	}
-
 	fields := LogFields{
 		"Method": "ReconcileNodeAccess",
 		"Type":   "SANStorageDriver",
 		"Nodes":  nodeNames,
 	}
+
 	Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
 	defer Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
-	return reconcileSANNodeAccess(ctx, d.API, d.Config.IgroupName, nodeIQNs)
+	return reconcileSANNodeAccess(ctx, d.API, nodeNames, backendUUID, tridentUUID)
+}
+
+// GetBackendState returns the reason if SVM is offline, and a flag to indicate if there is change
+// in physical pools list.
+func (d *SANStorageDriver) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
+	Logc(ctx).Debug(">>>> GetBackendState")
+	defer Logc(ctx).Debug("<<<< GetBackendState")
+
+	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx))
 }
 
 // String makes SANStorageDriver satisfy the Stringer interface.
@@ -1325,7 +1343,7 @@ func (d SANStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorag
 	return d.Config.CommonStorageDriverConfig
 }
 
-// EstablishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
+// EstablishMirror will create a new mirror relationship between a RW and a DP volume that have not previously
 // had a relationship
 func (d *SANStorageDriver) EstablishMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
@@ -1366,8 +1384,7 @@ func (d *SANStorageDriver) EstablishMirror(
 		d.API)
 }
 
-// ReestablishMirror will attempt to resync a snapmirror relationship,
-// if and only if the relationship existed previously
+// ReestablishMirror will attempt to resync a mirror relationship, if and only if the relationship existed previously
 func (d *SANStorageDriver) ReestablishMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
 ) error {
@@ -1407,7 +1424,7 @@ func (d *SANStorageDriver) ReestablishMirror(
 		d.API)
 }
 
-// PromoteMirror will break the snapmirror and make the destination volume RW,
+// PromoteMirror will break the mirror relationship and make the destination volume RW,
 // optionally after a given snapshot has synced
 func (d *SANStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
@@ -1416,21 +1433,43 @@ func (d *SANStorageDriver) PromoteMirror(
 		d.GetConfig().ReplicationPolicy, d.API)
 }
 
-// GetMirrorStatus returns the current state of a snapmirror relationship
+// GetMirrorStatus returns the current state of a mirror relationship
 func (d *SANStorageDriver) GetMirrorStatus(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
 ) (string, error) {
 	return getMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
 }
 
-// ReleaseMirror will release the snapmirror relationship data of the source volume
+// ReleaseMirror will release the mirror relationship data of the source volume
 func (d *SANStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
 	return releaseMirror(ctx, localInternalVolumeName, d.API)
 }
 
-// GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship
-func (d *SANStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+// GetReplicationDetails returns the replication policy and schedule of a mirror relationship
+func (d *SANStorageDriver) GetReplicationDetails(
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
+}
+
+// UpdateMirror will attempt a mirror update for the given destination volume
+func (d *SANStorageDriver) UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	return mirrorUpdate(ctx, localInternalVolumeName, snapshotName, d.API)
+}
+
+// CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
+// succeeded or in progress
+func (d *SANStorageDriver) CheckMirrorTransferState(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
+}
+
+// GetMirrorTransferTime will return the transfer time of the mirror relationship
+func (d *SANStorageDriver) GetMirrorTransferTime(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return getMirrorTransferTime(ctx, localInternalVolumeName, d.API)
 }
 
 func (d *SANStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {

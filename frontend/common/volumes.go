@@ -15,13 +15,14 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
 	autoStorageClassPrefix = "auto_sc_%d"
 )
 
-// getStorageClass accepts a list of volume creation options and returns a
+// GetStorageClass accepts a list of volume creation options and returns a
 // matching storage class.  If the orchestrator already has a matching
 // storage class, that is returned; otherwise a new one is created and
 // registered with the orchestrator.
@@ -39,7 +40,7 @@ func GetStorageClass(
 
 	// Check existing storage classes for a match based on the name
 	sc, err := o.GetStorageClass(ctx, newScConfig.Name)
-	if err != nil && !utils.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		return nil, err
 	}
 	if sc != nil {
@@ -50,9 +51,7 @@ func GetStorageClass(
 	// No match found, so register the new storage class
 	addedSc, err := o.AddStorageClass(ctx, newScConfig)
 	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"storageClass": newScConfig.Name,
-		}).Error("couldn't add the storage class: ", err)
+		Logc(ctx).WithField("storageClass", newScConfig.Name).WithError(err).Error("Could not add the storage class.")
 		return nil, err
 	}
 
@@ -96,7 +95,7 @@ func makeStorageClass(ctx context.Context, options map[string]string) (*storagec
 			Logc(ctx).WithFields(LogFields{
 				"storageClass":            scConfig.Name,
 				"storageClass_parameters": options,
-			}).Debugf("Frontend ignoring storage class attribute: %v", err)
+			}).WithError(err).Debug("Frontend ignoring storage class attribute.")
 			continue
 		}
 		scConfig.Attributes[k] = req
@@ -104,17 +103,12 @@ func makeStorageClass(ctx context.Context, options map[string]string) (*storagec
 
 	// Set name based on hash value
 	scHash, err := hash.Hash(scConfig, hash.FormatV2, nil)
-
-	fields := LogFields{
-		"storageClass":            scConfig.Name,
-		"storageClass_parameters": options,
-	}
-
 	if err != nil {
-		Logc(ctx).WithFields(fields).Errorf("Frontend couldn't hash the storage class attributes: %v", err)
+		Logc(ctx).WithFields(LogFields{
+			"storageClass":            scConfig.Name,
+			"storageClass_parameters": options,
+		}).WithError(err).Error("Frontend could not hash the storage class attributes.")
 		return nil, err
-	} else {
-		Logc(ctx).WithFields(fields).Tracef("Frontend couldn't hash the storage class attributes: %v", err)
 	}
 
 	scConfig.Name = fmt.Sprintf(autoStorageClassPrefix, scHash)

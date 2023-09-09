@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"errors"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -11,6 +10,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var forceObliviate bool

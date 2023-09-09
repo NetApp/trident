@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -8,9 +8,8 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -23,7 +22,6 @@ import (
 	"github.com/go-openapi/runtime"
 	runtime_client "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	log "github.com/sirupsen/logrus"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -31,6 +29,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
+	nvme "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	san "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/snapmirror"
@@ -39,6 +38,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -140,6 +140,9 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 
 	transportConfig := client.DefaultTransportConfig()
 	transportConfig.Host = config.ManagementLIF
+	if config.unitTestTransportConfigSchemes != "" {
+		transportConfig.Schemes = []string{config.unitTestTransportConfigSchemes}
+	}
 
 	result.api = client.NewHTTPClientWithConfig(formats, transportConfig)
 
@@ -148,7 +151,6 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	}
 
 	if rClient, ok := result.api.Transport.(*runtime_client.Runtime); ok {
-		rClient.SetLogger(log.New())
 		rClient.SetDebug(config.DebugTraceFlags["api"])
 	}
 
@@ -249,7 +251,7 @@ func NewRestClientFromOntapConfig(
 
 	apiREST, err := NewOntapAPIREST(restClient, ontapConfig.StorageDriverName)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get REST API client for ontap: %v", err)
+		return nil, fmt.Errorf("unable to get REST API client for ontap; %v", err)
 	}
 
 	return apiREST, nil
@@ -421,7 +423,7 @@ func (c RestClient) getAllVolumePayloadRecords(
 				payload.NumRecords = utils.Ptr(int64(0))
 			}
 			payload.NumRecords = utils.Ptr(*payload.NumRecords + *resultNext.Payload.NumRecords)
-			payload.VolumeResponseInlineRecords = append(resultNext.Payload.VolumeResponseInlineRecords, resultNext.Payload.VolumeResponseInlineRecords...)
+			payload.VolumeResponseInlineRecords = append(payload.VolumeResponseInlineRecords, resultNext.Payload.VolumeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				break
@@ -457,7 +459,7 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = &c.svmUUID
 	params.SetName(utils.Ptr(pattern))
@@ -1122,7 +1124,7 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 		if vol == nil || vol.Name == nil {
 			continue
 		}
-		if vol.Clone != nil && vol.Clone.IsFlexclone != nil && *vol.Clone.IsFlexclone {
+		if vol.Clone != nil {
 			if vol.Clone.ParentSnapshot != nil && vol.Clone.ParentSnapshot.Name != nil && *vol.Clone.ParentSnapshot.Name == snapshotName &&
 				vol.Clone.ParentVolume != nil && *vol.Clone.ParentVolume.Name == volumeName {
 				volumeNames = append(volumeNames, *vol.Name)
@@ -1216,7 +1218,72 @@ func (c RestClient) createVolumeByStyle(ctx context.Context, name string, sizeIn
 		return fmt.Errorf("unexpected response from volume create")
 	}
 
-	return c.PollJobStatus(ctx, volumeCreateAccepted.Payload)
+	if pollErr := c.PollJobStatus(ctx, volumeCreateAccepted.Payload); pollErr != nil {
+		return pollErr
+	}
+
+	switch style {
+	case models.VolumeStyleFlexgroup:
+		return c.waitForFlexgroup(ctx, name)
+	default:
+		return c.waitForVolume(ctx, name)
+	}
+}
+
+// waitForVolume polls for the ONTAP volume to exist, with backoff retry logic
+func (c RestClient) waitForVolume(ctx context.Context, volumeName string) error {
+	checkStatus := func() error {
+		exists, err := c.VolumeExists(ctx, volumeName)
+		if !exists {
+			return fmt.Errorf("volume '%v' does not exit, will continue checking", volumeName)
+		}
+		return err
+	}
+	statusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Volume not found, waiting.")
+	}
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 1 * time.Minute
+
+	// Run the existence check using an exponential backoff
+	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithField("name", volumeName).Warnf("Volume not found after %3.2f seconds.",
+			statusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
+}
+
+// waitForFlexgroup polls for the ONTAP flexgroup to exist, with backoff retry logic
+func (c RestClient) waitForFlexgroup(ctx context.Context, volumeName string) error {
+	checkStatus := func() error {
+		exists, err := c.FlexGroupExists(ctx, volumeName)
+		if !exists {
+			return fmt.Errorf("FlexGroup '%v' does not exit, will continue checking", volumeName)
+		}
+		return err
+	}
+	statusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("FlexGroup not found, waiting.")
+	}
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 1 * time.Minute
+
+	// Run the existence check using an exponential backoff
+	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithField("name", volumeName).Warnf("FlexGroup not found after %3.2f seconds.",
+			statusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -1238,7 +1305,7 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = &c.svmUUID
 
@@ -1462,7 +1529,7 @@ func (c RestClient) SnapshotCreate(
 func (c RestClient) SnapshotCreateAndWait(ctx context.Context, volumeUUID, snapshotName string) error {
 	snapshotCreateResult, err := c.SnapshotCreate(ctx, volumeUUID, snapshotName)
 	if err != nil {
-		return fmt.Errorf("could not create snapshot: %v", err)
+		return fmt.Errorf("could not create snapshot; %v", err)
 	}
 	if snapshotCreateResult == nil {
 		return fmt.Errorf("could not create snapshot: %v", "unexpected result")
@@ -1584,9 +1651,8 @@ func (c RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, 
 	return c.restoreSnapshotByNameAndStyle(ctx, snapshotName, volumeName, models.VolumeStyleFlexgroup)
 }
 
-// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
+// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 	if err != nil {
 		return err
@@ -1606,7 +1672,7 @@ func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, vo
 	params.UUID = uuid
 
 	volumeInfo := &models.Volume{}
-	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(false)
+	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
 	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
@@ -1643,12 +1709,13 @@ func (c RestClient) VolumeCloneCreate(ctx context.Context, cloneName, sourceVolu
 func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error {
 	cloneCreateResult, err := c.createCloneNAS(ctx, cloneName, sourceVolumeName, snapshot)
 	if err != nil {
-		return fmt.Errorf("could not create clone: %v", err)
+		return fmt.Errorf("could not create clone; %v", err)
 	}
 	if cloneCreateResult == nil {
 		return fmt.Errorf("could not create clone: %v", "unexpected result")
 	}
 
+	// NOTE the callers of this function should perform their own existence checks based on type (vol or flexgroup)
 	return c.PollJobStatus(ctx, cloneCreateResult.Payload)
 }
 
@@ -1664,7 +1731,7 @@ func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 	params.HTTPClient = c.httpClient
 	params.ReturnRecords = utils.Ptr(true)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.Initiator = utils.Ptr("default")
@@ -1729,10 +1796,18 @@ func (c RestClient) IscsiInitiatorSetDefaultAuth(
 	if *getDefaultAuthResponse.Payload.NumRecords != 1 {
 		return fmt.Errorf("should only be one default iscsi initiator")
 	}
+	if getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0] == nil {
+		return fmt.Errorf("could not get the default iscsi initiator")
+	}
+	if getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0].Initiator == nil {
+		return fmt.Errorf("could not get the default iscsi initiator")
+	}
 
 	params := san.NewIscsiCredentialsModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
+	params.SvmUUID = c.svmUUID
+	params.Initiator = *getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0].Initiator
 
 	outboundInfo := &models.IscsiCredentialsInlineChapInlineOutbound{}
 	if outbountUserName != "" && outboundPassphrase != "" {
@@ -1750,7 +1825,6 @@ func (c RestClient) IscsiInitiatorSetDefaultAuth(
 	authInfo := &models.IscsiCredentials{
 		AuthenticationType: utils.Ptr(authType),
 		Chap:               chapInfo,
-		Initiator:          getDefaultAuthResponse.Payload.IscsiCredentialsResponseInlineRecords[0].Initiator,
 	}
 
 	params.SetInfo(authInfo)
@@ -1772,12 +1846,12 @@ func (c RestClient) IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetO
 		return nil, fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
 	}
 
-	svm := svmResult.Payload
+	svmInfo := svmResult.Payload
 
 	params := san.NewIscsiServiceGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
-	params.SvmUUID = *svm.UUID
+	params.SvmUUID = *svmInfo.UUID
 
 	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
 
@@ -1927,7 +2001,7 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 
 	lunDeleteResult, err := c.api.San.IgroupDelete(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("could not delete igroup: %v", err)
+		return fmt.Errorf("could not delete igroup; %v", err)
 	}
 	if lunDeleteResult == nil {
 		return fmt.Errorf("could not delete igroup: %v", "unexpected result")
@@ -2066,7 +2140,7 @@ func (d RestClient) LunOptions(
 	}
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -2149,8 +2223,8 @@ func (c RestClient) LunCloneCreate(
 				Name: utils.Ptr(sourcePath),
 			},
 		},
-		Name:   utils.Ptr(lunPath), // example:  /vol/myVolume/myLun1
-		OsType: utils.Ptr(osType),
+		Name: utils.Ptr(lunPath), // example:  /vol/myVolume/myLun1
+		// OsType is not supported for POST when creating a LUN clone
 		Space: &models.LunInlineSpace{
 			Size: utils.Ptr(sizeInBytes),
 		},
@@ -2301,7 +2375,7 @@ func (c RestClient) LunDelete(
 
 	lunDeleteResult, err := c.api.San.LunDelete(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("could not delete lun: %v", err)
+		return fmt.Errorf("could not delete lun; %v", err)
 	}
 	if lunDeleteResult == nil {
 		return fmt.Errorf("could not delete lun: %v", "unexpected result")
@@ -2887,7 +2961,7 @@ func (c RestClient) NetInterfaceGetDataLIFs(ctx context.Context, protocol string
 
 	lifResponse, err := c.api.Networking.NetworkIPInterfacesGet(params, c.authInfo)
 	if err != nil {
-		return nil, fmt.Errorf("error checking network interfaces: %v", err)
+		return nil, fmt.Errorf("error checking network interfaces; %v", err)
 	}
 	if lifResponse == nil {
 		return nil, fmt.Errorf("unexpected error checking network interfaces")
@@ -3292,9 +3366,9 @@ func (c RestClient) SVMGetAggregateNames(
 		return nil, fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
 	}
 
-	svm := result.Payload
+	svmInfo := result.Payload
 	aggrNames := make([]string, 0, 10)
-	for _, aggr := range svm.SvmInlineAggregates {
+	for _, aggr := range svmInfo.SvmInlineAggregates {
 		if aggr != nil && aggr.Name != nil {
 			aggrNames = append(aggrNames, string(*aggr.Name))
 		}
@@ -3573,7 +3647,8 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 // ExportPolicyGetByName gets the volume with the specified name
 func (c RestClient) ExportPolicyGetByName(ctx context.Context, exportPolicyName string) (*models.ExportPolicy, error) {
 	result, err := c.ExportPolicyList(ctx, exportPolicyName)
-	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.ExportPolicyResponseInlineRecords != nil {
+	if err == nil && result != nil && result.Payload != nil && result.Payload.NumRecords != nil &&
+		*result.Payload.NumRecords == 1 && result.Payload.ExportPolicyResponseInlineRecords != nil {
 		return result.Payload.ExportPolicyResponseInlineRecords[0], nil
 	}
 	return nil, err
@@ -3779,7 +3854,9 @@ func (c RestClient) FlexGroupCreate(
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
 ) error {
-	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, models.VolumeStyleFlexgroup, false)
+	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
+		models.VolumeStyleFlexgroup, false)
 }
 
 // FlexgroupCloneSplitStart starts splitting the flexgroup clone
@@ -3839,10 +3916,9 @@ func (c RestClient) FlexgroupSetQosPolicyGroupName(
 	return c.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, volumeName, qosPolicyGroup, models.VolumeStyleFlexgroup)
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context, flexGroupVolumeName string,
+// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, flexGroupVolumeName string, enable bool,
 ) error {
 	volume, err := c.getVolumeByNameAndStyle(ctx, flexGroupVolumeName, models.VolumeStyleFlexgroup)
 	if err != nil {
@@ -3863,7 +3939,7 @@ func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 	params.UUID = uuid
 
 	volumeInfo := &models.Volume{}
-	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(false)
+	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
 	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
@@ -3961,7 +4037,39 @@ func (c RestClient) QtreeCreate(
 		return fmt.Errorf("unexpected response from qtree create")
 	}
 
-	return c.PollJobStatus(ctx, createAccepted.Payload)
+	if pollErr := c.PollJobStatus(ctx, createAccepted.Payload); pollErr != nil {
+		return pollErr
+	}
+
+	return c.waitForQtree(ctx, volumeName, name)
+}
+
+// waitForQtree polls for the ONTAP qtree to exist, with backoff retry logic
+func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName string) error {
+	checkStatus := func() error {
+		qtree, err := c.QtreeGetByName(ctx, qtreeName, volumeName)
+		if qtree == nil {
+			return fmt.Errorf("Qtree '%v' does not exit within volume '%v', will continue checking", qtreeName,
+				volumeName)
+		}
+		return err
+	}
+	statusNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Qtree not found, waiting.")
+	}
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.Multiplier = 2
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 1 * time.Minute
+
+	// Run the existence check using an exponential backoff
+	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
+		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.", statusBackoff.MaxElapsedTime.Seconds())
+		return err
+	}
+
+	return nil
 }
 
 // QtreeRename renames a qtree
@@ -4057,7 +4165,7 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(namePattern))         // Qtree name prefix
@@ -4110,7 +4218,7 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetPath(utils.Ptr(path))
@@ -4144,7 +4252,7 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetName(utils.Ptr(name))
@@ -4179,7 +4287,7 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetVolumeName(utils.Ptr(volumeName)) // Flexvol name
@@ -4242,7 +4350,7 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))                // Qtree name
@@ -4319,7 +4427,7 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))          // qtree name
@@ -4362,7 +4470,7 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetVolumeName(utils.Ptr(pattern)) // Flexvol name prefix
@@ -4507,11 +4615,11 @@ func (c RestClient) quotaModify(ctx context.Context, volumeName string, quotaEna
 func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, quotaType, diskLimit string) error {
 	// We can only modify existing rules, so we must check if this rule exists first
 	quotaRule, err := c.QuotaGetEntry(ctx, volumeName, qtreeName, quotaType)
-	if err != nil && !utils.IsNotFoundError(err) {
+	if err != nil && !errors.IsNotFoundError(err) {
 		// Error looking up quota rule
 		Logc(ctx).Error(err)
 		return err
-	} else if err != nil && utils.IsNotFoundError(err) {
+	} else if err != nil && errors.IsNotFoundError(err) {
 		// Quota rule doesn't exist; add it instead
 		return c.QuotaAddEntry(ctx, volumeName, qtreeName, quotaType, diskLimit)
 	}
@@ -4526,27 +4634,19 @@ func (c RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, qu
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(*quotaRule.UUID)
 
-	quotaRuleInfo := &models.QuotaRule{
-		Qtree: &models.QuotaRuleInlineQtree{
-			Name: utils.Ptr(qtreeName),
-		},
-		Volume: &models.QuotaRuleInlineVolume{
-			Name: utils.Ptr(volumeName),
-		},
-		Type: utils.Ptr(quotaType),
+	// determine the new hard disk limit value
+	if diskLimit == "" {
+		return fmt.Errorf("invalid hard disk limit value '%s' for quota modify", diskLimit)
+	}
+	hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
+	if parseErr != nil {
+		return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
 	}
 
-	quotaRuleInfo.Svm = &models.QuotaRuleInlineSvm{UUID: utils.Ptr(c.svmUUID)}
-
-	// handle options
-	if diskLimit != "" {
-		hardLimit, parseErr := strconv.ParseInt(diskLimit, 10, 64)
-		if parseErr != nil {
-			return fmt.Errorf("cannot process hard disk limit value %v", diskLimit)
-		}
-		quotaRuleInfo.Space = &models.QuotaRuleInlineSpace{
+	quotaRuleInfo := &models.QuotaRule{
+		Space: &models.QuotaRuleInlineSpace{
 			HardLimit: utils.Ptr(hardLimit),
-		}
+		},
 	}
 	params.SetInfo(quotaRuleInfo)
 
@@ -4613,7 +4713,7 @@ func (c RestClient) QuotaGetEntry(
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetType(utils.Ptr(quotaType))
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
@@ -4664,7 +4764,7 @@ func (c RestClient) QuotaGetEntry(
 		target += fmt.Sprintf("/%s", qtreeName)
 	}
 	if result.Payload == nil {
-		return nil, utils.NotFoundError(fmt.Sprintf("quota rule entries for %s not found", target))
+		return nil, errors.NotFoundError("quota rule entries for %s not found", target)
 	} else if len(result.Payload.QuotaRuleResponseInlineRecords) > 1 {
 		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
 	} else if len(result.Payload.QuotaRuleResponseInlineRecords) == 1 {
@@ -4673,7 +4773,7 @@ func (c RestClient) QuotaGetEntry(
 		return nil, fmt.Errorf("more than one quota rule entry for %s found", target)
 	}
 
-	return nil, utils.NotFoundError(fmt.Sprintf("no entries for %s", target))
+	return nil, errors.NotFoundError("no entries for %s", target)
 }
 
 // QuotaEntryList returns the disk limit quotas for a Flexvol
@@ -4683,7 +4783,7 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.VolumeName = utils.Ptr(volumeName)
@@ -5185,7 +5285,7 @@ func (c RestClient) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, so
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(string(*relationship.UUID))
-	params.WithSourceInfoOnly(utils.Ptr(true))
+	params.WithSourceOnly(utils.Ptr(true))
 
 	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
 	if err != nil {
@@ -5203,9 +5303,17 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 	ctx context.Context, localFlexvolName, localSVMName string,
 ) error {
 	// first, find the relationship so we can then use the UUID to delete it
-	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, localSVMName, "", "")
+	relationshipUUID := ""
+	relationship, err := c.SnapmirrorListDestinations(ctx, localFlexvolName, localSVMName, "", "")
 	if err != nil {
-		return err
+		if IsNotFoundError(err) {
+			relationship, err = c.SnapmirrorGet(ctx, localFlexvolName, localSVMName, "", "")
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 	if relationship == nil {
 		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
@@ -5214,16 +5322,40 @@ func (c RestClient) SnapmirrorDeleteViaDestination(
 		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
 	}
 
+	relationshipUUID = string(*relationship.UUID)
+
 	// now, delete the relationship via its UUID
 	params := snapmirror.NewSnapmirrorRelationshipDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
-	params.SetUUID(string(*relationship.UUID))
+	params.SetUUID(relationshipUUID)
 	params.WithDestinationOnly(utils.Ptr(true))
 
 	snapmirrorRelationshipDeleteAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipDelete(params, c.authInfo)
 	if err != nil {
-		return err
+		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST {
+				return fmt.Errorf(*restErr.Error.Message)
+			}
+		} else {
+			return err
+		}
+	}
+	// now, delete the relationship via its UUID
+	params2 := snapmirror.NewSnapmirrorRelationshipDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params2.SetContext(ctx)
+	params2.SetHTTPClient(c.httpClient)
+	params2.SetUUID(relationshipUUID)
+	params2.WithSourceInfoOnly(utils.Ptr(true))
+	snapmirrorRelationshipDeleteAccepted, err = c.api.Snapmirror.SnapmirrorRelationshipDelete(params2, c.authInfo)
+	if err != nil {
+		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code == ENTRY_DOESNT_EXIST {
+				return nil
+			}
+		} else {
+			return err
+		}
 	}
 	if snapmirrorRelationshipDeleteAccepted == nil {
 		return fmt.Errorf("unexpected response from snapmirror relationship delete")
@@ -5358,6 +5490,56 @@ func (c RestClient) JobScheduleExists(ctx context.Context, jobName string) (bool
 	return true, nil
 }
 
+// GetSVMState returns the SVM state from the backend storage.
+func (c *RestClient) GetSVMState(ctx context.Context) (string, error) {
+	svmResult, err := c.SvmGet(ctx, c.svmUUID)
+	if err != nil {
+		return "", err
+	}
+	if svmResult == nil || svmResult.Payload == nil || svmResult.Payload.UUID == nil {
+		return "", fmt.Errorf("could not find SVM %s (%s)", c.svmName, c.svmUUID)
+	}
+	if svmResult.Payload.State == nil {
+		return "", fmt.Errorf("could not find operational state of SVM %s", c.svmName)
+	}
+
+	return *svmResult.Payload.State, nil
+}
+
+func (c RestClient) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	// first, find the relationship so we can then use the UUID to update
+	relationship, err := c.SnapmirrorGet(ctx, localInternalVolumeName, c.SVMName(), "", "")
+	if err != nil {
+		return err
+	}
+	if relationship == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+	if relationship.UUID == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
+	}
+
+	params := snapmirror.NewSnapmirrorRelationshipTransferCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.SetContext(ctx)
+	params.SetHTTPClient(c.httpClient)
+	params.SetRelationshipUUID(string(*relationship.UUID))
+
+	params.Info = &models.SnapmirrorTransfer{}
+	if snapshotName != "" {
+		params.Info.SourceSnapshot = &snapshotName
+	}
+
+	snapmirrorRelationshipTransferCreateAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipTransferCreate(params,
+		c.authInfo)
+	if err != nil {
+		return err
+	}
+	if snapmirrorRelationshipTransferCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from snapmirror relationship transfer update")
+	}
+	return nil
+}
+
 // SNAPMIRROR operations END
 
 // SMBShareCreate creates an SMB share with the specified name and path.
@@ -5441,6 +5623,444 @@ func (c RestClient) SMBShareDestroy(ctx context.Context, shareName string) error
 	}
 
 	return nil
+}
+
+// NVMe Namespace operations
+// NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
+func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+	params := nvme.NewNvmeNamespaceCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.ReturnRecords = utils.Ptr(true)
+
+	sizeBytesStr, _ := utils.ConvertSizeToBytes(ns.Size)
+	sizeInBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+
+	nsInfo := &models.NvmeNamespace{
+		Name:   &ns.Name,
+		OsType: &ns.OsType,
+		Space: &models.NvmeNamespaceInlineSpace{
+			Size:      utils.Ptr(int64(sizeInBytes)),
+			BlockSize: utils.Ptr(int64(ns.BlockSize)),
+		},
+		Comment: &ns.Comment,
+		Svm:     &models.NvmeNamespaceInlineSvm{UUID: utils.Ptr(c.svmUUID)},
+	}
+
+	params.SetInfo(nsInfo)
+
+	nsCreateAccepted, err := c.api.NvMe.NvmeNamespaceCreate(params, c.authInfo)
+	if err != nil {
+		return "", err
+	}
+
+	if nsCreateAccepted.IsSuccess() {
+		nsResponse := nsCreateAccepted.GetPayload()
+		// Verify that the created namespace is the same as the one we requested.
+		if nsResponse != nil && nsResponse.NumRecords != nil && *nsResponse.NumRecords == 1 &&
+			*nsResponse.NvmeNamespaceResponseInlineRecords[0].Name == ns.Name {
+			return *nsResponse.NvmeNamespaceResponseInlineRecords[0].UUID, nil
+		}
+		return "", fmt.Errorf("namespace create call succeeded but newly created namespace not found")
+	}
+
+	return "", fmt.Errorf("namespace create failed with error %v", nsCreateAccepted.Error())
+}
+
+// NVMeNamespaceSetSize updates the namespace size to newSize.
+func (c RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
+	params := nvme.NewNvmeNamespaceModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = nsUUID
+	params.Info = &models.NvmeNamespace{
+		Space: &models.NvmeNamespaceInlineSpace{
+			Size: utils.Ptr(newSize),
+		},
+	}
+
+	nsModify, err := c.api.NvMe.NvmeNamespaceModify(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("namespace resize failed; %v", err)
+	}
+	if nsModify == nil {
+		return fmt.Errorf("namespace resize failed")
+	}
+
+	if nsModify.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("namespace resize failed, %v", nsModify.Error())
+}
+
+// NVMeNamespaceList finds Namespaces with the specified pattern.
+func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string) (*nvme.NvmeNamespaceCollectionGetOK, error) {
+	params := nvme.NewNvmeNamespaceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SvmUUID = utils.Ptr(c.svmUUID)
+	params.SetName(utils.Ptr(pattern))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := c.api.NvMe.NvmeNamespaceCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NextLoop:
+		for !done {
+			resultNext, errNext := c.api.NvMe.NvmeNamespaceCollectionGet(params, c.authInfo, WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil || resultNext.Payload == nil || resultNext.Payload.NumRecords == nil {
+				done = true
+				continue NextLoop
+			}
+
+			if result.Payload.NumRecords == nil {
+				result.Payload.NumRecords = utils.Ptr(int64(0))
+			}
+			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
+			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords, resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NextLoop
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// NVMeNamespaceGetByName gets the Namespace with the specified name.
+func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string) (*models.NvmeNamespace, error) {
+	result, err := c.NVMeNamespaceList(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil &&
+		*result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
+		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
+	}
+	return nil, fmt.Errorf("namespace %s not found", name)
+}
+
+// NVMe Subsystem operations
+// NVMeSubsystemAddNamespace adds namespace to subsystem-map
+func (c RestClient) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
+	params := nvme.NewNvmeSubsystemMapCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	subsystemMap := &models.NvmeSubsystemMap{
+		Namespace: &models.NvmeSubsystemMapInlineNamespace{UUID: utils.Ptr(nsUUID)},
+		Subsystem: &models.NvmeSubsystemMapInlineSubsystem{UUID: utils.Ptr(subsystemUUID)},
+		Svm:       &models.NvmeSubsystemMapInlineSvm{UUID: &c.svmUUID},
+	}
+
+	params.SetInfo(subsystemMap)
+
+	_, err := c.api.NvMe.NvmeSubsystemMapCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NVMeSubsystemRemoveNamespace removes a namespace from subsystem-map
+func (c RestClient) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
+	params := nvme.NewNvmeSubsystemMapDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SubsystemUUID = subsysUUID
+	params.NamespaceUUID = nsUUID
+
+	_, err := c.api.NvMe.NvmeSubsystemMapDelete(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("error while deleting namespace from subsystem map; %v", err)
+	}
+	return nil
+}
+
+// NVMeIsNamespaceMapped retrives a namespace from subsystem-map
+func (c RestClient) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string) (bool, error) {
+	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SubsystemUUID = &subsysUUID
+
+	getSubsys, err := c.api.NvMe.NvmeSubsystemMapCollectionGet(params, c.authInfo)
+	if err != nil {
+		return false, err
+	}
+	if getSubsys == nil {
+		return false, fmt.Errorf("unexpected response while getting subsystem map")
+	}
+
+	payload := getSubsys.GetPayload()
+
+	if payload == nil {
+		return false, fmt.Errorf("could not get subsystem map collection")
+	}
+
+	if *payload.NumRecords > 0 {
+		for count := 0; count < int(*payload.NumRecords); count++ {
+			record := payload.NvmeSubsystemMapResponseInlineRecords[count]
+			if record != nil && record.Namespace != nil && record.Namespace.UUID != nil &&
+				*record.Namespace.UUID == namespaceUUID {
+				return true, nil
+			}
+		}
+	}
+	// No record returned. This means the subsystem is not even in the map. Return success in this case
+	return false, nil
+}
+
+// NVMeNamespaceCount gets the number of namespaces mapped to a subsystem
+func (c RestClient) NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
+	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SubsystemUUID = &subsysUUID
+
+	getSubsys, err := c.api.NvMe.NvmeSubsystemMapCollectionGet(params, c.authInfo)
+	if err != nil {
+		return 0, err
+	}
+	if getSubsys == nil {
+		return 0, fmt.Errorf("unexpected response while getting subsystem map")
+	}
+
+	if getSubsys.IsSuccess() {
+		payload := getSubsys.GetPayload()
+		if payload != nil && payload.NumRecords != nil {
+			return *payload.NumRecords, nil
+		}
+	}
+
+	return 0, fmt.Errorf("failed to get subsystem map collection")
+}
+
+// Subsystem operations
+// NVMeSubsystemList returns a list of subsystems seen by the host
+func (c RestClient) NVMeSubsystemList(ctx context.Context, pattern string) (*nvme.NvmeSubsystemCollectionGetOK, error) {
+	if pattern == "" {
+		pattern = "*"
+	}
+
+	params := nvme.NewNvmeSubsystemCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SvmUUID = &c.svmUUID
+	params.SetName(utils.Ptr(pattern))
+	params.SetFields([]string{"**"}) // TODO trim these down to just what we need
+
+	result, err := c.api.NvMe.NvmeSubsystemCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		Logc(ctx).Debug("Result is empty")
+		return nil, nil
+	} else {
+		Logc(ctx).Debug("Result is", result.Payload)
+	}
+
+	if HasNextLink(result.Payload) {
+		nextLink := result.Payload.Links.Next
+		done := false
+	NextLoop:
+		for !done {
+			resultNext, errNext := c.api.NvMe.NvmeSubsystemCollectionGet(params, c.authInfo, WithNextLink(nextLink))
+			if errNext != nil {
+				return nil, errNext
+			}
+			if resultNext == nil {
+				done = true
+				continue NextLoop
+			}
+
+			*result.Payload.NumRecords += *resultNext.Payload.NumRecords
+			result.Payload.NvmeSubsystemResponseInlineRecords = append(result.Payload.NvmeSubsystemResponseInlineRecords, resultNext.Payload.NvmeSubsystemResponseInlineRecords...)
+
+			if !HasNextLink(resultNext.Payload) {
+				done = true
+				continue NextLoop
+			} else {
+				nextLink = resultNext.Payload.Links.Next
+			}
+		}
+	}
+	return result, nil
+}
+
+// NVMeSubsystemGetByName gets the subsystem with the specified name
+func (c RestClient) NVMeSubsystemGetByName(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error) {
+	result, err := c.NVMeSubsystemList(ctx, subsystemName)
+	if err != nil {
+		return nil, err
+	}
+
+	if result != nil && result.Payload != nil {
+		if *result.Payload.NumRecords == 1 && result.Payload.NvmeSubsystemResponseInlineRecords != nil {
+			return result.Payload.NvmeSubsystemResponseInlineRecords[0], nil
+		}
+	}
+	return nil, nil
+}
+
+// NVMeSubsystemCreate creates a new subsystem
+func (c RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error) {
+	params := nvme.NewNvmeSubsystemCreateParamsWithTimeout(c.httpClient.Timeout)
+	osType := "linux"
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.ReturnRecords = utils.Ptr(true)
+	params.Info = &models.NvmeSubsystem{
+		Name:   &subsystemName,
+		OsType: &osType,
+		Svm:    &models.NvmeSubsystemInlineSvm{Name: &c.svmName},
+	}
+
+	subsysCreated, err := c.api.NvMe.NvmeSubsystemCreate(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if subsysCreated == nil {
+		return nil, fmt.Errorf("unexpected response from subsystem create")
+	}
+
+	if subsysCreated.IsSuccess() {
+		subsPayload := subsysCreated.GetPayload()
+
+		if subsPayload != nil && *subsPayload.NumRecords == 1 &&
+			*subsPayload.NvmeSubsystemResponseInlineRecords[0].Name == subsystemName {
+			return subsPayload.NvmeSubsystemResponseInlineRecords[0], nil
+		}
+
+		return nil, fmt.Errorf("subsystem create call succeeded but newly created subsystem not found")
+	}
+
+	return nil, fmt.Errorf("subsystem create failed with error %v", subsysCreated.Error())
+}
+
+// NVMeSubsystemCreate deletes a given subsystem
+func (c RestClient) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
+	params := nvme.NewNvmeSubsystemDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.UUID = subsysUUID
+	// Set this value so that we don't need to call extra api call to unmap the hosts
+	params.AllowDeleteWithHosts = utils.Ptr(true)
+
+	subsysDeleted, err := c.api.NvMe.NvmeSubsystemDelete(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("issue while deleting the subsystem; %v", err)
+	}
+	if subsysDeleted == nil {
+		return fmt.Errorf("issue while deleting the subsystem")
+	}
+
+	if subsysDeleted.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("error while deleting subsystem")
+}
+
+// NVMeAddHostNqnToSubsystem adds the NQN of the host to the subsystem
+func (c RestClient) NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+	params := nvme.NewNvmeSubsystemHostCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SubsystemUUID = subsUUID
+	params.Info = &models.NvmeSubsystemHost{Nqn: &hostNQN}
+
+	hostAdded, err := c.api.NvMe.NvmeSubsystemHostCreate(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+	if hostAdded == nil {
+		return fmt.Errorf("issue while adding host to subsystem")
+	}
+
+	if hostAdded.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("error while adding host to subsystem %v", hostAdded.Error())
+}
+
+// NVMeRemoveHostFromSubsystem remove the NQN of the host from the subsystem
+func (c RestClient) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
+	params := nvme.NewNvmeSubsystemHostDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SubsystemUUID = subsUUID
+	params.Nqn = hostNQN
+
+	hostRemoved, err := c.api.NvMe.NvmeSubsystemHostDelete(params, c.authInfo)
+	if err != nil {
+		return fmt.Errorf("issue while removing host to subsystem; %v", err)
+	}
+	if hostRemoved.IsSuccess() {
+		return nil
+	}
+
+	return fmt.Errorf("error while removing host from subsystem; %v", hostRemoved.Error())
+}
+
+// NVMeGetHostsOfSubsystem retuns all the hosts connected to a subsystem
+func (c RestClient) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error) {
+	params := nvme.NewNvmeSubsystemHostCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SubsystemUUID = subsUUID
+
+	hostCollection, err := c.api.NvMe.NvmeSubsystemHostCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if hostCollection == nil {
+		return nil, fmt.Errorf("issue while getting hosts of the subsystem")
+	}
+
+	if hostCollection.IsSuccess() {
+		return hostCollection.GetPayload().NvmeSubsystemHostResponseInlineRecords, nil
+	}
+
+	return nil, fmt.Errorf("get hosts of a subsystem call failed")
+}
+
+// NVMeNamespaceSize returns the size of the namespace
+func (c RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error) {
+	namespace, err := c.NVMeNamespaceGetByName(ctx, namespacePath)
+	if err != nil {
+		return 0, err
+	}
+	if namespace == nil {
+		return 0, fmt.Errorf("could not find namespace with name %v", namespace)
+	}
+	size := namespace.Space.Size
+	return int(*size), nil
 }
 
 // ///////////////////////////////////////////////////////////////////////////

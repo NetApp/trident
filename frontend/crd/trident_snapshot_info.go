@@ -8,7 +8,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 
@@ -16,7 +16,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // updateTSIStatus updates the TridentSnapshotInfo.status fields on the specified TridentSnapshotInfo resource
@@ -69,7 +69,7 @@ func (c *TridentCrdController) handleTridentSnapshotInfo(keyItem *KeyItem) error
 	snapshotInfo, err := c.snapshotInfoLister.TridentSnapshotInfos(namespace).Get(name)
 	if err != nil {
 		// The resource may no longer exist, in which case we stop processing.
-		if errors.IsNotFound(err) {
+		if k8sapierrors.IsNotFound(err) {
 			Logx(ctx).WithField("key", key).Debug("Object in work queue no longer exists.")
 			return nil
 		}
@@ -140,7 +140,7 @@ func (c *TridentCrdController) getSnapshotHandle(
 		ctx,
 		snapshotInfo.Spec.SnapshotName, metav1.GetOptions{},
 	)
-	if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+	if statusErr, ok := err.(*k8sapierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 		message := fmt.Sprintf(
 			"VolumeSnapshot '%v' for TridentSnapshotInfo '%v' does not yet exist.",
 			snapshotInfo.Spec.SnapshotName, snapshotInfo.Name,
@@ -150,9 +150,9 @@ func (c *TridentCrdController) getSnapshotHandle(
 			"VolumeSnapshot '%v' does not exist in namespace '%v'", snapshotInfo.Spec.SnapshotName,
 			snapshotInfo.Namespace)
 		// If PVC does not yet exist, do not update the TSI and retry later
-		return "", utils.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	} else if err != nil {
-		return "", utils.ReconcileDeferredError(err)
+		return "", errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	// Check if volumeSnapshot is bound to a volumeSnapshotContent
@@ -169,13 +169,13 @@ func (c *TridentCrdController) getSnapshotHandle(
 		Logx(ctx).Debug(message)
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoUpdateFailed,
 			"VolumeSnapshot '%v' is not bound to a VolumeSnapshotContent", snapshotInfo.Spec.SnapshotName)
-		return "", utils.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	}
 	snapContent, err := c.snapshotClientSet.SnapshotV1().VolumeSnapshotContents().Get(
 		ctx, snapContentName,
 		metav1.GetOptions{},
 	)
-	if statusErr, ok := err.(*errors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+	if statusErr, ok := err.(*k8sapierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
 		message := fmt.Sprintf(
 			"VolumeSnapshotContent '%v' for VolumeSnapshot '%v' does not yet exist.",
 			snapContentName, k8sSnapshot.Name,
@@ -184,9 +184,9 @@ func (c *TridentCrdController) getSnapshotHandle(
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoUpdateFailed,
 			"VolumeSnapshotContent '%v' does not exist", snapContentName)
 		// If VSC does not yet exist, do not update the TSI and retry later
-		return "", utils.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	} else if err != nil {
-		return "", utils.ReconcileDeferredError(err)
+		return "", errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
 	// Check if VolumeSnapshotContent is a Trident snapshot
@@ -204,7 +204,7 @@ func (c *TridentCrdController) getSnapshotHandle(
 		Logx(ctx).Debug(message)
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoUpdateFailed,
 			"SnapshotHandle for VolumeSnapshotContent '%v' is not set", k8sSnapshot.Name)
-		return "", utils.ReconcileDeferredError(fmt.Errorf(message))
+		return "", errors.ReconcileDeferredError(message)
 	}
 
 	// Verify the snapshot is ONTAP

@@ -5,7 +5,6 @@ package solidfire
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -24,6 +23,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -123,8 +123,10 @@ func (d *SANStorageDriver) Initialize(
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string, backendUUID string,
 ) error {
 	fields := LogFields{"Method": "Initialize", "Type": "SANStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
+	Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Initialize")
+	defer Logd(ctx, commonConfig.StorageDriverName,
+		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	commonConfig.DriverContext = context
 
@@ -281,6 +283,13 @@ func (d *SANStorageDriver) Initialize(
 		return errors.New("error encountered validating SolidFire driver on init")
 	}
 
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
+
 	// log cluster node serial numbers asynchronously since the API can take a long time
 	go d.getNodeSerialNumbers(ctx, config.CommonStorageDriverConfig)
 
@@ -381,8 +390,10 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.SolidfireStorageDriverConfig,
 ) error {
 	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
 	// SF prefix is always empty
 	prefix := ""
@@ -910,7 +921,7 @@ func (d *SANStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	sourceName := cloneVolConfig.CloneSourceVolumeInternal
-	snapshotName := cloneVolConfig.CloneSourceSnapshot
+	snapshotName := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":      "CreateClone",
@@ -1130,9 +1141,18 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
+		publishInfo := utils.VolumePublishInfo{
+			DevicePath: "",
+			VolumeAccessInfo: utils.VolumeAccessInfo{
+				IscsiAccessInfo: utils.IscsiAccessInfo{
+					IscsiTargetIQN: v.Iqn,
+					IscsiLunNumber: 0,
+				},
+			},
+		}
 
 		// Inform the host about the device removal
-		if _, err = utils.PrepareDeviceForRemoval(ctx, 0, v.Iqn, true, false); err != nil {
+		if _, err = utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
 			Logc(ctx).Warningf("Unable to prepare device for removal, attempting to detach anyway: %v", err)
 		}
 
@@ -1176,7 +1196,7 @@ func (d *SANStorageDriver) Publish(
 	// Get the fstype
 	attrs, _ := v.Attributes.(map[string]interface{})
 	fstype := drivers.DefaultFileSystemType
-	if str, ok := attrs["fstype"].(string); ok {
+	if str, ok := attrs["fstype"].(string); ok && str != "" {
 		fstype = str
 	}
 
@@ -1204,6 +1224,7 @@ func (d *SANStorageDriver) Publish(
 	publishInfo.FilesystemType = fstype
 	publishInfo.UseCHAP = true
 	publishInfo.SharedTarget = false
+	publishInfo.SANType = sa.ISCSI
 
 	return nil
 }
@@ -1350,8 +1371,8 @@ func (d *SANStorageDriver) CreateSnapshot(
 
 	snapshot, err := d.Client.CreateSnapshot(ctx, &req)
 	if err != nil {
-		if utils.IsMaxLimitReachedError(err) {
-			return nil, utils.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: %+v", err))
+		if errors.IsMaxLimitReachedError(err) {
+			return nil, errors.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: %+v", err))
 		}
 		return nil, fmt.Errorf("could not create snapshot: %+v", err)
 	}
@@ -1568,6 +1589,19 @@ func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend sto
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *SANStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.SolidfireStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "SANStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. AccountID
+	// 2. Tenant name
+	// For now, SolidFire will only report 1 storage pool.
+	return []drivers.SolidfireStorageBackendPool{{AccountID: d.AccountID, TenantName: d.Config.TenantName}}
 }
 
 func (d *SANStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
@@ -1930,7 +1964,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	volSizeBytes := uint64(volume.TotalSize)
 	if sizeBytes < volSizeBytes {
-		return utils.UnsupportedCapacityRangeError(fmt.Errorf(
+		return errors.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested size %d is less than existing volume size %d", sizeBytes, volSizeBytes))
 	}
 
@@ -1963,7 +1997,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
+func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

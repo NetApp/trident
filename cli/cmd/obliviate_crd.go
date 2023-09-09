@@ -1,10 +1,9 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -53,8 +53,9 @@ var obliviateCRDCmd = &cobra.Command{
 				}
 			}
 			command := []string{"obliviate", "crd", fmt.Sprintf("--%s", forceConfirmation)}
-			TunnelCommand(command)
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			if err := initClients(); err != nil {
 				return err
@@ -104,6 +105,10 @@ func deleteCRs() error {
 		return err
 	}
 
+	if err := deleteTridentActionMirrorUpdates(); err != nil {
+		return err
+	}
+
 	if err := deleteTridentSnapshotInfos(); err != nil {
 		return err
 	}
@@ -143,6 +148,10 @@ func deleteCRs() error {
 	}
 
 	if err := deleteVolumeReferences(); err != nil {
+		return err
+	}
+
+	if err := deleteActionSnapshotRestores(); err != nil {
 		return err
 	}
 
@@ -310,6 +319,65 @@ func deleteTridentMirrorRelationships() error {
 
 		deleteFunc := crdClientset.TridentV1().TridentMirrorRelationships(relationship.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), relationship.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteTridentActionMirrorUpdates() error {
+	crd := "tridentactionmirrorupdates.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	tridentActionMirrorUpdates, err := crdClientset.TridentV1().TridentActionMirrorUpdates(allNamespaces).List(ctx(),
+		listOpts)
+	if err != nil {
+		return err
+	} else if len(tridentActionMirrorUpdates.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, mirrorUpdate := range tridentActionMirrorUpdates.Items {
+		if mirrorUpdate.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentActionMirrorUpdates(mirrorUpdate.Namespace).Delete(ctx(),
+				mirrorUpdate.Name, deleteOpts)
+		}
+	}
+
+	tridentActionMirrorUpdates, err = crdClientset.TridentV1().TridentActionMirrorUpdates(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, mirrorUpdate := range tridentActionMirrorUpdates.Items {
+		if mirrorUpdate.HasTridentFinalizers() {
+			crCopy := mirrorUpdate.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentActionMirrorUpdates(mirrorUpdate.Namespace).Update(ctx(), crCopy,
+				updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentActionMirrorUpdates(mirrorUpdate.Namespace).Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), mirrorUpdate.Name, nil); err != nil {
 			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}
@@ -829,6 +897,64 @@ func deleteVolumeReferences() error {
 	return nil
 }
 
+func deleteActionSnapshotRestores() error {
+	crd := "tridentactionsnapshotrestores.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithField("CRD", crd).Debug("CRD not present.")
+		return nil
+	}
+
+	vrefs, err := crdClientset.TridentV1().TridentActionSnapshotRestores(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(vrefs.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, vref := range vrefs.Items {
+		if vref.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentActionSnapshotRestores(vref.Namespace).Delete(ctx(),
+				vref.Name, deleteOpts)
+		}
+	}
+
+	vrefs, err = crdClientset.TridentV1().TridentActionSnapshotRestores(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, vref := range vrefs.Items {
+		if vref.HasTridentFinalizers() {
+			crCopy := vref.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentActionSnapshotRestores(vref.Namespace).Update(ctx(),
+				crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentActionSnapshotRestores(vref.Namespace).Delete
+		if err = deleteWithRetry(deleteFunc, ctx(), vref.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
 func deleteCRDs() error {
 	crdNames := []string{
 		"tridentversions.trident.netapp.io",
@@ -836,6 +962,7 @@ func deleteCRDs() error {
 		"tridentbackends.trident.netapp.io",
 		"tridentstorageclasses.trident.netapp.io",
 		"tridentmirrorrelationships.trident.netapp.io",
+		"tridentactionmirrorupdates.trident.netapp.io",
 		"tridentsnapshotinfos.trident.netapp.io",
 		"tridentvolumes.trident.netapp.io",
 		"tridentnodes.trident.netapp.io",
@@ -843,6 +970,7 @@ func deleteCRDs() error {
 		"tridentsnapshots.trident.netapp.io",
 		"tridentvolumepublications.trident.netapp.io",
 		"tridentvolumereferences.trident.netapp.io",
+		"tridentactionsnapshotrestores.trident.netapp.io",
 	}
 
 	for _, crdName := range crdNames {

@@ -22,6 +22,7 @@ import (
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type listResponse interface {
@@ -31,9 +32,9 @@ type listResponse interface {
 func httpStatusCodeForAdd(err error) int {
 	if err == nil {
 		return http.StatusCreated
-	} else if utils.IsNotReadyError(err) {
+	} else if errors.IsNotReadyError(err) {
 		return http.StatusServiceUnavailable
-	} else if utils.IsBootstrapError(err) {
+	} else if errors.IsBootstrapError(err) {
 		return http.StatusInternalServerError
 	} else {
 		return http.StatusBadRequest
@@ -43,11 +44,11 @@ func httpStatusCodeForAdd(err error) int {
 func httpStatusCodeForGetUpdateList(err error) int {
 	if err == nil {
 		return http.StatusOK
-	} else if utils.IsNotReadyError(err) {
+	} else if errors.IsNotReadyError(err) {
 		return http.StatusServiceUnavailable
-	} else if utils.IsBootstrapError(err) {
+	} else if errors.IsBootstrapError(err) {
 		return http.StatusInternalServerError
-	} else if utils.IsNotFoundError(err) {
+	} else if errors.IsNotFoundError(err) {
 		return http.StatusNotFound
 	} else {
 		return http.StatusBadRequest
@@ -57,11 +58,11 @@ func httpStatusCodeForGetUpdateList(err error) int {
 func httpStatusCodeForDelete(err error) int {
 	if err == nil {
 		return http.StatusOK
-	} else if utils.IsNotReadyError(err) {
+	} else if errors.IsNotReadyError(err) {
 		return http.StatusServiceUnavailable
-	} else if utils.IsBootstrapError(err) {
+	} else if errors.IsBootstrapError(err) {
 		return http.StatusInternalServerError
-	} else if utils.IsNotFoundError(err) {
+	} else if errors.IsNotFoundError(err) {
 		return http.StatusNotFound
 	} else {
 		return http.StatusBadRequest
@@ -253,8 +254,8 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 	GetGeneric(w, r, response,
 		func(map[string]string) int {
 			response.GoVersion = runtime.Version()
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowCoreVersion,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowCoreVersion, LogLayerRESTFrontend)
+
 			version, err := orchestrator.GetVersion(ctx)
 			if err != nil {
 				response.Error = err.Error()
@@ -269,8 +270,8 @@ func AddBackend(w http.ResponseWriter, r *http.Request) {
 	response := &AddBackendResponse{}
 	AddGeneric(w, r, response,
 		func(body []byte) int {
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendCreate,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendCreate, LogLayerRESTFrontend)
+
 			backend, err := orchestrator.AddBackend(ctx, string(body), "")
 			if err != nil {
 				response.setError(err)
@@ -314,8 +315,8 @@ func UpdateBackend(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateBackendResponse{}
 	UpdateGeneric(w, r, response,
 		func(w http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate, LogLayerRESTFrontend)
+
 			updateResponse, ok := response.(*UpdateBackendResponse)
 			if !ok {
 				response.setError(fmt.Errorf("response object must be of type UpdateBackendResponse"))
@@ -348,9 +349,9 @@ func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
 				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForGetUpdateList(err)
 			}
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate,
-				LogLayerRESTFrontend)
-			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.State)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate, LogLayerRESTFrontend)
+
+			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.BackendState, request.UserBackendState)
 			if err != nil {
 				updateResponse.Error = err.Error()
 			}
@@ -376,8 +377,8 @@ func ListBackends(w http.ResponseWriter, r *http.Request) {
 	ListGeneric(w, r, response,
 		func(_ map[string]string) int {
 			backendNames := make([]string, 0)
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendList,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendList, LogLayerRESTFrontend)
+
 			backends, err := orchestrator.ListBackends(ctx)
 			if err != nil {
 				Logc(r.Context()).Errorf("ListBackends: %v", err)
@@ -412,8 +413,8 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 			backend := vars["backend"]
 			var result *storage.BackendExternal
 			var err error
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendGet,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendGet, LogLayerRESTFrontend)
+
 			if IsValidUUID(backend) {
 				result, err = orchestrator.GetBackendByBackendUUID(ctx, backend)
 			} else {
@@ -435,8 +436,8 @@ func GetBackend(w http.ResponseWriter, r *http.Request) {
 // conditions and the additional bookkeeping that would be required.
 func DeleteBackend(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
-		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowBackendDelete,
-			LogLayerRESTFrontend)
+		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowBackendDelete, LogLayerRESTFrontend)
+
 		return orchestrator.DeleteBackend(ctx, vars["backend"])
 	})
 }
@@ -481,8 +482,8 @@ func AddVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeCreate,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeCreate, LogLayerRESTFrontend)
+
 			volume, err := orchestrator.AddVolume(ctx, volumeConfig)
 			if err != nil {
 				response.setError(err)
@@ -515,9 +516,7 @@ func ListVolumes(w http.ResponseWriter, r *http.Request) {
 			)
 
 			volumeNames := make([]string, 0)
-
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeList,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeList, LogLayerRESTFrontend)
 
 			if r.URL.Query().Has("subordinateOf") {
 				volumes, err = orchestrator.ListSubordinateVolumes(ctx, r.URL.Query().Get("subordinateOf"))
@@ -551,8 +550,8 @@ func GetVolume(w http.ResponseWriter, r *http.Request) {
 	response := &GetVolumeResponse{}
 	GetGeneric(w, r, response,
 		func(vars map[string]string) int {
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeGet,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeGet, LogLayerRESTFrontend)
+
 			volume, err := orchestrator.GetVolume(ctx, vars["volume"])
 			if err != nil {
 				response.Error = err.Error()
@@ -566,8 +565,8 @@ func GetVolume(w http.ResponseWriter, r *http.Request) {
 
 func DeleteVolume(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
-		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowVolumeDelete,
-			LogLayerRESTFrontend)
+		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowVolumeDelete, LogLayerRESTFrontend)
+
 		return orchestrator.DeleteVolume(ctx, vars["volume"])
 	})
 }
@@ -607,7 +606,7 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 	volume, err := orchestrator.GetVolume(r.Context(), vars["volume"])
 	if err != nil {
 		updateResponse.Error = err.Error()
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return http.StatusNotFound
 		} else {
 			return http.StatusInternalServerError
@@ -621,10 +620,10 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 		return http.StatusBadRequest
 	}
 
-	err = orchestrator.UpdateVolume(r.Context(), vars["volume"], passphraseNames)
+	err = orchestrator.UpdateVolumeLUKSPassphraseNames(r.Context(), vars["volume"], passphraseNames)
 	if err != nil {
 		response.setError(fmt.Errorf("failed to update LUKS passphrase names for volume %s: %s", vars["volume"], err.Error()))
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			return http.StatusNotFound
 		}
 		return http.StatusInternalServerError
@@ -636,6 +635,61 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 func UpdateVolumeLUKSPassphraseNames(w http.ResponseWriter, r *http.Request) {
 	response := &UpdateVolumeResponse{}
 	UpdateGeneric(w, r, response, volumeLUKSPassphraseNamesUpdater)
+}
+
+func UpdateVolume(w http.ResponseWriter, r *http.Request) {
+	response := &UpdateVolumeResponse{}
+	UpdateGeneric(w, r, response, volumeUpdater)
+}
+
+func volumeUpdater(
+	_ http.ResponseWriter, r *http.Request,
+	response httpResponse, vars map[string]string, body []byte,
+) int {
+	ctx := r.Context()
+	Logc(ctx).Debug(">>>> volumeUpdater")
+	defer Logc(ctx).Debug("<<<< volumeUpdater")
+
+	updateResponse, ok := response.(*UpdateVolumeResponse)
+	if !ok {
+		response.setError(fmt.Errorf("response object must be of type UpdateVolumeResponse"))
+		return http.StatusInternalServerError
+	}
+
+	updateVolRequest := &utils.VolumeUpdateInfo{}
+	err := json.Unmarshal(body, updateVolRequest)
+	if err != nil {
+		updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
+		return http.StatusBadRequest
+	}
+
+	volName := vars["volume"]
+
+	// Update the volume
+	Logc(ctx).Debugf("Updating volume %v with update info %v", volName, updateVolRequest)
+
+	err = orchestrator.UpdateVolume(ctx, volName, updateVolRequest)
+	if err != nil {
+		updateResponse.Error = err.Error()
+		if errors.IsInvalidInputError(err) {
+			return http.StatusBadRequest
+		} else if errors.IsNotFoundError(err) {
+			return http.StatusNotFound
+		} else {
+			return http.StatusInternalServerError
+		}
+	}
+
+	// Get the updated volume and set back in response
+	volumeExternal, err := orchestrator.GetVolume(ctx, volName)
+	if err != nil {
+		updateResponse.Error = err.Error()
+		return http.StatusInternalServerError
+	}
+
+	updateResponse.Volume = volumeExternal
+
+	return http.StatusOK
 }
 
 type ImportVolumeResponse struct {
@@ -685,8 +739,8 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.setError(err)
 				return httpStatusCodeForAdd(err)
 			}
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeImport,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeImport, LogLayerRESTFrontend)
+
 			k8sFrontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
 			if err != nil {
 				response.setError(err)
@@ -706,77 +760,6 @@ func ImportVolume(w http.ResponseWriter, r *http.Request) {
 				response.Volume = volume
 			}
 			return httpStatusCodeForAdd(err)
-		},
-	)
-}
-
-type UpgradeVolumeResponse struct {
-	Volume *storage.VolumeExternal `json:"volume"`
-	Error  string                  `json:"error,omitempty"`
-}
-
-func (i *UpgradeVolumeResponse) setError(err error) {
-	i.Error = err.Error()
-}
-
-func (i *UpgradeVolumeResponse) isError() bool {
-	return i.Error != ""
-}
-
-func (i *UpgradeVolumeResponse) logSuccess(ctx context.Context) {
-	Logc(ctx).WithFields(LogFields{
-		"handler": "UpgradeVolume",
-		"volume":  i.Volume.Config.Name,
-	}).Info("Upgraded an existing volume.")
-}
-
-func (i *UpgradeVolumeResponse) logFailure(ctx context.Context) {
-	Logc(ctx).WithFields(LogFields{
-		"handler": "UpgradeVolume",
-	}).Error(i.Error)
-}
-
-func UpgradeVolume(w http.ResponseWriter, r *http.Request) {
-	response := &UpgradeVolumeResponse{}
-	UpdateGeneric(w, r, response,
-		func(w http.ResponseWriter, r *http.Request, response httpResponse, _ map[string]string, body []byte) int {
-			updateResponse, ok := response.(*UpgradeVolumeResponse)
-			if !ok {
-				response.setError(fmt.Errorf("response object must be of type UpgradeVolumeResponse"))
-				return http.StatusInternalServerError
-			}
-			upgradeVolumeRequest := new(storage.UpgradeVolumeRequest)
-			err := json.Unmarshal(body, upgradeVolumeRequest)
-			if err != nil {
-				updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
-				return httpStatusCodeForGetUpdateList(err)
-			}
-			if err = upgradeVolumeRequest.Validate(); err != nil {
-				updateResponse.setError(err)
-				return httpStatusCodeForAdd(err)
-			}
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowVolumeUpgrade,
-				LogLayerRESTFrontend)
-			k8sHelperFrontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
-			if err != nil {
-				updateResponse.setError(err)
-				return httpStatusCodeForAdd(err)
-			}
-			k8sHelper, ok := k8sHelperFrontend.(k8shelper.K8SControllerHelperPlugin)
-			if !ok {
-				err = fmt.Errorf("unable to obtain K8S helper frontend")
-				updateResponse.setError(err)
-				return httpStatusCodeForAdd(err)
-			}
-
-			volume, err := k8sHelper.UpgradeVolume(ctx, upgradeVolumeRequest)
-			if err != nil {
-				updateResponse.Error = err.Error()
-			}
-			if volume != nil {
-				updateResponse.Volume = volume
-			}
-			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
 }
@@ -821,9 +804,8 @@ func AddStorageClass(w http.ResponseWriter, r *http.Request) {
 				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
 				return httpStatusCodeForAdd(err)
 			}
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassCreate, LogLayerRESTFrontend)
 
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassCreate,
-				LogLayerRESTFrontend)
 			sc, err := orchestrator.AddStorageClass(ctx, scConfig)
 			if err != nil {
 				response.setError(err)
@@ -850,8 +832,8 @@ func ListStorageClasses(w http.ResponseWriter, r *http.Request) {
 	ListGeneric(w, r, response,
 		func(_ map[string]string) int {
 			storageClassNames := make([]string, 0)
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassList,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassList, LogLayerRESTFrontend)
+
 			storageClasses, err := orchestrator.ListStorageClasses(ctx)
 			if err != nil {
 				response.Error = err.Error()
@@ -876,8 +858,8 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 	response := &GetStorageClassResponse{}
 	GetGeneric(w, r, response,
 		func(vars map[string]string) int {
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassList,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassList, LogLayerRESTFrontend)
+
 			storageClass, err := orchestrator.GetStorageClass(ctx, vars["storageClass"])
 			if err != nil {
 				response.Error = err.Error()
@@ -891,8 +873,8 @@ func GetStorageClass(w http.ResponseWriter, r *http.Request) {
 
 func DeleteStorageClass(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
-		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassDelete,
-			LogLayerRESTFrontend)
+		ctx = GenerateRequestContext(r.Context(), "", "", WorkflowStorageClassDelete, LogLayerRESTFrontend)
+
 		return orchestrator.DeleteStorageClass(ctx, vars["storageClass"])
 	})
 }
@@ -953,8 +935,8 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			}
 
 			var csiFrontend frontend.Plugin
-			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowNodeCreate,
-				LogLayerRESTFrontend)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowNodeCreate, LogLayerRESTFrontend)
+
 			csiFrontend, err = orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
 			if err != nil {
 				csiFrontend, err = orchestrator.GetFrontend(ctx, controllerhelpers.PlainCSIHelper)

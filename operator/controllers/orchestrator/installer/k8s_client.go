@@ -1,8 +1,9 @@
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
+
 package installer
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -20,6 +21,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // K8sClient is a method receiver that implements the ExtendedK8sClient interface
@@ -170,7 +172,7 @@ func (k *K8sClient) GetCSIDriverInformation(csiDriverName, appLabel string, shou
 
 		Log().Debug("Deleting unlabeled Trident CSI Driver by name as it can cause issues during installation.")
 		if err = k.DeleteCSIDriver(csiDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
 			}
 		} else {
@@ -264,7 +266,7 @@ func (k *K8sClient) DeleteCSIDriverCR(csiDriverName, appLabel string) error {
 		Log().Debug("Deleting unlabeled Trident CSI Driver by name as it may have been created outside of the Trident" +
 			" Operator.")
 		if err = k.DeleteCSIDriver(csiDriverName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident CSI driver custom resource.")
 			}
 		} else {
@@ -368,7 +370,7 @@ func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, 
 
 		Log().Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
 		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role")
 			}
 		} else {
@@ -427,7 +429,7 @@ func (k *K8sClient) GetMultipleRoleInformation(roleNames []string, appLabel stri
 		Log().Debug("Deleting unlabeled Trident role by name as it can cause issues during installation.")
 		for _, roleName := range roleNames {
 			if err = k.DeleteRole(roleName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role")
 				}
 			} else {
@@ -570,7 +572,7 @@ func (k *K8sClient) DeleteTridentClusterRole(clusterRoleName, appLabel string) e
 		Log().Debug("Deleting unlabeled Trident cluster role by name as it may have been created outside of the Trident" +
 			" Operator.")
 		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role.")
 			}
 		} else {
@@ -612,7 +614,7 @@ func (k *K8sClient) DeleteMultipleTridentRoles(roleNames []string, appLabel stri
 			" Operator.")
 		for _, roleName := range roleNames {
 			if err = k.DeleteRole(roleName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role.")
 				}
 			} else {
@@ -655,7 +657,7 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, app
 
 		Log().Debug("Deleting unlabeled Trident cluster role binding by name as it can cause issues during installation.")
 		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role binding.")
 			}
 		} else {
@@ -754,7 +756,7 @@ func (k *K8sClient) DeleteTridentClusterRoleBinding(clusterRoleBindingName, appL
 		Log().Debug("Deleting unlabeled Trident cluster role binding by name as it may have been created outside of the" +
 			" Trident Operator.")
 		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident cluster role binding.")
 			}
 		} else {
@@ -865,7 +867,7 @@ func (k *K8sClient) GetMultipleRoleBindingInformation(
 		Log().Debug("Deleting unlabeled Trident role binding by name as it can cause issues during installation.")
 		for _, roleBindingName := range roleBindingNames {
 			if err = k.DeleteRoleBinding(roleBindingName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role binding.")
 				}
 			} else {
@@ -970,7 +972,7 @@ func (k *K8sClient) DeleteMultipleTridentRoleBindings(roleBindingNames []string,
 			" Trident Operator.")
 		for _, roleBindingName := range roleBindingNames {
 			if err := k.DeleteRoleBinding(roleBindingName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident role binding.")
 				}
 			} else {
@@ -1315,7 +1317,7 @@ func (k *K8sClient) DeleteTridentDaemonSet(nodeLabel string) error {
 	return nil
 }
 
-// RemoveMultipleDaemonSets removes a list of unwanted beta CSI drivers in a namespace
+// RemoveMultipleDaemonSets removes a list of Trident DaemonSet.
 func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonSet) error {
 	var err error
 	var anyError bool
@@ -1324,7 +1326,7 @@ func (k *K8sClient) RemoveMultipleDaemonSets(unwantedDaemonSets []appsv1.DaemonS
 	if len(unwantedDaemonSets) > 0 {
 		for _, daemonSetToRemove := range unwantedDaemonSets {
 			// Delete the daemonset
-			if err = k.DeleteDaemonSet(daemonSetToRemove.Name, daemonSetToRemove.Namespace, true); err != nil {
+			if err = k.DeleteDaemonSet(daemonSetToRemove.Name, daemonSetToRemove.Namespace, false); err != nil {
 				Log().WithFields(LogFields{
 					"deployment": daemonSetToRemove.Name,
 					"namespace":  daemonSetToRemove.Namespace,
@@ -1408,7 +1410,7 @@ func (k *K8sClient) GetDeploymentInformation(deploymentName, appLabel, namespace
 func (k *K8sClient) PutDeployment(
 	currentDeployment *appsv1.Deployment, createDeployment bool, newDeploymentYAML, appLabel string,
 ) error {
-	deploymentName := getDeploymentName(true)
+	deploymentName := getDeploymentName()
 	logFields := LogFields{
 		"deployment": deploymentName,
 		"namespace":  k.Namespace(),
@@ -1538,7 +1540,7 @@ func (k *K8sClient) GetMultiplePodSecurityPolicyInformation(
 		Log().Debug("Deleting unlabeled Trident pod security policy by name as it can cause issues during installation.")
 		for _, pspName := range pspNames {
 			if err = k.DeletePodSecurityPolicy(pspName); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident pod security policy.")
 				}
 			} else {
@@ -1640,7 +1642,7 @@ func (k *K8sClient) DeleteTridentPodSecurityPolicy(pspName, appLabel string) err
 		Log().Debug("Deleting unlabeled Trident pod security policy account by name as it may have been created outside" +
 			" of the Trident Operator.")
 		if err = k.DeletePodSecurityPolicy(pspName); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident pod security policy.")
 			}
 		} else {
@@ -1714,7 +1716,7 @@ func (k *K8sClient) GetSecretInformation(secretName, appLabel, namespace string,
 
 		Log().Debug("Deleting unlabeled Trident secret by name as it can cause issues during installation.")
 		if err = k.DeleteSecret(secretName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident secret.")
 			}
 		} else {
@@ -1801,7 +1803,7 @@ func (k *K8sClient) DeleteTridentSecret(secretName, appLabel, namespace string) 
 
 		Log().Debug("Deleting unlabeled Trident secret by name as it may have been created outside of the Trident Operator.")
 		if err = k.DeleteSecret(secretName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident secret.")
 			}
 		} else {
@@ -1892,7 +1894,7 @@ func (k *K8sClient) GetServiceInformation(serviceName, appLabel, namespace strin
 
 		Log().Debug("Deleting unlabeled Trident service by name as it can cause issues during installation.")
 		if err = k.DeleteService(serviceName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident service.")
 			}
 		} else {
@@ -1992,7 +1994,7 @@ func (k *K8sClient) DeleteTridentService(serviceName, appLabel, namespace string
 
 		Log().Debug("Deleting unlabeled Trident service by name as it may have been created outside of the Trident Operator.")
 		if err = k.DeleteService(serviceName, namespace); err != nil {
-			if !utils.IsResourceNotFoundError(err) {
+			if !errors.IsResourceNotFoundError(err) {
 				Log().WithField("error", err).Warning("Could not delete Trident service.")
 			}
 		} else {
@@ -2077,7 +2079,7 @@ func (k *K8sClient) GetMultipleServiceAccountInformation(
 		Log().Debug("Deleting unlabeled Trident service account by name as it can cause issues during installation.")
 		for _, accountName := range serviceAccountNames {
 			if err = k.DeleteServiceAccount(accountName, namespace, false); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident service account.")
 				}
 			} else {
@@ -2192,7 +2194,7 @@ func (k *K8sClient) DeleteMultipleTridentServiceAccounts(serviceAccountNames []s
 			" Trident Operator.")
 		for _, serviceAccountName := range serviceAccountNames {
 			if err = k.DeleteServiceAccount(serviceAccountName, namespace, false); err != nil {
-				if !utils.IsResourceNotFoundError(err) {
+				if !errors.IsResourceNotFoundError(err) {
 					Log().WithField("error", err).Warning("Could not delete Trident service account.")
 				}
 			} else {
@@ -2389,38 +2391,6 @@ func (k *K8sClient) DeleteMultipleOpenShiftSCC(
 	return nil
 }
 
-// DeleteTridentStatefulSet deletes an Operator-based StatefulSet associated with Trident.
-func (k *K8sClient) DeleteTridentStatefulSet(appLabel string) error {
-	// Delete Trident statefulSet
-	if statefulSets, err := k.GetStatefulSetsByLabel(appLabel, true); err != nil {
-		Log().WithFields(LogFields{
-			"label": appLabel,
-			"error": err,
-		}).Errorf("Unable to get list of statefulsets by label.")
-		return fmt.Errorf("unable to get list of statefulsets")
-	} else if len(statefulSets) == 0 {
-		Log().WithFields(LogFields{
-			"label": appLabel,
-			"error": err,
-		}).Warn("Trident Statefulset not found.")
-	} else {
-		if len(statefulSets) == 1 {
-			Log().WithFields(LogFields{
-				"statefulSet": statefulSets[0].Name,
-				"namespace":   statefulSets[0].Namespace,
-			}).Info("Trident Statefulset found by label.")
-		} else {
-			Log().WithField("label", appLabel).Warnf("Multiple Statefulsets found matching label; removing all.")
-		}
-
-		if err = k.RemoveMultipleStatefulSets(statefulSets); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // RemoveMultiplePods removes a list of unwanted pods in a namespace
 func (k *K8sClient) RemoveMultiplePods(unwantedPods []corev1.Pod) error {
 	var err error
@@ -2451,42 +2421,6 @@ func (k *K8sClient) RemoveMultiplePods(unwantedPods []corev1.Pod) error {
 
 	if anyError {
 		return fmt.Errorf("unable to delete pod(s): %v", undeletedPods)
-	}
-
-	return nil
-}
-
-// RemoveMultipleStatefulSets removes a list of unwanted statefulsets in a namespace
-func (k *K8sClient) RemoveMultipleStatefulSets(unwantedStatefulSets []appsv1.StatefulSet) error {
-	var err error
-	var anyError bool
-	var undeletedStatefulSets []string
-
-	if len(unwantedStatefulSets) > 0 {
-		for _, statefulSetToRemove := range unwantedStatefulSets {
-			// Delete the statefulset
-			if err = k.DeleteStatefulSet(statefulSetToRemove.Name, statefulSetToRemove.Namespace); err != nil {
-				Log().WithFields(LogFields{
-					"statefulset": statefulSetToRemove.Name,
-					"namespace":   statefulSetToRemove.Namespace,
-					"error":       err,
-				}).Errorf("Could not delete Statefulset.")
-
-				anyError = true
-				undeletedStatefulSets = append(undeletedStatefulSets,
-					fmt.Sprintf("%v/%v", statefulSetToRemove.Namespace,
-						statefulSetToRemove.Name))
-			} else {
-				Log().WithFields(LogFields{
-					"statefulset": statefulSetToRemove.Name,
-					"namespace":   statefulSetToRemove.Namespace,
-				}).Infof("Deleted Statefulset.")
-			}
-		}
-	}
-
-	if anyError {
-		return fmt.Errorf("unable to delete Statefulset(s): %v", undeletedStatefulSets)
 	}
 
 	return nil
@@ -2560,27 +2494,4 @@ func (k *K8sClient) ExecPodForVersionInformation(podName string, cmd []string, t
 	}).Infof("Trident version pod started.")
 
 	return execOutput, nil
-}
-
-// GetCSISnapshotterVersion uses the below approach to identify CSI Snapshotter Version:
-// If successful in retrieving the CSI Snapshotter CRD Version, use it as it is
-// Else if failed, then CSI Snapshotter CRD Version will be empty
-// then get existing CSI Snapshotter Version as v1.
-func (k *K8sClient) GetCSISnapshotterVersion(currentDeployment *appsv1.Deployment) string {
-	var snapshotCRDVersion string
-
-	if snapshotCRDVersion = k.GetSnapshotterCRDVersion(); snapshotCRDVersion == "" && currentDeployment != nil {
-		containers := currentDeployment.Spec.Template.Spec.Containers
-
-		for _, container := range containers {
-			if container.Name == "csi-snapshotter" {
-				Log().WithField("currentSnapshotterImage", container.Image).Debug("Found CSI Snapshotter image.")
-				if strings.Contains(container.Image, ":v4") {
-					snapshotCRDVersion = "v1"
-				}
-			}
-		}
-	}
-
-	return snapshotCRDVersion
 }

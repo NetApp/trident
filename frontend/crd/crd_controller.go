@@ -32,7 +32,7 @@ import (
 	tridentinformers "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions"
 	tridentinformersv1 "github.com/netapp/trident/persistent_store/crd/client/informers/externalversions/netapp/v1"
 	listers "github.com/netapp/trident/persistent_store/crd/client/listers/netapp/v1"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type (
@@ -46,11 +46,13 @@ const (
 	EventForceUpdate EventType = "forceupdate"
 	EventDelete      EventType = "delete"
 
-	ObjectTypeTridentBackendConfig      string = "TridentBackendConfig"
-	ObjectTypeTridentBackend            string = "TridentBackend"
-	ObjectTypeSecret                    string = "secret"
-	ObjectTypeTridentMirrorRelationship string = "TridentMirrorRelationship"
-	ObjectTypeTridentSnapshotInfo       string = "TridentSnapshotInfo"
+	ObjectTypeTridentBackendConfig         string = "TridentBackendConfig"
+	ObjectTypeTridentBackend               string = "TridentBackend"
+	ObjectTypeSecret                       string = "secret"
+	ObjectTypeTridentMirrorRelationship    string = "TridentMirrorRelationship"
+	ObjectTypeTridentActionMirrorUpdate    string = "TridentActionMirrorUpdate"
+	ObjectTypeTridentSnapshotInfo          string = "TridentSnapshotInfo"
+	ObjectTypeTridentActionSnapshotRestore string = "TridentActionSnapshotRestore"
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -67,6 +69,7 @@ type KeyItem struct {
 	objectType string
 	event      EventType
 	ctx        context.Context
+	isRetry    bool
 }
 
 var (
@@ -74,8 +77,6 @@ var (
 	getOpts    = metav1.GetOptions{}
 	createOpts = metav1.CreateOptions{}
 	updateOpts = metav1.UpdateOptions{}
-
-	ctx = context.Background
 )
 
 func Logx(ctx context.Context) LogEntry {
@@ -116,6 +117,10 @@ type TridentCrdController struct {
 	mirrorLister listers.TridentMirrorRelationshipLister
 	mirrorSynced cache.InformerSynced
 
+	// TridentActionMirrorUpdate CRD handling
+	actionMirrorUpdateLister listers.TridentActionMirrorUpdateLister
+	actionMirrorUpdateSynced cache.InformerSynced
+
 	// TridentSnapshotInfo CRD handling
 	snapshotInfoLister listers.TridentSnapshotInfoLister
 	snapshotInfoSynced cache.InformerSynced
@@ -148,9 +153,13 @@ type TridentCrdController struct {
 	snapshotsLister listers.TridentSnapshotLister
 	snapshotsSynced cache.InformerSynced
 
-	// TridentSnapshot CRD handling
+	// Secret handling
 	secretsLister v1.SecretLister
 	secretsSynced cache.InformerSynced
+
+	// TridentSnapshot CRD handling
+	actionSnapshotRestoreLister listers.TridentActionSnapshotRestoreLister
+	actionSnapshotRestoreSynced cache.InformerSynced
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -160,15 +169,15 @@ type TridentCrdController struct {
 	workqueue workqueue.RateLimitingInterface
 
 	// recorder is an event recorder for recording Event resources to the Kubernetes API.
-	recorder record.EventRecorder
+	recorder                  record.EventRecorder
+	actionMirrorUpdatesSynced func() bool
 }
 
 // NewTridentCrdController returns a new Trident CRD controller frontend
 func NewTridentCrdController(
 	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
 ) (*TridentCrdController, error) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceInternal,
-		WorkflowCRDControllerCreate, LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCRDControllerCreate, LogLayerCRDFrontend)
 
 	Logx(ctx).Trace("Creating CRDv1 controller.")
 
@@ -187,8 +196,7 @@ func newTridentCrdControllerImpl(
 	kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
 	crdClientset tridentv1clientset.Interface,
 ) (*TridentCrdController, error) {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).WithFields(LogFields{
 		"namespace": tridentNamespace,
 	}).Trace("Initializing Trident CRD controller frontend.")
@@ -209,6 +217,7 @@ func newTridentCrdControllerImpl(
 	backendInformer := crdInformer.TridentBackends()
 	backendConfigInformer := crdInformer.TridentBackendConfigs()
 	mirrorInformer := allNSCrdInformer.TridentMirrorRelationships()
+	actionMirrorUpdateInformer := allNSCrdInformer.TridentActionMirrorUpdates()
 	snapshotInfoInformer := allNSCrdInformer.TridentSnapshotInfos()
 	nodeInformer := crdInformer.TridentNodes()
 	storageClassInformer := crdInformer.TridentStorageClasses()
@@ -218,6 +227,7 @@ func newTridentCrdControllerImpl(
 	volumePublicationInformer := crdInformer.TridentVolumePublications()
 	snapshotInformer := crdInformer.TridentSnapshots()
 	secretInformer := kubeInformer.Secrets()
+	actionSnapshotRestoreInformer := allNSCrdInformer.TridentActionSnapshotRestores()
 
 	// Create event broadcaster
 	// Add our types to the default Kubernetes Scheme so Events can be logged.
@@ -228,41 +238,45 @@ func newTridentCrdControllerImpl(
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &TridentCrdController{
-		orchestrator:             orchestrator,
-		kubeClientset:            kubeClientset,
-		snapshotClientSet:        snapshotClientset,
-		crdClientset:             crdClientset,
-		crdControllerStopChan:    make(chan struct{}),
-		crdInformerFactory:       crdInformerFactory,
-		crdInformer:              crdInformer,
-		txnInformerFactory:       txnInformerFactory,
-		txnInformer:              txnInformer,
-		kubeInformerFactory:      kubeInformerFactory,
-		kubeInformer:             kubeInformer,
-		backendsLister:           backendInformer.Lister(),
-		backendsSynced:           backendInformer.Informer().HasSynced,
-		backendConfigsLister:     backendConfigInformer.Lister(),
-		backendConfigsSynced:     backendConfigInformer.Informer().HasSynced,
-		mirrorLister:             mirrorInformer.Lister(),
-		mirrorSynced:             mirrorInformer.Informer().HasSynced,
-		snapshotInfoLister:       snapshotInfoInformer.Lister(),
-		snapshotInfoSynced:       snapshotInfoInformer.Informer().HasSynced,
-		nodesLister:              nodeInformer.Lister(),
-		nodesSynced:              nodeInformer.Informer().HasSynced,
-		storageClassesLister:     storageClassInformer.Lister(),
-		storageClassesSynced:     storageClassInformer.Informer().HasSynced,
-		transactionsLister:       transactionInformer.Lister(),
-		transactionsSynced:       transactionInformer.Informer().HasSynced,
-		versionsLister:           versionInformer.Lister(),
-		versionsSynced:           versionInformer.Informer().HasSynced,
-		volumesLister:            volumeInformer.Lister(),
-		volumesSynced:            volumeInformer.Informer().HasSynced,
-		volumePublicationsLister: volumePublicationInformer.Lister(),
-		volumePublicationsSynced: volumePublicationInformer.Informer().HasSynced,
-		snapshotsLister:          snapshotInformer.Lister(),
-		snapshotsSynced:          snapshotInformer.Informer().HasSynced,
-		secretsLister:            secretInformer.Lister(),
-		secretsSynced:            secretInformer.Informer().HasSynced,
+		orchestrator:                orchestrator,
+		kubeClientset:               kubeClientset,
+		snapshotClientSet:           snapshotClientset,
+		crdClientset:                crdClientset,
+		crdControllerStopChan:       make(chan struct{}),
+		crdInformerFactory:          crdInformerFactory,
+		crdInformer:                 crdInformer,
+		txnInformerFactory:          txnInformerFactory,
+		txnInformer:                 txnInformer,
+		kubeInformerFactory:         kubeInformerFactory,
+		kubeInformer:                kubeInformer,
+		backendsLister:              backendInformer.Lister(),
+		backendsSynced:              backendInformer.Informer().HasSynced,
+		backendConfigsLister:        backendConfigInformer.Lister(),
+		backendConfigsSynced:        backendConfigInformer.Informer().HasSynced,
+		mirrorLister:                mirrorInformer.Lister(),
+		mirrorSynced:                mirrorInformer.Informer().HasSynced,
+		actionMirrorUpdateLister:    actionMirrorUpdateInformer.Lister(),
+		actionMirrorUpdatesSynced:   actionMirrorUpdateInformer.Informer().HasSynced,
+		snapshotInfoLister:          snapshotInfoInformer.Lister(),
+		snapshotInfoSynced:          snapshotInfoInformer.Informer().HasSynced,
+		nodesLister:                 nodeInformer.Lister(),
+		nodesSynced:                 nodeInformer.Informer().HasSynced,
+		storageClassesLister:        storageClassInformer.Lister(),
+		storageClassesSynced:        storageClassInformer.Informer().HasSynced,
+		transactionsLister:          transactionInformer.Lister(),
+		transactionsSynced:          transactionInformer.Informer().HasSynced,
+		versionsLister:              versionInformer.Lister(),
+		versionsSynced:              versionInformer.Informer().HasSynced,
+		volumesLister:               volumeInformer.Lister(),
+		volumesSynced:               volumeInformer.Informer().HasSynced,
+		volumePublicationsLister:    volumePublicationInformer.Lister(),
+		volumePublicationsSynced:    volumePublicationInformer.Informer().HasSynced,
+		snapshotsLister:             snapshotInformer.Lister(),
+		snapshotsSynced:             snapshotInformer.Informer().HasSynced,
+		secretsLister:               secretInformer.Lister(),
+		secretsSynced:               secretInformer.Informer().HasSynced,
+		actionSnapshotRestoreLister: actionSnapshotRestoreInformer.Lister(),
+		actionSnapshotRestoreSynced: actionSnapshotRestoreInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			crdControllerQueueName),
 		recorder: recorder,
@@ -291,10 +305,18 @@ func newTridentCrdControllerImpl(
 		DeleteFunc: controller.deleteCRHandler,
 	})
 
+	_, _ = actionMirrorUpdateInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.addCRHandler,
+	})
+
 	_, _ = snapshotInfoInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    controller.addCRHandler,
 		UpdateFunc: controller.updateCRHandler,
 		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	_, _ = actionSnapshotRestoreInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.addCRHandler,
 	})
 
 	_, _ = secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -319,8 +341,7 @@ func newTridentCrdControllerImpl(
 	for _, informer := range informers {
 		_, _ = informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			UpdateFunc: func(oldCrd, newCrd interface{}) {
-				ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD,
-					WorkflowCRReconcile, LogLayerCRDFrontend)
+				ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 				if err := controller.removeFinalizers(ctx, newCrd, false); err != nil {
 					Logx(ctx).WithError(err).Error("Error removing finalizers")
 				}
@@ -332,8 +353,8 @@ func newTridentCrdControllerImpl(
 }
 
 func (c *TridentCrdController) Activate() error {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone, LogLayerCRDFrontend)
-	Logx(ctx).Trace("Activating CRD frontend.")
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
+	Logx(ctx).Info("Activating CRD frontend.")
 	if c.crdControllerStopChan != nil {
 		c.crdInformerFactory.Start(c.crdControllerStopChan)
 		c.txnInformerFactory.Start(c.crdControllerStopChan)
@@ -344,9 +365,8 @@ func (c *TridentCrdController) Activate() error {
 }
 
 func (c *TridentCrdController) Deactivate() error {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
-		LogLayerCRDFrontend)
-	Logx(ctx).Trace("Deactivating CRD frontend.")
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
+	Logx(ctx).Info("Deactivating CRD frontend.")
 	if c.crdControllerStopChan != nil {
 		close(c.crdControllerStopChan)
 	}
@@ -411,8 +431,7 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 // processNextWorkItem function in order to read and process a message on the
 // workqueue.
 func (c *TridentCrdController) runWorker() {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowNone,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).Trace("TridentCrdController runWorker started.")
 	for c.processNextWorkItem() {
 	}
@@ -437,8 +456,7 @@ func (c *TridentCrdController) addEventToWorkqueue(key string, event EventType, 
 
 // addCRHandler is the add handler for CR watchers.
 func (c *TridentCrdController) addCRHandler(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventAdd))
 
 	Logx(ctx).Debug("TridentCrdController#addCRHandler")
@@ -461,8 +479,7 @@ func (c *TridentCrdController) addCRHandler(obj interface{}) {
 
 // updateCRHandler is the update handler for CR watchers.
 func (c *TridentCrdController) updateCRHandler(old, new interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventUpdate))
 
 	Logx(ctx).Debug("TridentCrdController#updateCRHandler")
@@ -512,8 +529,7 @@ func (c *TridentCrdController) updateCRHandler(old, new interface{}) {
 
 // deleteCRHandler is the delete handler for CR watchers.
 func (c *TridentCrdController) deleteCRHandler(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Debug("TridentCrdController#deleteCRHandler")
@@ -537,8 +553,7 @@ func (c *TridentCrdController) deleteCRHandler(obj interface{}) {
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling the reconcileBackendConfig.
 func (c *TridentCrdController) processNextWorkItem() bool {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	Logx(ctx).Trace("TridentCrdController#processNextWorkItem")
 
 	obj, shutdown := c.workqueue.Get()
@@ -590,14 +605,18 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleTridentBackendConfig
 		case ObjectTypeTridentMirrorRelationship:
 			handleFunction = c.handleTridentMirrorRelationship
+		case ObjectTypeTridentActionMirrorUpdate:
+			handleFunction = c.handleActionMirrorUpdate
 		case ObjectTypeTridentSnapshotInfo:
 			handleFunction = c.handleTridentSnapshotInfo
+		case ObjectTypeTridentActionSnapshotRestore:
+			handleFunction = c.handleActionSnapshotRestore
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}
 		if handleFunction != nil {
 			if err := handleFunction(&keyItem); err != nil {
-				if utils.IsUnsupportedConfigError(err) {
+				if errors.IsUnsupportedConfigError(err) {
 					errMessage := fmt.Sprintf("found unsupported backend configuration, "+
 						"needs manual intervention to fix the issue; "+
 						"error syncing '%v', not requeuing; %v", keyItem.key, err.Error())
@@ -609,16 +628,20 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 					Log().Info("-------------------------------------------------")
 
 					return fmt.Errorf(errMessage)
-				} else if utils.IsReconcileDeferredError(err) {
+				} else if errors.IsReconcileDeferredError(err) {
 					// If it is a deferred error, then do not remove the object from the queue and retry in due time
-					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key, err.Error())
+					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType,
+						keyItem.key, err.Error())
 					Logx(keyItem.ctx).Info(errMessage)
+					keyItem.isRetry = true
 					c.workqueue.AddRateLimited(keyItem)
 					return nil
-				} else if utils.IsReconcileIncompleteError(err) {
+				} else if errors.IsReconcileIncompleteError(err) {
 					// If it is a reconcile incomplete error, then do not remove the object from the queue and retry immediately
-					errMessage := fmt.Sprintf("error syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key, err.Error())
+					errMessage := fmt.Sprintf("error syncing %v '%v', requeuing; %v", keyItem.objectType, keyItem.key,
+						err.Error())
 					Logx(keyItem.ctx).Error(errMessage)
+					keyItem.isRetry = true
 					c.workqueue.Add(keyItem)
 					return nil
 				} else {

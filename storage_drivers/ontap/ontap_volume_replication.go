@@ -1,10 +1,11 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
 import (
 	"context"
 	"fmt"
+	"time"
 
 	. "github.com/netapp/trident/logging"
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
@@ -12,6 +13,7 @@ import (
 	storagedrivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // establishMirror will create a new snapmirror relationship between a RW and a DP volume that have not previously
@@ -94,9 +96,22 @@ func reestablishMirror(
 	}
 
 	// Check if a snapmirror relationship already exists
-	snapmirror, err := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
-	if err != nil {
-		if api.IsNotFoundError(err) {
+	snapmirror, snapmirrorGetErr := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
+		remoteSVMName)
+	if snapmirrorGetErr != nil {
+		if api.IsNotFoundError(snapmirrorGetErr) {
+			if replicationPolicy != "" {
+				snapmirrorPolicy, err := d.SnapmirrorPolicyGet(ctx, replicationPolicy)
+				if err != nil {
+					return err
+				}
+				if snapmirrorPolicy.Type.IsSnapmirrorPolicyTypeSync() {
+					if err := d.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName); err != nil {
+						return err
+					}
+				}
+			}
+
 			// create and initialize snapmirror if not found
 			if err := d.SnapmirrorCreate(ctx,
 				localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName,
@@ -109,7 +124,7 @@ func reestablishMirror(
 				return err
 			}
 		} else {
-			return err
+			return snapmirrorGetErr
 		}
 	} else {
 		// If the snapmirror is already established we have nothing to do
@@ -129,7 +144,7 @@ func reestablishMirror(
 	snapmirror, err = d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	if err != nil {
 		if api.IsNotFoundError(err) {
-			return utils.ReconcileIncompleteError()
+			return errors.ReconcileIncompleteError("reconcile incomplete")
 		} else {
 			return err
 		}
@@ -248,28 +263,17 @@ func promoteMirror(
 
 // isSnapshotPresent returns whether the given snapshot is found on the snapmirror snapshot list
 func isSnapshotPresent(ctx context.Context, snapshotHandle, localInternalVolumeName string, d api.OntapAPI) (bool, error) {
-	found := false
-
 	_, snapshotName, err := storage.ParseSnapshotID(snapshotHandle)
 	if err != nil {
-		return found, err
+		return false, err
 	}
 
-	snapshots, err := d.VolumeSnapshotList(ctx, localInternalVolumeName)
+	snapshot, err := d.VolumeSnapshotInfo(ctx, snapshotName, localInternalVolumeName)
 	if err != nil {
-		return found, err
+		return false, err
 	}
 
-	for _, snapshot := range snapshots {
-		if snapshot.Name == snapshotName {
-			found = true
-		}
-	}
-	if !found {
-		Logc(ctx).WithField("snapshot", snapshotHandle).Debug("Snapshot not yet present.")
-		return found, nil
-	}
-	return found, nil
+	return snapshot.Name == snapshotName, nil
 }
 
 // getMirrorStatus returns the current state of a snapmirror relationship
@@ -336,6 +340,10 @@ func checkSVMPeered(
 	if err != nil {
 		err = fmt.Errorf("could not determine required peer SVM; %v", err)
 		return storagedrivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
+	}
+	if remoteSVM == svm {
+		Logc(ctx).Info("TMR is in single SVM peer mode. Both source and destination volumes are on a single SVM.")
+		return nil
 	}
 	peeredVservers, _ := d.GetSVMPeers(ctx)
 	if !utils.SliceContainsString(peeredVservers, remoteSVM) {
@@ -447,4 +455,79 @@ func getReplicationDetails(ctx context.Context, localInternalVolumeName, remoteV
 	}
 
 	return snapmirror.ReplicationPolicy, snapmirror.ReplicationSchedule, localSVMName, nil
+}
+
+// mirrorUpdate attempts a mirror update for the specified Flexvol.
+func mirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string, d api.OntapAPI) error {
+	if localInternalVolumeName == "" {
+		return fmt.Errorf("invalid volume name")
+	}
+
+	err := d.SnapmirrorUpdate(ctx, localInternalVolumeName, snapshotName)
+	if err != nil {
+		return err
+	}
+	return errors.InProgressError("mirror update started")
+}
+
+// checkMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
+// succeeded or in progress and return the EndTransferTime if it succeeded or failed
+func checkMirrorTransferState(ctx context.Context, localInternalVolumeName string, d api.OntapAPI) (*time.Time, error) {
+	localSVMName := d.SVMName()
+	if localInternalVolumeName == "" {
+		return nil, fmt.Errorf("invalid volume name")
+	}
+
+	mirror, err := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "")
+	if err != nil {
+		return nil, err
+	}
+	if mirror == nil {
+		return nil, fmt.Errorf("could not get mirror")
+	}
+
+	// May need to add finalizing state, similar to transferring
+	switch mirror.RelationshipStatus {
+	case api.SnapmirrorStatusTransferring:
+		// return InProgressError and requeue
+		return nil, errors.InProgressError("mirror update not complete, still transferring")
+	case api.SnapmirrorStatusFailed:
+		// return failed
+		return nil, fmt.Errorf("mirror update failed, %v", mirror.UnhealthyReason)
+	case api.SnapmirrorStatusSuccess, api.SnapmirrorStatusIdle:
+		// If mirror is not healthy return error
+		if !mirror.IsHealthy {
+			return nil, fmt.Errorf("mirror update failed, %v", mirror.UnhealthyReason)
+		}
+		if mirror.EndTransferTime == nil {
+			return nil, fmt.Errorf("mirror does not have a transfer time")
+		}
+		// return no error, mirror update succeeded
+		return mirror.EndTransferTime, nil
+	default:
+		// return deferred error and remain in progress to retry and recheck the state
+		return nil, errors.InProgressError(fmt.Sprintf("unexpected mirror transfer status %v for update",
+			mirror.RelationshipStatus))
+	}
+}
+
+// getMirrorTransferTime returns the transfer time of the mirror relationship
+func getMirrorTransferTime(ctx context.Context, localInternalVolumeName string, d api.OntapAPI) (*time.Time, error) {
+	localSVMName := d.SVMName()
+	if localInternalVolumeName == "" {
+		return nil, fmt.Errorf("invalid volume name")
+	}
+
+	mirror, err := d.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "")
+	if err != nil {
+		return nil, err
+	}
+	if mirror == nil {
+		return nil, fmt.Errorf("could not get mirror")
+	}
+	if mirror.EndTransferTime == nil {
+		return nil, nil
+	}
+
+	return mirror.EndTransferTime, nil
 }

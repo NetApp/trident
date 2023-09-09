@@ -5,9 +5,7 @@ package persistentstore
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,6 +20,7 @@ import (
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type PassthroughClient struct {
@@ -85,14 +84,14 @@ func (c *PassthroughClient) initialize(ctx context.Context, configPath string) e
 		// If config path is a directory, load all config files.
 		Logc(ctx).WithField("configPath", configPath).Debug("Passthrough store loading config directory.")
 
-		files, err := ioutil.ReadDir(configPath)
+		files, err := os.ReadDir(configPath)
 		if err != nil {
 			return err
 		}
 
 		for _, file := range files {
 			// Skip all non-regular files
-			if !file.Mode().IsRegular() {
+			if !file.Type().IsRegular() {
 				continue
 			}
 			err = c.loadBackend(ctx, filepath.Join(configPath, file.Name()))
@@ -115,7 +114,7 @@ func (c *PassthroughClient) loadBackend(ctx context.Context, configPath string) 
 	Logc(ctx).WithField("configPath", configPath).Debug("Passthrough store loading config file.")
 
 	// Read config file
-	fileContents, err := ioutil.ReadFile(configPath)
+	fileContents, err := os.ReadFile(configPath)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"configPath": configPath,

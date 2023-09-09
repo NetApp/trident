@@ -5,7 +5,6 @@ package gcp
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -670,8 +670,8 @@ func TestInitialize(t *testing.T) {
 
 	gcpClient, d := newMockGCPDriver(t)
 
-	apiVersion, _ := versionutils.ParseSemantic("1.1.26")
-	sdeVersion, _ := versionutils.ParseSemantic("2022.9.0")
+	apiVersion, _ := versionutils.ParseSemantic("1.4.0")
+	sdeVersion, _ := versionutils.ParseSemantic("2023.1.2")
 	gcpClient.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
 	gcpClient.EXPECT().GetVolumes(gomock.Any()).Return(nil, nil)
 	gcpClient.EXPECT().GetServiceLevels(gomock.Any()).Return(nil, nil)
@@ -716,8 +716,8 @@ func TestInitialize_MultipleVPools(t *testing.T) {
 
 	gcpClient, d := newMockGCPDriver(t)
 
-	apiVersion, _ := versionutils.ParseSemantic("1.1.26")
-	sdeVersion, _ := versionutils.ParseSemantic("2022.9.0")
+	apiVersion, _ := versionutils.ParseSemantic("1.4.0")
+	sdeVersion, _ := versionutils.ParseSemantic("2023.1.2")
 	gcpClient.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
 	gcpClient.EXPECT().GetVolumes(gomock.Any()).Return(nil, nil)
 	gcpClient.EXPECT().GetServiceLevels(gomock.Any()).Return(nil, nil)
@@ -725,6 +725,8 @@ func TestInitialize_MultipleVPools(t *testing.T) {
 	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
 	assert.NoError(t, err, "Not initialized")
 	assert.True(t, d.initialized, "Driver not initialized")
+	assert.NotEmpty(t, d.Config.BackendPools, "backend pools were empty")
+	assert.Equal(t, len(d.pools), len(d.Config.BackendPools), "backend and storage pools were not equal")
 }
 
 func TestInitialize_ValidateError(t *testing.T) {
@@ -1182,7 +1184,7 @@ func TestCreate_VolumeSizeErrors(t *testing.T) {
 	volConfig.Size = "1Gi"
 	d.Config.CommonStorageDriverConfig.LimitVolumeSize = "1Mi"
 	err = d.Create(ctx(), volConfig, vPool, nil)
-	isErr, _ := utils.HasUnsupportedCapacityRangeError(err)
+	isErr, _ := errors.HasUnsupportedCapacityRangeError(err)
 	assert.True(t, isErr, "Valid volume size")
 }
 
@@ -1367,7 +1369,7 @@ func TestCreate_SOVolumeCreatingError(t *testing.T) {
 		Return(api.StateCreating, errors.New("failed"))
 
 	err := d.Create(ctx(), volConfig, vPool, nil)
-	assert.True(t, utils.IsVolumeCreatingError(err), "Volume created")
+	assert.True(t, errors.IsVolumeCreatingError(err), "Volume created")
 }
 
 func TestCreate_SOVolume(t *testing.T) {
@@ -1428,7 +1430,7 @@ func TestCreateClone_VolumeExistsErrors(t *testing.T) {
 	extantVol.LifeCycleState = api.StateRestoring
 	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, extantVol, nil)
 	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
-	assert.True(t, utils.IsVolumeCreatingError(err), "Volume doesn't exist")
+	assert.True(t, errors.IsVolumeCreatingError(err), "Volume doesn't exist")
 
 	// Volume available/updating error
 	extantVol.LifeCycleState = api.StateUpdating
@@ -1525,7 +1527,7 @@ func TestCreateClone_NoSnapshot_CreateSnapshotErrors(t *testing.T) {
 }
 
 func TestCreateClone_ExistingSnapshot_GetSnapshotErrors(t *testing.T) {
-	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshot: "present"}
+	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshotInternal: "present"}
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 	srcVol := &api.Volume{Region: d.Config.Region, Name: "vol-name"}
@@ -1549,7 +1551,7 @@ func TestCreateClone_ExistingSnapshot_GetSnapshotErrors(t *testing.T) {
 }
 
 func TestCreateClone_UnsetPool(t *testing.T) {
-	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshot: "present"}
+	cloneVolConfig := &storage.VolumeConfig{InternalName: "clone-name", CloneSourceSnapshotInternal: "present"}
 	volConfig, _ := getCreateVolumeStructs()
 
 	gcpClient, d := newMockGCPDriver(t)
@@ -2004,18 +2006,6 @@ func TestRestoreSnapshot_GetVolumeError(t *testing.T) {
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
-func TestRestoreSnapshot_SOVolumeError(t *testing.T) {
-	snapConfig, _ := getSnapshotVolumeStructs()
-	gcpClient, d := newMockGCPDriver(t)
-
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).
-		Return(&api.Volume{StorageClass: api.StorageClassSoftware}, nil)
-
-	err := d.RestoreSnapshot(ctx(), snapConfig, nil)
-	assert.ErrorContains(t, err, "software volumes do not support snapshot restore",
-		"Volume belongs to hardware storage class")
-}
-
 func TestRestoreSnapshot_GetSnapshotError(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
@@ -2155,7 +2145,7 @@ func TestResize_UnsupportedCapacity(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
 	err := d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes)-1)
-	isErr, _ := utils.HasUnsupportedCapacityRangeError(err)
+	isErr, _ := errors.HasUnsupportedCapacityRangeError(err)
 	assert.True(t, isErr, "Valid new volume size")
 }
 
@@ -2226,6 +2216,24 @@ func TestGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	d := newTestGCPDriver(nil)
 	poolNames := d.GetStorageBackendPhysicalPoolNames(ctx())
 	assert.Equal(t, len(poolNames), 0, "Found physical pools")
+}
+
+func TestGetStorageBackendPools(t *testing.T) {
+	_, d := newMockGCPDriver(t)
+	d.pools = map[string]storage.Pool{
+		"pool1": storage.NewStoragePool(nil, "pool1"),
+		"pool2": storage.NewStoragePool(nil, "pool2"),
+	}
+
+	pools := d.getStorageBackendPools(context.Background())
+	assert.NotEmpty(t, pools)
+	assert.Equal(t, len(d.pools), len(pools))
+
+	d.pools = nil
+
+	pools = d.getStorageBackendPools(context.Background())
+	assert.Empty(t, pools)
+	assert.Equal(t, len(d.pools), len(pools))
 }
 
 func TestGetInternalVolumeName(t *testing.T) {
@@ -2374,7 +2382,7 @@ func TestReconcileNodeAccess(t *testing.T) {
 	d := newTestGCPDriver(nil)
 	node1 := utils.Node{Name: "node-name"}
 	nodes := []*utils.Node{&node1}
-	err := d.ReconcileNodeAccess(ctx(), nodes, "")
+	err := d.ReconcileNodeAccess(ctx(), nodes, "", "")
 	assert.NoError(t, err, "Reconcile node access failed")
 }
 

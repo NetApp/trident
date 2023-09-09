@@ -1488,3 +1488,157 @@ func TestSlicePtrs(t *testing.T) {
 	assert.Equal(t, slice[0], *result[0])
 	assert.Equal(t, slice[1], *result[1])
 }
+
+func TestDNS1123Regexes_MatchString(t *testing.T) {
+	tests := map[string]struct {
+		s        string
+		expected bool
+	}{
+		"finds no match when supplied string is empty": {
+			"",
+			false,
+		},
+		"finds no match when supplied string doesn't match regex": {
+			"pvc_2eff1a7e-679d-4fc6-892f-a6538cdbe278",
+			false,
+		},
+		"finds no match when supplied string has invalid characters at beginning": {
+			"-pvc_2eff1a7e-679d-4fc6-892f-a6538cdbe278",
+			false,
+		},
+		"finds no match when supplied string has invalid characters at end": {
+			"pvc-2eff1a7e-679d-4fc6-892f-a6538cdbe278-",
+			false,
+		},
+		"finds match when supplied string matches regex": {
+			"snap-2eff1a7e-679d-4fc6-892f-1nridmry3dj",
+			true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.expected, DNS1123DomainRegex.MatchString(test.s))
+			assert.Equal(t, test.expected, DNS1123LabelRegex.MatchString(test.s))
+		})
+	}
+}
+
+func TestEncodeObjectToBase64String_Fails(t *testing.T) {
+	// Object is nil.
+	encodedObj, err := EncodeObjectToBase64String(nil)
+	assert.Empty(t, encodedObj)
+	assert.Error(t, err)
+
+	// Object is an unmarshal-able type.
+	encodedObj, err = EncodeObjectToBase64String(func() {})
+	assert.Empty(t, encodedObj)
+	assert.Error(t, err)
+}
+
+func TestEncodeObjectToBase64String_Succeeds(t *testing.T) {
+	type testObject struct {
+		Foo string `json:"foo"`
+		Bar string `json:"bar"`
+		Baz string `json:"baz,omitempty"`
+	}
+
+	// Object is non-nil, but empty.
+	encodedObj, err := EncodeObjectToBase64String(testObject{})
+	assert.NotNil(t, encodedObj)
+	assert.NoError(t, err)
+
+	// Object is an object with fields filled in.
+	obj := testObject{
+		Foo: "foo_test",
+		Bar: "bar_test",
+		Baz: "baz_test",
+	}
+	encodedObj, err = EncodeObjectToBase64String(obj)
+	assert.NotNil(t, encodedObj)
+	assert.NoError(t, err)
+}
+
+func TestDecodeBase64StringToObject_Fails(t *testing.T) {
+	type testObject struct {
+		Foo string `json:"foo"`
+		Bar string `json:"bar"`
+		Baz string `json:"baz,omitempty"`
+	}
+
+	// Encoded object is an empty string.
+	actualObject := testObject{}
+	err := DecodeBase64StringToObject("", &actualObject)
+	assert.Empty(t, actualObject.Foo)
+	assert.Empty(t, actualObject.Bar)
+	assert.Empty(t, actualObject.Baz)
+	assert.Error(t, err)
+
+	// Encoded object is an invalid value for a base64 string.
+	actualObject = testObject{}
+	err = DecodeBase64StringToObject("%", &actualObject)
+	assert.Empty(t, actualObject.Foo)
+	assert.Empty(t, actualObject.Bar)
+	assert.Empty(t, actualObject.Baz)
+	assert.Error(t, err)
+
+	// Encoded object contains non-ASCII characters for a base64 string.
+	actualObject = testObject{}
+	err = DecodeBase64StringToObject("ß-11234567890987654321234567890", &actualObject)
+	assert.Empty(t, actualObject.Foo)
+	assert.Empty(t, actualObject.Bar)
+	assert.Empty(t, actualObject.Baz)
+	assert.Error(t, err)
+}
+
+func TestDecodeBase64StringToObject_Succeeds(t *testing.T) {
+	type testObject struct {
+		Foo string `json:"foo"`
+		Bar string `json:"bar"`
+		Baz string `json:"baz,omitempty"`
+	}
+
+	// Encoded object is an empty string.
+	actualObject := testObject{}
+	expectedObject := testObject{Foo: "foo_test", Bar: "bar_test", Baz: "baz_test"}
+	err := DecodeBase64StringToObject(
+		"eyJmb28iOiJmb29fdGVzdCIsImJhciI6ImJhcl90ZXN0IiwiYmF6IjoiYmF6X3Rlc3QifQ==",
+		&actualObject,
+	)
+	assert.EqualValues(t, expectedObject, actualObject)
+	assert.NoError(t, err)
+
+	// Encoded object is an empty string.
+	actualObject = testObject{}
+	expectedObject = testObject{Foo: "foo_test", Bar: "bar_test", Baz: "baz_test"}
+	err = DecodeBase64StringToObject(
+		"eyJmb28iOiJmb29fdGVzdCIsImJhciI6ImJhcl90ZXN0IiwiYmF6IjoiYmF6X3Rlc3QifQ==",
+		&actualObject,
+	)
+	assert.EqualValues(t, expectedObject, actualObject)
+	assert.NoError(t, err)
+}
+
+func TestEncodeAndDecodeToAndFromBase64(t *testing.T) {
+	type testObject struct {
+		Foo string `json:"foo"`
+		Bar string `json:"bar"`
+		Baz string `json:"baz,omitempty"`
+	}
+
+	// Create a test object and encoded it.
+	originalObject := testObject{Foo: "foo_test", Bar: "bar_test", Baz: "baz_test"}
+	encodedObject, err := EncodeObjectToBase64String(originalObject)
+	assert.NoError(t, err)
+	assert.NotNil(t, encodedObject)
+
+	// Decode the encoded test object and ensure the values extracted object and its values are equivalent to
+	// those present in the original object.
+	var actualObject testObject
+	err = DecodeBase64StringToObject(encodedObject, &actualObject)
+	assert.NoError(t, err)
+	assert.NotNil(t, encodedObject)
+	assert.Equal(t, originalObject.Foo, actualObject.Foo)
+	assert.Equal(t, originalObject.Bar, actualObject.Bar)
+	assert.Equal(t, originalObject.Baz, actualObject.Baz)
+}

@@ -6,7 +6,7 @@ from pprint import pprint as pp
 import ruamel.yaml
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as dq
 
-yaml = ruamel.yaml.YAML()
+yaml = ruamel.yaml.YAML(typ='safe')
 yaml.indent(sequence=4, offset=2)
 
 with open('swagger_full.yaml') as input_file:

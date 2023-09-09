@@ -228,8 +228,7 @@ type SnapshotCreateRequest struct {
 }
 
 type SnapshotRevertRequest struct {
-	Name   string `json:"name"`
-	Region string `json:"region"`
+	SnapshotID string `json:"snapshotId"`
 }
 
 type Backup struct {

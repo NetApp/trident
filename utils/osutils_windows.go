@@ -11,6 +11,7 @@ import (
 	"github.com/elastic/go-sysinfo"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // The Trident build process builds the Trident CLI client for both linux and windows.
@@ -21,7 +22,7 @@ import (
 func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.getIPAddresses")
 	defer Logc(ctx).Debug("<<<< osutils_windows.getIPAddresses")
-	return nil, UnsupportedError("getIPAddresses is not supported for windows")
+	return nil, errors.UnsupportedError("getIPAddresses is not supported for windows")
 }
 
 // SMBActiveOnHost will always return true as it is native to windows
@@ -52,7 +53,7 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 func NFSActiveOnHost(ctx context.Context) (bool, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.NFSActiveOnHost")
 	defer Logc(ctx).Debug("<<<< osutils_windows.NFSActiveOnHost")
-	return false, UnsupportedError("NFSActiveOnHost is not supported for windows")
+	return false, errors.UnsupportedError("NFSActiveOnHost is not supported for windows")
 }
 
 // GetTargetFilePath method returns the path of target file based on OS.

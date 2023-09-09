@@ -51,8 +51,9 @@ var getPublicationCmd = &cobra.Command{
 				command = append(command, "--node", getNode)
 			}
 
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			if getVolume != "" && getNode != "" {
 				return volumePublicationGet()

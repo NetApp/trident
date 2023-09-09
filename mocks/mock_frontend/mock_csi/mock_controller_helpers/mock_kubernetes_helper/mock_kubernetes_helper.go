@@ -108,21 +108,6 @@ func (mr *MockK8SControllerHelperPluginMockRecorder) ImportVolume(arg0, arg1 int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportVolume", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).ImportVolume), arg0, arg1)
 }
 
-// UpgradeVolume mocks base method.
-func (m *MockK8SControllerHelperPlugin) UpgradeVolume(arg0 context.Context, arg1 *storage.UpgradeVolumeRequest) (*storage.VolumeExternal, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpgradeVolume", arg0, arg1)
-	ret0, _ := ret[0].(*storage.VolumeExternal)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpgradeVolume indicates an expected call of UpgradeVolume.
-func (mr *MockK8SControllerHelperPluginMockRecorder) UpgradeVolume(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeVolume", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).UpgradeVolume), arg0, arg1)
-}
-
 // Version mocks base method.
 func (m *MockK8SControllerHelperPlugin) Version() string {
 	m.ctrl.T.Helper()

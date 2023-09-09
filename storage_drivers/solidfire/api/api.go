@@ -7,8 +7,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -17,6 +16,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const httpContentType = "json-rpc"
@@ -129,7 +129,7 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 	}
 
 	defer response.Body.Close()
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return responseBody, err
 	}

@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,7 +16,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -25,6 +24,8 @@ var (
 	getSubordinateVolume string
 	backendsByUUID       map[string]*storage.BackendExternal
 )
+
+const maskDisplayOfVolumeStateOnline = storage.VolumeState("") // Used for display in 'tridentctl' query
 
 func init() {
 	getCmd.AddCommand(getVolumeCmd)
@@ -48,8 +49,9 @@ var getVolumeCmd = &cobra.Command{
 			if getSubordinateVolume != "" {
 				command = append(command, "--parentOfSubordinate", getSubordinateVolume)
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return volumeList(args)
 		}
@@ -76,7 +78,7 @@ func volumeList(volumeNames []string) error {
 
 		volume, err := GetVolume(volumeName)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -138,7 +140,7 @@ func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return storage.VolumeExternal{}, utils.NotFoundError(errorMessage)
+			return storage.VolumeExternal{}, errors.NotFoundError(errorMessage)
 		default:
 			return storage.VolumeExternal{}, errors.New(errorMessage)
 		}
@@ -151,6 +153,12 @@ func GetVolume(volumeName string) (storage.VolumeExternal, error) {
 	}
 	if getVolumeResponse.Volume == nil {
 		return storage.VolumeExternal{}, fmt.Errorf("could not get volume %s: no volume returned", volumeName)
+	}
+
+	if getVolumeResponse.Volume.State == storage.VolumeStateOnline {
+		// Currently, this is used only for display, mask 'online' state as "".
+		// If in future any callers use this attribute, need to take care of it.
+		getVolumeResponse.Volume.State = maskDisplayOfVolumeStateOnline
 	}
 
 	return *getVolumeResponse.Volume, nil

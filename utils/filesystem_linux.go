@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sys/unix"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // GetFilesystemStats returns the size of the filesystem for the given path.
@@ -100,7 +101,7 @@ func GetUnmountPath(ctx context.Context, trackingInfo *VolumeTrackingInfo) (stri
 	Logc(ctx).Debug(">>>> filesystem_linux.GetUnmountPath")
 	defer Logc(ctx).Debug("<<<< filesystem_linux.GetUnmountPath")
 
-	return "", UnsupportedError("GetUnmountPath is not supported for linux")
+	return "", errors.UnsupportedError("GetUnmountPath is not supported for linux")
 }
 
 // generateAnonymousMemFile uses linux syscall memfd_create to create an anonymous, temporary, in-memory file

@@ -5,9 +5,8 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -45,8 +45,9 @@ var createBackendCmd = &cobra.Command{
 
 		if OperatingMode == ModeTunnel {
 			command := []string{"create", "backend", "--base64", base64.StdEncoding.EncodeToString(jsonData)}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return backendCreate(jsonData)
 		}
@@ -65,9 +66,9 @@ func getBackendData(filename, b64Data string) ([]byte, error) {
 	if b64Data != "" {
 		rawData, err = base64.StdEncoding.DecodeString(b64Data)
 	} else if filename == "-" {
-		rawData, err = ioutil.ReadAll(os.Stdin)
+		rawData, err = io.ReadAll(os.Stdin)
 	} else {
-		rawData, err = ioutil.ReadFile(filename)
+		rawData, err = os.ReadFile(filename)
 	}
 	if err != nil {
 		return nil, err

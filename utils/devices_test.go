@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"fmt"
-	"os/exec"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -23,19 +22,13 @@ func TestNewLUKSDevice(t *testing.T) {
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 func TestMountLUKSDevice(t *testing.T) {
-	execCmd = fakeExecCommand
-	execReturnCode = 0
-	// Reset exec command after tests
-	defer func() {
-		execCmd = exec.CommandContext
-	}()
-
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test first passphrase works
 	secrets := map[string]string{"luks-passphrase": "secretA", "luks-passphrase-name": "A"}
 	mockCtrl := gomock.NewController(t)
 	mockLUKSDevice := mock_luks.NewMockLUKSDeviceInterface(mockCtrl)
 	mockLUKSDevice.EXPECT().EnsureFormattedAndOpen(gomock.Any(), "secretA").Return(false, nil)
+
 	luksFormatted, err := EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.NoError(t, err)
 	assert.False(t, luksFormatted)
@@ -77,13 +70,6 @@ func TestMountLUKSDevice(t *testing.T) {
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 func TestMountLUKSDevice_Negative(t *testing.T) {
-	execCmd = fakeExecCommand
-	execReturnCode = 0
-	// Reset exec command after tests
-	defer func() {
-		execCmd = exec.CommandContext
-	}()
-
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test no passphrase specified
 	mockCtrl := gomock.NewController(t)

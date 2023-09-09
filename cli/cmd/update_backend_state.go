@@ -4,58 +4,82 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 )
 
-var backendState string
+var (
+	backendState string
+	userState    string
+)
 
 func init() {
 	updateBackendCmd.AddCommand(updateBackendStateCmd)
 	updateBackendStateCmd.Flags().StringVarP(&backendState, "state", "", "", "New backend state")
+	updateBackendStateCmd.Flags().StringVarP(&userState, "user-state", "", "", "User-defined backend state (suspended, normal)")
+	// making the flag hidden, as it is for internal testing purposes only.
+	err := updateBackendStateCmd.Flags().MarkHidden("state")
+	if err != nil {
+		return
+	}
 }
 
 var updateBackendStateCmd = &cobra.Command{
-	Use:     "state <name> <state>",
+	Use:     "state <name> <user-state>",
 	Short:   "Update a backend's state in Trident",
 	Aliases: []string{"s"},
-	Hidden:  true,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		newBackendState, err := getBackendState()
-		if err != nil {
-			return err
-		}
-
-		if OperatingMode == ModeTunnel {
-			command := []string{
-				"update", "backend", "state", "--state", backendState,
-			}
-			TunnelCommand(append(command, args...))
-			return nil
-		} else {
-			return backendUpdateState(args, newBackendState)
-		}
-	},
+	PreRunE: validateUpdateBackendStateArguments,
+	RunE:    updateBackendStateRunE,
 }
 
-func getBackendState() (string, error) {
-	if backendState == "" {
-		return "", errors.New("no state was specified")
+func validateUpdateBackendStateArguments(cmd *cobra.Command, args []string) error {
+	// Only one of the following flags may be set.
+	flags := []string{"state", "user-state"}
+	flagSet := 0
+
+	for _, flag := range flags {
+		if cmd.Flags().Changed(flag) {
+			flagSet++
+		}
 	}
 
-	backendState = strings.ToLower(backendState)
-	return backendState, nil
+	if flagSet != 1 {
+		return fmt.Errorf("exactly one of --state or --user-state must be specified")
+	}
+
+	return nil
 }
 
-func backendUpdateState(backendNames []string, backendState string) error {
+func updateBackendStateRunE(cmd *cobra.Command, args []string) error {
+	if OperatingMode == ModeTunnel {
+		// setting the command based on the selected flag.
+		var command []string
+		if cmd.Flags().Changed("user-state") {
+			command = []string{
+				"update", "backend", "state", "--user-state", userState,
+			}
+		}
+		if cmd.Flags().Changed("state") {
+			command = []string{
+				"update", "backend", "state", "--state", backendState,
+			}
+		}
+		out, err := TunnelCommand(append(command, args...))
+		printOutput(cmd, out, err)
+		return err
+	} else {
+		return backendUpdateState(args)
+	}
+}
+
+func backendUpdateState(backendNames []string) error {
 	switch len(backendNames) {
 	case 0:
 		return errors.New("backend name not specified")
@@ -69,7 +93,8 @@ func backendUpdateState(backendNames []string, backendState string) error {
 	url := BaseURL() + "/backend/" + backendNames[0] + "/state"
 
 	request := storage.UpdateBackendStateRequest{
-		State: backendState,
+		BackendState:     backendState,
+		UserBackendState: userState,
 	}
 	requestBytes, err := json.Marshal(request)
 	if err != nil {

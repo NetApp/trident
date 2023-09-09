@@ -72,6 +72,7 @@ type CommonStorageDriverConfig struct {
 	StoragePrefixRaw  json.RawMessage       `json:"storagePrefix,string"`
 	StoragePrefix     *string               `json:"-"`
 	SerialNumbers     []string              `json:"serialNumbers,omitEmpty"`
+	BackendPools      []string              `json:"backendPools,omitEmpty"`
 	DriverContext     trident.DriverContext `json:"-"`
 	LimitVolumeSize   string                `json:"limitVolumeSize"`
 	Credentials       map[string]string     `json:"credentials"`
@@ -143,8 +144,36 @@ type OntapStorageDriverPool struct {
 	Zone                             string              `json:"zone"`
 	SupportedTopologies              []map[string]string `json:"supportedTopologies"`
 	NASType                          string              `json:"nasType"`
+	SANType                          string              `json:"sanType"`
 	SMBShare                         string              `json:"smbShare"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// StorageBackendPool is a type constraint that enables drivers to generically report non-overlapping storage pools
+// within a backend.
+type StorageBackendPool interface {
+	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
+		ANFStorageBackendPool | ANFSubvolumeStorageBackendPool | SolidfireStorageBackendPool | GCPNFSStorageBackendPool
+}
+
+// OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
+// provisioning storage.
+type OntapFlexGroupStorageBackendPool struct {
+	SvmUUID string `json:"svmUUID"`
+}
+
+// OntapStorageBackendPool is a non-overlapping section of an ONTAP backend that may be used for provisioning storage.
+type OntapStorageBackendPool struct {
+	SvmUUID   string `json:"svmUUID"`
+	Aggregate string `json:"aggregate"`
+}
+
+// OntapEconomyStorageBackendPool is a non-overlapping section of an ONTAP economy backend that may be used for
+// provisioning storage.
+type OntapEconomyStorageBackendPool struct {
+	SvmUUID       string `json:"svmUUID"`
+	Aggregate     string `json:"aggregate"`
+	FlexVolPrefix string `json:"flexVolPrefix"`
 }
 
 type OntapStorageDriverConfigDefaults struct {
@@ -323,6 +352,13 @@ type SolidfireStorageDriverPool struct {
 	SolidfireStorageDriverConfigDefaults `json:"defaults"`
 }
 
+// SolidfireStorageBackendPool is a non-overlapping section of a SolidFire backend that may be used for
+// provisioning storage.
+type SolidfireStorageBackendPool struct {
+	AccountID  int64  `json:"accountID,string"`
+	TenantName string `json:"tenantName"`
+}
+
 type SolidfireStorageDriverConfigDefaults struct {
 	CommonStorageDriverConfigDefaults
 }
@@ -428,6 +464,23 @@ type AzureNASStorageDriverPool struct {
 	FilePoolVolumes                     []string            `json:"filePoolVolumes"`
 	NASType                             string              `json:"nasType"`
 	AzureNASStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// ANFStorageBackendPool is a non-overlapping section of an Azure backend that may be used for provisioning storage.
+type ANFStorageBackendPool struct {
+	SubscriptionID string `json:"subscriptionID"`
+	ResourceGroup  string `json:"resourceGroup"`
+	NetappAccount  string `json:"netappAccount"`
+	Location       string `json:"location"`
+	CapacityPool   string `json:"capacityPool"`
+}
+
+// ANFSubvolumeStorageBackendPool is a non-overlapping section of an Azure file backend that may be used for
+// provisioning storage.
+type ANFSubvolumeStorageBackendPool struct {
+	SubscriptionID string `json:"subscriptionID"`
+	Location       string `json:"location"`
+	FilePoolVolume string `json:"filePoolVolume"`
 }
 
 type AzureNASStorageDriverConfigDefaults struct {
@@ -537,6 +590,14 @@ type GCPNFSStorageDriverPool struct {
 	Network                           string              `json:"network"`
 	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
 	GCPNFSStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// GCPNFSStorageBackendPool is a non-overlapping section of a GCP backend that may be used for provisioning storage.
+type GCPNFSStorageBackendPool struct {
+	ProjectNumber string `json:"projectNumber"`
+	APIRegion     string `json:"apiRegion"`
+	ServiceLevel  string `json:"serviceLevel"`
+	StoragePool   string `json:"storagePool"`
 }
 
 type GCPNFSStorageDriverConfigDefaults struct {

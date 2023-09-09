@@ -62,6 +62,8 @@ type TridentOrchestratorSpec struct {
 	NodePluginTolerations        []Toleration      `json:"nodePluginTolerations,omitempty"`
 	Windows                      bool              `json:"windows,omitempty"`
 	ImagePullPolicy              string            `json:"imagePullPolicy,omitempty"`
+	EnableACP                    bool              `json:"enableACP,omitempty"`
+	ACPImage                     string            `json:"acpImage,omitempty"`
 }
 
 // Toleration
@@ -106,6 +108,7 @@ type TridentOrchestratorStatus struct {
 	Version                   string                        `json:"version"`
 	Namespace                 string                        `json:"namespace"`
 	CurrentInstallationParams TridentOrchestratorSpecValues `json:"currentInstallationParams"`
+	ACPVersion                string                        `json:"acpVersion"`
 }
 
 type TridentOrchestratorSpecValues struct {
@@ -132,4 +135,6 @@ type TridentOrchestratorSpecValues struct {
 	NodePluginNodeSelector  map[string]string `json:"nodePluginNodeSelector,omitempty"`
 	NodePluginTolerations   []Toleration      `json:"nodePluginTolerations,omitempty"`
 	ImagePullPolicy         string            `json:"imagePullPolicy"`
+	EnableACP               string            `json:"enableACP"`
+	ACPImage                string            `json:"acpImage"`
 }

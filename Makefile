@@ -14,7 +14,7 @@ REGISTRY ?= $(DEFAULT_REGISTRY)
 BUILDX_OUTPUT ?= load
 
 # GO_IMAGE golang image used in default GO_SHELL
-GO_IMAGE ?= golang:1.19
+GO_IMAGE ?= golang:1.20
 
 # GO_CMD go command used for go build
 GO_CMD ?= go
@@ -323,9 +323,11 @@ ifeq ($(BUILD_CLI),$(DOCKER_BUILDX_BUILD_CLI))
 	-@$(call buildx_create_instance,$(BUILDX_CONFIG_FILE))
 endif
 	@$(call build_images_for_platforms,$(call all_image_platforms,$(PLATFORMS)),$(BUILD_CLI),$(TRIDENT_TAG),$(BUILDX_OUTPUT))
-# if a single image platform is specified, retag image without platform
+# if a single image platform is specified and the BUILD_CLI places images in the default context, retag image without platform
 ifeq (1,$(words $(call all_image_platforms,$(PLATFORMS))))
+ifneq (,$(if $(findstring $(DOCKER_BUILDX_BUILD_CLI),$(BUILD_CLI)),$(findstring load,$(BUILDX_OUTPUT)),true))
 	@$(DOCKER_CLI) tag $(call image_tag,$(TRIDENT_TAG),$(call all_image_platforms,$(PLATFORMS))) $(MANIFEST_TAG)
+endif
 endif
 
 operator_images: operator_binaries
@@ -333,9 +335,11 @@ ifeq ($(BUILD_CLI),$(DOCKER_BUILDX_BUILD_CLI))
 	-@$(call buildx_create_instance,$(BUILDX_CONFIG_FILE))
 endif
 	@$(call build_operator_images_for_platforms,$(call operator_image_platforms,$(PLATFORMS)),$(BUILD_CLI),$(OPERATOR_TAG),$(BUILDX_OUTPUT))
-# if a single operator image platform is specified, retag image without platform
+# if a single operator image platform is specified and the BUILD_CLI places images in the default context, retag image without platform
 ifeq (1,$(words $(call operator_image_platforms,$(PLATFORMS))))
+ifneq (,$(if $(findstring $(DOCKER_BUILDX_BUILD_CLI),$(BUILD_CLI)),$(findstring load,$(BUILDX_OUTPUT)),true))
 	@$(DOCKER_CLI) tag $(call image_tag,$(OPERATOR_TAG),$(call operator_image_platforms,$(PLATFORMS))) $(OPERATOR_MANIFEST_TAG)
+endif
 endif
 
 # creates multi-platform image manifest

@@ -5,7 +5,7 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -42,7 +42,7 @@ func InvokeRESTAPI(method, url string, requestBody []byte) (*http.Response, []by
 
 	if response != nil {
 		defer func() { _ = response.Body.Close() }()
-		responseBody, err = ioutil.ReadAll(response.Body)
+		responseBody, err = io.ReadAll(response.Body)
 		if err != nil {
 			return response, responseBody, fmt.Errorf("error reading response body; %v", err)
 		}

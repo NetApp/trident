@@ -5,7 +5,6 @@ package gcp
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -26,6 +25,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -33,8 +33,8 @@ const (
 	MinimumVolumeSizeBytes       = uint64(1073741824)   // 1 GiB
 	MinimumCVSVolumeSizeBytesHW  = uint64(107374182400) // 100 GiB
 	MaximumVolumesPerStoragePool = 50
-	MinimumAPIVersion            = "1.1.26"
-	MinimumSDEVersion            = "2022.9.0"
+	MinimumAPIVersion            = "1.4.0"
+	MinimumSDEVersion            = "2023.1.2"
 
 	defaultHWServiceLevel  = api.UserServiceLevel1
 	defaultSWServiceLevel  = api.PoolServiceLevel1
@@ -210,6 +210,13 @@ func (d *NFSStorageDriver) Initialize(
 	if err = d.validate(ctx); err != nil {
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
 	}
+
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
 
 	telemetry := tridentconfig.OrchestratorTelemetry
 	telemetry.TridentBackendUUID = backendUUID
@@ -658,7 +665,7 @@ func (d *NFSStorageDriver) Create(
 		}
 		if extantVolume.LifeCycleState == api.StateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return utils.VolumeCreatingError(
+			return errors.VolumeCreatingError(
 				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
 		}
 		return drivers.NewVolumeExistsError(name)
@@ -869,7 +876,7 @@ func (d *NFSStorageDriver) createSOVolume(
 		createRequest.PoolID = GCPPool.PoolID
 
 		err := d.createVolume(ctx, createRequest, config)
-		if utils.IsVolumeCreatingError(err) {
+		if errors.IsVolumeCreatingError(err) {
 			// For this case, volume create will be retried in the future
 			// So we return here itself instead of trying for another pool
 			return err
@@ -956,7 +963,7 @@ func (d *NFSStorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	fields := LogFields{
 		"Method":   "CreateClone",
@@ -989,7 +996,7 @@ func (d *NFSStorageDriver) CreateClone(
 
 		case api.StateCreating, api.StateRestoring:
 			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return utils.VolumeCreatingError(fmt.Sprintf("volume state is %s, not %s",
+			return errors.VolumeCreatingError(fmt.Sprintf("volume state is %s, not %s",
 				extantVolume.LifeCycleState, api.StateAvailable))
 
 		case api.StateAvailable, api.StateUpdating:
@@ -1282,7 +1289,7 @@ func (d *NFSStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 			Logc(ctx).WithFields(LogFields{
 				"volume": volumeName,
 			}).Debugf("Volume is in %s state.", state)
-			return utils.VolumeCreatingError(err.Error())
+			return errors.VolumeCreatingError(err.Error())
 		}
 
 		// Don't leave a CVS volume in a non-transitional state laying around in error state
@@ -1451,7 +1458,7 @@ func (d *NFSStorageDriver) getSnapshot(
 	for _, snapshot := range *snapshots {
 		if snapshot.Name == internalSnapName {
 
-			created := snapshot.Created.UTC().Format(storage.SnapshotTimestampFormat)
+			created := snapshot.Created.UTC().Format(utils.TimestampFormat)
 
 			Logc(ctx).WithFields(LogFields{
 				"snapshotName": internalSnapName,
@@ -1521,7 +1528,7 @@ func (d *NFSStorageDriver) getSnapshots(
 				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+			Created:   snapshot.Created.Format(utils.TimestampFormat),
 			SizeBytes: volume.QuotaInBytes,
 			State:     storage.SnapshotStateOnline,
 		})
@@ -1597,7 +1604,7 @@ func (d *NFSStorageDriver) createSnapshot(
 
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.Format(storage.SnapshotTimestampFormat),
+		Created:   snapshot.Created.Format(utils.TimestampFormat),
 		SizeBytes: sourceVolume.QuotaInBytes,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -1627,15 +1634,13 @@ func (d *NFSStorageDriver) RestoreSnapshot(
 		return fmt.Errorf("could not find volume %s: %v", creationToken, err)
 	}
 
-	if volume.StorageClass == api.StorageClassSoftware {
-		return errors.New("software volumes do not support snapshot restore")
-	}
-
+	// Get the snapshot
 	snapshot, err := d.API.GetSnapshotForVolume(ctx, volume, internalSnapName)
 	if err != nil {
 		return fmt.Errorf("unable to find snapshot %s: %v", internalSnapName, err)
 	}
 
+	// Do the restore
 	return d.API.RestoreSnapshot(ctx, volume, snapshot)
 }
 
@@ -1771,7 +1776,7 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	// Make sure we're not shrinking the volume
 	if int64(sizeBytes) < volume.QuotaInBytes {
-		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested size %d is less than existing volume size %d",
+		return errors.UnsupportedCapacityRangeError(fmt.Errorf("requested size %d is less than existing volume size %d",
 			sizeBytes,
 			volume.QuotaInBytes))
 	}
@@ -1816,6 +1821,30 @@ func (d *NFSStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NFSStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NFSStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.GCPNFSStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NFSStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. Project number
+	// 2. API region
+	// 3. Service type
+	// 4. Storage pool - contains at least one pool depending on the backend configuration.
+	backendPools := make([]drivers.GCPNFSStorageBackendPool, 0)
+	for _, pool := range d.pools {
+		backendPool := drivers.GCPNFSStorageBackendPool{
+			ProjectNumber: d.Config.ProjectNumber,
+			APIRegion:     d.Config.APIRegion,
+			ServiceLevel:  d.Config.ServiceLevel,
+			StoragePool:   pool.Name(),
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+	return backendPools
 }
 
 func (d *NFSStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
@@ -2019,7 +2048,7 @@ func (d *NFSStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 	return bitmap
 }
 
-func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
+func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
@@ -2079,7 +2108,7 @@ func (d *NFSStorageDriver) GetPoolsForCreate(
 	// Software class backend doesn't have pools with matching filters, so we throw error
 	if len(GCPPools) == 0 {
 		if poolErrors != "" {
-			return nil, utils.ResourceExhaustedError(fmt.Errorf(poolErrors))
+			return nil, errors.ResourceExhaustedError(fmt.Errorf(poolErrors))
 		}
 		return nil, fmt.Errorf("no GCP pools found")
 	}

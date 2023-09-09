@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/mitchellh/copystructure"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 //go:generate mockgen -destination=../mocks/mock_utils/mock_json_utils.go github.com/netapp/trident/utils JSONReaderWriter
@@ -16,6 +18,7 @@ import (
 
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
+	NVMeAccessInfo
 	NfsAccessInfo
 	SMBAccessInfo
 	NfsBlockAccessInfo
@@ -70,20 +73,30 @@ type NfsBlockAccessInfo struct {
 	NFSMountpoint         string `json:"nfsMountpoint,omitempty"`
 }
 
+type NVMeAccessInfo struct {
+	NVMeTargetIPs     []string `json:"nvmeTargetIPs,omitempty"`
+	NVMeSubsystemNQN  string   `json:"nvmeSubsystemNqn,omitempty"`
+	NVMeSubsystemUUID string   `json:"nvmeSubsystemUUID,omitempty"`
+	NVMeNamespaceUUID string   `json:"nvmeNamespaceUUID,omitempty"`
+}
+
 type VolumePublishInfo struct {
 	Localhost         bool     `json:"localhost,omitempty"`
 	HostIQN           []string `json:"hostIQN,omitempty"`
+	HostNQN           string   `json:"hostNQN,omitempty"`
 	HostIP            []string `json:"hostIP,omitempty"`
 	BackendUUID       string   `json:"backendUUID,omitempty"`
 	Nodes             []*Node  `json:"nodes,omitempty"`
 	HostName          string   `json:"hostName,omitempty"`
 	FilesystemType    string   `json:"fstype,omitempty"`
 	SharedTarget      bool     `json:"sharedTarget,omitempty"`
-	DevicePath        string   `json:"rawDevicePath,omitempty"`
+	DevicePath        string   `json:"devicePath,omitempty"`
+	RawDevicePath     string   `json:"rawDevicePath,omitempty"` // NOTE: devicePath was renamed to this 23.01-23.04
 	Unmanaged         bool     `json:"unmanaged,omitempty"`
 	StagingMountpoint string   `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
 	TridentUUID       string   `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
 	LUKSEncryption    string   `json:"LUKSEncryption,omitempty"`
+	SANType           string   `json:"SANType,omitempty"`
 	VolumeAccessInfo
 }
 
@@ -140,9 +153,15 @@ func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 	}
 }
 
+type VolumeUpdateInfo struct {
+	SnapshotDirectory string `json:"snapshotDirectory"`
+	PoolLevel         bool   `json:"poolLevel"`
+}
+
 type Node struct {
 	Name             string               `json:"name"`
 	IQN              string               `json:"iqn,omitempty"`
+	NQN              string               `json:"nqn,omitempty"`
 	IPs              []string             `json:"ips,omitempty"`
 	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
 	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
@@ -154,6 +173,7 @@ type Node struct {
 type NodeExternal struct {
 	Name             string               `json:"name"`
 	IQN              string               `json:"iqn,omitempty"`
+	NQN              string               `json:"nqn,omitempty"`
 	IPs              []string             `json:"ips,omitempty"`
 	TopologyLabels   map[string]string    `json:"topologyLabels,omitempty"`
 	NodePrep         *NodePrep            `json:"nodePrep,omitempty"`
@@ -182,6 +202,7 @@ func (n *Node) ConstructExternal() *NodeExternal {
 	return &NodeExternal{
 		Name:             node.Name,
 		IQN:              node.IQN,
+		NQN:              node.NQN,
 		IPs:              node.IPs,
 		TopologyLabels:   node.TopologyLabels,
 		NodePrep:         node.NodePrep,
@@ -230,7 +251,8 @@ func (f *NodePublicationStateFlags) IsNodeCleaned() bool {
 }
 
 func (f *NodePublicationStateFlags) String() string {
-	return fmt.Sprintf("OrchestratorReady: %s; AdministratorReady: %s; ProvisionerReady: %s", PtrToString(f.OrchestratorReady), PtrToString(f.AdministratorReady),
+	return fmt.Sprintf("OrchestratorReady: %s; AdministratorReady: %s; ProvisionerReady: %s",
+		PtrToString(f.OrchestratorReady), PtrToString(f.AdministratorReady),
 		PtrToString(f.ProvisionerReady))
 }
 
@@ -458,7 +480,7 @@ func (l *LUNs) VolumeID(x int32) (string, error) {
 		return volId, nil
 	}
 
-	return "", NotFoundError("LUN not found")
+	return "", errors.NotFoundError("LUN not found")
 }
 
 func (l *LUNs) String() string {
@@ -577,7 +599,7 @@ func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, erro
 		return iSCSISessionData, nil
 	}
 
-	return nil, NotFoundError("portal not found")
+	return nil, errors.NotFoundError("portal not found")
 }
 
 // AddPortal creates a portal entry along with PortalInfo but without any LUNInfo

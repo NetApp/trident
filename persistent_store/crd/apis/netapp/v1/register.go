@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -38,6 +38,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&TridentBackendList{},
 		&TridentMirrorRelationship{},
 		&TridentMirrorRelationshipList{},
+		&TridentActionMirrorUpdate{},
+		&TridentActionMirrorUpdateList{},
 		&TridentSnapshotInfo{},
 		&TridentSnapshotInfoList{},
 		&TridentBackendConfig{},
@@ -58,6 +60,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&TridentSnapshotList{},
 		&TridentVolumeReference{},
 		&TridentVolumeReferenceList{},
+		&TridentActionSnapshotRestore{},
+		&TridentActionSnapshotRestoreList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

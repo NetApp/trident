@@ -6,7 +6,6 @@ package csi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -18,6 +17,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func ParseEndpoint(ep string) (string, string, error) {
@@ -168,16 +168,19 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 	iqn := publishInfo.VolumeAccessInfo.IscsiTargetIQN
 	subvolName := publishInfo.VolumeAccessInfo.SubvolumeName
 	smbPath := publishInfo.SMBPath
+	nqn := publishInfo.VolumeAccessInfo.NVMeSubsystemNQN
 
 	nfsSet := nfsIP != ""
 	iqnSet := iqn != ""
 	subvolSet := subvolName != ""
 	smbSet := smbPath != ""
+	nqnSet := nqn != ""
 
 	isSmb := smbSet && !nfsSet && !iqnSet
 	isNfs := nfsSet && !iqnSet && !smbSet
 	isBof := isNfs && subvolSet
 	isIscsi := iqnSet && !nfsSet && !smbSet
+	isNVMe := nqnSet && !nfsSet && !smbSet && !iqnSet
 
 	if isSmb || (isNfs && !isBof) {
 		return config.File, nil
@@ -185,13 +188,16 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 		return config.BlockOnFile, nil
 	} else if isIscsi {
 		return config.Block, nil
+	} else if isNVMe {
+		return config.Block, nil
 	}
 
 	fields := LogFields{
-		"SMBPath":        smbPath,
-		"SubvolumeName":  subvolName,
-		"IscsiTargetIQN": iqn,
-		"NfsServerIP":    nfsIP,
+		"SMBPath":          smbPath,
+		"SubvolumeName":    subvolName,
+		"IscsiTargetIQN":   iqn,
+		"NfsServerIP":      nfsIP,
+		"NVMeSubsystemNQN": nqn,
 	}
 
 	errMsg := "unable to infer volume protocol"
@@ -204,8 +210,8 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 // Nothing is done for NFS because NodeUnstageVolume for NFS only checks for the staging path. The ISCSI and Block on
 // File conditions are the same conditions that are checked in NodeUnstageVolume.
 func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *utils.VolumeTrackingInfo) (bool, error) {
-	Logc(ctx).Debug(">>>> performProtocolSpecificReconciliation")
-	defer Logc(ctx).Debug("<<<< performProtocolSpecificReconciliation")
+	Logc(ctx).Trace(">>>> performProtocolSpecificReconciliation")
+	defer Logc(ctx).Trace("<<<< performProtocolSpecificReconciliation")
 
 	atLeastOneConditionMet := false
 	protocol, err := getVolumeProtocolFromPublishInfo(&trackingInfo.VolumePublishInfo)
@@ -238,7 +244,10 @@ func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *ut
 // ensureLUKSVolumePassphrase ensures the LUKS device has the most recent passphrase and notifies the Trident controller
 // of any possibly in use passphrases. If forceUpdate is true, the Trident controller will be notified of the current
 // passphrase name, regardless of a rotation.
-func ensureLUKSVolumePassphrase(ctx context.Context, restClient controllerAPI.TridentController, luksDevice utils.LUKSDeviceInterface, volumeId string, secrets map[string]string, forceUpdate bool) error {
+func ensureLUKSVolumePassphrase(
+	ctx context.Context, restClient controllerAPI.TridentController, luksDevice utils.LUKSDeviceInterface,
+	volumeId string, secrets map[string]string, forceUpdate bool,
+) error {
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := utils.GetLUKSPassphrasesFromSecretMap(secrets)
 	if luksPassphrase == "" {
 		return fmt.Errorf("LUKS passphrase cannot be empty")

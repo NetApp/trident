@@ -1,4 +1,5 @@
 // Copyright 2022 NetApp, Inc. All Rights Reserved.
+
 package kubernetes
 
 import (
@@ -7,9 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
 	frontendcommon "github.com/netapp/trident/frontend/common"
@@ -19,6 +23,7 @@ import (
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,8 +44,8 @@ func (h *helper) GetVolumeConfig(
 	pvName := name
 
 	fields := LogFields{"Method": "GetVolumeConfig", "Type": "K8S helper", "name": pvName}
-	Logc(ctx).WithFields(fields).Debug(">>>> GetVolumeConfig")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< GetVolumeConfig")
+	Logc(ctx).WithFields(fields).Trace(">>>> GetVolumeConfig")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< GetVolumeConfig")
 
 	// Get the PVC corresponding to the new PV being provisioned
 	pvc, err := h.getPVCForCSIVolume(ctx, pvName)
@@ -131,7 +136,7 @@ func (h *helper) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 		var ok bool
 		relationship, ok = relationshipObj.(*netappv1.TridentMirrorRelationship)
 		if !ok {
-			return "", utils.TypeAssertionError("relationshipObj.(*netappv1.TridentMirrorRelationship)")
+			return "", errors.TypeAssertionError("relationshipObj.(*netappv1.TridentMirrorRelationship)")
 		}
 	}
 	// If TMR is pointing to PVC but PVC is missing annotation, we search for a single TMR pointing to the PVC
@@ -139,7 +144,7 @@ func (h *helper) getPVCMirrorPeer(pvc *v1.PersistentVolumeClaim, mirrorRelations
 	for index := range relationships {
 		rel, ok := relationships[index].(*netappv1.TridentMirrorRelationship)
 		if !ok {
-			return "", utils.TypeAssertionError("relationships[index].(*netappv1.TridentMirrorRelationship)")
+			return "", errors.TypeAssertionError("relationships[index].(*netappv1.TridentMirrorRelationship)")
 		}
 		mappings := rel.Spec.VolumeMappings
 		for index := range mappings {
@@ -190,7 +195,7 @@ func (h *helper) getPVCForCSIVolume(ctx context.Context, name string) (*v1.Persi
 	// Get the cached PVC that started this workflow
 	pvc, err := h.waitForCachedPVCByUID(ctx, pvcUID, PreSyncCacheWaitPeriod)
 	if err != nil {
-		Logc(ctx).WithField("uid", pvcUID).Warningf("PVC not found in local cache: %v", err)
+		Logc(ctx).WithError(err).WithField("uid", pvcUID).Warning("PVC not found in local cache.")
 
 		// Not found immediately, so re-sync and try again
 		if err = h.pvcIndexer.Resync(); err != nil {
@@ -198,7 +203,7 @@ func (h *helper) getPVCForCSIVolume(ctx context.Context, name string) (*v1.Persi
 		}
 
 		if pvc, err = h.waitForCachedPVCByUID(ctx, pvcUID, PostSyncCacheWaitPeriod); err != nil {
-			Logc(ctx).WithField("uid", pvcUID).Errorf("PVC not found in local cache after resync: %v", err)
+			Logc(ctx).WithError(err).WithField("uid", pvcUID).Error("PVC not found in local cache after resync.")
 			return nil, fmt.Errorf("could not find PVC with UID %s: %v", pvcUID, err)
 		}
 	}
@@ -232,7 +237,7 @@ func getPVCUIDFromCSIVolumeName(volumeName string) (string, error) {
 func (h *helper) getStorageClass(ctx context.Context, name string) (*k8sstoragev1.StorageClass, error) {
 	sc, err := h.waitForCachedStorageClassByName(ctx, name, PreSyncCacheWaitPeriod)
 	if err != nil {
-		Logc(ctx).WithField("name", name).Warningf("Storage class not found in local cache: %v", err)
+		Logc(ctx).WithError(err).WithField("name", name).Warning("Storage class not found in local cache.")
 
 		// Not found immediately, so re-sync and try again
 		if err = h.scIndexer.Resync(); err != nil {
@@ -240,7 +245,8 @@ func (h *helper) getStorageClass(ctx context.Context, name string) (*k8sstoragev
 		}
 
 		if sc, err = h.waitForCachedStorageClassByName(ctx, name, PostSyncCacheWaitPeriod); err != nil {
-			Logc(ctx).WithField("name", name).Errorf("Storage class not found in local cache after resync: %v", err)
+			Logc(ctx).WithError(err).WithField("name", name).Error(
+				"Storage class not found in local cache after resync.")
 			return nil, fmt.Errorf("could not find storage class %s: %v", name, err)
 		}
 	}
@@ -381,14 +387,97 @@ func (h *helper) matchNamespaceToAnnotation(namespace, shareToAnnotation string)
 	return false
 }
 
-// GetSnapshotConfig accepts the attributes of a snapshot being requested by the CSI
+// GetSnapshotConfigForCreate accepts the attributes of a snapshot being requested by the CSI
 // provisioner and returns a SnapshotConfig structure as needed by Trident to create a new snapshot.
-func (h *helper) GetSnapshotConfig(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
+func (h *helper) GetSnapshotConfigForCreate(volumeName, snapshotName string) (*storage.SnapshotConfig, error) {
+	// Fill in what we already know about the snapshot config.
 	return &storage.SnapshotConfig{
 		Version:    config.OrchestratorAPIVersion,
 		Name:       snapshotName,
 		VolumeName: volumeName,
 	}, nil
+}
+
+// GetSnapshotConfigForImport accepts the attributes of a snapshot being imported by the CSI
+// provisioner, gathers additional information from Kubernetes, and returns a SnapshotConfig
+// structure as needed by Trident to import a snapshot.
+func (h *helper) GetSnapshotConfigForImport(
+	ctx context.Context, volumeName, snapshotContentName string,
+) (*storage.SnapshotConfig, error) {
+	if volumeName == "" || snapshotContentName == "" {
+		return nil, fmt.Errorf("invalid volume or snapshot name supplied")
+	}
+
+	fields := LogFields{
+		"volumeName":          volumeName,
+		"snapshotContentName": snapshotContentName,
+	}
+
+	// Get any additional information required for import.
+	var internalName string
+	snapshotContent, err := h.getSnapshotContentByName(ctx, snapshotContentName)
+	if err != nil || snapshotContent == nil {
+		Logc(ctx).WithFields(fields).WithError(err).Trace("Failed to get snapshot content by name.")
+		return nil, err
+	}
+
+	// Get the snapshot internal name from the snap content.
+	internalName, err = h.getSnapshotInternalNameFromAnnotation(ctx, snapshotContent)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get internal name from snapshot content.")
+		return nil, err
+	}
+
+	return &storage.SnapshotConfig{
+		Version:      config.OrchestratorAPIVersion,
+		Name:         snapshotContentName,
+		VolumeName:   volumeName,
+		InternalName: internalName,
+	}, nil
+}
+
+// getSnapshotContentByName returns a VolumeSnapshotContent by name if it exists.
+func (h *helper) getSnapshotContentByName(ctx context.Context, name string) (*vsv1.VolumeSnapshotContent, error) {
+	fields := LogFields{"snapshotContentName": name}
+	Logc(ctx).WithFields(fields).Trace(">>>> getSnapshotContentByName")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< getSnapshotContentByName")
+
+	vsc, err := h.snapClient.SnapshotV1().VolumeSnapshotContents().Get(ctx, name, getOpts)
+	if err != nil || vsc == nil {
+		statusErr, ok := err.(*apierrors.StatusError)
+		if ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
+			return nil, errors.NotFoundError("snapshot content %s not found; %v", name, statusErr)
+		}
+		return nil, err
+	}
+
+	return vsc, nil
+}
+
+// getSnapshotInternalNameFromAnnotation gets the snapshotInternalName from an annotation on a VolumeSnapshotContent
+// for snapshot import.
+func (h *helper) getSnapshotInternalNameFromAnnotation(
+	ctx context.Context, vsc *vsv1.VolumeSnapshotContent,
+) (string, error) {
+	if vsc == nil {
+		return "", fmt.Errorf("cannot get snapshot internal name")
+	}
+
+	fields := LogFields{"snapshotContentName": vsc.Name}
+	Logc(ctx).WithFields(fields).Trace(">>>> getSnapshotInternalNameFromAnnotation")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< getSnapshotInternalNameFromAnnotation")
+
+	// If the internal name annotation is not present, fail.
+	internalName, ok := vsc.Annotations[AnnInternalSnapshotName]
+	if !ok || internalName == "" {
+		return "", errors.NotFoundError(
+			fmt.Sprintf("internal snapshot name not present on snapshot content %s", vsc.Name),
+		)
+	}
+
+	fields["internalName"] = internalName
+	Logc(ctx).WithFields(fields).Debug("Discovered snapshot internal name.")
+	return internalName, nil
 }
 
 // RecordVolumeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
@@ -402,7 +491,7 @@ func (h *helper) RecordVolumeEvent(ctx context.Context, name, eventType, reason,
 	}).Debug("Volume event.")
 
 	if pvc, err := h.getPVCForCSIVolume(ctx, name); err != nil {
-		Logc(ctx).WithField("error", err).Debug("Failed to find PVC for event.")
+		Logc(ctx).WithError(err).Debug("Failed to find PVC for event.")
 	} else {
 		h.eventRecorder.Event(pvc, mapEventType(eventType), reason, message)
 	}
@@ -419,10 +508,18 @@ func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 	}).Debug("Node event.")
 
 	if node, err := h.GetNode(ctx, name); err != nil {
-		Logc(ctx).WithField("error", err).Debug("Failed to find Node for event.")
+		Logc(ctx).WithError(err).Debug("Failed to find Node for event.")
 	} else {
 		h.eventRecorder.Event(node, mapEventType(eventType), reason, message)
 	}
+}
+
+// IsValidResourceName determines if a string meets the Kubernetes requirements for object names.
+func (h *helper) IsValidResourceName(name string) bool {
+	if len(name) > maxResourceNameLength {
+		return false
+	}
+	return utils.DNS1123DomainRegex.MatchString(name)
 }
 
 // mapEventType maps between K8S API event types and Trident CSI helper event types.  The
@@ -459,6 +556,15 @@ func getVolumeConfig(
 		volumeMode = &volumeModeVal
 	}
 
+	if getAnnotation(annotations, AnnReadOnlyClone) == "" {
+		annotations[AnnReadOnlyClone] = "false"
+	}
+
+	readOnlyClone, err := strconv.ParseBool(getAnnotation(annotations, AnnReadOnlyClone))
+	if err != nil {
+		Logc(ctx).WithError(err).Warning("Unable to parse readOnlyClone annotation into bool.")
+	}
+
 	if getAnnotation(annotations, AnnFileSystem) == "" {
 		annotations[AnnFileSystem] = "ext4"
 	}
@@ -468,7 +574,7 @@ func getVolumeConfig(
 	}
 	notManaged, err := strconv.ParseBool(getAnnotation(annotations, AnnNotManaged))
 	if err != nil {
-		Logc(ctx).Warnf("unable to parse notManaged annotation into bool; %v", err)
+		Logc(ctx).WithError(err).Warning("Unable to parse notManaged annotation into bool.")
 	}
 
 	return &storage.VolumeConfig{
@@ -484,6 +590,7 @@ func getVolumeConfig(
 		BlockSize:           getAnnotation(annotations, AnnBlockSize),
 		FileSystem:          getAnnotation(annotations, AnnFileSystem),
 		SplitOnClone:        getAnnotation(annotations, AnnSplitOnClone),
+		ReadOnlyClone:       readOnlyClone,
 		VolumeMode:          config.VolumeMode(*volumeMode),
 		AccessMode:          accessMode,
 		ImportOriginalName:  getAnnotation(annotations, AnnImportOriginalName),

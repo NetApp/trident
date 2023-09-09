@@ -78,16 +78,16 @@ func TestGetStorageClass(t *testing.T) {
 	// GetStorageClass from orchestrator returns matching storageclass from cache
 	sce := &storageclass.External{Config: &storageclass.Config{Name: "basicsc"}}
 	o.EXPECT().GetStorageClass(ctx, gomock.Any()).Return(sce, nil)
-	config, err := GetStorageClass(ctx, options, o)
+	sc, err := GetStorageClass(ctx, options, o)
 	assert.NoError(t, err, "GetStorageClass from orchestrator returned error")
-	assert.Equal(t, "basicsc", config.Name, "Found different storage class in orchestrator")
+	assert.Equal(t, "basicsc", sc.Name, "Found different storage class in orchestrator")
 
 	// AddStorageClass from orchestrator adds newly created storageclass in cache
 	o.EXPECT().GetStorageClass(ctx, gomock.Any()).Return(nil, nil)
 	o.EXPECT().AddStorageClass(ctx, gomock.Any()).Return(sce, nil)
-	config, err = GetStorageClass(ctx, options, o)
+	sc, err = GetStorageClass(ctx, options, o)
 	assert.NoError(t, err, "Failed to add storage class to orchestrator")
-	assert.Equal(t, "basicsc", config.Name, "Created storage class with different name")
+	assert.Equal(t, "basicsc", sc.Name, "Created storage class with different name")
 
 	// AddStorageClass from orchestrator fails in creating/adding the new storageclass to cache
 	o.EXPECT().GetStorageClass(ctx, gomock.Any()).Return(nil, nil)

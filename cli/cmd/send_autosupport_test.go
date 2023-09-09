@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 )
@@ -15,7 +15,7 @@ func TestSendAutosupportPrompt(t *testing.T) {
 	if err := RootCmd.Execute(); err != nil {
 		t.Log(err)
 	}
-	out, err := ioutil.ReadAll(b)
+	out, err := io.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func TestSendAutosupportPrompt(t *testing.T) {
 	if err := RootCmd.Execute(); err != nil {
 		t.Log(err)
 	}
-	out, err = ioutil.ReadAll(b)
+	out, err = io.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestSendAutosupportPrompt(t *testing.T) {
 	if err := RootCmd.Execute(); err != nil {
 		t.Log(err)
 	}
-	out, err = ioutil.ReadAll(b)
+	out, err = io.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestSendAutosupportAcceptAgreementFlag(t *testing.T) {
 	if err := RootCmd.Execute(); err != nil {
 		t.Log(err)
 	}
-	out, err := ioutil.ReadAll(b)
+	out, err := io.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func TestSendAutosupportAcceptAgreementFlag(t *testing.T) {
 	if err := RootCmd.Execute(); err != nil {
 		t.Log(err)
 	}
-	out, err = ioutil.ReadAll(b)
+	out, err = io.ReadAll(b)
 	if err != nil {
 		t.Fatal(err)
 	}

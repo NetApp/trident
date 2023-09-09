@@ -127,10 +127,20 @@ func (c *ControllerRestClient) CreateNode(ctx context.Context, node *utils.Node)
 	if err != nil {
 		return CreateNodeResponse{}, fmt.Errorf("error parsing create node request; %v", err)
 	}
-	resp, respBody, err := c.InvokeAPI(ctx, nodeData, "PUT", config.NodeURL+"/"+node.Name, false, false)
-	if err != nil {
-		return CreateNodeResponse{}, fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
+
+	createRequest := func() (*http.Response, []byte, error) {
+		resp, respBody, err := c.InvokeAPI(ctx, nodeData, "PUT", config.NodeURL+"/"+node.Name, false, false)
+		if err != nil {
+			return resp, respBody, fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
+		}
+		return resp, respBody, nil
 	}
+
+	resp, respBody, err := c.requestAndRetry(ctx, createRequest)
+	if err != nil {
+		return CreateNodeResponse{}, fmt.Errorf("failed during retry for CreateNode: %v", err)
+	}
+
 	createResponse := CreateNodeResponse{}
 	if err := json.Unmarshal(respBody, &createResponse); err != nil {
 		return createResponse, fmt.Errorf("could not parse node : %s; %v", string(respBody), err)

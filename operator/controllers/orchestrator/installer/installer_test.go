@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -55,7 +55,7 @@ func createTestLabels() map[string]string {
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
 	labels[K8sVersionLabelKey] = "v1.21.8"
-	labels[TridentVersionLabelKey] = "v23.04.0"
+	labels[TridentVersionLabelKey] = "v23.10.0"
 
 	return labels
 }
@@ -179,7 +179,7 @@ func TestCreateOrPatchCRD(t *testing.T) {
 }
 
 func Test_getAppLabelForResource(t *testing.T) {
-	labelMap, labelValue := getAppLabelForResource(getControllerRBACResourceName(true))
+	labelMap, labelValue := getAppLabelForResource(getControllerRBACResourceName())
 	assert.True(t, cmp.Equal(labelMap, map[string]string{TridentAppLabelKey: TridentCSILabelValue}))
 	assert.Equal(t, labelValue, TridentCSILabel)
 

@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"archive/zip"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -269,7 +269,7 @@ func getTridentLogs(logName string) error {
 	}
 
 	// Get logs
-	logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
+	logBytes, err := execKubernetesCLI(logsCommand...)
 	if err != nil {
 		logErrors = appendError(logErrors, logBytes)
 	} else {
@@ -292,7 +292,7 @@ func getTridentLogs(logName string) error {
 			}
 
 			// Get logs
-			logBytes, err = execKubernetesCLI(logsCommand...).CombinedOutput()
+			logBytes, err = execKubernetesCLI(logsCommand...)
 			if err != nil {
 				logErrors = appendError(logErrors, logBytes)
 			} else {
@@ -337,7 +337,7 @@ func getNodeLogs(logName, nodeName string) error {
 	}
 
 	// Get logs
-	logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
+	logBytes, err := execKubernetesCLI(logsCommand...)
 	if err != nil {
 		logErrors = appendError(logErrors, logBytes)
 	} else {
@@ -360,7 +360,7 @@ func getNodeLogs(logName, nodeName string) error {
 			}
 
 			// Get logs
-			logBytes, err = execKubernetesCLI(logsCommand...).CombinedOutput()
+			logBytes, err = execKubernetesCLI(logsCommand...)
 			if err != nil {
 				logErrors = appendError(logErrors, logBytes)
 			} else {
@@ -406,7 +406,7 @@ func getAllNodeLogs(logName string) error {
 		}
 
 		// Get logs
-		logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
+		logBytes, err := execKubernetesCLI(logsCommand...)
 		if err != nil {
 			logErrors = appendError(logErrors, logBytes)
 		} else {
@@ -429,7 +429,7 @@ func getAllNodeLogs(logName string) error {
 				}
 
 				// Get logs
-				logBytes, err = execKubernetesCLI(logsCommand...).CombinedOutput()
+				logBytes, err = execKubernetesCLI(logsCommand...)
 				if err != nil {
 					logErrors = appendError(logErrors, logBytes)
 				} else {
@@ -465,7 +465,7 @@ func getTridentOperatorLogs(logName string) error {
 	}
 
 	// Get logs
-	logBytes, err := execKubernetesCLI(logsCommand...).CombinedOutput()
+	logBytes, err := execKubernetesCLI(logsCommand...)
 	if err != nil {
 		logErrors = appendError(logErrors, logBytes)
 	} else {

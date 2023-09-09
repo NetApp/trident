@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -33,6 +32,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -73,6 +73,9 @@ var (
 	enableForceDetach   = new(bool)
 	nodePrep            = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
 
+	// Trident-ACP
+	enableACP = flag.Bool("enable_acp", false, "Enable the trident-acp premium features.")
+
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
 		"any metadata.  WILL LOSE TRACK OF VOLUMES ON REBOOT/CRASH.")
@@ -110,6 +113,14 @@ var (
 	iSCSISelfHealingWaitTime = flag.Duration("iscsi_self_healing_wait_time",
 		config.ISCSISelfHealingWaitTime,
 		"Wait time after which iSCSI self-healing attempts to fix stale sessions")
+
+	// NVMe
+	nvmeSelfHealingInterval = flag.Duration("nvme_self_healing_interval", config.NVMeSelfHealingInterval,
+		"Interval at which the NVMe self-healing thread is invoked")
+
+	// core
+	backendStoragePollInterval = flag.Duration("backend_storage_poll_interval", config.BackendStoragePollInterval,
+		"Interval at which core polls backend storage for its state")
 
 	storeClient  persistentstore.Client
 	enableDocker bool
@@ -258,8 +269,7 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowCoreInit,
-		LogLayerCore)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowCoreInit, LogLayerCore)
 
 	// These features are only supported on Linux.
 	if runtime.GOOS == "linux" {
@@ -388,7 +398,8 @@ func main() {
 		var hybridControllerFrontend frontend.Plugin
 		var hybridNodeFrontend frontend.Plugin
 		if *k8sAPIServer != "" || *k8sPod {
-			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath, *enableForceDetach)
+			hybridControllerFrontend, err = k8sctrlhelper.NewHelper(orchestrator, *k8sAPIServer, *k8sConfigPath,
+				*enableForceDetach)
 			if err != nil {
 				Log().WithError(err).Fatal("Unable to start the K8S hybrid controller frontend.")
 			}
@@ -407,7 +418,8 @@ func main() {
 		}
 		controllerHelper, ok := hybridControllerFrontend.(controllerhelpers.ControllerHelper)
 		if !ok {
-			Log().Fatalf("%v", utils.TypeAssertionError("hybridControllerFrontend.(controllerhelpers.ControllerHelper)"))
+			Log().Fatalf("%v",
+				errors.TypeAssertionError("hybridControllerFrontend.(controllerhelpers.ControllerHelper)"))
 		}
 
 		if *csiRole == csi.CSINode || *csiRole == csi.CSIAllInOne {
@@ -416,7 +428,7 @@ func main() {
 		}
 		nodeHelper, ok := hybridNodeFrontend.(nodehelpers.NodeHelper)
 		if !ok {
-			Log().Fatalf("%v", utils.TypeAssertionError("hybridNodeFrontend.(nodehelpers.NodeHelper)"))
+			Log().Fatalf("%v", errors.TypeAssertionError("hybridNodeFrontend.(nodehelpers.NodeHelper)"))
 		}
 
 		Log().WithFields(LogFields{
@@ -433,14 +445,14 @@ func main() {
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach,
-				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime)
+				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 		}
 		if err != nil {
 			Log().Fatalf("Unable to start the CSI frontend. %v", err)
@@ -524,6 +536,7 @@ func main() {
 	if config.CurrentDriverContext == config.ContextCSI {
 		go orchestrator.PeriodicallyReconcileNodeAccessOnBackends()
 	}
+	go orchestrator.PeriodicallyReconcileBackendState(*backendStoragePollInterval)
 
 	// Register and wait for a shutdown signal
 	c := make(chan os.Signal, 1)

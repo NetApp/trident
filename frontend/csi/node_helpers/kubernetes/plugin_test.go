@@ -4,7 +4,6 @@ package kubernetes
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,6 +19,7 @@ import (
 	mockOrchestrator "github.com/netapp/trident/mocks/mock_core"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -102,7 +102,8 @@ func TestReconcileVolumeTrackingInfo(t *testing.T) {
 
 	_ = osFs.Mkdir("/pods", 0o777)
 	mockVolumePublishManager.EXPECT().GetVolumeTrackingFiles().Return([]os.FileInfo{fInfo}, nil)
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, make(map[string]struct{})).
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, make(map[string]struct{}),
+		make(map[string]string)).
 		Return(false, errors.New("foo"))
 	err = h.reconcileVolumePublishInfo(ctx)
 	assert.Error(t, err, "expected error if reconcile file fails")
@@ -127,27 +128,31 @@ func TestReconcileVolumeTrackingInfoFile(t *testing.T) {
 
 	validH := newValidHelper(orchestrator, volId, mockVolumePublishManager)
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths).Return(false, nil)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths,
+		nil).Return(false, nil)
 	mockVolumePublishManager.EXPECT().ValidateTrackingFile(ctx, volId).Return(false, nil)
 
-	err := validH.reconcileVolumePublishInfoFile(ctx, fName)
+	err := validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.NoError(t, err, "did not expect an error during reconcile")
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths).Return(false, errors.New("foo"))
-	err = validH.reconcileVolumePublishInfoFile(ctx, fName)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths,
+		nil).Return(false, errors.New("foo"))
+	err = validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.Error(t, err, "expected error if upgrade to tracking file occurred")
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(gomock.Any(), volId, paths).Return(false, nil)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(gomock.Any(), volId, paths,
+		nil).Return(false, nil)
 	mockVolumePublishManager.EXPECT().ValidateTrackingFile(gomock.Any(), volId).Return(true, nil)
 	mockVolumePublishManager.EXPECT().DeleteTrackingInfo(gomock.Any(), volId).Return(errors.New("foo error"))
 
-	err = validH.reconcileVolumePublishInfoFile(ctx, fName)
+	err = validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.Error(t, err, "expected error if file delete failed")
 
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths).Return(false, nil)
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, paths,
+		nil).Return(false, nil)
 	mockVolumePublishManager.EXPECT().ValidateTrackingFile(ctx, volId).Return(false, errors.New("foo"))
 
-	err = validH.reconcileVolumePublishInfoFile(ctx, fName)
+	err = validH.reconcileVolumePublishInfoFile(ctx, fName, nil)
 	assert.Error(t, err, "expected error if validate tracking file error occurred")
 }
 
@@ -353,7 +358,7 @@ func TestDiscoverPVCsToPublishedPaths(t *testing.T) {
 	_ = osFs.MkdirAll(podUUIDPath, 0o777)
 	_, _ = osFs.Create(podUUIDPath + volName)
 
-	result, err := h.discoverPVCsToPublishedPaths(context.Background())
+	result, err := h.discoverPVCsToPublishedPathsFilesystemVolumes(context.Background())
 	expectedPublishedPath := filepath.Join(podUUIDPath, volName, "mount")
 	_, ok = result[volName][expectedPublishedPath]
 	assert.NoError(t, err)
@@ -379,7 +384,7 @@ func TestDiscoverPVCsToPublishedPaths_ReadDirFails(t *testing.T) {
 
 	// invalid path
 	h.podsPath = "/*"
-	res, err := h.discoverPVCsToPublishedPaths(context.Background())
+	res, err := h.discoverPVCsToPublishedPathsFilesystemVolumes(context.Background())
 	assert.Error(t, err)
 	assert.Nil(t, res, "expected nil map!")
 
@@ -387,9 +392,82 @@ func TestDiscoverPVCsToPublishedPaths_ReadDirFails(t *testing.T) {
 	_ = osFs.RemoveAll(podUUIDPath)
 	_, _ = osFs.Create(podUUIDPath)
 	h.podsPath = "/var/lib/kubelet/pods"
-	res, err = h.discoverPVCsToPublishedPaths(context.Background())
+	res, err = h.discoverPVCsToPublishedPathsFilesystemVolumes(context.Background())
 	assert.Error(t, err)
 	assert.Empty(t, res)
+}
+
+func TestDiscoverPVCsToPublishedPathsRawDevices(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
+	defer func() { osFs = afero.NewOsFs() }()
+	osFs = afero.NewMemMapFs()
+
+	help, _ := NewHelper(orchestrator, "/var/lib/kubelet", false)
+	h, ok := help.(*helper)
+	if !ok {
+		t.Fatal("Could not cast helper to a NodeHelper!")
+	}
+
+	podUUIDPathBase := "/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/"
+	volName1 := "pvc-123"
+	podUUID1 := "123-456"
+	podUUIDPath1 := podUUIDPathBase + volName1
+	_ = osFs.MkdirAll(podUUIDPath1, 0o777)
+	_, _ = osFs.Create(podUUIDPath1 + "/" + podUUID1)
+
+	volName2 := "pvc-123"
+	podUUID2 := "123-456"
+	podUUIDPath2 := podUUIDPathBase + volName2
+	_ = osFs.MkdirAll(podUUIDPath2, 0o777)
+	_, _ = osFs.Create(podUUIDPath2 + "/" + podUUID2)
+
+	mapping := make(map[string]map[string]struct{})
+
+	err := h.discoverPVCsToPublishedPathsRawDevices(context.Background(), mapping)
+	expectedPublishedPath := filepath.Join(podUUIDPath1, podUUID1)
+	_, ok = mapping[volName1][expectedPublishedPath]
+	assert.NoError(t, err)
+	assert.True(t, ok, "expected published path not found in map!")
+
+	expectedPublishedPath = filepath.Join(podUUIDPath2, podUUID2)
+	_, ok = mapping[volName1][expectedPublishedPath]
+	assert.NoError(t, err)
+	assert.True(t, ok, "expected published path not found in map!")
+}
+
+func TestDiscoverPVCsToPublishedPathsRawDevices_EmptyMap(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockOrchestrator.NewMockOrchestrator(mockCtrl)
+	defer func() { osFs = afero.NewOsFs() }()
+	osFs = afero.NewMemMapFs()
+
+	help, _ := NewHelper(orchestrator, "/var/lib/kubelet", false)
+	h, ok := help.(*helper)
+	if !ok {
+		t.Fatal("Could not cast helper to a NodeHelper!")
+	}
+
+	podUUIDPathBase := "/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/"
+	volName1 := "pvc-123"
+	podUUID1 := "123-456"
+	podUUIDPath1 := podUUIDPathBase + volName1
+	_ = osFs.MkdirAll(podUUIDPath1, 0o777)
+	_, _ = osFs.Create(podUUIDPath1 + "/" + podUUID1)
+
+	volName2 := "pvc-123"
+	podUUID2 := "123-456"
+	podUUIDPath2 := podUUIDPathBase + volName2
+	_ = osFs.MkdirAll(podUUIDPath2, 0o777)
+	_, _ = osFs.Create(podUUIDPath2 + "/" + podUUID2)
+
+	mapping := make(map[string]map[string]struct{})
+
+	// invalid path
+	h.kubeConfigPath = "/abc/something"
+	err := h.discoverPVCsToPublishedPathsRawDevices(context.Background(), mapping)
+	assert.Nil(t, err)
+	assert.True(t, len(mapping) == 0, "expected empty map!")
 }
 
 func newValidHelper(

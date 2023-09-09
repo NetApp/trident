@@ -9,15 +9,14 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func (c *TridentCrdController) updateTridentBackendHandler(old, new interface{}) {
 	// When a CR has a finalizer those come as update events and not deletes,
 	// Do not handle any other update events other than backend deletion
 	// otherwise it may result in continuous reconcile loops.
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	if err := c.removeFinalizers(ctx, new, false); err != nil {
 		Logx(ctx).WithError(err).Error("Error removing finalizers")
 	}
@@ -27,8 +26,7 @@ func (c *TridentCrdController) updateTridentBackendHandler(old, new interface{})
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than TridentBackend.
 func (c *TridentCrdController) deleteTridentBackendHandler(obj interface{}) {
-	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile,
-		LogLayerCRDFrontend)
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
 	ctx = context.WithValue(ctx, CRDControllerEvent, string(EventDelete))
 
 	Logx(ctx).Trace("TridentCrdController#deleteTridentBackendHandler")
@@ -92,7 +90,7 @@ func (c *TridentCrdController) handleTridentBackend(keyItem *KeyItem) error {
 	// Get the backend config that matches the backendUUID, i.e. the key
 	backendConfig, err := c.getBackendConfigWithBackendUUID(ctx, namespace, name)
 	if err != nil {
-		if utils.IsNotFoundError(err) {
+		if errors.IsNotFoundError(err) {
 			Logx(ctx).Warnf("No backend config is associated with the backendUUID '%v'.", name)
 		} else {
 			Logx(ctx).Errorf("unable to identify a backend config associated with the backendUUID '%v'.", name)

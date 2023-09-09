@@ -5,10 +5,9 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var BofUtils = NewBlockOnFileReconcileUtils()
@@ -140,7 +140,23 @@ func AttachBlockOnFileVolume(
 		return "", "", err
 	}
 	if !mounted {
-		_ = repairVolume(ctx, loopDevice.Name, fsType)
+		err = repairVolume(ctx, loopDevice.Name, fsType)
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				logFields := LogFields{
+					"volume": loopFile,
+					"fstype": fsType,
+					"device": loopDevice.Name,
+				}
+
+				if exitErr.ExitCode() == 1 {
+					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
+				} else {
+					logFields["exitCode"] = exitErr.ExitCode()
+					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
+				}
+			}
+		}
 	}
 
 	if deviceMountpoint != "" {
@@ -196,7 +212,7 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 	Logc(ctx).Debug(">>>> bof.getLoopDeviceInfo")
 	defer Logc(ctx).Debug("<<<< bof.getLoopDeviceInfo")
 
-	out, err := execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--list", "--json")
+	out, err := command.ExecuteWithTimeout(ctx, "losetup", 10*time.Second, true, "--list", "--json")
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Getting loop device information failed")
 		return nil, err
@@ -327,7 +343,7 @@ func ResizeLoopDevice(ctx context.Context, loopDevice, loopFile string, required
 		return err
 	}
 
-	_, err = execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--set-capacity",
+	_, err = command.ExecuteWithTimeout(ctx, "losetup", 10*time.Second, true, "--set-capacity",
 		loopDevice)
 	if err != nil {
 		Logc(ctx).WithField("loopDevice", loopDevice).WithError(err).Error("Failed to resize the loop device")
@@ -358,7 +374,8 @@ func attachLoopDevice(ctx context.Context, loopFile string) (string, error) {
 	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> bof.attachLoopDevice")
 	defer Logc(ctx).Debug("<<<< bof.attachLoopDevice")
 
-	out, err := execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--find", "--show", "--direct-io", "--nooverlap",
+	out, err := command.ExecuteWithTimeout(ctx, "losetup", 10*time.Second, true, "--find", "--show", "--direct-io",
+		"--nooverlap",
 		loopFile)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to attach loop file.")
@@ -378,7 +395,7 @@ func detachLoopDevice(ctx context.Context, loopDeviceName string) error {
 	Logc(ctx).WithField("loopDeviceName", loopDeviceName).Debug(">>>> bof.DetachLoopDevice")
 	defer Logc(ctx).Debug("<<<< bof.DetachLoopDevice")
 
-	_, err := execCommandWithTimeout(ctx, "losetup", 10*time.Second, true, "--detach", loopDeviceName)
+	_, err := command.ExecuteWithTimeout(ctx, "losetup", 10*time.Second, true, "--detach", loopDeviceName)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to detach loop device")
 		return fmt.Errorf("failed to detach loop device '%s': %v", loopDeviceName, err)
@@ -524,7 +541,7 @@ func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
 	// Get list of all the files in NFS volumes
 	nfsFiles := make([]string, 0)
 
-	files, err := ioutil.ReadDir(nfsMountPoint)
+	files, err := os.ReadDir(nfsMountPoint)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"error": err,

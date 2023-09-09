@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -26,6 +25,7 @@ import (
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -732,7 +732,7 @@ func (d *StorageDriver) CreateClone(
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
-	snapshot := cloneVolConfig.CloneSourceSnapshot
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
 	// Ensure source volume exists
 	sourceVolume, ok := d.Volumes[source]
@@ -944,13 +944,13 @@ func (d *StorageDriver) CreateSnapshot(
 	}
 
 	if len(snapshotList) >= maxSnapshots {
-		return nil, utils.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: too many snapshots " +
+		return nil, errors.MaxLimitReachedError(fmt.Sprintf("could not create snapshot: too many snapshots " +
 			"created for a volume"))
 	}
 
 	snapshot := &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   time.Now().UTC().Format(storage.SnapshotTimestampFormat),
+		Created:   time.Now().UTC().Format(utils.TimestampFormat),
 		SizeBytes: int64(volume.SizeBytes),
 		State:     storage.SnapshotStateOnline,
 	}
@@ -1257,7 +1257,7 @@ func (d *StorageDriver) handleVolumeCreatingTransaction(ctx context.Context, vol
 			createVolume.Iterations++
 			d.CreatingVolumes[createVolume.Name] = createVolume
 			Logc(ctx).Debug("createVolume.Iterations: " + strconv.Itoa(createVolume.Iterations))
-			return utils.VolumeCreatingError("volume state is still creating, not available")
+			return errors.VolumeCreatingError("volume state is still creating, not available")
 		}
 	}
 	return nil
@@ -1292,7 +1292,7 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 	return creatingVolumes
 }
 
-func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _ string) error {
+func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

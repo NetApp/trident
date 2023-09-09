@@ -3,11 +3,11 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -15,7 +15,14 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/utils/errors"
 )
+
+// Part of the published path for raw devices
+const rawDevicePublishPath = "plugins/kubernetes.io/csi/volumeDevices/publish/pvc-"
+
+// Regex to identify published path for mounted devices
+var pvMountpointRegex = regexp.MustCompile(`^(.*pods)(.*volumes)(.*pvc-).*$`)
 
 // IsLikelyNotMountPoint uses heuristics to determine if a directory is not a mountpoint.
 // It should return ErrNotExist when the directory does not exist.
@@ -120,6 +127,46 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 	return false, nil
 }
 
+// PVMountpointMappings identifies devices corresponding to published paths
+func PVMountpointMappings(ctx context.Context) (map[string]string, error) {
+	Logc(ctx).Debug(">>>> mount_linux.PVMountpointMappings")
+	defer Logc(ctx).Debug("<<<< mount_linux.PVMountpointMappings")
+
+	mappings := make(map[string]string)
+
+	// Read the system mounts
+	procSelfMountinfo, err := listProcMountinfo(procSelfMountinfoPath)
+	if err != nil {
+		Logc(ctx).Errorf("checking mounts failed; %s", err)
+		return nil, fmt.Errorf("checking mounts failed; %s", err)
+	}
+
+	// Check each mount for K8s-based mounts
+	for _, procMount := range procSelfMountinfo {
+		if pvMountpointRegex.MatchString(procMount.MountPoint) ||
+			strings.Contains(procMount.MountPoint, rawDevicePublishPath) {
+
+			// In case of raw block volumes device is at the `procMount.Root`
+			procSourceDevice := strings.TrimPrefix(procMount.Root, "/")
+
+			if strings.HasPrefix(procMount.MountSource, "/dev/") {
+				procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
+				if err != nil {
+					Logc(ctx).Error(err)
+					continue
+				}
+				procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
+			}
+
+			if procSourceDevice != "" {
+				mappings[procMount.MountPoint] = "/dev/" + procSourceDevice
+			}
+		}
+	}
+
+	return mappings, nil
+}
+
 // mountNFSPath attaches the supplied NFS share at the supplied location with options.
 func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (err error) {
 	Logc(ctx).WithFields(LogFields{
@@ -138,11 +185,11 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (
 	}
 
 	// Create the mount point dir if necessary
-	if _, err = execCommand(ctx, "mkdir", "-p", mountpoint); err != nil {
+	if _, err = command.Execute(ctx, "mkdir", "-p", mountpoint); err != nil {
 		Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 	}
 
-	if out, err := execCommand(ctx, "mount", args...); err != nil {
+	if out, err := command.Execute(ctx, "mount", args...); err != nil {
 		Logc(ctx).WithField("output", string(out)).Debug("Mount failed.")
 		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
 	}
@@ -255,7 +302,7 @@ func MountDevice(ctx context.Context, device, mountpoint, options string, isMoun
 	}
 
 	if !mounted {
-		if _, err = execCommand(ctx, "mount", args...); err != nil {
+		if _, err = command.Execute(ctx, "mount", args...); err != nil {
 			Logc(ctx).WithField("error", err).Error("Mount failed.")
 		}
 	}
@@ -279,7 +326,7 @@ func RemountDevice(ctx context.Context, mountpoint, options string) (err error) 
 		args = []string{mountpoint}
 	}
 
-	if _, err = execCommand(ctx, "mount", args...); err != nil {
+	if _, err = command.Execute(ctx, "mount", args...); err != nil {
 		Logc(ctx).WithField("error", err).Error("Remounting failed.")
 	}
 
@@ -292,13 +339,13 @@ func Umount(ctx context.Context, mountpoint string) (err error) {
 	defer Logc(ctx).Debug("<<<< mount_linux.Umount")
 
 	var out []byte
-	if out, err = execCommandWithTimeout(ctx, "umount", umountTimeout, true, mountpoint); err != nil {
+	if out, err = command.ExecuteWithTimeout(ctx, "umount", umountTimeout, true, mountpoint); err != nil {
 		if strings.Contains(string(out), umountNotMounted) {
 			err = nil
 		}
-		if IsTimeoutError(err) {
+		if errors.IsTimeoutError(err) {
 			Logc(ctx).WithField("error", err).Error("Umount failed, attempting to force umount")
-			out, err = execCommandWithTimeout(ctx, "umount", umountTimeout, true, mountpoint, "-f")
+			out, err = command.ExecuteWithTimeout(ctx, "umount", umountTimeout, true, mountpoint, "-f")
 			if strings.Contains(string(out), umountNotMounted) {
 				err = nil
 			}
@@ -340,21 +387,21 @@ func RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 func mountSMBPath(ctx context.Context, exportPath, mountpoint, username, password string) error {
 	Logc(ctx).Debug(">>>> mount_linux.mountSMBPath")
 	defer Logc(ctx).Debug("<<<< mount_linux.mountSMBPath")
-	return UnsupportedError("mountSMBPath is not supported on non-windows platform")
+	return errors.UnsupportedError("mountSMBPath is not supported on non-windows platform")
 }
 
 // UmountSMBPath is a dummy added for compilation on non-windows platform.
 func UmountSMBPath(ctx context.Context, mappingPath, target string) (err error) {
 	Logc(ctx).Debug(">>>> mount_linux.UmountSMBPath")
 	defer Logc(ctx).Debug("<<<< mount_linux.UmountSMBPath")
-	return UnsupportedError("UmountSMBPath is not supported on non-windows platform")
+	return errors.UnsupportedError("UmountSMBPath is not supported on non-windows platform")
 }
 
 // WindowsBindMount is a dummy added for compilation on non-windows platform.
 func WindowsBindMount(ctx context.Context, source, target string, options []string) (err error) {
 	Logc(ctx).Debug(">>>> mount_linux.WindowsBindMount")
 	defer Logc(ctx).Debug("<<<< mount_linux.WindowsBindMount")
-	return UnsupportedError("WindowsBindMount is not supported on non-windows platform")
+	return errors.UnsupportedError("WindowsBindMount is not supported on non-windows platform")
 }
 
 // IsCompatible checks for compatibility of protocol and platform

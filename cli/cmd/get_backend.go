@@ -4,20 +4,19 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
+
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
-
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func init() {
@@ -31,8 +30,9 @@ var getBackendCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if OperatingMode == ModeTunnel {
 			command := []string{"get", "backend"}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return backendList(args)
 		}
@@ -59,7 +59,7 @@ func backendList(backendNames []string) error {
 
 		backend, err := GetBackend(backendName)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -103,7 +103,7 @@ func GetBackend(backendName string) (storage.BackendExternal, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return storage.BackendExternal{}, utils.NotFoundError(errorMessage)
+			return storage.BackendExternal{}, errors.NotFoundError(errorMessage)
 		default:
 			return storage.BackendExternal{}, errors.New(errorMessage)
 		}
@@ -197,7 +197,7 @@ func getSolidfireStorageDriverConfig(configAsMap map[string]interface{}) (*drive
 
 func writeBackendTable(backends []storage.BackendExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Storage Driver", "UUID", "State", "Volumes"})
+	table.SetHeader([]string{"Name", "Storage Driver", "UUID", "State", "User-State", "Volumes"})
 
 	for _, b := range backends {
 		if b.Config == nil {
@@ -211,6 +211,7 @@ func writeBackendTable(backends []storage.BackendExternal) {
 				storageDriverName,
 				b.BackendUUID,
 				b.State.String(),
+				b.UserState.String(),
 				strconv.Itoa(len(b.Volumes)),
 			})
 		}

@@ -8,12 +8,16 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os/exec"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
+	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
 )
 
 func TestGetIPAddresses(t *testing.T) {
@@ -65,129 +69,152 @@ func TestGetIPAddressesExceptingNondefaultRoutes(t *testing.T) {
 }
 
 func TestNFSActiveOnHost(t *testing.T) {
-	execCmd = fakeExecCommand
-	// Reset exec command after tests
-	defer func() {
-		execCmd = exec.CommandContext
-	}()
-	type args struct {
-		ctx context.Context
-	}
+	mockCtrl := gomock.NewController(t)
+	mockExec := mockexec.NewMockCommand(mockCtrl)
+
 	tests := []struct {
 		name        string
-		args        args
-		want        bool
-		wantErr     assert.ErrorAssertionFunc
-		returnValue string
-		returnCode  int
-		delay       string
+		expectedErr error
 	}{
 		{
-			name: "Active", args: args{
-				ctx: context.Background(),
-			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+			name:        "Active",
+			expectedErr: nil,
 		},
 		{
-			name: "Inactive", args: args{
-				ctx: context.Background(),
-			}, want: false, wantErr: assert.NoError, returnValue: "not-active", returnCode: 1, delay: "0s",
+			name:        "Inactive",
+			expectedErr: nil,
 		},
-		// TODO: Reduce time required to induce timeout error condition
-		// {
-		// 	name: "Error", args: args{
-		// 		ctx:     context.Background(),
-		// 	}, want: true, wantErr: assert.Error, returnValue: "is-active", returnCode: 0, delay: "31s",
-		// },
+		{
+			name:        "Fails",
+			expectedErr: fmt.Errorf("failed to check if service is active on host"),
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			execReturnValue = tt.returnValue
-			execReturnCode = tt.returnCode
-			delay, err := time.ParseDuration(tt.delay)
-			if err != nil {
-				t.Error("Invalid duration value provided.")
+			// Reset exec command after each test.
+			defer func(previousCommand exec.Command) {
+				command = previousCommand
+			}(command)
+
+			ctx := context.Background()
+			mockExec.EXPECT().ExecuteWithTimeout(
+				ctx, "systemctl", 30*time.Second, true, "is-active", "rpc-statd",
+			).Return([]byte(""), tt.expectedErr)
+			command = mockExec
+
+			active, err := NFSActiveOnHost(ctx)
+			if tt.expectedErr != nil {
+				assert.Error(t, err)
+				assert.False(t, active)
+			} else {
+				assert.NoError(t, err)
+				assert.True(t, active)
 			}
-			execDelay = delay
-			got, err := NFSActiveOnHost(tt.args.ctx)
-			if !tt.wantErr(t, err, fmt.Sprintf("NFSActiveOnHost(%v)", tt.args.ctx)) {
-				return
-			}
-			assert.Equalf(t, tt.want, got, "NFSActiveOnHost(%v)", tt.args.ctx)
 		})
 	}
 }
 
 func TestISCSIActiveOnHost(t *testing.T) {
-	execCmd = fakeExecCommand
-	// Reset exec command after tests
-	defer func() {
-		execCmd = exec.CommandContext
-	}()
+	mockCtrl := gomock.NewController(t)
+	mockExec := mockexec.NewMockCommand(mockCtrl)
+
 	type args struct {
 		ctx  context.Context
 		host HostSystem
 	}
+	type expected struct {
+		active bool
+		err    error
+	}
 	tests := []struct {
-		name        string
-		args        args
-		want        bool
-		wantErr     assert.ErrorAssertionFunc
-		returnValue string
-		returnCode  int
-		delay       string
+		name     string
+		args     args
+		expected expected
+		service  string
 	}{
 		{
-			name: "ActiveCentos", args: args{
+			name: "ActiveCentos",
+			args: args{
 				ctx:  context.Background(),
 				host: HostSystem{OS: SystemOS{Distro: Centos}},
-			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "iscsid",
 		},
 		{
-			name: "ActiveRHEL", args: args{
+			name: "ActiveRHEL",
+			args: args{
 				ctx:  context.Background(),
 				host: HostSystem{OS: SystemOS{Distro: RHEL}},
-			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "iscsid",
 		},
 		{
-			name: "ActiveUbuntu", args: args{
+			name: "ActiveUbuntu",
+			args: args{
 				ctx:  context.Background(),
 				host: HostSystem{OS: SystemOS{Distro: Ubuntu}},
-			}, want: true, wantErr: assert.NoError, returnValue: "is-active", returnCode: 0, delay: "0s",
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "open-iscsi",
 		},
 		{
-			name: "InactiveRHEL", args: args{
+			name: "InactiveRHEL",
+			args: args{
 				ctx:  context.Background(),
 				host: HostSystem{OS: SystemOS{Distro: RHEL}},
-			}, want: false, wantErr: assert.NoError, returnValue: "not-active", returnCode: 1, delay: "0s",
+			},
+			expected: expected{
+				active: false,
+				err:    nil,
+			},
+			service: "iscsid",
 		},
-		// TODO: Reduce time required to induce timeout error condition
-		// {
-		// 	name: "TimeoutRHEL", args: args{
-		// 	ctx: context.Background(),
-		// 	host: HostSystem{OS: SystemOS{Distro: RHEL}},
-		// }, want: false, wantErr: assert.Error, returnValue: "is-active", returnCode: 0, delay: "31s",
-		// },
 		{
-			name: "UnknownDistro", args: args{
+			name: "UnknownDistro",
+			args: args{
 				ctx:  context.Background(),
 				host: HostSystem{OS: SystemOS{Distro: "SUSE"}},
-			}, want: false, wantErr: assert.NoError, returnValue: "not-found", returnCode: 1, delay: "0s",
+			},
+			expected: expected{
+				active: true,
+				err:    nil,
+			},
+			service: "iscsid",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			execReturnValue = tt.returnValue
-			execReturnCode = tt.returnCode
-			delay, err := time.ParseDuration(tt.delay)
-			if err != nil {
-				t.Error("Invalid duration value provided.")
+			// Reset exec command after each test.
+			defer func(previousCommand exec.Command) {
+				command = previousCommand
+			}(command)
+
+			mockExec.EXPECT().ExecuteWithTimeout(
+				tt.args.ctx, "systemctl", 30*time.Second, true, "is-active", tt.service,
+			).Return([]byte(""), tt.expected.err)
+			command = mockExec
+
+			active, err := ISCSIActiveOnHost(tt.args.ctx, tt.args.host)
+			if tt.expected.err != nil {
+				assert.Error(t, err)
+				assert.False(t, active)
+			} else {
+				assert.NoError(t, err)
+				assert.True(t, active)
 			}
-			execDelay = delay
-			got, err := ISCSIActiveOnHost(tt.args.ctx, tt.args.host)
-			if !tt.wantErr(t, err, fmt.Sprintf("NFSActiveOnHost(%v)", tt.args.ctx)) {
-				return
-			}
-			assert.Equalf(t, tt.want, got, "NFSActiveOnHost(%v)", tt.args.ctx)
 		})
 	}
 }
@@ -203,5 +230,5 @@ func TestSMBActiveOnHost(t *testing.T) {
 	result, err := SMBActiveOnHost(ctx)
 	assert.False(t, result, "smb is active on the host")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }

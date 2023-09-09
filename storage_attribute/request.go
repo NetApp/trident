@@ -55,6 +55,11 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 		val = strings.ToLower(val)
 	}
 
+	// To support SANType with case-insensitive value of ISCSI and NVMe
+	if name == SANType {
+		val = strings.ToLower(val)
+	}
+
 	valType, ok := attrTypes[name]
 	if !ok {
 		return nil, fmt.Errorf("unrecognized storage attribute: %s", name)

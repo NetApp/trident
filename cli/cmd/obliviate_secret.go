@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func init() {
@@ -35,8 +35,9 @@ var obliviateSecretCmd = &cobra.Command{
 				}
 			}
 			command := []string{"obliviate", "secret", fmt.Sprintf("--%s", forceConfirmation)}
-			TunnelCommand(command)
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			if err := initClients(); err != nil {
 				return err

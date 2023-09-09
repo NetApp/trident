@@ -24,11 +24,10 @@ def custom_default(obj):
         return millis
     raise TypeError('Not sure how to serialize %s' % (obj,))
 
-yaml = ruamel.yaml.YAML()
+yaml = ruamel.yaml.YAML(typ='safe')
 yaml.indent(sequence=4, offset=2)
 
 with open('swagger_full_converted.yaml') as swagger_yaml:
-    #y = yaml.load(swagger_yaml, Loader=yaml.FullLoader)
     y = yaml.load(swagger_yaml)
     with open('swagger_full_converted.json', 'w') as swagger_json:
         json.dump(y, swagger_json, indent=4, default=custom_default)

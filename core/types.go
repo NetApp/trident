@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -6,6 +6,7 @@ package core
 
 import (
 	"context"
+	"time"
 
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
@@ -32,12 +33,13 @@ type Orchestrator interface {
 		ctx context.Context, backendName, configJSON, backendUUID, configRef string,
 	) (storageBackendExternal *storage.BackendExternal, err error)
 	UpdateBackendState(
-		ctx context.Context, backendName, backendState string,
+		ctx context.Context, backendName, backendState, userBackendState string,
 	) (storageBackendExternal *storage.BackendExternal, err error)
 	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
 
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
-	UpdateVolume(ctx context.Context, volume string, passphraseNames *[]string) error
+	UpdateVolume(ctx context.Context, volume string, volumeUpdateInfo *utils.VolumeUpdateInfo) error
+	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames *[]string) error
 	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
 	CloneVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	DetachVolume(ctx context.Context, volumeName, mountpoint string) error
@@ -45,10 +47,6 @@ type Orchestrator interface {
 	GetVolume(ctx context.Context, volumeName string) (*storage.VolumeExternal, error)
 	GetVolumeByInternalName(ctx context.Context, volumeInternal string) (volume string, err error)
 	GetVolumeExternal(ctx context.Context, volumeName, backendName string) (*storage.VolumeExternal, error)
-	LegacyImportVolume(
-		ctx context.Context, volumeConfig *storage.VolumeConfig, backendName string, notManaged bool,
-		createPVandPVC VolumeCallback,
-	) (*storage.VolumeExternal, error)
 	ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
 	PublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error
@@ -61,11 +59,15 @@ type Orchestrator interface {
 	GetSubordinateSourceVolume(ctx context.Context, subordinateVolumeName string) (*storage.VolumeExternal, error)
 
 	CreateSnapshot(ctx context.Context, snapshotConfig *storage.SnapshotConfig) (*storage.SnapshotExternal, error)
+	ImportSnapshot(
+		ctx context.Context, snapshotConfig *storage.SnapshotConfig,
+	) (*storage.SnapshotExternal, error)
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotExternal, error)
 	ListSnapshots(ctx context.Context) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsByName(ctx context.Context, snapshotName string) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
 	ReadSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
+	RestoreSnapshot(ctx context.Context, volumeName, snapshotName string) error
 	DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error
 
 	AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
@@ -79,6 +81,7 @@ type Orchestrator interface {
 	ListNodes(ctx context.Context) ([]*utils.NodeExternal, error)
 	DeleteNode(ctx context.Context, nodeName string) error
 	PeriodicallyReconcileNodeAccessOnBackends()
+	PeriodicallyReconcileBackendState(duration time.Duration)
 
 	ReconcileVolumePublications(ctx context.Context, attachedLegacyVolumes []*utils.VolumePublicationExternal) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
@@ -105,6 +108,9 @@ type Orchestrator interface {
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
 	ReleaseMirror(ctx context.Context, backendUUID, localInternalVolumeName string) error
 	GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
+	UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) error
+	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
 

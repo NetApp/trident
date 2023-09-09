@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -13,58 +13,15 @@ import (
 )
 
 func (i *Installer) UninstallTrident() error {
-	// 1. preview CSI Trident --> uninstall preview CSI Trident
-	// 2. preview CSI Trident & legacy Trident --> uninstall preview CSI Trident
-	// 3. CSI Trident --> uninstall CSI Trident
-	// 4. legacy Trident --> uninstall legacy Trident
-	//
-	// if csiPreview, uninstall csiPreview
-	// else if csi, uninstall csi
-	// else if legacy, uninstall legacy
+	appLabel = TridentCSILabel
+	appLabelKey = TridentCSILabelKey
+	appLabelValue = TridentCSILabelValue
 
-	// Check if legacy Trident is installed
-	legacyTridentInstalled, _, err := i.client.CheckDeploymentExistsByLabel(TridentLegacyLabel, true)
-	if err != nil {
-		return fmt.Errorf("could not check if legacy Trident is installed; %v", err)
-	}
-
-	// Check if preview CSI Trident is installed
-	csiPreviewTridentInstalled, _, err := i.client.CheckStatefulSetExistsByLabel(TridentCSILabel, true)
-	if err != nil {
-		return fmt.Errorf("could not check if preview CSI Trident is installed; %v", err)
-	}
-
-	if legacyTridentInstalled && csiPreviewTridentInstalled {
-		Log().Warning("Both legacy and CSI Trident are installed.  CSI Trident will be uninstalled, and " +
-			"the uninstaller will run again to remove legacy Trident before running the Trident installer.")
-	}
-
-	// Set the global csi variable, which controls things like RBAC and app labels
-	// Should not use csiPreviewTridentInstalled || csiTridentInstalled as it give false when CSI trident
-	// installation is deleted
-	csi = !legacyTridentInstalled
-
-	// Set the app labels (CSI takes precedence)
-	if csi {
-		appLabel = TridentCSILabel
-		appLabelKey = TridentCSILabelKey
-		appLabelValue = TridentCSILabelValue
-	} else {
-		appLabel = TridentLegacyLabel
-		appLabelKey = TridentLegacyLabelKey
-		appLabelValue = TridentLegacyLabelValue
-	}
 	nodeLabel := TridentNodeLabel
 
-	// First handle the deployment (legacy, CSI) / statefulset (preview CSI)
-	if csiPreviewTridentInstalled {
-		if err := i.client.DeleteTridentStatefulSet(appLabel); err != nil {
-			return fmt.Errorf("could not delete Trident CSI preview deployment; %v", err)
-		}
-	} else {
-		if err := i.client.DeleteTridentDeployment(appLabel); err != nil {
-			return fmt.Errorf("could not delete Trident CSI deployment; %v", err)
-		}
+	// First handle the deployment
+	if err := i.client.DeleteTridentDeployment(appLabel); err != nil {
+		return fmt.Errorf("could not delete Trident CSI deployment; %v", err)
 	}
 
 	// Next handle all the other common CSI components (daemonset, service).  Some/all of these may
@@ -108,33 +65,12 @@ func (i *Installer) UninstallTrident() error {
 	return nil
 }
 
-func (i *Installer) UninstallCSIPreviewTrident() error {
-	appLabel = TridentCSILabel
-	appLabelKey = TridentCSILabelKey
-	appLabelValue = TridentCSILabelValue
-
-	return i.client.DeleteTridentStatefulSet(appLabel)
-}
-
-func (i *Installer) UninstallLegacyTrident() error {
-	appLabel = TridentLegacyLabel
-	appLabelKey = TridentLegacyLabelKey
-	appLabelValue = TridentLegacyLabelValue
-
-	if err := i.client.DeleteTridentDeployment(appLabel); err != nil {
-		return err
-	}
-
-	// Legacy Trident will not use Trident-CSI names
-	return i.removeRBACObjects()
-}
-
 // removeRBACObjects removes any ClusterRoleBindings, ClusterRoles,
 // ServicesAccounts and OpenShiftSCCs associated with legacy Trident or Trident-CSI.
 func (i *Installer) removeRBACObjects() error {
 	var controllerResourceNames, nodeResourceNames []string
 
-	controllerResourceNames = []string{getControllerRBACResourceName(true)}
+	controllerResourceNames = []string{getControllerRBACResourceName()}
 	nodeResourceNames = []string{getNodeRBACResourceName(false), getNodeRBACResourceName(true)}
 
 	// Delete controller cluster role

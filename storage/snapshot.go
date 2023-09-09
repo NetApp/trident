@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	SnapshotTimestampFormat = "2006-01-02T15:04:05Z"
-	SnapshotNameFormat      = "20060102T150405Z"
+	SnapshotNameFormat = "20060102T150405Z"
 )
 
 var snapshotIDRegex = regexp.MustCompile(`^(?P<volume>[^\s/]+)/(?P<snapshot>[^\s/]+)$`)
@@ -21,6 +20,7 @@ type SnapshotConfig struct {
 	VolumeName          string   `json:"volumeName,omitempty"`
 	VolumeInternalName  string   `json:"volumeInternalName,omitempty"`
 	LUKSPassphraseNames []string `json:"luksPassphraseNames,omitempty"`
+	ImportNotManaged    bool     `json:"importNotManaged"`
 }
 
 func (c *SnapshotConfig) ID() string {
@@ -111,6 +111,7 @@ func (s *Snapshot) ConstructClone() *Snapshot {
 			VolumeName:          s.Config.VolumeName,
 			VolumeInternalName:  s.Config.VolumeInternalName,
 			LUKSPassphraseNames: s.Config.LUKSPassphraseNames,
+			ImportNotManaged:    s.Config.ImportNotManaged,
 		},
 		Created:   s.Created,
 		SizeBytes: s.SizeBytes,

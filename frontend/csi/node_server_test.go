@@ -4,7 +4,6 @@ package csi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -16,7 +15,9 @@ import (
 
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
+	mockUtils "github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestUpdateChapInfoFromController_Success(t *testing.T) {
@@ -705,7 +706,7 @@ func TestDiscoverActualPublicationState_FailsToFindTrackingInfo(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
-	mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(nil, utils.NotFoundError("not found"))
+	mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(nil, errors.NotFoundError("not found"))
 	nodeServer := &Plugin{
 		role:              CSINode,
 		nodeHelper:        mockHelper,
@@ -824,4 +825,47 @@ func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.
 
 	err := nodeServer.updateNodePublicationState(ctx, nodeState)
 	assert.NoError(t, err, "expected no error")
+}
+
+func TestPerformNVMeSelfHealing(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	nodeServer := &Plugin{nvmeHandler: mockNVMeHandler}
+
+	// Empty Published sessions case.
+	nodeServer.performNVMeSelfHealing(ctx)
+
+	// Error populating current sessions.
+	publishedNVMeSessions.AddNVMeSession(utils.NVMeSubsystem{NQN: "nqn"}, []string{})
+	mockNVMeHandler.EXPECT().PopulateCurrentNVMeSessions(ctx, gomock.Any()).
+		Return(errors.New("failed to populate current sessions"))
+
+	nodeServer.performNVMeSelfHealing(ctx)
+
+	// Self-healing process done.
+	mockNVMeHandler.EXPECT().PopulateCurrentNVMeSessions(ctx, gomock.Any()).Return(nil)
+	mockNVMeHandler.EXPECT().InspectNVMeSessions(ctx, gomock.Any(), gomock.Any()).Return([]utils.NVMeSubsystem{})
+
+	nodeServer.performNVMeSelfHealing(ctx)
+	// Cleanup of global objects.
+	publishedNVMeSessions.RemoveNVMeSession("nqn")
+}
+
+func TestFixNVMeSessions(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+	nodeServer := &Plugin{nvmeHandler: mockNVMeHandler}
+	subsystem1 := utils.NVMeSubsystem{NQN: "nqn1"}
+	subsystems := []utils.NVMeSubsystem{subsystem1}
+
+	// Subsystem not present in published sessions case.
+	nodeServer.fixNVMeSessions(ctx, time.UnixMicro(0), subsystems)
+
+	// Rectify NVMe session.
+	publishedNVMeSessions.AddNVMeSession(subsystem1, []string{})
+	mockNVMeHandler.EXPECT().RectifyNVMeSession(ctx, gomock.Any(), gomock.Any())
+
+	nodeServer.fixNVMeSessions(ctx, time.UnixMicro(0), subsystems)
+	// Cleanup of global objects.
+	publishedNVMeSessions.RemoveNVMeSession(subsystem1.NQN)
 }

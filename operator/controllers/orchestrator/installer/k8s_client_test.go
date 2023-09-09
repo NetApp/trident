@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -1025,7 +1025,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 	var unwantedClusterRoles, combinationClusterRoles, emptyClusterRoles []rbacv1.ClusterRole
 
 	label = "tridentCSILabel"
-	name = getControllerRBACResourceName(true) // could be anything
+	name = getControllerRBACResourceName() // could be anything
 	namespace = "default"
 	invalidName = ""
 
@@ -1157,7 +1157,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 func TestPutClusterRole(t *testing.T) {
 	var validClusterRole *rbacv1.ClusterRole
 
-	clusterRoleName := getControllerRBACResourceName(true)
+	clusterRoleName := getControllerRBACResourceName()
 	validClusterRole = &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: clusterRoleName,
@@ -1165,11 +1165,9 @@ func TestPutClusterRole(t *testing.T) {
 	}
 	appLabel := TridentCSILabel
 	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(
-		"",
 		clusterRoleName,
 		make(map[string]string),
 		make(map[string]string),
-		true,
 	)
 	k8sClientErr := fmt.Errorf("k8s error")
 
@@ -1480,7 +1478,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 	var unwantedClusterRoleBindings, combinationClusterRoleBindings, emptyClusterRoleBindings []rbacv1.ClusterRoleBinding
 
 	label = "tridentCSILabel"
-	name = getClusterRoleBindingName(true) // could be anything
+	name = getControllerRBACResourceName() // could be anything
 	namespace = "default"
 	invalidName = ""
 
@@ -1616,7 +1614,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 func TestPutClusterRoleBinding(t *testing.T) {
 	var validClusterRoleBinding *rbacv1.ClusterRoleBinding
 
-	clusterRoleBindingName := getClusterRoleBindingName(true)
+	clusterRoleBindingName := getControllerRBACResourceName()
 	validClusterRoleBinding = &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: clusterRoleBindingName,
@@ -1629,7 +1627,6 @@ func TestPutClusterRoleBinding(t *testing.T) {
 		"",
 		make(map[string]string),
 		make(map[string]string),
-		true,
 	)
 	k8sClientErr := fmt.Errorf("k8s error")
 
@@ -2102,12 +2099,10 @@ func TestPutRole(t *testing.T) {
 	}
 	appLabel := TridentCSILabel
 	newRoleYAML := k8sclient.GetRoleYAML(
-		"",
 		"trident",
 		roleName,
 		make(map[string]string),
 		make(map[string]string),
-		true,
 	)
 	k8sClientErr := fmt.Errorf("k8s error")
 
@@ -2585,13 +2580,7 @@ func TestPutRoleBinding(t *testing.T) {
 		},
 	}
 	appLabel := TridentCSILabel
-	newRoleYAML := k8sclient.GetRoleBindingYAML(
-		"namespace",
-		roleBindingName, "",
-		make(map[string]string),
-		make(map[string]string),
-		true,
-	)
+	newRoleYAML := k8sclient.GetRoleBindingYAML("", roleBindingName, make(map[string]string), make(map[string]string))
 	k8sClientErr := fmt.Errorf("k8s error")
 
 	// defining a custom input type makes testing different cases easier
@@ -3406,7 +3395,7 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetDaemonSetsByLabel(nodeLabel, true).Return(unwantedDaemonSets, nil)
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					namespace, true).Return(fmt.Errorf("")).
+					namespace, false).Return(fmt.Errorf("")).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3416,7 +3405,7 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetDaemonSetsByLabel(nodeLabel, true).Return(unwantedDaemonSets, nil)
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					namespace, true).Return(nil).
+					namespace, false).Return(nil).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3425,8 +3414,8 @@ func TestDeleteTridentDaemonSet(t *testing.T) {
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().GetDaemonSetsByLabel(nodeLabel, true).Return(unwantedDaemonSets2, nil)
-				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName, namespace, true).Return(nil)
-				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName2, namespace, true).Return(nil)
+				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName, namespace, false).Return(nil)
+				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName2, namespace, false).Return(nil)
 			},
 		},
 	}
@@ -3494,7 +3483,7 @@ func TestRemoveMultipleDaemonSets(t *testing.T) {
 			output: fmt.Errorf("unable to delete daemonset(s): %v", undeletedDaemonSets),
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					daemonSetNamespace, true).Return(deleteDaemonSetErr).
+					daemonSetNamespace, false).Return(deleteDaemonSetErr).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3503,7 +3492,7 @@ func TestRemoveMultipleDaemonSets(t *testing.T) {
 			output: nil,
 			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
 				mockK8sClient.EXPECT().DeleteDaemonSet(daemonSetName,
-					daemonSetNamespace, true).Return(nil).
+					daemonSetNamespace, false).Return(nil).
 					MaxTimes(len(unwantedDaemonSets))
 			},
 		},
@@ -3659,7 +3648,7 @@ func TestGetDeploymentInformation(t *testing.T) {
 }
 
 func TestPutDeployment(t *testing.T) {
-	deploymentName := getDeploymentName(true)
+	deploymentName := getDeploymentName()
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: deploymentName,
@@ -5947,7 +5936,7 @@ func TestGetMultipleServiceAccountInformation(t *testing.T) {
 }
 
 func TestPutServiceAccount(t *testing.T) {
-	serviceAccountName := getServiceAccountName(true)
+	serviceAccountName := getServiceAccountName()
 	serviceAccount := &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: serviceAccountName,
@@ -6567,168 +6556,6 @@ func TestExecPodForVersionInformation(t *testing.T) {
 	}
 }
 
-func TestGetCSISnapshotterVersion(t *testing.T) {
-	var emptyDeployment, validDeployment, invalidDeployment *appsv1.Deployment
-
-	validDeployment = &appsv1.Deployment{
-		Spec: appsv1.DeploymentSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "csi-snapshotter",
-							Image: "csi-snapshotter:v4",
-						},
-					},
-				},
-			},
-		},
-	}
-
-	invalidDeployment = &appsv1.Deployment{
-		Spec: appsv1.DeploymentSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "csi-snapshotter",
-							Image: "csi-snapshotter",
-						},
-					},
-				},
-			},
-		},
-		Status: appsv1.DeploymentStatus{},
-	}
-
-	// input is currentDeployment and output is the snapshotCRDVersion
-	tests := map[string]struct {
-		input  *appsv1.Deployment
-		output string
-		mocks  func(mockKubeClient *mockK8sClient.MockKubernetesClient)
-	}{
-		"expect snapshot crd v1 with empty deployment": {
-			input:  emptyDeployment,
-			output: "v1",
-			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient) {
-				mockKubeClient.EXPECT().GetSnapshotterCRDVersion().Return("v1")
-			},
-		},
-		"expect snapshot crd v1 with deployment containers containing a snapshotter:v4 image": {
-			input:  validDeployment,
-			output: "v1",
-			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient) {
-				mockKubeClient.EXPECT().GetSnapshotterCRDVersion().Return("")
-			},
-		},
-		"expect empty snapshot version wwhen GetSnapshotterCRDVersion returns an empty string": {
-			input:  invalidDeployment,
-			output: "",
-			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient) {
-				mockKubeClient.EXPECT().GetSnapshotterCRDVersion().Return("")
-			},
-		},
-	}
-
-	for testName, test := range tests {
-		t.Run(
-			testName, func(t *testing.T) {
-				// setup mock controller and kube client
-				mockCtrl := gomock.NewController(t)
-				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
-
-				// mock out the k8s client calls needed to test this
-				test.mocks(mockKubeClient)
-				extendedK8sClient := &K8sClient{mockKubeClient}
-				snapshotCRDName := extendedK8sClient.GetCSISnapshotterVersion(test.input)
-				assert.Equal(t, test.output, snapshotCRDName)
-			},
-		)
-	}
-}
-
-func TestDeleteTridentStatefulSet(t *testing.T) {
-	// arrange variables for the tests
-	var emptyStatefulSets, unwantedStatefulSets []appsv1.StatefulSet
-	var undeletedStatefulSets []string
-
-	getStatefulSetErr := fmt.Errorf("unable to get list of statefulsets")
-	appLabel := "trident-app-label"
-	statefulSetName := "statefulSetName"
-	namespace := "namespace"
-
-	unwantedStatefulSets = []appsv1.StatefulSet{
-		{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      statefulSetName,
-				Namespace: namespace,
-			},
-		},
-	}
-
-	for _, statefulSet := range unwantedStatefulSets {
-		undeletedStatefulSets = append(undeletedStatefulSets, fmt.Sprintf("%v/%v", statefulSet.Namespace,
-			statefulSet.Name))
-	}
-
-	tests := map[string]struct {
-		input  string
-		output error
-		mocks  func(*mockK8sClient.MockKubernetesClient)
-	}{
-		"expect to fail when GetStatefulSetsByLabel fails": {
-			input:  appLabel,
-			output: getStatefulSetErr,
-			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().GetStatefulSetsByLabel(appLabel, true).Return(nil, getStatefulSetErr)
-			},
-		},
-		"expect to pass when GetStatefulSetsByLabel returns no statefulsets": {
-			input:  appLabel,
-			output: nil,
-			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().GetStatefulSetsByLabel(appLabel, true).Return(emptyStatefulSets, nil)
-			},
-		},
-		"expect to fail when GetStatefulSetsByLabel succeeds but RemoveMultipleStatefulSets fails": {
-			input:  appLabel,
-			output: fmt.Errorf("unable to delete Statefulset(s): %v", undeletedStatefulSets),
-			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().GetStatefulSetsByLabel(appLabel, true).Return(unwantedStatefulSets, nil)
-				mockK8sClient.EXPECT().DeleteStatefulSet(statefulSetName,
-					namespace).Return(fmt.Errorf("")).
-					MaxTimes(len(unwantedStatefulSets))
-			},
-		},
-		"expect to pass when GetStatefulSetsByLabel succeeds and RemoveMultipleStatefulSets succeeds": {
-			input:  appLabel,
-			output: nil,
-			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().GetStatefulSetsByLabel(appLabel, true).Return(unwantedStatefulSets, nil)
-				mockK8sClient.EXPECT().DeleteStatefulSet(statefulSetName,
-					namespace).Return(nil).
-					MaxTimes(len(unwantedStatefulSets))
-			},
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(
-			name, func(t *testing.T) {
-				// setup mock controller and kube client
-				mockCtrl := gomock.NewController(t)
-				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
-
-				// mock out the k8s client calls needed to test this
-				test.mocks(mockKubeClient)
-				extendedK8sClient := &K8sClient{mockKubeClient}
-				err := extendedK8sClient.DeleteTridentStatefulSet(test.input)
-				assert.Equal(t, test.output, err)
-			},
-		)
-	}
-}
-
 func TestPutOpenShiftSCC(t *testing.T) {
 	// arrange variables for the tests
 	openShiftSCCUserName := getOpenShiftSCCUserName()
@@ -7102,84 +6929,6 @@ func TestRemoveMultiplePods(t *testing.T) {
 				test.mocks(mockKubeClient)
 				extendedK8sClient := &K8sClient{mockKubeClient}
 				err := extendedK8sClient.RemoveMultiplePods(test.input)
-				assert.Equal(t, test.output, err)
-			},
-		)
-	}
-}
-
-func TestRemoveMultipleStatefulSets(t *testing.T) {
-	// arrange variables for the tests
-	var emptyStatefulSetList, unwantedStatefulSets []appsv1.StatefulSet
-	var undeletedStatefulSets []string
-
-	deleteStatefulSetsErr := fmt.Errorf("could not delete statefulset")
-	statefulSetName := "statefulSetName"
-	statefulSetNamespace := "statefulSetNamespace"
-
-	unwantedStatefulSets = []appsv1.StatefulSet{
-		{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      statefulSetName,
-				Namespace: statefulSetNamespace,
-			},
-		},
-		{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      statefulSetName,
-				Namespace: statefulSetNamespace,
-			},
-		},
-	}
-
-	for _, service := range unwantedStatefulSets {
-		undeletedStatefulSets = append(undeletedStatefulSets, fmt.Sprintf("%v/%v", service.Namespace,
-			service.Name))
-	}
-
-	tests := map[string]struct {
-		input  []appsv1.StatefulSet
-		output error
-		mocks  func(*mockK8sClient.MockKubernetesClient)
-	}{
-		"expect to pass with no stateful sets": {
-			input:  emptyStatefulSetList,
-			output: nil,
-			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				// do nothing as the lower level k8s call will never execute
-			},
-		},
-		"expect to fail with k8s call error": {
-			input:  unwantedStatefulSets,
-			output: fmt.Errorf("unable to delete Statefulset(s): %v", undeletedStatefulSets),
-			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().DeleteStatefulSet(statefulSetName,
-					statefulSetNamespace).Return(deleteStatefulSetsErr).
-					MaxTimes(len(unwantedStatefulSets))
-			},
-		},
-		"expect to pass with valid stateful sets": {
-			input:  unwantedStatefulSets,
-			output: nil,
-			mocks: func(mockK8sClient *mockK8sClient.MockKubernetesClient) {
-				mockK8sClient.EXPECT().DeleteStatefulSet(statefulSetName,
-					statefulSetNamespace).Return(nil).
-					MaxTimes(len(unwantedStatefulSets))
-			},
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(
-			name, func(t *testing.T) {
-				// setup mock controller and kube client
-				mockCtrl := gomock.NewController(t)
-				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
-
-				// mock out the k8s client calls needed to test this
-				test.mocks(mockKubeClient)
-				extendedK8sClient := &K8sClient{mockKubeClient}
-				err := extendedK8sClient.RemoveMultipleStatefulSets(test.input)
 				assert.Equal(t, test.output, err)
 			},
 		)

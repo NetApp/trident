@@ -12,7 +12,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -84,7 +84,7 @@ func TestGetExternalConfig(t *testing.T) {
 	driver := getDriver()
 	newConfig, ok := driver.GetExternalConfig(ctx()).(drivers.SolidfireStorageDriverConfig)
 	if !ok {
-		t.Fatalf("%e", utils.TypeAssertionError("driver.GetExternalConfig(ctx()).(drivers.SolidfireStorageDriverConfig)"))
+		t.Fatalf("%e", errors.TypeAssertionError("driver.GetExternalConfig(ctx()).(drivers.SolidfireStorageDriverConfig)"))
 	}
 	if newConfig.EndPoint == driver.Config.EndPoint {
 		t.Errorf("EndPoints are equal; expected different. Got: %s", newConfig.EndPoint)

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
@@ -60,7 +61,7 @@ type OntapAPI interface {
 	FlexgroupCreate(ctx context.Context, volume Volume) error
 	FlexgroupExists(ctx context.Context, volumeName string) (bool, error)
 	FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error)
-	FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error
+	FlexgroupModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error
 	FlexgroupSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
 	FlexgroupModifyUnixPermissions(
 		ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
@@ -90,7 +91,7 @@ type OntapAPI interface {
 	LunGetByName(ctx context.Context, name string) (*Lun, error)
 	LunRename(ctx context.Context, lunPath, newLunPath string) error
 	LunMapInfo(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
-	EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool) (int, error)
+	EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error)
 	LunUnmap(ctx context.Context, initiatorGroupName, lunPath string) error
 	LunSize(ctx context.Context, lunPath string) (int, error)
 	LunSetSize(ctx context.Context, lunPath, newSize string) (uint64, error)
@@ -99,7 +100,7 @@ type OntapAPI interface {
 
 	IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error)
 	IscsiInitiatorSetDefaultAuth(
-		ctx context.Context, authType, userName, passphrase, outbountUserName,
+		ctx context.Context, authType, userName, passphrase, outboundUserName,
 		outboundPassphrase string,
 	) error
 	IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error)
@@ -108,6 +109,7 @@ type OntapAPI interface {
 	IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error
 	IgroupDestroy(ctx context.Context, initiatorGroupName string) error
 	EnsureIgroupAdded(ctx context.Context, initiatorGroupName, initiator string) error
+	IgroupList(ctx context.Context) ([]string, error)
 	IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error
 	IgroupGetByName(ctx context.Context, initiatorGroupName string) (map[string]bool, error)
 	IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error)
@@ -118,6 +120,7 @@ type OntapAPI interface {
 	GetSVMPeers(ctx context.Context) ([]string, error)
 
 	GetSVMUUID() string
+	GetSVMState(ctx context.Context) (string, error)
 
 	QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error)
 	QtreeCreate(
@@ -181,13 +184,14 @@ type OntapAPI interface {
 	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	SnapmirrorRelease(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	IsSVMDRCapable(ctx context.Context) (bool, error)
+	SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error
 
 	VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error
 	VolumeCloneSplitStart(ctx context.Context, cloneName string) error
 
 	VolumeCreate(ctx context.Context, volume Volume) error
 	VolumeDestroy(ctx context.Context, volumeName string, force bool) error
-	VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error
+	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)
 	VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error)
@@ -205,13 +209,32 @@ type OntapAPI interface {
 	VolumeSize(ctx context.Context, volumeName string) (uint64, error)
 	VolumeUsedSize(ctx context.Context, volumeName string) (int, error)
 	VolumeSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error)
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string,
+		maxElapsedTime time.Duration) (string, error)
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	SMBShareDestroy(ctx context.Context, shareName string) error
 
 	TieringPolicyValue(ctx context.Context) string
+
+	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error)
+	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
+	NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error)
+	NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error)
+	NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error)
+	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error)
+	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
+	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
+	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
+	NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
+	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
+	NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error
+	NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsytemUUID, nsUUID string) (bool, error)
 }
 
 type AggregateSpace interface {

@@ -4,7 +4,7 @@ package clients
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	k8sversion "k8s.io/apimachinery/pkg/version"
@@ -17,17 +17,15 @@ import (
 	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
-	versionedTprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 )
 
 type Clients struct {
-	KubeConfig     *rest.Config
-	KubeClient     *kubernetes.Clientset
-	K8SClient      k8sclient.KubernetesClient
-	CRDClient      *versioned.Clientset
-	CRDTprovClient *versionedTprov.Clientset
-	K8SVersion     *k8sversion.Info
-	Namespace      string
+	KubeConfig *rest.Config
+	KubeClient *kubernetes.Clientset
+	K8SClient  k8sclient.KubernetesClient
+	CRDClient  *versioned.Clientset
+	K8SVersion *k8sversion.Info
+	Namespace  string
 }
 
 const k8sTimeout = 30 * time.Second
@@ -58,12 +56,6 @@ func CreateK8SClients(apiServerIP, kubeConfigPath string) (*Clients, error) {
 	clients.CRDClient, err = versioned.NewForConfig(clients.KubeConfig)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize CRD client; %v", err)
-	}
-
-	// Create the tprov CRD client
-	clients.CRDTprovClient, err = versionedTprov.NewForConfig(clients.KubeConfig)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Tprov CRD client; %v", err)
 	}
 
 	// Get the Kubernetes server version
@@ -122,7 +114,7 @@ func createK8SClientsInCluster() (*Clients, error) {
 	}
 
 	// when running in a pod, we use the Trident pod's namespace
-	namespaceBytes, err := ioutil.ReadFile(commonconfig.NamespaceFile)
+	namespaceBytes, err := os.ReadFile(commonconfig.NamespaceFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read namespace file %s; %v", commonconfig.NamespaceFile, err)
 	}

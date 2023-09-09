@@ -1,11 +1,9 @@
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
+
 package installer
 
-func getServiceAccountName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
+func getServiceAccountName() string {
+	return TridentCSI
 }
 
 func getRBACResourceNames() []string {
@@ -30,22 +28,6 @@ func getNodeResourceNames() []string {
 	return resourceNames
 }
 
-func getClusterRoleName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
-}
-
-func getClusterRoleBindingName(csi bool) string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
-}
-
 func getPSPName() string {
 	return TridentPSP
 }
@@ -66,33 +48,27 @@ func getResourceQuotaName() string {
 	return TridentCSI
 }
 
-func getControllerRBACResourceName(csi bool) string {
-	if csi {
-		return TridentControllerResourceName
-	}
-	return TridentLegacy
+func getControllerRBACResourceName() string {
+	return TridentControllerResourceName
 }
 
 func getNodeRBACResourceName(windows bool) string {
 	if windows {
 		return TridentNodeWindowsResourceName
+	} else {
+		return TridentNodeLinuxResourceName
 	}
-	return TridentNodeLinuxResourceName
 }
 
-func getDeploymentName(csi bool) string {
-	if csi {
-		return TridentDeploymentName
-	} else {
-		return TridentLegacy
-	}
+func getDeploymentName() string {
+	return TridentControllerResourceName
 }
 
 func getDaemonSetName(windows bool) string {
 	if windows {
-		return TridentWindowsDaemonsetName
+		return TridentNodeWindowsResourceName
 	} else {
-		return TridentLinuxDaemonsetName
+		return TridentNodeLinuxResourceName
 	}
 }
 
@@ -101,11 +77,7 @@ func getCSIDriverName() string {
 }
 
 func getOpenShiftSCCUserName() string {
-	if csi {
-		return TridentCSI
-	} else {
-		return TridentLegacy
-	}
+	return TridentCSI
 }
 
 func getOpenShiftSCCName() string {

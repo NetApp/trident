@@ -407,6 +407,14 @@ func TestDeleteCRHandler(t *testing.T) {
 	assert.Equal(t, EventDelete, keyItem.event)
 	assert.Equal(t, ObjectTypeTridentMirrorRelationship, keyItem.objectType)
 
+	// Test TridentActionMirrorUpdate
+	tamu := &tridentv1.TridentActionMirrorUpdate{}
+	crdController.deleteCRHandler(tamu)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentActionMirrorUpdate, keyItem.objectType)
+
 	// Test TridentVolumeReference
 	tvr := &tridentv1.TridentVolumeReference{}
 	crdController.deleteCRHandler(tvr)

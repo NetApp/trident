@@ -2,6 +2,8 @@
 
 package api
 
+import "time"
+
 //go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_ontap/mock_api.go github.com/netapp/trident/storage_drivers/ontap/api OntapAPI,AggregateSpace,Response
 
 type Volume struct {
@@ -152,6 +154,7 @@ type Snapmirror struct {
 	UnhealthyReason     string
 	ReplicationPolicy   string
 	ReplicationSchedule string
+	EndTransferTime     *time.Time
 }
 
 type SnapmirrorPolicyType string
@@ -174,4 +177,28 @@ func (s SnapmirrorPolicyType) IsSnapmirrorPolicyTypeSync() bool {
 
 func (s SnapmirrorPolicyType) IsSnapmirrorPolicyTypeAsync() bool {
 	return (s == SnapmirrorPolicyZAPITypeAsync || s == SnapmirrorPolicyRESTTypeAsync)
+}
+
+type NVMeNamespaces []*NVMeNamespace
+
+type NVMeNamespace struct {
+	UUID       string
+	Name       string
+	OsType     string
+	VolumeName string
+	Size       string
+	BlockSize  int
+	State      string
+	Comment    string
+}
+
+type NVMeSubsystem struct {
+	Name string
+	UUID string
+	NQN  string
+}
+
+type NVMeSubsystemMap struct {
+	SubsystemUUID string
+	NamespaceUUID string
 }

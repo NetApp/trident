@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -24,34 +24,33 @@ import (
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
 const (
 	// CRD names
-	BackendCRDName            = "tridentbackends.trident.netapp.io"
-	BackendConfigCRDName      = "tridentbackendconfigs.trident.netapp.io"
-	MirrorRelationshipCRDName = "tridentmirrorrelationships.trident.netapp.io"
-	SnapshotInfoCRDName       = "tridentsnapshotinfos.trident.netapp.io"
-	NodeCRDName               = "tridentnodes.trident.netapp.io"
-	StorageClassCRDName       = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName        = "tridenttransactions.trident.netapp.io"
-	VersionCRDName            = "tridentversions.trident.netapp.io"
-	VolumeCRDName             = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName  = "tridentvolumepublications.trident.netapp.io"
-	SnapshotCRDName           = "tridentsnapshots.trident.netapp.io"
-	VolumeReferenceCRDName    = "tridentvolumereferences.trident.netapp.io"
-
-	VolumeSnapshotCRDName        = "volumesnapshots.snapshot.storage.k8s.io"
-	VolumeSnapshotClassCRDName   = "volumesnapshotclasses.snapshot.storage.k8s.io"
-	VolumeSnapshotContentCRDName = "volumesnapshotcontents.snapshot.storage.k8s.io"
+	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendCRDName               = "tridentbackends.trident.netapp.io"
+	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
+	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
+	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
+	NodeCRDName                  = "tridentnodes.trident.netapp.io"
+	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
+	VersionCRDName               = "tridentversions.trident.netapp.io"
+	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
+	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
+	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
 
 	DefaultTimeout = 30
 )
 
 var (
 	// CR inputs
-	csi                bool
+
 	enableForceDetach  bool
 	disableAuditLog    bool
 	debug              bool
@@ -68,6 +67,9 @@ var (
 	imageRegistry   string
 	kubeletDir      string
 	imagePullPolicy string
+
+	acpImage  string
+	enableACP bool
 
 	autosupportImage        string
 	autosupportProxy        string
@@ -89,24 +91,20 @@ var (
 	nodePluginTolerations        []netappv1.Toleration
 
 	CRDnames = []string{
+		ActionMirrorUpdateCRDName,
+		ActionSnapshotRestoreCRDName,
 		BackendCRDName,
 		BackendConfigCRDName,
 		MirrorRelationshipCRDName,
-		SnapshotInfoCRDName,
 		NodeCRDName,
+		SnapshotCRDName,
+		SnapshotInfoCRDName,
 		StorageClassCRDName,
 		TransactionCRDName,
 		VersionCRDName,
 		VolumeCRDName,
-		SnapshotCRDName,
 		VolumeReferenceCRDName,
 		VolumePublicationCRDName,
-	}
-
-	AlphaCRDNames = []string{
-		VolumeSnapshotCRDName,
-		VolumeSnapshotClassCRDName,
-		VolumeSnapshotContentCRDName,
 	}
 )
 
@@ -292,12 +290,16 @@ func (i *Installer) setInstallationParams(
 	imagePullSecrets = []string{}
 
 	// Get values from CR
-	csi = true
 	enableForceDetach = cr.Spec.EnableForceDetach
 	if cr.Spec.DisableAuditLog == nil {
 		disableAuditLog = true
 	} else {
 		disableAuditLog = *cr.Spec.DisableAuditLog
+	}
+
+	enableACP = cr.Spec.EnableACP
+	if cr.Spec.ACPImage != "" {
+		acpImage = cr.Spec.ACPImage
 	}
 
 	useIPv6 = cr.Spec.IPv6
@@ -617,6 +619,8 @@ func (i *Installer) InstallOrPatchTrident(
 		NodePluginNodeSelector:  nodePluginNodeSelector,
 		NodePluginTolerations:   nodePluginTolerations,
 		ImagePullPolicy:         imagePullPolicy,
+		EnableACP:               strconv.FormatBool(enableACP),
+		ACPImage:                acpImage,
 	}
 
 	Log().WithFields(LogFields{
@@ -665,6 +669,14 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 	}
 	if err = i.CreateOrPatchCRD(MirrorRelationshipCRDName, k8sclient.GetMirrorRelationshipCRDYAML(),
 		performOperationOnce); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(ActionMirrorUpdateCRDName, k8sclient.GetActionMirrorUpdateCRDYAML(),
+		performOperationOnce); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(ActionSnapshotRestoreCRDName, k8sclient.GetActionSnapshotRestoreCRDYAML(),
+		false); err != nil {
 		return err
 	}
 
@@ -817,7 +829,7 @@ func (i *Installer) createOrPatchTridentInstallationNamespace() error {
 }
 
 func (i *Installer) createOrPatchTridentServiceAccounts(
-	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+	controllingCRDetails, _ map[string]string, shouldUpdate bool,
 ) (map[string]bool, error) {
 	serviceAccountNames := getRBACResourceNames()
 
@@ -880,7 +892,7 @@ func (i *Installer) createOrPatchTridentServiceAccounts(
 func (i *Installer) createOrPatchTridentClusterRole(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleName := getControllerRBACResourceName(true)
+	clusterRoleName := getControllerRBACResourceName()
 
 	currentClusterRole, unwantedClusterRoles, createClusterRole, err := i.client.GetClusterRoleInformation(
 		clusterRoleName, appLabel, shouldUpdate)
@@ -900,9 +912,7 @@ func (i *Installer) createOrPatchTridentClusterRole(
 		return fmt.Errorf("failed to remove unwanted Trident cluster roles; %v", err)
 	}
 
-	k8sFlavor := i.client.Flavor()
-	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(k8sFlavor, clusterRoleName, labels, controllingCRDetails,
-		true)
+	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(clusterRoleName, labels, controllingCRDetails)
 
 	err = i.client.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML, appLabel)
 	if err != nil {
@@ -913,10 +923,10 @@ func (i *Installer) createOrPatchTridentClusterRole(
 }
 
 func (i *Installer) createOrPatchTridentRoles(
-	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+	controllingCRDetails, _ map[string]string, shouldUpdate bool,
 ) error {
 	// Operator should create Role and RoleBinding for node resources only if PSP is supported
-	roleNames := []string{getControllerRBACResourceName(true)}
+	roleNames := []string{getControllerRBACResourceName()}
 	if i.isPSPSupported() {
 		roleNames = append(roleNames, getNodeResourceNames()...)
 	}
@@ -953,12 +963,9 @@ func (i *Installer) createOrPatchTridentRoles(
 		return fmt.Errorf("failed to remove unwanted Trident roles; %v", err)
 	}
 
-	k8sFlavor := i.client.Flavor()
-
 	for _, roleName := range roleNames {
 		labelMap, labelString := getAppLabelForResource(roleName)
-		newRoleYAML := k8sclient.GetRoleYAML(k8sFlavor, i.client.Namespace(), roleName,
-			labelMap, controllingCRDetails, true)
+		newRoleYAML := k8sclient.GetRoleYAML(i.client.Namespace(), roleName, labelMap, controllingCRDetails)
 
 		err = i.client.PutRole(currentRoleMap[roleName], reuseRoleMap[roleName],
 			newRoleYAML, labelString)
@@ -971,10 +978,10 @@ func (i *Installer) createOrPatchTridentRoles(
 }
 
 func (i *Installer) createOrPatchTridentRoleBindings(
-	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+	controllingCRDetails, _ map[string]string, shouldUpdate bool,
 ) error {
 	// Operator should create Role and RoleBinding for node resources only if PSP is supported
-	roleBindingNames := []string{getControllerRBACResourceName(true)}
+	roleBindingNames := []string{getControllerRBACResourceName()}
 	if i.isPSPSupported() {
 		roleBindingNames = append(roleBindingNames, getNodeResourceNames()...)
 	}
@@ -1012,8 +1019,8 @@ func (i *Installer) createOrPatchTridentRoleBindings(
 
 	for _, roleBindingName := range roleBindingNames {
 		labelMap, labelString := getAppLabelForResource(roleBindingName)
-		newRoleBindingYAML := k8sclient.GetRoleBindingYAML(i.client.Flavor(), i.namespace, roleBindingName,
-			labelMap, controllingCRDetails, true)
+		newRoleBindingYAML := k8sclient.GetRoleBindingYAML(i.namespace, roleBindingName,
+			labelMap, controllingCRDetails)
 
 		err = i.client.PutRoleBinding(currentRoleBindingMap[roleBindingName],
 			reuseRoleBindingMap[roleBindingName], newRoleBindingYAML, labelString)
@@ -1029,7 +1036,7 @@ func (i *Installer) createOrPatchTridentRoleBindings(
 func (i *Installer) createOrPatchTridentClusterRoleBinding(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleBindingName := getControllerRBACResourceName(true)
+	clusterRoleBindingName := getControllerRBACResourceName()
 
 	currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
 		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, shouldUpdate)
@@ -1050,7 +1057,7 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(
 	}
 
 	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, clusterRoleBindingName,
-		i.client.Flavor(), labels, controllingCRDetails, true)
+		i.client.Flavor(), labels, controllingCRDetails)
 
 	err = i.client.PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding,
 		newClusterRoleBindingYAML, appLabel)
@@ -1062,7 +1069,7 @@ func (i *Installer) createOrPatchTridentClusterRoleBinding(
 }
 
 func (i *Installer) createOrPatchTridentOpenShiftSCC(
-	controllingCRDetails, labels map[string]string, shouldUpdate bool,
+	controllingCRDetails, _ map[string]string, shouldUpdate bool,
 ) error {
 	openShiftSCCUserNames := getRBACResourceNames()
 	openShiftSCCNames := getRBACResourceNames()
@@ -1128,7 +1135,7 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(
 ) error {
 	// Creating PodSecurityPolicy for controller
 	currentPSPMap, unwantedPSPs, reusePSPMap, err := i.client.GetMultiplePodSecurityPolicyInformation(
-		[]string{getControllerRBACResourceName(true)}, appLabel, shouldUpdate)
+		[]string{getControllerRBACResourceName()}, appLabel, shouldUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to get Trident controller pod security policies; %v", err)
 	}
@@ -1137,11 +1144,11 @@ func (i *Installer) createOrPatchTridentPodSecurityPolicy(
 		return fmt.Errorf("failed to remove unwanted Trident controller pod security policies; %v", err)
 	}
 
-	newPSPYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(true), labels,
+	newPSPYAML := k8sclient.GetUnprivilegedPodSecurityPolicyYAML(getControllerRBACResourceName(), labels,
 		controllingCRDetails)
 	if err = i.client.PutPodSecurityPolicy(
-		currentPSPMap[getControllerRBACResourceName(true)],
-		reusePSPMap[getControllerRBACResourceName(true)],
+		currentPSPMap[getControllerRBACResourceName()],
+		reusePSPMap[getControllerRBACResourceName()],
 		newPSPYAML,
 		appLabel); err != nil {
 		return fmt.Errorf("failed to create or patch Trident controller pod security policy; %v", err)
@@ -1349,8 +1356,8 @@ func (i *Installer) createOrPatchTridentDeployment(
 		return fmt.Errorf("failed to determine if node topology settings; %v", err)
 	}
 
-	deploymentName := getDeploymentName(true)
-	serviceAccName := getControllerRBACResourceName(true)
+	deploymentName := getDeploymentName()
+	serviceAccName := getControllerRBACResourceName()
 
 	currentDeployment, unwantedDeployments, createDeployment, err := i.client.GetDeploymentInformation(deploymentName,
 		appLabel, i.namespace)
@@ -1377,8 +1384,6 @@ func (i *Installer) createOrPatchTridentDeployment(
 		return fmt.Errorf("failed to remove unwanted Trident deployments; %v", err)
 	}
 
-	snapshotCRDVersion := i.client.GetCSISnapshotterVersion(currentDeployment)
-
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
 		DeploymentName:          deploymentName,
 		TridentImage:            tridentImage,
@@ -1394,7 +1399,6 @@ func (i *Installer) createOrPatchTridentDeployment(
 		LogLayers:               logLayers,
 		LogFormat:               logFormat,
 		DisableAuditLog:         disableAuditLog,
-		SnapshotCRDVersion:      snapshotCRDVersion,
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    controllingCRDetails,
@@ -1408,6 +1412,8 @@ func (i *Installer) createOrPatchTridentDeployment(
 		ServiceAccountName:      serviceAccName,
 		ImagePullPolicy:         imagePullPolicy,
 		EnableForceDetach:       enableForceDetach,
+		ACPImage:                acpImage,
+		EnableACP:               enableACP,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -1426,7 +1432,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 func (i *Installer) TridentDeploymentInformation(
 	deploymentLabel string,
 ) (*appsv1.Deployment, []appsv1.Deployment, bool, error) {
-	return i.client.GetDeploymentInformation(getDeploymentName(true), deploymentLabel, i.namespace)
+	return i.client.GetDeploymentInformation(getDeploymentName(), deploymentLabel, i.namespace)
 }
 
 func (i *Installer) createOrPatchTridentDaemonSet(
@@ -1552,7 +1558,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 
 			if tempError {
 				Log().Debug("Containers are still in creating state.")
-				return utils.TempOperatorError(fmt.Errorf(
+				return errors.TempOperatorError(fmt.Errorf(
 					"pod provisioning in progress; containers are still in creating state"))
 			}
 
@@ -1565,7 +1571,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 		// and may be related to a terminating deployment.
 		if pod.DeletionTimestamp != nil {
 			Log().Debug("Unable to find Trident pod; found a pod in terminating state.")
-			return utils.TempOperatorError(fmt.Errorf("unable to find Trident pod; found a pod in terminating state"))
+			return errors.TempOperatorError(fmt.Errorf("unable to find Trident pod; found a pod in terminating state"))
 		}
 
 		return nil
@@ -1584,7 +1590,7 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 		totalWaitTime := k8sTimeout
 		// In case pod is still creating and taking extra time due to issues such as latency in pulling
 		// container image, then additional time should be allocated for the pod to come online.
-		if utils.IsTempOperatorError(err) {
+		if errors.IsTempOperatorError(err) {
 			extraWaitTime := 150 * time.Second
 			totalWaitTime = totalWaitTime + extraWaitTime
 			podBackoff.MaxElapsedTime = extraWaitTime
@@ -1791,9 +1797,25 @@ func (i *Installer) createTridentVersionPod(
 	// spinning up this transient pod.
 	serviceAccountName := getNodeRBACResourceName(false)
 
-	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(
-		podName, imageName, serviceAccountName, imagePullPolicy, imagePullSecrets, podLabels, controllingCRDetails,
-	)
+	var tolerations []map[string]string
+	if controllerPluginTolerations != nil {
+		tolerations = make([]map[string]string, 0)
+		for _, t := range controllerPluginTolerations {
+			tolerations = append(tolerations, t.GetMap())
+		}
+	}
+
+	versionPodArgs := &k8sclient.TridentVersionPodYAMLArguments{
+		TridentVersionPodName: podName,
+		TridentImage:          imageName,
+		Labels:                podLabels,
+		ControllingCRDetails:  controllingCRDetails,
+		ImagePullSecrets:      imagePullSecrets,
+		ImagePullPolicy:       imagePullPolicy,
+		ServiceAccountName:    serviceAccountName,
+		Tolerations:           tolerations,
+	}
+	newTridentVersionPodYAML := k8sclient.GetTridentVersionPodYAML(versionPodArgs)
 
 	err = i.client.CreateObjectByYAML(newTridentVersionPodYAML)
 	if err != nil {

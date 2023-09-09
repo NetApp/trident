@@ -4,7 +4,6 @@ package csi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const volumePublishInfoFilename = "volumePublishInfo.json"
@@ -53,8 +53,8 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 	ctx context.Context, volumeID string, trackingInfo *utils.VolumeTrackingInfo,
 ) error {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> WriteTrackingInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< WriteTrackingInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> WriteTrackingInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< WriteTrackingInfo")
 
 	filename := volumeID + ".json"
 	tmpFile := "tmp-" + filename
@@ -80,8 +80,8 @@ func (v *VolumePublishManager) ReadTrackingInfo(
 	ctx context.Context, volumeID string,
 ) (*utils.VolumeTrackingInfo, error) {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> ReadTrackingInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< ReadTrackingInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> ReadTrackingInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< ReadTrackingInfo")
 
 	return v.readTrackingInfo(ctx, volumeID)
 }
@@ -98,6 +98,15 @@ func (v *VolumePublishManager) readTrackingInfo(
 	}
 
 	Logc(ctx).WithField("volumeTrackingInfo", volumeTrackingInfo).Debug("Volume tracking info found.")
+
+	// Given upgrade logic in volume_publish_manager, this should not
+	// be the case but adding an extra check here to move the
+	// rawDevicePath value to devicePath.
+	if volumeTrackingInfo.RawDevicePath != "" && volumeTrackingInfo.DevicePath == "" {
+		volumeTrackingInfo.DevicePath = volumeTrackingInfo.RawDevicePath
+		volumeTrackingInfo.RawDevicePath = ""
+	}
+
 	return &volumeTrackingInfo, nil
 }
 
@@ -114,7 +123,7 @@ func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[
 
 	if len(files) == 0 {
 		Logc(ctx).Debug("No tracking files found.")
-		return nil, utils.NotFoundError("no tracking files found")
+		return nil, errors.NotFoundError("no tracking files found")
 	}
 
 	// Discover the tracking files and their volume tracking info.
@@ -136,8 +145,8 @@ func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[
 // no error is generated.
 func (v *VolumePublishManager) DeleteTrackingInfo(ctx context.Context, volumeID string) error {
 	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> DeleteTrackingInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteTrackingInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> DeleteTrackingInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< DeleteTrackingInfo")
 
 	filename, err := fileDeleter(ctx, path.Join(v.volumeTrackingInfoPath, volumeID+".json"), "tracking")
 	if err != nil {
@@ -148,17 +157,124 @@ func (v *VolumePublishManager) DeleteTrackingInfo(ctx context.Context, volumeID 
 	return nil
 }
 
+// ensureTrackingFileCorrect corrects existing tracking file, if raw block is missing publish paths
+// then attempt is made to fix it, it also verifies (and attempts to recover if missing)
+// tracking file has devicePath.
+// NOTE: In 24.07 these checks can be removed.
+func (v *VolumePublishManager) ensureTrackingFileCorrect(
+	ctx context.Context, volumeId string, volumeTrackingInfo *utils.VolumeTrackingInfo,
+	publishedPaths map[string]struct{}, pvToDeviceMappings map[string]string,
+) {
+	logFields := LogFields{
+		"volumeID":          volumeId,
+		"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+		"lun":               volumeTrackingInfo.IscsiLunNumber,
+	}
+
+	// In 23.01 and 23.04, the upgrade logic did not consider Raw devices when
+	// populating published paths, thus there is a need to verify if the correct
+	// published paths are present or not.
+	if volumeTrackingInfo.VolumePublishInfo.FilesystemType == config.FsRaw {
+		Logc(ctx).Debug("Ensuring raw device have published paths.")
+
+		if len(volumeTrackingInfo.PublishedPaths) == 0 && len(publishedPaths) != 0 {
+			logFields["publishedPaths"] = publishedPaths
+			Logc(ctx).WithFields(logFields).Debug("Updating raw device have published paths.")
+
+			volumeTrackingInfo.PublishedPaths = publishedPaths
+		}
+	}
+
+	Logc(ctx).Debug("Ensuring devicePath is present if not then attempting to recover it.")
+
+	// In 23.01 devicePath was changed to rawDevicePath, which led to missing devicePath for
+	// attached volumes from pre-23.01 and newly created volumes instead of devicePath would
+	// rawDevicePath. Starting 23.07, devicePath has been re-introduced, below effort ensures
+	// devicePath value is populated based on rawDevicePath, if both are missing Trident
+	// tries to identify the correct device based on the published paths.
+	if volumeTrackingInfo.DevicePath == "" {
+		if volumeTrackingInfo.RawDevicePath != "" {
+			volumeTrackingInfo.DevicePath = volumeTrackingInfo.RawDevicePath
+			volumeTrackingInfo.RawDevicePath = ""
+
+			logFields["devicePath"] = volumeTrackingInfo.DevicePath
+			Logc(ctx).WithFields(logFields).Debug("Updating new publish info records.")
+		} else if len(volumeTrackingInfo.PublishedPaths) > 0 {
+			// This is a best-effort to identify a missing device path
+			for publishedPath := range volumeTrackingInfo.PublishedPaths {
+				if device, ok := pvToDeviceMappings[publishedPath]; ok {
+					volumeTrackingInfo.DevicePath = device
+					logFields["devicePath"] = volumeTrackingInfo.DevicePath
+					Logc(ctx).WithFields(logFields).Debug("Updating new publish info records based on published paths.")
+				}
+			}
+		}
+
+		if volumeTrackingInfo.DevicePath != "" {
+			err := v.WriteTrackingInfo(ctx, volumeId, volumeTrackingInfo)
+			if err != nil {
+				logFields["devicePath"] = volumeTrackingInfo.DevicePath
+				Logc(ctx).WithFields(logFields).Error("Failed to update tracking file with device path information.")
+			}
+		} else {
+			Logc(ctx).WithFields(logFields).Error("New publish info is missing device path.")
+		}
+	} else {
+		if volumeTrackingInfo.RawDevicePath != "" {
+			logFields["devicePath"] = volumeTrackingInfo.DevicePath
+			logFields["rawDevicePath"] = volumeTrackingInfo.RawDevicePath
+			Logc(ctx).WithFields(logFields).Warn("Found both devices.")
+
+			// No need to have two sources of device path information
+			volumeTrackingInfo.RawDevicePath = ""
+		}
+	}
+}
+
+// populateDevicePath attempts to recover a missing devicePath (if missing) in tracking file.
+// NOTE: In 24.07 these checks can be removed.
+func (v *VolumePublishManager) populateDevicePath(ctx context.Context, volumeId string,
+	volumeTrackingInfo *utils.VolumeTrackingInfo,
+) {
+	logFields := LogFields{
+		"volumeID":          volumeId,
+		"iscsiTargetPortal": volumeTrackingInfo.IscsiTargetPortal,
+		"lun":               volumeTrackingInfo.IscsiLunNumber,
+	}
+
+	if volumeTrackingInfo.DevicePath == "" {
+		if volumeTrackingInfo.RawDevicePath != "" {
+			volumeTrackingInfo.DevicePath = volumeTrackingInfo.RawDevicePath
+			volumeTrackingInfo.RawDevicePath = ""
+
+			logFields["devicePath"] = volumeTrackingInfo.DevicePath
+			Logc(ctx).Debug("Updating publish info records.")
+		} else {
+			Logc(ctx).Errorf("Publish info is missing device path.")
+		}
+	} else {
+		if volumeTrackingInfo.RawDevicePath != "" {
+			logFields["devicePath"] = volumeTrackingInfo.DevicePath
+			logFields["rawDevicePath"] = volumeTrackingInfo.RawDevicePath
+			Logc(ctx).Warn("Found both devices.")
+
+			// No need to have two sources of device path information
+			volumeTrackingInfo.RawDevicePath = ""
+		}
+	}
+}
+
 // UpgradeVolumeTrackingFile ensures the published paths for the volume will be discovered (because we
 // previously did not track them) and then an attempt to upgrade the volume tracking file will be made. If either the
 // stagedDeviceInfo or legacy tracking file do not exist, or are unable to be unmarshalled, then an upgrade is not
 // possible, and we must delete the tracking file because it no longer has any value.
 func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
-	ctx context.Context, volumeId string, publishedPaths map[string]struct{},
+	ctx context.Context, volumeId string, publishedPaths map[string]struct{}, pvToDeviceMappings map[string]string,
 ) (bool, error) {
 	var err error
 	fields := LogFields{"volumeId": volumeId}
-	Logc(ctx).WithFields(fields).Debug(">>>> UpgradeVolumeTrackingFile")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< UpgradeVolumeTrackingFile")
+	Logc(ctx).WithFields(fields).Trace(">>>> UpgradeVolumeTrackingFile")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< UpgradeVolumeTrackingFile")
 
 	volumeTrackingInfo := &utils.VolumeTrackingInfo{}
 	publishInfo := &utils.VolumePublishInfo{}
@@ -177,9 +293,20 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	// If the tracking file is the old kind, the filesystem type will be set to the zero value for the string type
 	// upon unmarshalling the json.
 	if volumeTrackingInfo.VolumePublishInfo.FilesystemType != "" {
-		Logc(ctx).Debug("Volume tracking method did not need to be upgraded.")
+		Logc(ctx).Debug("Volume tracking method may not require upgrading.")
+
+		// For iSCSI case confirm iSCSI `devicePath` exists, if not check
+		// `rawDevicePath` exist, if yes then copy the value else log an
+		// error message in logs.
+		if volumeTrackingInfo.VolumePublishInfo.IscsiTargetPortal == "" {
+			Logc(ctx).Debug("IscsiTargetPortal was empty in volume publish info.")
+			return false, nil
+		}
+
+		v.ensureTrackingFileCorrect(ctx, volumeId, volumeTrackingInfo, publishedPaths, pvToDeviceMappings)
 		return false, nil
 	}
+
 	file = path.Join(volumeTrackingInfo.StagingTargetPath, volumePublishInfoFilename)
 	err = utils.JsonReaderWriter.ReadJSONFile(ctx, publishInfo, file, "publish info")
 	if err != nil {
@@ -202,6 +329,12 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	volumeTrackingInfo.VolumePublishInfo = *publishInfo
 	volumeTrackingInfo.PublishedPaths = publishedPaths
 
+	// (arorar): I do not think this condition will ever be true since `rawDevicePath`
+	//           was introduced after this migration logic and `devicePath` has been re-introduced.
+	if volumeTrackingInfo.VolumePublishInfo.IscsiTargetPortal != "" {
+		v.populateDevicePath(ctx, volumeId, volumeTrackingInfo)
+	}
+
 	Logc(ctx).WithField("publishInfoLocation", volumeTrackingInfo).Debug("Publish info location found.")
 	err = v.WriteTrackingInfo(ctx, volumeId, volumeTrackingInfo)
 	if err != nil {
@@ -220,8 +353,8 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeId string) (bool, error) {
 	var trackingInfo utils.VolumeTrackingInfo
 	fields := LogFields{"volumeId": volumeId}
-	Logc(ctx).WithFields(fields).Debug(">>>> ValidateTrackingFile")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< ValidateTrackingFile")
+	Logc(ctx).WithFields(fields).Trace(">>>> ValidateTrackingFile")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< ValidateTrackingFile")
 	filename := path.Join(v.volumeTrackingInfoPath, volumeId+".json")
 
 	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &trackingInfo, filename, "volume tracking")
@@ -286,8 +419,8 @@ func (v *VolumePublishManager) DeleteFailedUpgradeTrackingFile(ctx context.Conte
 // in that if the file doesn't exist, no error is generated.
 func clearStagedDeviceInfo(ctx context.Context, stagingTargetPath, volumeId string) error {
 	fields := LogFields{"stagingTargetPath": stagingTargetPath, "volumeId": volumeId}
-	Logc(ctx).WithFields(fields).Debug(">>>> clearStagedDeviceInfo")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< clearStagedDeviceInfo")
+	Logc(ctx).WithFields(fields).Trace(">>>> clearStagedDeviceInfo")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< clearStagedDeviceInfo")
 
 	stagingFilename := path.Join(stagingTargetPath, volumePublishInfoFilename)
 
@@ -306,7 +439,7 @@ func clearStagedDeviceInfo(ctx context.Context, stagingTargetPath, volumeId stri
 }
 
 func isFileValidJSON(err error) bool {
-	if utils.IsInvalidJSONError(err) || utils.IsNotFoundError(err) {
+	if errors.IsInvalidJSONError(err) || errors.IsNotFoundError(err) {
 		return false
 	}
 

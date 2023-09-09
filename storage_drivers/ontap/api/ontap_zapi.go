@@ -1,11 +1,10 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -17,6 +16,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -48,15 +48,16 @@ var (
 
 // ClientConfig holds the configuration data for Client objects
 type ClientConfig struct {
-	ManagementLIF           string
-	Username                string
-	Password                string
-	ClientPrivateKey        string
-	ClientCertificate       string
-	TrustedCACertificate    string
-	DriverContext           tridentconfig.DriverContext
-	ContextBasedZapiRecords int
-	DebugTraceFlags         map[string]bool
+	ManagementLIF                  string
+	Username                       string
+	Password                       string
+	ClientPrivateKey               string
+	ClientCertificate              string
+	TrustedCACertificate           string
+	DriverContext                  tridentconfig.DriverContext
+	ContextBasedZapiRecords        int
+	DebugTraceFlags                map[string]bool
+	unitTestTransportConfigSchemes string
 }
 
 // Client is the object to use for interacting with ONTAP controllers
@@ -190,6 +191,7 @@ const (
 	FabricPoolForSVMDR        Feature = "FABRICPOOL_FOR_SVMDR"
 	QosPolicies               Feature = "QOS_POLICIES"
 	LIFServices               Feature = "LIF_SERVICES"
+	NVMeProtocol              Feature = "NVME_PROTOCOL"
 )
 
 // Indicate the minimum Ontapi version for each feature here
@@ -203,6 +205,8 @@ var features = map[Feature]*versionutils.Version{
 	FabricPoolForSVMDR:        versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	QosPolicies:               versionutils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
 	LIFServices:               versionutils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
+	// TODO(sphadnis): Check if all the Zapi calls work on this version once Zapi APIs for NVMe are implemented.
+	NVMeProtocol: versionutils.MustParseSemantic("1.201.0"), // cDOT 9.10.1
 }
 
 // Indicate the minimum Ontap version for each feature here (non-API specific)
@@ -216,6 +220,7 @@ var featuresByVersion = map[Feature]*versionutils.Version{
 	FabricPoolForSVMDR:        versionutils.MustParseSemantic("9.5.0"),
 	QosPolicies:               versionutils.MustParseSemantic("9.8.0"),
 	LIFServices:               versionutils.MustParseSemantic("9.6.0"),
+	NVMeProtocol:              versionutils.MustParseSemantic("9.10.1"),
 }
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
@@ -458,9 +463,7 @@ func (c Client) LunMapAutoID(initiatorGroupName, lunPath string) (*azgo.LunMapRe
 	return response, err
 }
 
-func (c Client) LunMapIfNotMapped(
-	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
-) (int, error) {
+func (c Client) LunMapIfNotMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
 	// Read LUN maps to see if the LUN is already mapped to the igroup
 	lunMapListResponse, err := c.LunMapListInfo(lunPath)
 	if err != nil {
@@ -483,7 +486,7 @@ func (c Client) LunMapIfNotMapped(
 			if igroup.InitiatorGroupName() != initiatorGroupName {
 				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, igroup.InitiatorGroupName())
 			}
-			if igroup.InitiatorGroupName() == initiatorGroupName || importNotManaged {
+			if igroup.InitiatorGroupName() == initiatorGroupName {
 
 				lunID = igroup.LunId()
 				alreadyMapped = true
@@ -616,7 +619,8 @@ func (c Client) LunGet(path string) (*azgo.LunInfoType, error) {
 		SetSize(0).
 		SetCreationTimestamp(0).
 		SetOnline(false).
-		SetMapped(false)
+		SetMapped(false).
+		SetSerialNumber("")
 	desiredAttributes.SetLunInfo(*lunInfo)
 
 	response, err := azgo.NewLunGetIterRequest().
@@ -969,13 +973,12 @@ func (c Client) FlexGroupSetSize(ctx context.Context, name, newSize string) (*az
 	return response, err
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c Client) FlexGroupVolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context, name string,
+// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c Client) FlexGroupVolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, name string, enable bool,
 ) (*azgo.VolumeModifyIterAsyncResponse, error) {
 	volattr := &azgo.VolumeModifyIterAsyncRequestAttributes{}
-	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
+	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(enable)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
 	volattr.SetVolumeAttributes(*volSnapshotAttrs)
 
@@ -1325,11 +1328,10 @@ func (c Client) VolumeCloneSplitStart(name string) (*azgo.VolumeCloneSplitStartR
 	return response, err
 }
 
-// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c Client) VolumeDisableSnapshotDirectoryAccess(name string) (*azgo.VolumeModifyIterResponse, error) {
+// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c Client) VolumeModifySnapshotDirectoryAccess(name string, enable bool) (*azgo.VolumeModifyIterResponse, error) {
 	volattr := &azgo.VolumeModifyIterRequestAttributes{}
-	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(false)
+	ssattr := azgo.NewVolumeSnapshotAttributesType().SetSnapdirAccessEnabled(enable)
 	volSnapshotAttrs := azgo.NewVolumeAttributesType().SetVolumeSnapshotAttributes(*ssattr)
 	volattr.SetVolumeAttributes(*volSnapshotAttrs)
 
@@ -2156,6 +2158,21 @@ func (c Client) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, 
 	return response, err
 }
 
+// SnapshotInfo returns a snapshot by name for a volume
+func (c Client) SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error) {
+	query := &azgo.SnapshotGetIterRequestQuery{}
+	snapshotInfo := azgo.NewSnapshotInfoType().
+		SetVolume(volumeName).
+		SetName(snapshotName)
+	query.SetSnapshotInfo(*snapshotInfo)
+
+	response, err := azgo.NewSnapshotGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+	return response, err
+}
+
 // SnapshotRestoreVolume restores a volume to a snapshot as a non-blocking operation
 func (c Client) SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error) {
 	response, err := azgo.NewSnapshotRestoreVolumeRequest().
@@ -2289,6 +2306,30 @@ func (c Client) VserverShowAggrGetIterRequest() (*azgo.VserverShowAggrGetIterRes
 		SetMaxRecords(MaxZapiRecords).
 		ExecuteUsing(c.zr)
 	return response, err
+}
+
+// GetSVMState returns the state of SVM on the vserver.
+func (c Client) GetSVMState(ctx context.Context) (string, error) {
+	// Get just the SVM of interest
+	query := &azgo.VserverGetIterRequestQuery{}
+	info := azgo.NewVserverInfoType().SetVserverName(c.SVMName())
+	query.SetVserverInfo(*info)
+
+	response, err := azgo.NewVserverGetIterRequest().
+		SetMaxRecords(DefaultZapiRecords).
+		SetQuery(*query).
+		ExecuteUsing(c.zr)
+	if err != nil {
+		return "", err
+	}
+
+	if response.Result.NumRecords() != 1 ||
+		response.Result.AttributesListPtr == nil ||
+		response.Result.AttributesListPtr.VserverInfoPtr == nil {
+		return "", fmt.Errorf("could not find SVM %s (%s)", c.SVMName(), c.svmUUID)
+	}
+
+	return response.Result.AttributesListPtr.VserverInfoPtr[0].State(), nil
 }
 
 // VSERVER operations END
@@ -2580,7 +2621,9 @@ func (c Client) SnapmirrorGet(
 ) (*azgo.SnapmirrorGetResponse, error) {
 	query := azgo.NewSnapmirrorGetRequest()
 	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
-	query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
+	if remoteSVMName != "" && remoteFlexvolName != "" {
+		query.SetSourceLocation(ToSnapmirrorLocation(remoteSVMName, remoteFlexvolName))
+	}
 
 	return query.ExecuteUsing(c.zr)
 }
@@ -2703,6 +2746,8 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			_, err = releaseRequest.ExecuteUsing(c.zr)
 			if err != nil {
 				return err
+			} else {
+				return nil
 			}
 		} else {
 			Logc(context.Background()).WithFields(LogFields{
@@ -2710,7 +2755,17 @@ func (c Client) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error
 			}).Warn("Missing destination location.")
 		}
 	}
-	return nil
+	return errors.NotFoundError("could not find snapmirror relationship to release")
+}
+
+// SnapmirrorDestinationRelease removes all local snapmirror relationship metadata of the destination volume
+// Intended to be used on the destination vserver
+func (c Client) SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error) {
+	request := azgo.NewSnapmirrorReleaseRequest()
+	request.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+	request.SetRelationshipInfoOnly(true)
+
+	return request.ExecuteUsing(c.zr)
 }
 
 // Intended to be from the destination vserver
@@ -2797,7 +2852,7 @@ func (c Client) SnapmirrorPolicyGet(
 
 	switch len(policies) {
 	case 0:
-		return nil, utils.NotFoundError(fmt.Sprintf("could not find snapmirror policy %v", policyName))
+		return nil, errors.NotFoundError("could not find snapmirror policy %v", policyName)
 	case 1:
 		return &policies[0], nil
 	default:
@@ -2827,6 +2882,19 @@ func (c Client) JobScheduleExists(ctx context.Context, jobName string) (bool, er
 	}
 
 	return false, nil
+}
+
+func (c Client) SnapmirrorUpdate(
+	localInternalVolumeName, snapshotName string,
+) (*azgo.SnapmirrorUpdateResponse, error) {
+	query := azgo.NewSnapmirrorUpdateRequest()
+	query.SetDestinationLocation(ToSnapmirrorLocation(c.SVMName(), localInternalVolumeName))
+
+	if snapshotName != "" {
+		query.SetSourceSnapshot(snapshotName)
+	}
+
+	return query.ExecuteUsing(c.zr)
 }
 
 // SNAPMIRROR operations END

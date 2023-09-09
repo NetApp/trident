@@ -3,7 +3,7 @@ package azgo
 import (
 	"bytes"
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -16,7 +16,7 @@ func TestValidateZAPIResponse(t *testing.T) {
 	simpleInvalidResponseBody := `<Root ::attr="x">]]><x::Element/></Root>`
 
 	sampleResponse := &http.Response{
-		Body:          ioutil.NopCloser(bytes.NewBufferString(simpleInvalidResponseBody)),
+		Body:          io.NopCloser(bytes.NewBufferString(simpleInvalidResponseBody)),
 		ContentLength: int64(len(simpleInvalidResponseBody)),
 	}
 	_, err := ValidateZAPIResponse(sampleResponse)
@@ -41,7 +41,7 @@ func TestValidateZAPIResponse(t *testing.T) {
 </num-records></results></netapp>"`
 
 	sampleResponse = &http.Response{
-		Body:          ioutil.NopCloser(bytes.NewBufferString(validToUnpatchedTridentResponseBody)),
+		Body:          io.NopCloser(bytes.NewBufferString(validToUnpatchedTridentResponseBody)),
 		ContentLength: int64(len(validToUnpatchedTridentResponseBody)),
 	}
 

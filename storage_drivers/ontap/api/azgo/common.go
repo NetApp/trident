@@ -9,9 +9,8 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/xml"
-	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"runtime/debug"
@@ -24,6 +23,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type ZAPIRequest interface {
@@ -241,7 +241,7 @@ func (o *ZapiRunner) executeWithoutIteration(z ZAPIRequest, requestType string, 
 		return nil, err
 	}
 	defer resp.Body.Close()
-	body, readErr := ioutil.ReadAll(resp.Body)
+	body, readErr := io.ReadAll(resp.Body)
 	if readErr != nil {
 		log.Errorf("Error reading response body. %v", readErr.Error())
 		return nil, readErr
@@ -302,7 +302,7 @@ func ToString(val reflect.Value) string {
 }
 
 func ValidateZAPIResponse(response *http.Response) (*http.Response, error) {
-	resp, err := ioutil.ReadAll(response.Body)
+	resp, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +328,7 @@ func ValidateZAPIResponse(response *http.Response) (*http.Response, error) {
 		Proto:         response.Proto,
 		ProtoMajor:    response.ProtoMajor,
 		ProtoMinor:    response.ProtoMinor,
-		Body:          ioutil.NopCloser(bytes.NewBufferString(respString)),
+		Body:          io.NopCloser(bytes.NewBufferString(respString)),
 		ContentLength: int64(len(respString)),
 		Request:       response.Request,
 		Header:        response.Header,
@@ -390,7 +390,7 @@ func NewZapiAsyncResult(ctx context.Context, zapiResult interface{}) (result Zap
 		// Handle ZAPI result for response object that contains a list of one item with the needed job information.
 		volModifyResult, ok := val.Interface().(VolumeModifyIterAsyncResponseResult)
 		if !ok {
-			return ZapiAsyncResult{}, utils.TypeAssertionError("val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)")
+			return ZapiAsyncResult{}, errors.TypeAssertionError("val.Interface().(azgo.VolumeModifyIterAsyncResponseResult)")
 		}
 		if volModifyResult.NumSucceededPtr != nil && *volModifyResult.NumSucceededPtr > 0 {
 			if volModifyResult.SuccessListPtr != nil && volModifyResult.SuccessListPtr.VolumeModifyIterAsyncInfoPtr != nil {

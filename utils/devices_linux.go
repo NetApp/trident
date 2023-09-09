@@ -20,6 +20,7 @@ import (
 	"golang.org/x/sys/unix"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -36,7 +37,9 @@ func flushOneDevice(ctx context.Context, devicePath string) error {
 	Logc(ctx).WithFields(fields).Debug(">>>> devices_linux.flushOneDevice")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices_linux.flushOneDevice")
 
-	out, err := execCommandWithTimeout(ctx, "blockdev", deviceOperationsTimeout, true, "--flushbufs", devicePath)
+	out, err := command.ExecuteWithTimeout(
+		ctx, "blockdev", deviceOperationsTimeout, true, "--flushbufs", devicePath,
+	)
 	if err != nil {
 		Logc(ctx).WithFields(
 			LogFields{
@@ -81,7 +84,9 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 	if d.RawDevicePath() == "" {
 		return false, fmt.Errorf("no device path for LUKS device")
 	}
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "isLuks", d.RawDevicePath())
+	output, err := command.ExecuteWithTimeoutAndInput(
+		ctx, "cryptsetup", luksCommandTimeout, true, "", "isLuks", d.RawDevicePath(),
+	)
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); !ok {
 			Logc(ctx).WithFields(LogFields{
@@ -114,7 +119,10 @@ func (d *LUKSDevice) LUKSFormat(ctx context.Context, luksPassphrase string) erro
 	Logc(ctx).WithFields(LogFields{
 		"rawDevicePath": device,
 	}).Debug("Formatting LUKS device.")
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksFormat", device, "--type", "luks2", "-c", "aes-xts-plain64")
+	output, err := command.ExecuteWithTimeoutAndInput(
+		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksFormat", device,
+		"--type", "luks2", "-c", "aes-xts-plain64",
+	)
 	if nil != err {
 		Logc(ctx).WithFields(LogFields{
 			"device": device,
@@ -138,7 +146,10 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 	Logc(ctx).WithFields(LogFields{
 		"rawDevicePath": device,
 	}).Debug("Opening LUKS device.")
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device, luksDeviceName, "--type", "luks2")
+	output, err := command.ExecuteWithTimeoutAndInput(
+		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device,
+		luksDeviceName, "--type", "luks2",
+	)
 	if nil != err {
 		Logc(ctx).WithFields(LogFields{
 			"device": device,
@@ -147,7 +158,8 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 		}).Info("Failed to open LUKS device.")
 
 		// Exit code 2 means bad passphrase
-		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
+		exiterr, ok := err.(*exec.ExitError)
+		if ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
 			return fmt.Errorf("no key available with this passphrase; %v", err)
 		}
 
@@ -164,8 +176,9 @@ func (d *LUKSDevice) Close(ctx context.Context) error {
 
 // closeLUKSDevice performs a luksClose on the specified LUKS device
 func closeLUKSDevice(ctx context.Context, luksDevicePath string) error {
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "luksClose",
-		luksDevicePath)
+	output, err := command.ExecuteWithTimeoutAndInput(
+		ctx, "cryptsetup", luksCommandTimeout, true, "", "luksClose", luksDevicePath,
+	)
 	if nil != err {
 		Log().WithFields(LogFields{
 			"MappedDeviceName": luksDevicePath,
@@ -181,7 +194,9 @@ func closeLUKSDevice(ctx context.Context, luksDevicePath string) error {
 func IsLUKSDeviceOpen(ctx context.Context, luksDevicePath string) (bool, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
-	_, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "status", luksDevicePath)
+	_, err := command.ExecuteWithTimeoutAndInput(
+		ctx, "cryptsetup", luksCommandTimeout, true, "", "status", luksDevicePath,
+	)
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); !ok {
 			return false, err
@@ -224,9 +239,9 @@ func getDeviceFSType(ctx context.Context, device string) (string, error) {
 		return "", fmt.Errorf("could not find device before checking for the filesystem %v; %s.", device, err)
 	}
 
-	out, err := execCommandWithTimeout(ctx, "blkid", 5*time.Second, true, device)
+	out, err := command.ExecuteWithTimeout(ctx, "blkid", 5*time.Second, true, device)
 	if err != nil {
-		if IsTimeoutError(err) {
+		if errors.IsTimeoutError(err) {
 			listAllISCSIDevices(ctx)
 			return "", err
 		} else if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
@@ -344,7 +359,10 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	// Rely on Linux's ability to reference already-open files with /dev/fd/*
 	oldKeyFilename := fmt.Sprintf("/dev/fd/%d", fd)
 
-	_, err = execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksChangeKey", "-d", oldKeyFilename, d.RawDevicePath())
+	_, err = command.ExecuteWithTimeoutAndInput(
+		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksChangeKey", "-d",
+		oldKeyFilename, d.RawDevicePath(),
+	)
 	if err != nil {
 		return fmt.Errorf("could not change LUKS passphrase; %v", err)
 	}
@@ -358,8 +376,9 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 
 // Resize performs a luksResize on the LUKS device
 func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "resize",
-		d.MappedDevicePath())
+	output, err := command.ExecuteWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true,
+		luksPassphrase, "resize", d.MappedDevicePath(),
+	)
 	if nil != err {
 		log.WithFields(log.Fields{
 			"MappedDevicePath": d.MappedDevicePath(),
@@ -368,8 +387,8 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 		}).Debug("Failed to resize LUKS device")
 
 		// Exit code 2 means bad passphrase
-		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == 2 {
-			return IncorrectLUKSPassphraseError(fmt.Sprintf("no key available with this passphrase; %v", err))
+		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
+			return errors.IncorrectLUKSPassphraseError(fmt.Sprintf("no key available with this passphrase; %v", err))
 		}
 		return fmt.Errorf("failed to resize LUKS device %s; %v", d.MappedDevicePath(), err)
 	}
@@ -379,7 +398,9 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 // GetUnderlyingDevicePathForLUKSDevice returns the device mapped to the LUKS device
 // uses cryptsetup status <luks-device> and parses the output
 func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath string) (string, error) {
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "status", luksDevicePath)
+	output, err := command.ExecuteWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true,
+		"", "status", luksDevicePath,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -408,7 +429,10 @@ func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath st
 func (d *LUKSDevice) CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error) {
 	device := d.RawDevicePath()
 	luksDeviceName := d.MappedDeviceName()
-	output, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device, luksDeviceName, "--type", "luks2", "--test-passphrase")
+	output, err := command.ExecuteWithTimeoutAndInput(
+		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device,
+		luksDeviceName, "--type", "luks2", "--test-passphrase",
+	)
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
 			return false, nil

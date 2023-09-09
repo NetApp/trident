@@ -5,9 +5,9 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // CreateVolumeAccessGroup tbd

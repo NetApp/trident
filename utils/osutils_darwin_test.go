@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetIPAddresses(t *testing.T) {
@@ -12,7 +14,7 @@ func TestGetIPAddresses(t *testing.T) {
 	result, err := getIPAddresses(ctx)
 	assert.Nil(t, result, "got ip address")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
 func TestGetHostSystemInfo(t *testing.T) {
@@ -20,7 +22,7 @@ func TestGetHostSystemInfo(t *testing.T) {
 	result, err := GetHostSystemInfo(ctx)
 	assert.Nil(t, result, "got host system info")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
 func TestNFSActiveOnHost(t *testing.T) {
@@ -28,7 +30,7 @@ func TestNFSActiveOnHost(t *testing.T) {
 	result, err := NFSActiveOnHost(ctx)
 	assert.False(t, result, "nfs is present on the host")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }
 
 func TestIsLikelyDir_NotPresent(t *testing.T) {
@@ -54,5 +56,5 @@ func TestSMBActiveOnHost(t *testing.T) {
 	result, err := SMBActiveOnHost(ctx)
 	assert.False(t, result, "smb is active on the host")
 	assert.Error(t, err, "no error")
-	assert.True(t, IsUnsupportedError(err), "not UnsupportedError")
+	assert.True(t, errors.IsUnsupportedError(err), "not UnsupportedError")
 }

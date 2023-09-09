@@ -5,7 +5,6 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -46,8 +46,9 @@ var updateBackendCmd = &cobra.Command{
 				"update", "backend",
 				"--base64", base64.StdEncoding.EncodeToString(jsonData),
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return backendUpdate(args, jsonData)
 		}

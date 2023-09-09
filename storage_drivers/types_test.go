@@ -4,7 +4,6 @@ package storagedrivers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"sort"
 	"testing"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	sfapi "github.com/netapp/trident/storage_drivers/solidfire/api"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestGetDriverConfigByName(t *testing.T) {

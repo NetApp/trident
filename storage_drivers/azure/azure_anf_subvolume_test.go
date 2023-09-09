@@ -61,6 +61,7 @@ func newMockANFSubvolumeDriver(t *testing.T) (*mockapi.MockAzure, *NASBlockStora
 
 	mockAPI := mockapi.NewMockAzure(mockCtrl)
 
+	subvolumesToDelete = nil
 	return mockAPI, newTestANFSubvolumeDriver(mockAPI)
 }
 
@@ -393,6 +394,17 @@ func TestSubvolumeInitialize(t *testing.T) {
 	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID, "wrong backend UUID")
 	assert.Equal(t, driver.volumeCreateTimeout, 600*time.Second, "volume create timeout mismatch")
 	assert.True(t, driver.Initialized(), "not initialized")
+
+	assert.Equal(t, len(driver.getAllFilePoolVolumes()), len(driver.Config.BackendPools),
+		"physical and backend pools should be the same size")
+	for _, encodedPool := range driver.Config.BackendPools {
+		var backendPool drivers.ANFSubvolumeStorageBackendPool
+		if err := utils.DecodeBase64StringToObject(encodedPool, &backendPool); err != nil {
+			t.Fatalf(err.Error())
+		}
+		assert.Equal(t, driver.Config.SubscriptionID, backendPool.SubscriptionID)
+		assert.Equal(t, driver.Config.Location, backendPool.Location)
+	}
 }
 
 // TestSubvolumeInitialize_SDKInitError : This method will check if we are making calls using actual SDK.
@@ -1393,14 +1405,15 @@ func getStructsForSubvolumeCreateClone() (
 	}
 
 	volConfig := &storage.VolumeConfig{
-		Version:                   "1",
-		Name:                      "pvc-c883baf4-9742-49a3-85d6-6dd1d5514826",
-		InternalName:              "trident-pvc-c883baf4-9742-49a3-85d6-6dd1d5514826-file-0",
-		Size:                      SubvolumeSizeStr,
-		InternalID:                volumeID2,
-		CloneSourceVolume:         "pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1",
-		CloneSourceVolumeInternal: "trident-pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1-file-0",
-		CloneSourceSnapshot:       "testSnap",
+		Version:                     "1",
+		Name:                        "pvc-c883baf4-9742-49a3-85d6-6dd1d5514826",
+		InternalName:                "trident-pvc-c883baf4-9742-49a3-85d6-6dd1d5514826-file-0",
+		Size:                        SubvolumeSizeStr,
+		InternalID:                  volumeID2,
+		CloneSourceVolume:           "pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1",
+		CloneSourceVolumeInternal:   "trident-pvc-b99a6221-2635-49fc-bfab-b0cab18c24d1-file-0",
+		CloneSourceSnapshot:         "testSnap",
+		CloneSourceSnapshotInternal: "trident-testSnap--b99a6",
 	}
 	subVolumeID1 := api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
 		"trident-testSnap--b99a6")
@@ -1865,7 +1878,7 @@ func TestSubvolumeWaitForSubvolumeCreate_Creating(t *testing.T) {
 		mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 			driver.volumeCreateTimeout).Return(state, errFailed).Times(1)
 
-		result := driver.waitForSubvolumeCreate(ctx, subVolume, nil)
+		result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, Create, true)
 		assert.Error(t, result, "subvolume creation is complete")
 	}
 }
@@ -1885,7 +1898,7 @@ func TestSubvolumeWaitForSubvolumeCreate_DeletingNotCompleted(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1904,7 +1917,7 @@ func TestSubvolumeWaitForSubvolumeCreate_DeletingCompleted(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, errFailed).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1924,7 +1937,7 @@ func TestSubvolumeWaitForSubvolumeCreate_ErrorDelete(t *testing.T) {
 
 	poller := api.PollerSVCreateResponse{}
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1944,7 +1957,7 @@ func TestSubvolumeWaitForSubvolumeCreate_ErrorDeleteFailed(t *testing.T) {
 
 	poller := api.PollerSVCreateResponse{}
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -1963,7 +1976,7 @@ func TestSubvolumeWaitForSubvolumeCreate_OtherStates(t *testing.T) {
 
 		poller := api.PollerSVCreateResponse{}
 
-		result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller)
+		result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, Create, true)
 		assert.Nil(t, result, "subvolume creation is complete")
 	}
 }
@@ -2419,7 +2432,7 @@ func getStructsForSubvolumeCreateSnapshot() (
 	snapConfig := &storage.SnapshotConfig{
 		Version:            "1",
 		Name:               "testSnap",
-		InternalName:       "testSnap",
+		InternalName:       "trident-testSnap--ce20c",
 		VolumeName:         "pvc-ce20c6cf-0a75-4b27-b9bd-3f53bf520f4f",
 		VolumeInternalName: "trident-pvc-ce20c6cf-0a75-4b27-b9bd-3f53bf520f4f-file-0",
 	}
@@ -2586,7 +2599,7 @@ func TestSubvolumeGetSnapshot(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -2610,7 +2623,7 @@ func TestSubvolumeGetSnapshot_ErrorCheckingForExistingSnapshot(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -2634,7 +2647,7 @@ func TestSubvolumeGetSnapshot_ErrorSnapshotDoesNotExist(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -2658,7 +2671,7 @@ func TestSubvolumeGetSnapshot_ErrorSnapshotStateIsNotAvailable(t *testing.T) {
 	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 
 	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
-		"trident-testSnap--ce20c")
+		snapConfig.InternalName)
 	subVolume.ProvisioningState = api.StateCreating
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
@@ -2702,6 +2715,31 @@ func TestSubvolumeGetSnapshot_ErrorSubvolumeNotFound(t *testing.T) {
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	mockAPI.EXPECT().SubvolumeExistsByID(ctx, volConfig.InternalID).Return(false, nil, errFailed).Times(1)
+
+	result, resultErr := driver.GetSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, result, "got snapshot")
+	assert.Error(t, resultErr, "no error")
+}
+
+func TestSubvolumeGetSnapshot_UnmanagedSnapshotImport(t *testing.T) {
+	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+
+	volConfig.InternalID = api.CreateSubvolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testVol1",
+		snapConfig.InternalName)
+	subVolume.ProvisioningState = api.StateCreating
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, volConfig.InternalID).Return(true, subVolume, nil).Times(1)
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, volConfig.InternalID).Return(true, subVolume, nil).Times(1)
 
 	result, resultErr := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -2913,20 +2951,372 @@ func TestSubvolumeGetSnapshots_ErrorSubvolumesDoNotExist(t *testing.T) {
 	assert.Error(t, resultErr, "no error")
 }
 
-func TestSubvolumeRestoreSnapshot(t *testing.T) {
-	snapConfig := &storage.SnapshotConfig{
-		Version:            "1",
-		Name:               "snap1",
-		InternalName:       "snap1",
-		VolumeName:         "testvol1",
-		VolumeInternalName: "trident-testvol1",
-	}
+func TestSubvolumeRestoreSnapshot_InternalNameMismatch(t *testing.T) {
+	_, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	volConfig.InternalName = "random"
 
 	_, driver := newMockANFSubvolumeDriver(t)
 
-	result := driver.RestoreSnapshot(ctx, snapConfig, nil)
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
 
-	assert.Error(t, result, "restored snapshot")
+func TestSubvolumeRestoreSnapshot_ErrorParsingVolConfigID(t *testing.T) {
+	_, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	volConfig.InternalID = ""
+
+	_, driver := newMockANFSubvolumeDriver(t)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorCheckingForSubvolumeIDExists(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorWaitingForTempSubvolume(t *testing.T) {
+	config, volConfig, subVolume, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(subVolume, nil,
+		fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorCreatingTempSubvolume(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, tempSubVolume, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateCreating, fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorDeletingOriginalSubvolume(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, tempSubVolume, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(nil, fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorCreatingNewSnapshot(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, tempSubVolume, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorWaitingForNewSubvolume(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_FailToDeleteTempSubvolume(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(2)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{},
+		fmt.Errorf("some error")).Times(2)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.True(t, len(subvolumesToDelete) > 0, "subvolume should be marked for deletion")
+	subvolumesToDelete = nil
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_WithTempSubvolumeDeleteRetryFail(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(2)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{},
+		fmt.Errorf("some error")).Times(3)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.True(t, len(subvolumesToDelete) > 0, "subvolume should be marked for deletion")
+	assert.Error(t, result, "snapshot restore should fail")
+
+	result = driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_WithTempSubvolumeDeleteRetryDifferentSnapshotContext(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(2)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{},
+		fmt.Errorf("some error")).Times(2)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.True(t, len(subvolumesToDelete) > 0, "subvolume should be marked for deletion")
+	assert.Error(t, result, "snapshot restore should fail")
+
+	snapConfig.InternalName = "oldsnapshot"
+	snapConfig.Name = "oldsnapshot"
+
+	// Re-run complete restore with other snapshot
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(true, tempSubVolume, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(2)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(3)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(3)
+
+	result = driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Nil(t, result, "snapshot restore should pass")
+}
+
+func TestSubvolumeRestoreSnapshot_WithTempSubvolumeDeleteRetry(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(2)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{},
+		fmt.Errorf("some error")).Times(2)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.True(t, len(subvolumesToDelete) > 0, "subvolume should be marked for deletion")
+	assert.Error(t, result, "snapshot restore should fail")
+
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+
+	result = driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Nil(t, result, "snapshot restore should pass")
+}
+
+func TestSubvolumeRestoreSnapshot(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(2)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(2)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Nil(t, result, "snapshot restore should pass")
+}
+
+func TestDeleteSubvolumeInSnapshotContext_ParseError(t *testing.T) {
+	config, _, _, _, _ := getStructsForSubvolumeCreateSnapshot()
+	subvolumeID := "somesubvolume"
+	snapshotID := "somesnapshot"
+
+	_, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+
+	driver.ensureSubvolumeDelete(subvolumeID, snapshotID)
+	_, result := driver.deleteSubvolumeInSnapshotContext(ctx, subvolumeID, snapshotID)
+	assert.Error(t, result, "should result in parse error")
 }
 
 func TestSubvolumeDeleteSnapshot(t *testing.T) {
@@ -3232,6 +3622,24 @@ func TestSubvolumeGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	assert.NotNil(t, result, "unable to get physical pool names")
 }
 
+func TestSubvolumeGetStorageBackendPools(t *testing.T) {
+	_, driver := newMockANFSubvolumeDriver(t)
+
+	tempPool := make(map[string]storage.Pool)
+	pool := storage.NewStoragePool(nil, "test-pool")
+	tempPool[pool.Name()] = pool
+
+	driver.virtualPools = tempPool
+
+	backendPools := driver.getStorageBackendPools(ctx)
+	assert.NotEmpty(t, backendPools, "unable to get backend pool names")
+
+	backendPool := backendPools[0]
+	assert.Equal(t, driver.Config.SubscriptionID, backendPool.SubscriptionID)
+	assert.Equal(t, driver.Config.Location, backendPool.Location)
+	assert.Equal(t, pool.InternalAttributes()[FilePoolVolumes], backendPool.FilePoolVolume)
+}
+
 func TestSubvolumeGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockANFSubvolumeDriver(t)
 	tridentconfig.UsingPassthroughStore = true
@@ -3294,8 +3702,24 @@ func TestSubvolumeCreateFollowUp_StateError(t *testing.T) {
 	assert.Error(t, result, "parent volume found")
 }
 
+func TestSubvolumeCreateFollowUp_NoMountTarget(t *testing.T) {
+	config, filesystems, volConfig, subVolume, _ := getStructsForSubvolumeCreate()
+	subVolume.ProvisioningState = api.StateAvailable
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	filesystems[0].MountTargets = []api.MountTarget{}
+
+	mockAPI.EXPECT().Subvolume(ctx, volConfig, false).Return(subVolume, nil).Times(1)
+	mockAPI.EXPECT().SubvolumeParentVolume(ctx, volConfig).Return(filesystems[0], nil).Times(1)
+
+	result := driver.CreateFollowup(ctx, volConfig)
+	assert.Error(t, result, "has no mount targets")
+}
+
 func TestSubvolumeCreateFollowUp_MountTarget(t *testing.T) {
 	config, filesystems, volConfig, subVolume, _ := getStructsForSubvolumeCreate()
+	subVolume.ProvisioningState = api.StateAvailable
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
 	driver.Config = *config
@@ -3653,7 +4077,7 @@ func TestSubvolumeReconcileNodeAccess(t *testing.T) {
 
 	driver := *newTestANFSubvolumeDriver(mockAPI)
 
-	result := driver.ReconcileNodeAccess(ctx, nodes, "")
+	result := driver.ReconcileNodeAccess(ctx, nodes, "", "")
 
 	assert.Nil(t, result, "not nil")
 }

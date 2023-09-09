@@ -1,9 +1,8 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -15,12 +14,10 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	mockK8sClient "github.com/netapp/trident/mocks/mock_cli/mock_k8s_client"
+	"github.com/netapp/trident/utils/errors"
 )
 
-var (
-	k8sClientError = errors.New("k8s error")
-	genericError   = errors.New("generic error")
-)
+var k8sClientError = errors.New("k8s error")
 
 func newMockKubeClient(t *testing.T) *mockK8sClient.MockKubernetesClient {
 	mockCtrl := gomock.NewController(t)

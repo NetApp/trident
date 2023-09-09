@@ -3,9 +3,10 @@
 package v1
 
 import (
-	"errors"
 	"regexp"
 	"strings"
+
+	"github.com/netapp/trident/utils/errors"
 )
 
 var ErrNamesDontMatch = errors.New("names do not match")

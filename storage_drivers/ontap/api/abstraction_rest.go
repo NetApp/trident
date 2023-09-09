@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"runtime/debug"
 	"sort"
@@ -21,6 +20,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -143,7 +143,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	// Make sure we're using a valid ONTAP version
 	ontapVersion, err := d.APIVersion(ctx)
 	if err != nil {
-		return fmt.Errorf("could not determine Data ONTAP version: %v", err)
+		return fmt.Errorf("could not determine Data ONTAP version; %v", err)
 	}
 	Logc(ctx).WithField("ontapVersion", ontapVersion).Debug("ONTAP version.")
 
@@ -395,6 +395,11 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		state = *lunGetResponse.Status.State
 	}
 
+	osType := ""
+	if lunGetResponse.OsType != nil {
+		osType = *lunGetResponse.OsType
+	}
+
 	lunInfo := &Lun{
 		Comment:      responseComment,
 		CreateTime:   responseCreateTime,
@@ -408,8 +413,70 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		SerialNumber: serialNumber,
 		State:        state,
 		VolumeName:   responseVolName,
+		OsType:       osType,
 	}
 	return lunInfo, nil
+}
+
+func namespaceInfoFromRestAttrsHelper(namespaceGetResponse *models.NvmeNamespace) (*NVMeNamespace, error) {
+	if namespaceGetResponse == nil {
+		return nil, fmt.Errorf("namespace response is nil")
+	}
+
+	nsUUID := ""
+	if namespaceGetResponse.UUID != nil {
+		nsUUID = *namespaceGetResponse.UUID
+	}
+
+	name := ""
+	if namespaceGetResponse.Name != nil {
+		name = *namespaceGetResponse.Name
+	}
+
+	osType := ""
+	if namespaceGetResponse.OsType != nil {
+		osType = *namespaceGetResponse.OsType
+	}
+
+	volName := ""
+	if namespaceGetResponse.Location != nil && namespaceGetResponse.Location.Volume != nil &&
+		namespaceGetResponse.Location.Volume.Name != nil {
+		volName = *namespaceGetResponse.Location.Volume.Name
+	}
+
+	size := ""
+	blockSize := 0
+	if namespaceGetResponse.Space != nil {
+		if namespaceGetResponse.Space.Size != nil {
+			size = strconv.FormatInt(*namespaceGetResponse.Space.Size, 10)
+		}
+		if namespaceGetResponse.Space.BlockSize != nil {
+			blockSize = int(*namespaceGetResponse.Space.BlockSize)
+		}
+	}
+
+	state := ""
+	if namespaceGetResponse.Status != nil && namespaceGetResponse.Status.State != nil {
+		state = *namespaceGetResponse.Status.State
+	}
+
+	comment := ""
+	if namespaceGetResponse.Comment != nil {
+		comment = *namespaceGetResponse.Comment
+	}
+
+	nsInfo := &NVMeNamespace{
+		UUID:       nsUUID,
+		Name:       name,
+		OsType:     osType,
+		VolumeName: volName,
+		Size:       size,
+		BlockSize:  blockSize,
+		State:      state,
+		Comment:    comment,
+	}
+
+	return nsInfo, nil
 }
 
 func (d OntapAPIREST) APIVersion(ctx context.Context) (string, error) {
@@ -479,14 +546,14 @@ func (d OntapAPIREST) FlexgroupCreate(ctx context.Context, volume Volume) error 
 
 func (d OntapAPIREST) FlexgroupCloneSplitStart(ctx context.Context, cloneName string) error {
 	if err := d.api.FlexgroupCloneSplitStart(ctx, cloneName); err != nil {
-		return fmt.Errorf("error splitting clone: %v", err)
+		return fmt.Errorf("error splitting clone; %v", err)
 	}
 	return nil
 }
 
-func (d OntapAPIREST) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
-	if err := d.api.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, volumeName); err != nil {
-		return fmt.Errorf("error disabling snapshot directory access: %v", err)
+func (d OntapAPIREST) FlexgroupModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
+	if err := d.api.FlexGroupVolumeModifySnapshotDirectoryAccess(ctx, volumeName, enable); err != nil {
+		return fmt.Errorf("error modifying snapshot directory access; %v", err)
 	}
 
 	return nil
@@ -516,7 +583,7 @@ func (d OntapAPIREST) FlexgroupSetComment(
 	ctx context.Context, volumeNameInternal, volumeNameExternal, comment string,
 ) error {
 	if err := d.api.FlexGroupSetComment(ctx, volumeNameInternal, comment); err != nil {
-		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed: %v", err)
+		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed; %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
 	}
 	return nil
@@ -524,7 +591,7 @@ func (d OntapAPIREST) FlexgroupSetComment(
 
 func (d OntapAPIREST) FlexgroupSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error {
 	if err := d.api.FlexgroupSetQosPolicyGroupName(ctx, name, qos); err != nil {
-		return fmt.Errorf("error setting quality of service policy: %v", err)
+		return fmt.Errorf("error setting quality of service policy; %v", err)
 	}
 
 	return nil
@@ -533,14 +600,14 @@ func (d OntapAPIREST) FlexgroupSetQosPolicyGroupName(ctx context.Context, name s
 func (d OntapAPIREST) FlexgroupSnapshotCreate(ctx context.Context, snapshotName, sourceVolume string) error {
 	volume, err := d.FlexgroupInfo(ctx, sourceVolume)
 	if err != nil {
-		return fmt.Errorf("error looking up source volume %v: %v", sourceVolume, err)
+		return fmt.Errorf("error looking up source volume %v; %v", sourceVolume, err)
 	}
 	if volume == nil {
 		return fmt.Errorf("error looking up source volume: %v", sourceVolume)
 	}
 
 	if err = d.api.SnapshotCreateAndWait(ctx, volume.UUID, snapshotName); err != nil {
-		return fmt.Errorf("could not create snapshot: %v", err)
+		return fmt.Errorf("could not create snapshot; %v", err)
 	}
 	return nil
 }
@@ -548,7 +615,7 @@ func (d OntapAPIREST) FlexgroupSnapshotCreate(ctx context.Context, snapshotName,
 func (d OntapAPIREST) FlexgroupSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
 	volume, err := d.FlexgroupInfo(ctx, sourceVolume)
 	if err != nil {
-		return nil, fmt.Errorf("error looking up source volume: %v", err)
+		return nil, fmt.Errorf("error looking up source volume; %v", err)
 	}
 	if volume == nil {
 		return nil, fmt.Errorf("error looking up source volume: %v", sourceVolume)
@@ -556,7 +623,7 @@ func (d OntapAPIREST) FlexgroupSnapshotList(ctx context.Context, sourceVolume st
 
 	snapListResponse, err := d.api.SnapshotList(ctx, volume.UUID)
 	if err != nil {
-		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+		return nil, fmt.Errorf("error enumerating snapshots; %v", err)
 	}
 	if snapListResponse == nil {
 		return nil, fmt.Errorf("error enumerating snapshots")
@@ -586,7 +653,7 @@ func (d OntapAPIREST) FlexgroupModifyUnixPermissions(
 	err := d.api.FlexGroupModifyUnixPermissions(ctx, volumeNameInternal, unixPermissions)
 	if err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Could not import volume, "+
-			"modifying unix permissions failed: %v", err)
+			"modifying unix permissions failed; %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
 	}
 
@@ -714,7 +781,7 @@ func (d OntapAPIREST) GetSVMAggregateAttributes(ctx context.Context) (aggrList m
 func (d OntapAPIREST) ExportPolicyDestroy(ctx context.Context, policy string) error {
 	exportPolicyDestroyResult, err := d.api.ExportPolicyDestroy(ctx, policy)
 	if err != nil {
-		return fmt.Errorf("error deleting export policy: %v", err)
+		return fmt.Errorf("error deleting export policy; %v", err)
 	}
 	if exportPolicyDestroyResult == nil {
 		return fmt.Errorf("error deleting export policy")
@@ -810,9 +877,9 @@ func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string
 	return svmAggregateSpaceList, nil
 }
 
-func (d OntapAPIREST) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
-	if err := d.api.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
-		return fmt.Errorf("error disabling snapshot directory access: %v", err)
+func (d OntapAPIREST) VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error {
+	if err := d.api.VolumeModifySnapshotDirectoryAccess(ctx, name, enable); err != nil {
+		return fmt.Errorf("error modifying snapshot directory access; %v", err)
 	}
 
 	return nil
@@ -841,7 +908,7 @@ func (d OntapAPIREST) VolumeSetComment(
 	ctx context.Context, volumeNameInternal, volumeNameExternal, comment string,
 ) error {
 	if err := d.api.VolumeSetComment(ctx, volumeNameInternal, comment); err != nil {
-		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed: %v", err)
+		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf("Modifying comment failed; %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
 	}
 	return nil
@@ -893,7 +960,7 @@ func (d OntapAPIREST) VolumeModifyUnixPermissions(
 	err := d.api.VolumeModifyUnixPermissions(ctx, volumeNameInternal, unixPermissions)
 	if err != nil {
 		Logc(ctx).WithField("originalName", volumeNameExternal).Errorf(
-			"Could not import volume, modifying unix permissions failed: %v", err)
+			"Could not import volume, modifying unix permissions failed; %v", err)
 		return fmt.Errorf("volume %s modify failed: %v", volumeNameExternal, err)
 	}
 
@@ -961,7 +1028,7 @@ func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredP
 		ruleResponse, err = d.api.ExportRuleCreate(ctx, policyName, desiredPolicyRule, protocol, []string{"any"},
 			[]string{"any"}, []string{"any"})
 		if err != nil {
-			err = fmt.Errorf("error creating export rule: %v", err)
+			err = fmt.Errorf("error creating export rule; %v", err)
 			Logc(ctx).WithFields(LogFields{
 				"ExportPolicy": policyName,
 				"ClientMatch":  desiredPolicyRule,
@@ -1019,7 +1086,7 @@ func (d OntapAPIREST) ExportPolicyExists(ctx context.Context, policyName string)
 func (d OntapAPIREST) ExportRuleList(ctx context.Context, policyName string) (map[string]int, error) {
 	ruleListResponse, err := d.api.ExportRuleList(ctx, policyName)
 	if err != nil {
-		return nil, fmt.Errorf("error listing export policy rules: %v", err)
+		return nil, fmt.Errorf("error listing export policy rules; %v", err)
 	}
 
 	rules := make(map[string]int)
@@ -1075,7 +1142,7 @@ func (d OntapAPIREST) QtreeCount(ctx context.Context, volumeName string) (int, e
 func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefix string) (Qtrees, error) {
 	qtreeList, err := d.api.QtreeList(ctx, prefix, volumePrefix)
 	if err != nil {
-		msg := fmt.Sprintf("Error listing qtrees. %v", err)
+		msg := fmt.Sprintf("Error listing qtrees; %v", err)
 		Logc(ctx).Errorf(msg)
 		return nil, fmt.Errorf(msg)
 	}
@@ -1231,7 +1298,7 @@ func (d OntapAPIREST) VolumeSnapshotCreate(ctx context.Context, snapshotName, so
 	}
 
 	if err = d.api.SnapshotCreateAndWait(ctx, volume.UUID, snapshotName); err != nil {
-		return fmt.Errorf("could not create snapshot: %v", err)
+		return fmt.Errorf("could not create snapshot; %v", err)
 	}
 	return nil
 }
@@ -1270,16 +1337,131 @@ func (d OntapAPIREST) pollVolumeExistence(ctx context.Context, volumeName string
 func (d OntapAPIREST) VolumeCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string, async bool) error {
 	err := d.api.VolumeCloneCreateAsync(ctx, cloneName, sourceName, snapshot)
 	if err != nil {
-		return fmt.Errorf("error creating clone: %v", err)
+		return fmt.Errorf("error creating clone; %v", err)
 	}
 
 	return nil
 }
 
+func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates, abortStates []string, maxElapsedTime time.Duration) (string, error) {
+	fields := LogFields{
+		"method":        "VolumeWaitForStates",
+		"type":          "OntapAPIREST",
+		"volume":        volumeName,
+		"desiredStates": desiredStates,
+		"abortStates":   abortStates,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeWaitForStates")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeWaitForStates")
+
+	var volumeState string
+
+	checkVolumeState := func() error {
+		vol, err := d.api.VolumeGetByName(ctx, volumeName)
+		if err != nil {
+			volumeState = ""
+			return fmt.Errorf("error getting volume %v; %v", volumeName, err)
+		}
+
+		if vol == nil {
+			return fmt.Errorf("volume %v not found", volumeName)
+		}
+
+		Logc(ctx).Debugf("Volume %v is in state:%v", volumeName, *vol.State)
+		volumeState = *vol.State
+
+		if utils.SliceContainsString(desiredStates, volumeState) {
+			Logc(ctx).Debugf("Found volume in the desired state %v", desiredStates)
+			return nil
+		}
+
+		Logc(ctx).Debugf("Volume is not in desired states. Current State: %v, Desired States: %v", volumeState, desiredStates)
+
+		// Return a permanent error to stop retrying if we reached one of the abort states
+		for _, abortState := range abortStates {
+			if volumeState == abortState {
+				Logc(ctx).Debugf("Volume is in abort state %v. Permanently backing off", volumeState)
+				return backoff.Permanent(TerminalState(fmt.Errorf("volume is in abort state")))
+			} else {
+				return fmt.Errorf("volume is neither in desired state nor in abort state")
+			}
+		}
+
+		return fmt.Errorf("volume is in unknown state")
+	}
+
+	stateNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"increment": duration,
+			"message":   err.Error(),
+		}).Debugf("Waiting for volume state.")
+	}
+	stateBackoff := backoff.NewExponentialBackOff()
+	stateBackoff.MaxElapsedTime = maxElapsedTime
+	stateBackoff.MaxInterval = 2 * time.Second
+	stateBackoff.RandomizationFactor = 0.1
+	stateBackoff.InitialInterval = backoff.DefaultInitialInterval
+	stateBackoff.Multiplier = 1.414
+
+	Logc(ctx).WithField("desiredStates", desiredStates).Info("Waiting for volume state.")
+
+	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
+		if terminalStateErr, ok := err.(*TerminalStateError); ok {
+			Logc(ctx).Errorf("Volume reached terminal state: %v", terminalStateErr)
+		} else {
+			Logc(ctx).Errorf("Volume state was not any of %s after %3.2f seconds.",
+				desiredStates, stateBackoff.MaxElapsedTime.Seconds())
+		}
+		return volumeState, err
+	}
+
+	Logc(ctx).WithField("desiredStates", desiredStates).Debug("Desired volume state reached.")
+	return volumeState, nil
+}
+
+func (d OntapAPIREST) VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error) {
+	emptyResult := Snapshot{}
+
+	volume, err := d.VolumeInfo(ctx, sourceVolume)
+	if err != nil {
+		return emptyResult, fmt.Errorf("error looking up source volume; %v", err)
+	}
+	if volume == nil {
+		return emptyResult, fmt.Errorf("error looking up source volume: %v", sourceVolume)
+	}
+
+	snapListResponse, err := d.api.SnapshotListByName(ctx, volume.UUID, snapshotName)
+	if err != nil {
+		return emptyResult, fmt.Errorf("error getting snapshot %v for volume %v: %v", snapshotName, sourceVolume, err)
+	}
+	if snapListResponse == nil || snapListResponse.Payload == nil || snapListResponse.Payload.SnapshotResponseInlineRecords == nil {
+		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+	}
+	if len(snapListResponse.Payload.SnapshotResponseInlineRecords) == 0 {
+		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+	}
+
+	if len(snapListResponse.Payload.SnapshotResponseInlineRecords) > 1 {
+		return emptyResult, fmt.Errorf("should have exactly 1 record, not: %v",
+			len(snapListResponse.Payload.SnapshotResponseInlineRecords))
+	}
+
+	snap := snapListResponse.Payload.SnapshotResponseInlineRecords[0]
+	if snap == nil || snap.CreateTime == nil || snap.Name == nil {
+		return emptyResult, fmt.Errorf("error getting snapshot %v for volume %v: %v", snapshotName, sourceVolume, err)
+	}
+
+	result := Snapshot{
+		CreateTime: snap.CreateTime.String(),
+		Name:       *snap.Name,
+	}
+	return result, nil
+}
+
 func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error) {
 	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
-		return nil, fmt.Errorf("error looking up source volume: %v", err)
+		return nil, fmt.Errorf("error looking up source volume; %v", err)
 	}
 	if volume == nil {
 		return nil, fmt.Errorf("error looking up source volume: %v", sourceVolume)
@@ -1287,7 +1469,7 @@ func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 
 	snapListResponse, err := d.api.SnapshotList(ctx, volume.UUID)
 	if err != nil {
-		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
+		return nil, fmt.Errorf("error enumerating snapshots; %v", err)
 	}
 	if snapListResponse == nil {
 		return nil, fmt.Errorf("error enumerating snapshots")
@@ -1313,7 +1495,7 @@ func (d OntapAPIREST) VolumeSnapshotList(ctx context.Context, sourceVolume strin
 
 func (d OntapAPIREST) VolumeSetQosPolicyGroupName(ctx context.Context, name string, qos QosPolicyGroup) error {
 	if err := d.api.VolumeSetQosPolicyGroupName(ctx, name, qos); err != nil {
-		return fmt.Errorf("error setting quality of service policy: %v", err)
+		return fmt.Errorf("error setting quality of service policy; %v", err)
 	}
 
 	return nil
@@ -1321,7 +1503,7 @@ func (d OntapAPIREST) VolumeSetQosPolicyGroupName(ctx context.Context, name stri
 
 func (d OntapAPIREST) VolumeCloneSplitStart(ctx context.Context, cloneName string) error {
 	if err := d.api.VolumeCloneSplitStart(ctx, cloneName); err != nil {
-		return fmt.Errorf("error splitting clone: %v", err)
+		return fmt.Errorf("error splitting clone; %v", err)
 	}
 	return nil
 }
@@ -1330,7 +1512,7 @@ func (d OntapAPIREST) SnapshotRestoreVolume(
 	ctx context.Context, snapshotName, sourceVolume string,
 ) error {
 	if err := d.api.SnapshotRestoreVolume(ctx, snapshotName, sourceVolume); err != nil {
-		return fmt.Errorf("error restoring snapshot: %v", err)
+		return fmt.Errorf("error restoring snapshot; %v", err)
 	}
 
 	return nil
@@ -1338,7 +1520,7 @@ func (d OntapAPIREST) SnapshotRestoreVolume(
 
 func (d OntapAPIREST) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, sourceVolume string) error {
 	if err := d.api.SnapshotRestoreFlexgroup(ctx, snapshotName, sourceVolume); err != nil {
-		return fmt.Errorf("error restoring snapshot: %v", err)
+		return fmt.Errorf("error restoring snapshot; %v", err)
 	}
 
 	return nil
@@ -1350,7 +1532,7 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 	// GET the snapshot by name
 	snapshot, err := d.api.SnapshotGetByName(ctx, sourceVolumeUUID, snapshotName)
 	if err != nil {
-		return fmt.Errorf("error checking for snapshot: %v", err)
+		return fmt.Errorf("error checking for snapshot; %v", err)
 	}
 	if snapshot == nil {
 		return fmt.Errorf("error looking up snapshot: %v", snapshotName)
@@ -1363,7 +1545,7 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 	// DELETE the snapshot
 	snapshotDeleteResult, err := d.api.SnapshotDelete(ctx, sourceVolumeUUID, snapshotUUID)
 	if err != nil {
-		return fmt.Errorf("error while deleting snapshot: %v", err)
+		return fmt.Errorf("error while deleting snapshot; %v", err)
 	}
 	if snapshotDeleteResult == nil {
 		return fmt.Errorf("error while deleting snapshot: %v", snapshotName)
@@ -1393,7 +1575,7 @@ func (d OntapAPIREST) SnapshotDeleteByNameAndStyle(
 func (d OntapAPIREST) FlexgroupSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error {
 	volume, err := d.FlexgroupInfo(ctx, sourceVolume)
 	if err != nil {
-		return fmt.Errorf("error looking up source volume: %v", err)
+		return fmt.Errorf("error looking up source volume; %v", err)
 	}
 	if volume == nil {
 		return fmt.Errorf("error looking up source volume: %v", sourceVolume)
@@ -1406,7 +1588,7 @@ func (d OntapAPIREST) FlexgroupSnapshotDelete(ctx context.Context, snapshotName,
 func (d OntapAPIREST) VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error {
 	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
-		return fmt.Errorf("error looking up source volume: %v", err)
+		return fmt.Errorf("error looking up source volume; %v", err)
 	}
 	if volume == nil {
 		return fmt.Errorf("error looking up source volume: %v", sourceVolume)
@@ -1448,7 +1630,13 @@ func (d OntapAPIREST) SnapmirrorDeleteViaDestination(
 	err := d.api.SnapmirrorDeleteViaDestination(ctx, localInternalVolumeName, localSVMName)
 	if err != nil {
 		if !IsNotFoundError(err) {
-			return fmt.Errorf("error deleting snapmirror info for volume %v: %v", localInternalVolumeName, err)
+			if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+				if restErr.Error != nil && restErr.Error.Code != nil &&
+					*restErr.Error.Code != SNAPMIRROR_MODIFICATION_IN_PROGRESS {
+					return fmt.Errorf("error deleting snapmirror info for volume %v: %v",
+						localInternalVolumeName, err)
+				}
+			}
 		}
 	}
 
@@ -1467,7 +1655,9 @@ func (d OntapAPIREST) SnapmirrorRelease(ctx context.Context, sourceFlexvolName, 
 	// Ensure no leftover snapmirror metadata
 	err := d.api.SnapmirrorRelease(ctx, sourceFlexvolName, sourceSVMName)
 	if err != nil {
-		return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		if !IsNotFoundError(err) {
+			return fmt.Errorf("error releasing snapmirror info for volume %v: %v", sourceFlexvolName, err)
+		}
 	}
 
 	return nil
@@ -1508,8 +1698,16 @@ func (d OntapAPIREST) SnapmirrorGet(
 		snapmirror.LastTransferType = *snapmirrorResponse.LastTransferType
 	}
 
-	if snapmirrorResponse.Transfer != nil && snapmirrorResponse.Transfer.State != nil {
-		snapmirror.RelationshipStatus = SnapmirrorStatus(*snapmirrorResponse.Transfer.State)
+	if snapmirrorResponse.Transfer != nil {
+		if snapmirrorResponse.Transfer.State != nil {
+			snapmirror.RelationshipStatus = SnapmirrorStatus(*snapmirrorResponse.Transfer.State)
+		}
+		if snapmirrorResponse.Transfer.EndTime != nil {
+			transferFormat := "2006-01-02T15:04:05.000-07:00"
+			transferTime, _ := time.Parse(transferFormat, snapmirrorResponse.Transfer.EndTime.String())
+			transferTime = transferTime.UTC()
+			snapmirror.EndTransferTime = &transferTime
+		}
 	}
 
 	if snapmirrorResponse.Healthy != nil {
@@ -1682,6 +1880,17 @@ func (d OntapAPIREST) SnapmirrorBreak(
 			return NotReadyError(fmt.Sprintf("Snapmirror break failed: %s", msg))
 		}
 		Logc(ctx).WithError(err).Error("Error on snapmirror break")
+		return err
+	}
+	return nil
+}
+
+func (d OntapAPIREST) SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	err := d.api.SnapmirrorUpdate(ctx, localInternalVolumeName, snapshotName)
+	if err != nil {
+		if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
+			return fmt.Errorf(*restErr.Error.Message)
+		}
 		return err
 	}
 	return nil
@@ -1990,7 +2199,7 @@ func (d OntapAPIREST) LunMapInfo(ctx context.Context, initiatorGroupName, lunPat
 }
 
 func (d OntapAPIREST) isLunMapped(
-	ctx context.Context, lunPath, initiatorGroupName string, importNotManaged bool,
+	ctx context.Context, lunPath, initiatorGroupName string,
 ) (bool, int, error) {
 	alreadyMapped := false
 	lunID := -1
@@ -2013,9 +2222,9 @@ func (d OntapAPIREST) isLunMapped(
 	for _, record := range lunMapResponse.Payload.LunMapResponseInlineRecords {
 		if record.Igroup != nil && record.Igroup.Name != nil {
 			if *record.Igroup.Name != initiatorGroupName {
-				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, record.Igroup.Name)
+				Logc(ctx).Debugf("LUN %s is mapped to igroup %s.", lunPath, *record.Igroup.Name)
 			}
-			if *record.Igroup.Name == initiatorGroupName || importNotManaged {
+			if *record.Igroup.Name == initiatorGroupName {
 				if record.LogicalUnitNumber != nil {
 					lunID = int(*record.LogicalUnitNumber)
 					alreadyMapped = true
@@ -2053,10 +2262,8 @@ func (d OntapAPIREST) isLunMapped(
 	return alreadyMapped, lunID, nil
 }
 
-func (d OntapAPIREST) EnsureLunMapped(
-	ctx context.Context, initiatorGroupName, lunPath string, importNotManaged bool,
-) (int, error) {
-	alreadyMapped, lunID, err := d.isLunMapped(ctx, lunPath, initiatorGroupName, importNotManaged)
+func (d OntapAPIREST) EnsureLunMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
+	alreadyMapped, lunID, err := d.isLunMapped(ctx, lunPath, initiatorGroupName)
 	if err != nil {
 		return -1, err
 	}
@@ -2244,7 +2451,7 @@ func (d OntapAPIREST) IscsiInterfaceGet(ctx context.Context, svm string) ([]stri
 	var iSCSINodeNames []string
 	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not get SVM iSCSI node name: %v", err)
+		return nil, fmt.Errorf("could not get SVM iSCSI node name; %v", err)
 	}
 	if interfaceResponse == nil || interfaceResponse.Payload == nil {
 		return nil, nil
@@ -2383,6 +2590,34 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 	return alreadyAdded, nil
 }
 
+func (d OntapAPIREST) IgroupList(ctx context.Context) ([]string, error) {
+	fields := LogFields{
+		"Method": "IgroupList",
+		"Type":   "OntapAPIREST",
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupList")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupList")
+
+	igroupsResponse, err := d.api.IgroupList(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+
+	if igroupsResponse.Payload == nil || igroupsResponse.Payload.NumRecords == nil {
+		return nil, nil
+	}
+	igroups := make([]string, 0, *igroupsResponse.Payload.NumRecords)
+	for _, igroup := range igroupsResponse.Payload.IgroupResponseInlineRecords {
+		if igroup != nil && igroup.Name != nil {
+			igroups = append(igroups, *igroup.Name)
+		}
+	}
+
+	return igroups, nil
+}
+
 func (d OntapAPIREST) IgroupRemove(ctx context.Context, initiatorGroupName, initiator string, force bool) error {
 	fields := LogFields{
 		"Method":             "IgroupRemove",
@@ -2428,7 +2663,7 @@ func (d OntapAPIREST) GetSLMDataLifs(ctx context.Context, ips, reportingNodeName
 
 	netInterfaces, err := d.api.NetworkIPInterfacesList(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error checking network interfaces: %v", err)
+		return nil, fmt.Errorf("error checking network interfaces; %v", err)
 	}
 
 	if netInterfaces == nil || netInterfaces.Payload == nil {
@@ -2463,6 +2698,10 @@ func (d OntapAPIREST) GetSVMUUID() string {
 	return d.api.SVMUUID()
 }
 
+func (d OntapAPIREST) GetSVMState(ctx context.Context) (string, error) {
+	return d.api.GetSVMState(ctx)
+}
+
 func (d OntapAPIREST) SMBShareCreate(ctx context.Context, shareName, path string) error {
 	if err := d.api.SMBShareCreate(ctx, shareName, path); err != nil {
 		return fmt.Errorf("error while creating SMB share %v : %v", shareName, err)
@@ -2483,4 +2722,376 @@ func (d OntapAPIREST) SMBShareDestroy(ctx context.Context, shareName string) err
 		return fmt.Errorf("error while deleting SMB share %v: %v", shareName, err)
 	}
 	return nil
+}
+
+// NVMeNamespaceCreate creates NVMe namespace.
+func (d OntapAPIREST) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+	fields := LogFields{
+		"Method": "NVMeNamespaceCreate",
+		"Type":   "OntapAPIREST",
+		"spec":   ns,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceCreate")
+
+	nsUUID, creationErr := d.api.NVMeNamespaceCreate(ctx, ns)
+	if creationErr != nil {
+		return "", fmt.Errorf("failed to create NVMe namespace %s: %v", ns.Name, creationErr)
+	}
+
+	return nsUUID, nil
+}
+
+// NVMeNamespaceSetSize updates the namespace size to newSize.
+func (d OntapAPIREST) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
+	fields := LogFields{
+		"Method":    "NVMeNamespaceSetSize",
+		"Type":      "OntapAPIREST",
+		"Namespace": nsUUID,
+		"NewSize":   newSize,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceSetSize")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceSetSize")
+
+	return d.api.NVMeNamespaceSetSize(ctx, nsUUID, newSize)
+}
+
+// NVMeNamespaceGetByName returns NVMe namespace with the specified name.
+func (d OntapAPIREST) NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error) {
+	fields := LogFields{
+		"Method":  "NVMeNamespaceGetByName",
+		"Type":    "OntapAPIREST",
+		"LunPath": name,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceGetByName")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceGetByName")
+
+	nsResponse, err := d.api.NVMeNamespaceGetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	ns, err := namespaceInfoFromRestAttrsHelper(nsResponse)
+	if err != nil {
+		return nil, err
+	}
+	return ns, nil
+}
+
+// NVMeNamespaceList returns the list of NVMe namespaces with the specified pattern.
+func (d OntapAPIREST) NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error) {
+	nsResponse, err := d.api.NVMeNamespaceList(ctx, pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	namespaces := NVMeNamespaces{}
+
+	if nsResponse.Payload != nil {
+		payload := *nsResponse.Payload
+		for _, ns := range payload.NvmeNamespaceResponseInlineRecords {
+			nsInfo, err := namespaceInfoFromRestAttrsHelper(ns)
+			if err != nil {
+				return nil, err
+			}
+			namespaces = append(namespaces, nsInfo)
+		}
+	}
+
+	return namespaces, nil
+}
+
+// NVMeSubsystemAddNamespace adds a namespace to subsystem Map.
+func (d OntapAPIREST) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error {
+	fields := LogFields{
+		"Method":        "NVMeSubsystemAddNamespace",
+		"Type":          "OntapAPIREST",
+		"namespaceUUID": nsUUID,
+		"subsystemUUID": subsystemUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemAddNamespace")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemAddNamespace")
+
+	if err := d.api.NVMeSubsystemAddNamespace(ctx, subsystemUUID, nsUUID); err != nil {
+		return fmt.Errorf("error adding namespace to subsystem; %v", err)
+	}
+
+	return nil
+}
+
+// NVMeSubsystemRemoveNamespace removes a namespace from the subsystem map
+func (d OntapAPIREST) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeSubsystemRemoveNamespace",
+		"Type":           "OntapAPIREST",
+		"namespace uuid": nsUUID,
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemRemoveNamespace")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemRemoveNamespace")
+
+	if err := d.api.NVMeSubsystemRemoveNamespace(ctx, subsysUUID, nsUUID); err != nil {
+		return fmt.Errorf("error removing Namespace from subsystem map; %v", err)
+	}
+
+	return nil
+}
+
+// NVMeSubsystemGetNamespaceCount returns the count of namespaces mapped to a subsystem identified by UUID.
+func (d OntapAPIREST) NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error) {
+	fields := LogFields{
+		"Method":         "NVMeSubsystemGetNamespaceCount",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemGetNamespaceCount")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemGetNamespaceCount")
+
+	count, err := d.api.NVMeNamespaceCount(ctx, subsysUUID)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (d OntapAPIREST) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string,
+) (bool, error) {
+	fields := LogFields{
+		"Method":         "NVMeIsNamespaceMapped",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+		"namespace uuid": namespaceUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeIsNamespaceMapped")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeIsNamespaceMapped")
+
+	isNameSpaceMapped, err := d.api.NVMeIsNamespaceMapped(ctx, subsysUUID, namespaceUUID)
+	if err != nil {
+		return false, err
+	}
+	return isNameSpaceMapped, err
+}
+
+// NVMeSubsystemDelete deletes a susbsystem identified by subsystem UUID.
+func (d OntapAPIREST) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeSubsystemDelete",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeSubsystemDelete")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeSubsystemDelete")
+
+	if err := d.api.NVMeSubsystemDelete(ctx, subsysUUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d OntapAPIREST) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsysUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeAddHostToSubsystem",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeAddHostToSubsystem")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeAddHostToSubsystem")
+
+	hosts, err := d.api.NVMeGetHostsOfSubsystem(ctx, subsysUUID)
+	if err != nil {
+		return err
+	}
+
+	for _, host := range hosts {
+		if *host.Nqn == hostNQN {
+			// Host already part of the subsystem, no need to add it again
+			return nil
+		}
+	}
+
+	// Add new host to the subsystem
+	if err := d.api.NVMeAddHostNqnToSubsystem(ctx, hostNQN, subsysUUID); err != nil {
+		return fmt.Errorf("failed to add host nqn to subsystem; %v", err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsysUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeRemoveHostToSubsystem",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsysUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeRemoveHostToSubsystem")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeRemoveHostToSubsystem")
+
+	hosts, err := d.api.NVMeGetHostsOfSubsystem(ctx, subsysUUID)
+	if err != nil {
+		return err
+	}
+
+	hostFound := false
+	for _, host := range hosts {
+		if host != nil && *host.Nqn == hostNQN {
+			hostFound = true
+			break
+		}
+	}
+
+	if hostFound {
+		// Remove host from the subsystem
+		if err := d.api.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsysUUID); err != nil {
+			return fmt.Errorf("failed to remove host nqn from subsystem; %v", err)
+		}
+	}
+
+	return nil
+}
+
+// NVMeSubsystemCreate Checks if the subsystem is already there or not. If not, creates a new one.
+func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
+	fields := LogFields{
+		"Method":        "SubsystemCreate",
+		"Type":          "OntapAPIREST",
+		"SubsystemName": subsystemName,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SubsystemCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SubsystemCreate")
+
+	subsystem, err := d.api.NVMeSubsystemGetByName(ctx, subsystemName)
+	if err != nil {
+		Logc(ctx).Infof("problem getting subsystem; %v", err)
+		return nil, err
+	}
+	if subsystem == nil {
+		Logc(ctx).Infof("subsystem doesn't exists, creating new subsystem %v now.", subsystemName)
+		subsystem, err = d.api.NVMeSubsystemCreate(ctx, subsystemName)
+		if err != nil {
+			return nil, err
+		}
+
+		if subsystem == nil {
+			return nil, fmt.Errorf("Unable to create subsystem %v", subsystemName)
+		}
+	}
+
+	Logc(ctx).Debugf("Found subsystem %v and target nqns are %v", *subsystem.Name, *subsystem.TargetNqn)
+
+	return &NVMeSubsystem{UUID: *subsystem.UUID, Name: *subsystem.Name, NQN: *subsystem.TargetNqn}, nil
+}
+
+// NVMeEnsureNamespaceMapped first checks if a namespace is mapped to the subsystem and if it is mapped, it is treated as success
+// if namespace is not mapped to the susbsytem, then it adds the namespace to the subsystem
+func (d OntapAPIREST) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error {
+	fields := LogFields{
+		"Method":         "NVMeEnsureNamespaceMapped",
+		"Type":           "OntapAPIREST",
+		"subsystem uuid": subsystemUUID,
+		"namespace uuid": nsUUID,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeEnsureNamespaceMapped")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeEnsureNamespaceMapped")
+
+	// map namespace to the subsystem
+	isNameSpaceMapped, err := d.api.NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID)
+	if err != nil {
+		return fmt.Errorf("Unable to get namespace subsystem mapping; %v", err)
+	}
+
+	// check if it is mapped already or not. if not mapped, add it to subsystem, else treat it as success
+	if isNameSpaceMapped == false {
+		if err := d.api.NVMeSubsystemAddNamespace(ctx, subsystemUUID, nsUUID); err != nil {
+			Logc(ctx).Errorf("add namespace to subsystem failed, %v", err)
+			return err
+		}
+	} else {
+		Logc(ctx).Infof("Namespace %v is already mapped to subsystem %v", nsUUID, subsystemUUID)
+	}
+	return nil
+}
+
+// NVMeEnsureNamespaceUnmapped first checks if a namespace is mapped to the subsystem and if it is mapped:
+// a) removes the namespace from the subsystem
+// b) deletes the subsystem if no more namespaces are attached to it
+// If namespace is not mapped to subsystem, it is treated as success
+// The function also returns a bool value along with error. A true value denotes the subsystem is deleted
+// successfully and Published info can be removed for the NVMe volume
+func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsystemUUID, namespaceUUID string) (bool, error) {
+	// check is namespace is mapped to the subsystem before attempting to remove it
+	isNameSpaceMapped, err := d.api.NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID)
+	if err != nil {
+		return false, fmt.Errorf("error getting namespace %s from subsystem %s; %v", namespaceUUID, subsystemUUID, err)
+	}
+
+	// If namespace is not mapped, remove the published info if there is any
+	if isNameSpaceMapped == false {
+		Logc(ctx).Infof("Namespace %v is not mapped to subsystem %v", namespaceUUID, subsystemUUID)
+		return true, nil
+	}
+
+	subsystemHosts, err := d.api.NVMeGetHostsOfSubsystem(ctx, subsystemUUID)
+	if err != nil {
+		return false, fmt.Errorf("error getting hosts mapped to subsystem with UUID %s; %v", subsystemUUID, err)
+	}
+
+	if subsystemHosts == nil {
+		return false, fmt.Errorf("error getting hosts attached to subsystem %v", subsystemUUID)
+	}
+
+	// In case of multiple hosts attached to a subsystem (e.g. in RWX case), do not delete the namespace,
+	// subsystem or the published info
+	if len(subsystemHosts) > 1 {
+		Logc(ctx).Infof("Multiple hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
+			subsystemUUID)
+		// Remove HostNQN from the subsystem using api call
+		if err := d.api.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID); err != nil {
+			Logc(ctx).Errorf("Remove host from subsystem failed; %v", err)
+			return false, err
+		}
+		return false, nil
+	}
+
+	// Unmap the namespace from the subsystem
+	err = d.api.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID)
+	if err != nil {
+		return false, fmt.Errorf("error removing namespace %s from subsystem %s; %v", namespaceUUID, subsystemUUID, err)
+	}
+
+	// Get the number of namespaces present in the subsystem
+	count, err := d.api.NVMeNamespaceCount(ctx, subsystemUUID)
+	if err != nil {
+		return false, fmt.Errorf("error getting namespace count for subsystem %s; %v", subsystemUUID, err)
+	}
+
+	// Delete the subsystem if no. of namespaces is 0
+	if count == 0 {
+		if err := d.api.NVMeSubsystemDelete(ctx, subsystemUUID); err != nil {
+			return false, fmt.Errorf("error deleting subsystem %s; %v", subsystemUUID, err)
+		}
+	}
+	return true, nil
+}
+
+func (d OntapAPIREST) NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error) {
+	return d.api.NVMeNamespaceSize(ctx, namespacePath)
+}
+
+type TerminalStateError struct {
+	Err error
+}
+
+func (e *TerminalStateError) Error() string {
+	return e.Err.Error()
+}
+
+// TerminalState wraps the given err in a *TerminalStateError.
+func TerminalState(err error) *TerminalStateError {
+	return &TerminalStateError{
+		Err: err,
+	}
 }

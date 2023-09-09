@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
@@ -19,6 +19,7 @@ import (
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // Compile time checks to ensure CRDClientV1 implements Client & CRDClient
@@ -598,7 +599,7 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err
 		if MatchKeyNotFoundErr(err) {
 			keyError, ok := err.(*Error)
 			if !ok {
-				return utils.TypeAssertionError("err.(*Error)")
+				return errors.TypeAssertionError("err.(*Error)")
 			}
 			Logc(ctx).WithFields(logFields).Debugf("Unable to find key %s. No backend to remove.", keyError.Key)
 		} else {
@@ -632,7 +633,7 @@ func (k *CRDClientV1) DeleteBackend(ctx context.Context, b storage.Backend) (err
 	if !b.IsCredentialsFieldSet(ctx) {
 		secretName := k.backendSecretName(b.BackendUUID())
 		if err := k.k8sClient.DeleteSecretDefault(secretName); err != nil {
-			if errors.IsNotFound(err) {
+			if k8sapierrors.IsNotFound(err) {
 				Logc(ctx).WithField("secret", secretName).Warn("Secret not found while deleting backend")
 			} else {
 				return err
@@ -657,7 +658,7 @@ func (k *CRDClientV1) removeBackendFinalizer(ctx context.Context, b storage.Back
 		if MatchKeyNotFoundErr(err) {
 			keyError, ok := err.(*Error)
 			if !ok {
-				return utils.TypeAssertionError("err.(*Error)")
+				return errors.TypeAssertionError("err.(*Error)")
 			}
 			Logc(ctx).WithFields(logFields).Debugf("Unable to find key %s. No finalizers to remove.", keyError.Key)
 			return nil
@@ -916,7 +917,7 @@ func (k *CRDClientV1) AddVolume(ctx context.Context, volume *storage.Volume) err
 	}).Debug("AddVolume")
 
 	_, err = k.crdClient.TridentV1().TridentVolumes(k.namespace).Create(ctx, persistentVolume, createOpts)
-	if err == nil || !errors.IsAlreadyExists(err) {
+	if err == nil || !k8sapierrors.IsAlreadyExists(err) {
 		return err
 	}
 
@@ -925,7 +926,7 @@ func (k *CRDClientV1) AddVolume(ctx context.Context, volume *storage.Volume) err
 
 	tvol, getErr := k.crdClient.TridentV1().TridentVolumes(k.namespace).Get(ctx, persistentVolume.Name, getOpts)
 	if getErr != nil {
-		if !errors.IsNotFound(getErr) {
+		if !k8sapierrors.IsNotFound(getErr) {
 			return getErr
 		}
 	} else {
@@ -994,7 +995,7 @@ func (k *CRDClientV1) DeleteVolume(ctx context.Context, volume *storage.Volume) 
 	err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name),
 		k.deleteOpts())
 
-	if errors.IsNotFound(err) {
+	if k8sapierrors.IsNotFound(err) {
 		Logc(ctx).WithField("volume", volume).Debug("Volume already deleted.")
 		return nil
 	}
@@ -1122,7 +1123,7 @@ func (k *CRDClientV1) GetVolumeTransaction(
 ) (*storage.VolumeTransaction, error) {
 	ttxn, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Get(ctx, v1.NameFix(volTxn.Name()), getOpts)
 
-	if errors.IsNotFound(err) {
+	if k8sapierrors.IsNotFound(err) {
 		return nil, nil
 	} else if err != nil {
 		return nil, fmt.Errorf("error getting volumeTransaction from CRD; %v", err)
@@ -1147,7 +1148,7 @@ func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *stora
 	err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
 		k.deleteOpts())
 
-	if errors.IsNotFound(err) {
+	if k8sapierrors.IsNotFound(err) {
 		return nil
 	}
 
@@ -1224,7 +1225,7 @@ func (k *CRDClientV1) DeleteStorageClass(ctx context.Context, sc *storageclass.S
 	err := k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Delete(ctx, v1.NameFix(sc.GetName()),
 		k.deleteOpts())
 
-	if errors.IsNotFound(err) {
+	if k8sapierrors.IsNotFound(err) {
 		return nil
 	}
 
@@ -1312,7 +1313,7 @@ func (k *CRDClientV1) GetNodes(ctx context.Context) ([]*utils.Node, error) {
 func (k *CRDClientV1) DeleteNode(ctx context.Context, n *utils.Node) error {
 	err := k.crdClient.TridentV1().TridentNodes(k.namespace).Delete(ctx, v1.NameFix(n.Name), k.deleteOpts())
 
-	if errors.IsNotFound(err) {
+	if k8sapierrors.IsNotFound(err) {
 		return nil
 	}
 
@@ -1327,7 +1328,7 @@ func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *uti
 
 	_, err = k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Create(ctx, newPublication, createOpts)
 	if err != nil {
-		if errors.IsAlreadyExists(err) {
+		if k8sapierrors.IsAlreadyExists(err) {
 			return NewAlreadyExistsError(newPublication.Kind, newPublication.Name)
 		}
 		return err
@@ -1358,8 +1359,8 @@ func (k *CRDClientV1) GetVolumePublication(ctx context.Context, nName string) (*
 	publication, err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Get(ctx, v1.NameFix(nName),
 		getOpts)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			return nil, utils.NotFoundError(err.Error())
+		if k8sapierrors.IsNotFound(err) {
+			return nil, errors.NotFoundError(err.Error())
 		}
 		return nil, err
 	}
@@ -1404,8 +1405,8 @@ func (k *CRDClientV1) DeleteVolumePublication(ctx context.Context, vp *utils.Vol
 	err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Delete(ctx, v1.NameFix(vp.Name),
 		k.deleteOpts())
 
-	if errors.IsNotFound(err) {
-		return utils.NotFoundError(err.Error())
+	if k8sapierrors.IsNotFound(err) {
+		return errors.NotFoundError(err.Error())
 	}
 
 	return err
@@ -1431,7 +1432,7 @@ func (k *CRDClientV1) AddSnapshot(ctx context.Context, snapshot *storage.Snapsho
 	}
 
 	_, err = k.crdClient.TridentV1().TridentSnapshots(k.namespace).Create(ctx, persistentSnapshot, createOpts)
-	if err == nil || !errors.IsAlreadyExists(err) {
+	if err == nil || !k8sapierrors.IsAlreadyExists(err) {
 		return err
 	}
 
@@ -1440,7 +1441,7 @@ func (k *CRDClientV1) AddSnapshot(ctx context.Context, snapshot *storage.Snapsho
 
 	tsnap, getErr := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Get(ctx, persistentSnapshot.Name, getOpts)
 	if getErr != nil {
-		if !errors.IsNotFound(getErr) {
+		if !k8sapierrors.IsNotFound(getErr) {
 			return getErr
 		}
 	} else {
@@ -1529,7 +1530,7 @@ func (k *CRDClientV1) UpdateSnapshot(ctx context.Context, update *storage.Snapsh
 func (k *CRDClientV1) DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error {
 	err := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Delete(ctx, v1.NameFix(snapshot.ID()), k.deleteOpts())
 
-	if errors.IsNotFound(err) {
+	if k8sapierrors.IsNotFound(err) {
 		return nil
 	}
 

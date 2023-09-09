@@ -3,13 +3,13 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var allBackends bool
@@ -29,8 +29,9 @@ var deleteBackendCmd = &cobra.Command{
 			if allBackends {
 				command = append(command, "--all")
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return backendDelete(args)
 		}

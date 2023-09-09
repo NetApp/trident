@@ -5,9 +5,8 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var (
@@ -28,7 +28,8 @@ var (
 func init() {
 	importCmd.AddCommand(importVolumeCmd)
 	importVolumeCmd.Flags().StringVarP(&importFilename, "filename", "f", "", "Path to YAML or JSON PVC file")
-	importVolumeCmd.Flags().BoolVarP(&importNoManage, "no-manage", "", false, "Create PV/PVC only, don't assume volume lifecycle management")
+	importVolumeCmd.Flags().BoolVarP(&importNoManage, "no-manage", "", false,
+		"Create PV/PVC only, don't assume volume lifecycle management")
 	importVolumeCmd.Flags().StringVarP(&importBase64Data, "base64", "", "", "Base64 encoding")
 	if err := importVolumeCmd.Flags().MarkHidden("base64"); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -57,8 +58,9 @@ Volume path').`,
 			if importNoManage {
 				command = append(command, "--no-manage")
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return volumeImport(args[0], args[1], importNoManage, pvcDataJSON)
 		}
@@ -77,9 +79,9 @@ func getPVCData(filename, b64Data string) ([]byte, error) {
 	if b64Data != "" {
 		rawData, err = base64.StdEncoding.DecodeString(b64Data)
 	} else if filename == "-" {
-		rawData, err = ioutil.ReadAll(os.Stdin)
+		rawData, err = io.ReadAll(os.Stdin)
 	} else {
-		rawData, err = ioutil.ReadFile(filename)
+		rawData, err = os.ReadFile(filename)
 	}
 	if err != nil {
 		return nil, err

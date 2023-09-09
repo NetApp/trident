@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_rest.go -s RestClient -i RestClientInterface -p api'
 package api
@@ -10,6 +10,7 @@ import (
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
+	nvme "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	san "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/snapmirror"
@@ -25,6 +26,8 @@ type RestClientInterface interface {
 	SVMUUID() string
 	SetSVMName(svmName string)
 	SVMName() string
+	// GetSVMState gets the latest state of associated vserver
+	GetSVMState(ctx context.Context) (string, error)
 	// SupportsFeature returns true if the Ontap version supports the supplied feature
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	// VolumeList returns the names of all Flexvols whose names match the supplied pattern
@@ -80,9 +83,8 @@ type RestClientInterface interface {
 	SnapshotRestoreVolume(ctx context.Context, snapshotName, volumeName string) error
 	// SnapshotRestoreFlexgroup restores a volume to a snapshot as a non-blocking operation
 	SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, volumeName string) error
-	// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	VolumeDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error
+	// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error
 	// VolumeListAllBackedBySnapshot returns the names of all FlexVols backed by the specified snapshot
 	VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string, error)
 	// VolumeCloneCreate creates a clone
@@ -230,9 +232,8 @@ type RestClientInterface interface {
 	FlexGroupSetSize(ctx context.Context, volumeName, newSize string) error
 	// FlexgroupSetQosPolicyGroupName note: we can't set adaptive policy groups directly during volume clone creation.
 	FlexgroupSetQosPolicyGroupName(ctx context.Context, volumeName string, qosPolicyGroup QosPolicyGroup) error
-	// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-	FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx context.Context, flexGroupVolumeName string) error
+	// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+	FlexGroupVolumeModifySnapshotDirectoryAccess(ctx context.Context, flexGroupVolumeName string, enable bool) error
 	FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) error
 	// FlexGroupSetComment sets a flexgroup's comment to the supplied value
 	FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error
@@ -312,6 +313,7 @@ type RestClientInterface interface {
 	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
 	// Intended to be from the destination vserver
 	SnapmirrorDelete(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error
 	IsVserverDRCapable(ctx context.Context) (bool, error)
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*snapmirror.SnapmirrorPoliciesGetOK, error)
@@ -322,4 +324,35 @@ type RestClientInterface interface {
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	// SMBShareDestroy deletes an SMB Share.
 	SMBShareDestroy(ctx context.Context, shareName string) error
+	// NVMeNamespaceCreate creates a NVMe namespace.
+	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error)
+	// NVMeNamespaceSetSize updates the namespace size to newSize.
+	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
+	// NVMeNamespaceGetByName gets the Namespace with the specified name.
+	NVMeNamespaceGetByName(ctx context.Context, name string) (*models.NvmeNamespace, error)
+	// NVMeNamespaceList finds Namespaces with the specified pattern.
+	NVMeNamespaceList(ctx context.Context, pattern string) (*nvme.NvmeNamespaceCollectionGetOK, error)
+	// NVMeIsNamespaceMapped gets a namespace from subsystem map
+	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
+	// NVMeNamespaceCount gives the number of namespaces mapped to a Subsystem with the specified subsystem UUID.
+	NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
+	// NVMeNamespaceSize gives the size of the namespace.
+	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
+	// NVMeSubsystemList finds Subsystems with the specified pattern.
+	NVMeSubsystemList(ctx context.Context, pattern string) (*nvme.NvmeSubsystemCollectionGetOK, error)
+	// NVMeSubsystemGetByName finds Subsystem with the specified subsystem name.
+	NVMeSubsystemGetByName(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error)
+	// NVMeSubsystemCreate creates a Subsystem with the specified subsystem name.
+	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error)
+	// NVMeSubsystemDelete deletes a Subsystem with the specified subsystem UUID.
+	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
+	// NVMeAddHostNqnToSubsystem adds host's NQN to a Subsystem with the specified subsystem UUID.
+	NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	// NVMeGetHostsOfSubsystem gets all the hosts mapped to a Subsystem with the specified subsystem UUID.
+	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error)
+	// NVMeSubsystemAddNamespace maps a namespace to a Subsystem with the specified subsystem name.
+	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
+	// NVMeSubsystemRemoveNamespace ummaps a given namespace from a Subsystem with the specified subsystem UUID.
+	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
+	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsystemUUID string) error
 }

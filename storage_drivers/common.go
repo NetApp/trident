@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/gob"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 	trident "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 var ontapConfigRedactList = [...]string{
@@ -196,7 +196,7 @@ func CheckVolumeSizeLimits(
 	}).Debugf("Comparing limits")
 
 	if requestedSize > float64(volumeSizeLimit) {
-		return true, volumeSizeLimit, utils.UnsupportedCapacityRangeError(fmt.Errorf(
+		return true, volumeSizeLimit, errors.UnsupportedCapacityRangeError(fmt.Errorf(
 			"requested size: %1.f > the size limit: %d", requestedSize, volumeSizeLimit))
 	}
 
@@ -207,7 +207,7 @@ func CheckVolumeSizeLimits(
 // volume size
 func CheckMinVolumeSize(requestedSizeBytes, minVolumeSizeBytes uint64) error {
 	if requestedSizeBytes < minVolumeSizeBytes {
-		return utils.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size ("+
+		return errors.UnsupportedCapacityRangeError(fmt.Errorf("requested volume size ("+
 			"%d bytes) is too small; the minimum volume size is %d bytes",
 			requestedSizeBytes, minVolumeSizeBytes))
 	}
@@ -273,4 +273,56 @@ func ensureJoinedStringContainsElem(joined, elem, sep string) string {
 		return elem
 	}
 	return joined + sep + elem
+}
+
+// EncodeStorageBackendPools serializes and base64 encodes backend storage pools within the driver's backend;
+// it is shared by all storage drivers.
+func EncodeStorageBackendPools[P StorageBackendPool](
+	ctx context.Context, config *CommonStorageDriverConfig, backendPools []P,
+) ([]string, error) {
+	fields := LogFields{"Method": "EncodeStorageBackendPools", "Type": config.StorageDriverName}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> EncodeStorageBackendPools")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug("<<<< EncodeStorageBackendPools")
+
+	if len(backendPools) == 0 {
+		return nil, fmt.Errorf("failed to encode backend pools; no storage backend pools supplied")
+	}
+
+	encodedPools := make([]string, 0)
+	for _, pool := range backendPools {
+		encodedPool, err := utils.EncodeObjectToBase64String(pool)
+		if err != nil {
+			return nil, err
+		}
+		encodedPools = append(encodedPools, encodedPool)
+	}
+	return encodedPools, nil
+}
+
+// DecodeStorageBackendPools deserializes and decodes base64 encoded pools into driver-specific backend storage pools.
+func DecodeStorageBackendPools[P StorageBackendPool](
+	ctx context.Context, config *CommonStorageDriverConfig, encodedPools []string,
+) ([]P, error) {
+	fields := LogFields{"Method": "DecodeStorageBackendPools", "Type": config.StorageDriverName}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug(">>>> DecodeStorageBackendPools")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Debug("<<<< DecodeStorageBackendPools")
+
+	if len(encodedPools) == 0 {
+		return nil, fmt.Errorf("failed to decode backend pools; no encoded backend pools supplied")
+	}
+
+	backendPools := make([]P, 0)
+	for _, pool := range encodedPools {
+		var backendPool P
+		err := utils.DecodeBase64StringToObject(pool, &backendPool)
+		if err != nil {
+			return nil, err
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+	return backendPools, nil
 }

@@ -4,9 +4,7 @@ package k8sclient
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -22,8 +20,8 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	torc "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
-	tprov "github.com/netapp/trident/operator/controllers/provisioner/client/clientset/versioned"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
+	"github.com/netapp/trident/utils/errors"
 )
 
 type Clients struct {
@@ -31,7 +29,6 @@ type Clients struct {
 	KubeClient     *kubernetes.Clientset
 	SnapshotClient *k8ssnapshots.Clientset
 	K8SClient      KubernetesClient
-	TprovClient    *tprov.Clientset
 	TorcClient     *torc.Clientset
 	TridentClient  *tridentv1clientset.Clientset
 	K8SVersion     *k8sversion.Info
@@ -42,6 +39,8 @@ type Clients struct {
 const (
 	k8sTimeout       = 30 * time.Second
 	defaultNamespace = "default"
+	QPS              = 50
+	burstTime        = 100
 )
 
 var cachedClients *Clients
@@ -52,8 +51,7 @@ var cachedClients *Clients
 // using `kubectl config view --raw` and we attempt to discern the namespace from the kubeconfig context.  The
 // namespace may be overridden, and if the namespace may not be determined by any other means, it is set to 'default'.
 func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Clients, error) {
-	ctx := GenerateRequestContext(context.Background(), "", "", WorkflowK8sClientFactory,
-		LogLayerNone)
+	ctx := GenerateRequestContext(nil, "", "", WorkflowK8sClientFactory, LogLayerNone)
 	Logc(ctx).WithFields(LogFields{
 		"MasterURL":         masterURL,
 		"KubeConfigPath":    kubeConfigPath,
@@ -98,10 +96,6 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 	}
 
 	// Create the CRD clients
-	clients.TprovClient, err = tprov.NewForConfig(clients.RestConfig)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Tprov CRD client; %v", err)
-	}
 	clients.TorcClient, err = torc.NewForConfig(clients.RestConfig)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Torc CRD client; %v", err)
@@ -206,6 +200,8 @@ func createK8SClientsExCluster(
 	}
 
 	// Create the CLI-based Kubernetes client
+	restConfig.QPS = QPS
+	restConfig.Burst = burstTime
 	k8sClient, err := NewKubeClient(restConfig, namespace, k8sTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Kubernetes client; %v", err)
@@ -228,9 +224,11 @@ func createK8SClientsInCluster(ctx context.Context, overrideNamespace string) (*
 	if err != nil {
 		return nil, err
 	}
+	restConfig.QPS = QPS
+	restConfig.Burst = burstTime
 
 	// when running in a pod, we use the Trident pod's namespace
-	namespaceBytes, err := ioutil.ReadFile(config.NamespaceFile)
+	namespaceBytes, err := os.ReadFile(config.NamespaceFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not read namespace file %s; %v", config.NamespaceFile, err)
 	}

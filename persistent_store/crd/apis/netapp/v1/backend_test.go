@@ -120,6 +120,7 @@ func TestBackend_Persistent(t *testing.T) {
 		BackendName: nfsServer.Name(),
 		Online:      true,
 		State:       "online",
+		UserState:   "normal",
 		Version:     "1",
 		Config: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(nfsServer.ConstructPersistent(ctx()).Config)),

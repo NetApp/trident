@@ -36,9 +36,9 @@ def walk(v):
         for key in list(v.keys()):
             walk(v[key])
 
-with open('/Users/jrippy/projects/rippy/ontap_rest/wip/src/github.com/netapp/trident/storage_drivers/ontap/api/rest/snippet.yaml') as input_file:
+with open('./snippet.yaml') as input_file:
 
-    yaml = ruamel.yaml.YAML()
+    yaml = ruamel.yaml.YAML(typ='safe')
     yaml.indent(sequence=4, offset=2)
     dataMap = yaml.load(input_file)
 

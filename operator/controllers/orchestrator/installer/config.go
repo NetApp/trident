@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -16,23 +16,15 @@ var (
 	// TridentImage is the image that the operator installs by default
 	TridentImage = DefaultTridentRepo + DefaultTridentVersion
 
-	// This gets stored in the objects created by the CR
+	// Version labels are stored in the objects created by the CR
+
 	TridentVersionLabelKey   = "trident_version"
 	TridentVersionLabelValue = "v" + DefaultTridentVersion // need to append 'v', otherwise label freaks out
-	TridentVersionLabel      = TridentVersionLabelKey + "=" + TridentVersionLabelValue
-
-	// Names of Trident deployment/daemonset objects managed by the operator
-	TridentDeploymentName       = TridentControllerResourceName
-	TridentLinuxDaemonsetName   = TridentNodeLinuxResourceName
-	TridentWindowsDaemonsetName = TridentNodeWindowsResourceName
+	// TridentVersionLabel      = TridentVersionLabelKey + "=" + TridentVersionLabelValue
 )
 
 const (
 	TridentAppLabelKey = "app"
-
-	TridentLegacyLabelKey   = TridentAppLabelKey
-	TridentLegacyLabelValue = "trident.netapp.io"
-	TridentLegacyLabel      = TridentLegacyLabelKey + "=" + TridentLegacyLabelValue
 
 	TridentCSILabelKey   = TridentAppLabelKey
 	TridentCSILabelValue = "controller.csi.trident.netapp.io"
@@ -43,9 +35,9 @@ const (
 	TridentPersistentObjectLabel      = TridentPersistentObjectLabelKey + "=" + TridentPersistentObjectLabelValue
 
 	// Constants used for various resource names
+
 	TridentCSI        = "trident-csi"
 	TridentCSIWindows = "trident-csi-windows"
-	TridentLegacy     = "trident"
 	OpenShiftSCCName  = "trident"
 
 	TridentControllerResourceName  = "trident-controller"
@@ -65,15 +57,12 @@ const (
 	TridentVersionPodLabelValue = "pod.version.trident.netapp.io"
 	TridentVersionPodLabel      = TridentVersionPodLabelKey + "=" + TridentVersionPodLabelValue
 
-	// This is used to Watch and List for deployment matching Trident CSI and Legacy labels
-	LabelSelector = TridentAppLabelKey + " in (" + TridentCSILabelValue + ", " + TridentLegacyLabelValue + ")"
-
-	// This is the key that stored in the objects created by the CR, value is decided based on the K8s version
+	// K8sVersionLabelKey is the key stored in the objects created by the CR, value is decided based on the K8s version
 	K8sVersionLabelKey = "k8s_version"
 
 	TridentContainer = "trident-main"
 
-	// DefaultLogFormat is the the Trident logging format (text, json)
+	// DefaultLogFormat is the Trident logging format (text, json)
 	DefaultLogFormat = "text"
 
 	// DefaultProbePort is Trident's default port for K8S liveness/readiness probes

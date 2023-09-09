@@ -4,22 +4,23 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
-
-	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/cobra"
+	"github.com/netapp/trident/utils/errors"
 )
+
+const maskDisplayOfSnapshotStateOnline = storage.SnapshotState("") // Used for display in 'tridentctl' query
 
 var getSnapshotVolume string
 
@@ -39,8 +40,9 @@ var getSnapshotCmd = &cobra.Command{
 			if getSnapshotVolume != "" {
 				command = append(command, "--volume", getSnapshotVolume)
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return snapshotList(args)
 		}
@@ -67,7 +69,7 @@ func snapshotList(snapshotIDs []string) error {
 
 		snapshot, err := GetSnapshot(snapshotID)
 		if err != nil {
-			if getAll && utils.IsNotFoundError(err) {
+			if getAll && errors.IsNotFoundError(err) {
 				continue
 			}
 			return err
@@ -106,7 +108,7 @@ func GetSnapshots(volume string) ([]string, error) {
 
 func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 	if !strings.ContainsRune(snapshotID, '/') {
-		return storage.SnapshotExternal{}, utils.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; "+
+		return storage.SnapshotExternal{}, errors.InvalidInputError(fmt.Sprintf("invalid snapshot ID: %s; "+
 			"Please use the format <volume name>/<snapshot name>", snapshotID))
 	}
 
@@ -119,7 +121,7 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 			GetErrorFromHTTPResponse(response, responseBody))
 		switch response.StatusCode {
 		case http.StatusNotFound:
-			return storage.SnapshotExternal{}, utils.NotFoundError(errorMessage)
+			return storage.SnapshotExternal{}, errors.NotFoundError(errorMessage)
 		default:
 			return storage.SnapshotExternal{}, errors.New(errorMessage)
 		}
@@ -133,6 +135,12 @@ func GetSnapshot(snapshotID string) (storage.SnapshotExternal, error) {
 	if getSnapshotResponse.Snapshot == nil {
 		return storage.SnapshotExternal{}, fmt.Errorf("could not get snapshot %s: no snapshot returned",
 			snapshotID)
+	}
+
+	if getSnapshotResponse.Snapshot.State == storage.SnapshotStateOnline {
+		// Currently, this is used only for display, mask 'online' state as "".
+		// If in future any callers use this attribute, need to take care of it.
+		getSnapshotResponse.Snapshot.State = maskDisplayOfSnapshotStateOnline
 	}
 
 	return *getSnapshotResponse.Snapshot, nil
@@ -155,12 +163,13 @@ func WriteSnapshots(snapshots []storage.SnapshotExternal) {
 
 func writeSnapshotTable(snapshots []storage.SnapshotExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Volume"})
+	table.SetHeader([]string{"Name", "Volume", "Managed"})
 
 	for _, snapshot := range snapshots {
 		table.Append([]string{
 			snapshot.Config.Name,
 			snapshot.Config.VolumeName,
+			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 		})
 	}
 
@@ -175,6 +184,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 		"Created",
 		"Size",
 		"State",
+		"Managed",
 	}
 	table.SetHeader(header)
 
@@ -185,6 +195,7 @@ func writeWideSnapshotTable(snapshots []storage.SnapshotExternal) {
 			snapshot.Created,
 			humanize.IBytes(uint64(snapshot.SizeBytes)),
 			string(snapshot.State),
+			strconv.FormatBool(!snapshot.Config.ImportNotManaged),
 		})
 	}
 

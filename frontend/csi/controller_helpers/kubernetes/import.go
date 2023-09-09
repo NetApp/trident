@@ -16,7 +16,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,8 +39,8 @@ func (h *helper) ImportVolume(
 
 	existingVol, err := h.orchestrator.GetVolumeByInternalName(ctx, request.InternalName)
 	if err == nil {
-		return nil, utils.FoundError(fmt.Sprintf("PV %s already exists for volume %s",
-			existingVol, request.InternalName))
+		return nil, errors.FoundError("PV %s already exists for volume %s",
+			existingVol, request.InternalName)
 	}
 
 	claim := &v1.PersistentVolumeClaim{}
@@ -81,20 +81,40 @@ func (h *helper) ImportVolume(
 	claim.Annotations[AnnImportBackendUUID] = backend.BackendUUID
 	claim.Annotations[AnnStorageProvisioner] = csi.Provisioner
 
-	// Set the PVC's storage field to the actual volume size.
+	// Set the PVC's storage field to the actual volume data size
 	volExternal, err := h.orchestrator.GetVolumeExternal(ctx, request.InternalName, request.Backend)
 	if err != nil {
 		return nil, fmt.Errorf("volume import failed to get size of volume: %v", err)
 	}
 
+	totalSize, err := strconv.ParseUint(volExternal.Config.Size, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("volume import failed as volume %v has invalid size %v: %v",
+			request.InternalName, volExternal.Config.Size, err)
+	}
+
+	snapshotReserve := 0
+	if volExternal.Config.SnapshotReserve != "" {
+		snapshotReserve, err = strconv.Atoi(volExternal.Config.SnapshotReserve)
+		if err != nil {
+			return nil, fmt.Errorf("volume import failed as volume %v has invalid snapshot reserve %v: %v",
+				request.InternalName, volExternal.Config.SnapshotReserve, err)
+		}
+	}
+
+	dataSize := h.getDataSizeFromTotalSize(ctx, totalSize, snapshotReserve)
+
 	if claim.Spec.Resources.Requests == nil {
 		claim.Spec.Resources.Requests = v1.ResourceList{}
 	}
-	claim.Spec.Resources.Requests[v1.ResourceStorage] = resource.MustParse(volExternal.Config.Size)
+	claim.Spec.Resources.Requests[v1.ResourceStorage] = resource.MustParse(strconv.FormatUint(dataSize, 10))
+
 	Logc(ctx).WithFields(LogFields{
-		"size":      volExternal.Config.Size,
-		"claimSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
-	}).Debug("Volume import determined volume size")
+		"total size":       volExternal.Config.Size,
+		"snapshot reserve": snapshotReserve,
+		"data size":        dataSize,
+		"claimSize":        claim.Spec.Resources.Requests[v1.ResourceStorage],
+	}).Debug("Volume import determined volume size.")
 
 	pvc, pvcErr := h.createImportPVC(ctx, claim)
 	if pvcErr != nil {

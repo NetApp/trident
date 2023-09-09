@@ -220,8 +220,12 @@ rules:
       - tridentbackendconfigs/status
       - tridentmirrorrelationships
       - tridentmirrorrelationships/status
+      - tridentactionmirrorupdates
+      - tridentactionmirrorupdates/status
       - tridentsnapshotinfos
       - tridentsnapshotinfos/status
+      - tridentactionsnapshotrestores
+      - tridentactionsnapshotrestores/status
       - tridentprovisioners # Required for Tprov
       - tridentprovisioners/status # Required to update Tprov's status section
       - tridentorchestrators # Required for Torc
@@ -453,9 +457,13 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: trident-operator
-          image: docker.io/netapp/trident-operator:23.04.0
+          image: docker.io/netapp/trident-operator:23.10.0
           imagePullPolicy: IfNotPresent
           name: trident-operator
+          securityContext:
+            capabilities:
+              drop:
+                - all
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

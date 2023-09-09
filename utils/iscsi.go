@@ -5,9 +5,8 @@ package utils
 import (
 	"context"
 	"encoding/binary"
-	"errors"
+	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -20,6 +19,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 const (
@@ -59,17 +59,19 @@ var (
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
 func AttachISCSIVolumeRetry(
 	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string, timeout time.Duration,
-) error {
+) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolumeRetry")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachISCSIVolumeRetry")
 	var err error
+	var mpathSize int64
 
 	if err = ISCSIPreChecks(ctx); err != nil {
-		return err
+		return mpathSize, err
 	}
 
 	checkAttachISCSIVolume := func() error {
-		return AttachISCSIVolume(ctx, name, mountpoint, publishInfo, secrets)
+		mpathSize, err = AttachISCSIVolume(ctx, name, mountpoint, publishInfo, secrets)
+		return err
 	}
 
 	attachNotify := func(err error, duration time.Duration) {
@@ -86,18 +88,23 @@ func AttachISCSIVolumeRetry(
 	attachBackoff.MaxElapsedTime = timeout
 
 	err = backoff.RetryNotify(checkAttachISCSIVolume, attachBackoff, attachNotify)
-	return err
+	return mpathSize, err
 }
 
-// AttachISCSIVolume attaches the volume to the local host.  This method must be able to accomplish its task using only the data passed in.
-// It may be assumed that this method always runs on the host to which the volume will be attached.  If the mountpoint
-// parameter is specified, the volume will be mounted.  The device path is set on the in-out publishInfo parameter
-// so that it may be mounted later instead.
-func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string) error {
+// AttachISCSIVolume attaches the volume to the local host.
+// This method must be able to accomplish its task using only the publish information passed in.
+// It may be assumed that this method always runs on the host to which the volume will be attached.
+// If the mountpoint parameter is specified, the volume will be mounted to it.
+// The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
+// If multipath device size is found to be inconsistent with device size, then the correct size is returned.
+func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo,
+	secrets map[string]string,
+) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolume")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachISCSIVolume")
 
 	var err error
+	var mpathSize int64
 	lunID := int(publishInfo.IscsiLunNumber)
 
 	var portals []string
@@ -126,38 +133,38 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	}).Debug("Attaching iSCSI volume.")
 
 	if err = ISCSIPreChecks(ctx); err != nil {
-		return err
+		return mpathSize, err
 	}
 	// Ensure we are logged into correct portals
 	pendingPortalsToLogin, loggedIn, err := portalsToLogin(ctx, publishInfo.IscsiTargetIQN, portals)
 	if err != nil {
-		return err
+		return mpathSize, err
 	}
 
 	newLogin, err := EnsureISCSISessions(ctx, publishInfo, pendingPortalsToLogin)
 
 	if !loggedIn && !newLogin {
-		return err
+		return mpathSize, err
 	}
 
 	// First attempt to fix invalid serials by rescanning them
 	err = handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, rescanOneLun)
 	if err != nil {
-		return err
+		return mpathSize, err
 	}
 
 	// Then attempt to fix invalid serials by purging them (to be scanned
 	// again later)
 	err = handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, purgeOneLun)
 	if err != nil {
-		return err
+		return mpathSize, err
 	}
 
 	// Scan the target and wait for the device(s) to appear
 	err = waitForDeviceScan(ctx, lunID, publishInfo.IscsiTargetIQN)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find iSCSI device: %+v", err)
-		return err
+		return mpathSize, err
 	}
 
 	// At this point if the serials are still invalid, give up so the
@@ -169,21 +176,21 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	}
 	err = handleInvalidSerials(ctx, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, failHandler)
 	if err != nil {
-		return err
+		return mpathSize, err
 	}
 
 	// Wait for multipath device i.e. /dev/dm-* for the given LUN
 	err = waitForMultipathDeviceForLUN(ctx, lunID, publishInfo.IscsiTargetIQN)
 	if err != nil {
-		return err
+		return mpathSize, err
 	}
 
 	// Lookup all the SCSI device information
 	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, publishInfo.IscsiTargetIQN, false, false)
 	if err != nil {
-		return fmt.Errorf("error getting iSCSI device information: %v", err)
+		return mpathSize, fmt.Errorf("error getting iSCSI device information: %v", err)
 	} else if deviceInfo == nil {
-		return fmt.Errorf("could not get iSCSI device information for LUN %d", lunID)
+		return mpathSize, fmt.Errorf("could not get iSCSI device information for LUN %d", lunID)
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -193,24 +200,73 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		"iqn":             deviceInfo.IQN,
 	}).Debug("Found device.")
 
-	// Make sure we use the proper device (multipath if in use)
+	// Make sure we use the proper device
 	deviceToUse := deviceInfo.Devices[0]
 	if deviceInfo.MultipathDevice != "" {
 		deviceToUse = deviceInfo.MultipathDevice
+
+		// To avoid LUN ID conflict with a ghost device below checks
+		// are necessary:
+		// Conflict 1: Due to race conditons, it is possible a ghost
+		//             DM device is discovered instead of the actual
+		//             DM device.
+		// Conflict 2: Some OS like RHEL displays the ghost device size
+		//             instead of the actual LUN size.
+		//
+		// Below check ensures that the correct device with the correct
+		// size is being discovered.
+
+		// If LUN Serial Number exists, then compare it with DM
+		// device's UUID in sysfs
+		if err = verifyMultipathDeviceSerial(ctx, deviceToUse, publishInfo.IscsiLunSerial); err != nil {
+			return mpathSize, err
+		}
+
+		// Once the multipath device has been found, compare its size with
+		// the size of one of the devices, if it differs then mark it for
+		// resize after the staging.
+		correctMpathSize, mpathSizeCorrect, err := verifyMultipathDeviceSize(ctx, deviceToUse, deviceInfo.Devices[0])
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"scsiLun":         deviceInfo.LUN,
+				"multipathDevice": deviceInfo.MultipathDevice,
+				"device":          deviceInfo.Devices[0],
+				"iqn":             deviceInfo.IQN,
+				"err":             err,
+			}).Error("Failed to verify multipath device size.")
+
+			return mpathSize, fmt.Errorf("failed to verify multipath device %s size", deviceInfo.MultipathDevice)
+		}
+
+		if !mpathSizeCorrect {
+			mpathSize = correctMpathSize
+
+			Logc(ctx).WithFields(LogFields{
+				"scsiLun":         deviceInfo.LUN,
+				"multipathDevice": deviceInfo.MultipathDevice,
+				"device":          deviceInfo.Devices[0],
+				"iqn":             deviceInfo.IQN,
+				"mpathSize":       mpathSize,
+			}).Error("Multipath device size does not match device size.")
+		}
+	} else {
+		return mpathSize, fmt.Errorf("could not find multipath device for LUN %d", lunID)
 	}
+
 	if deviceToUse == "" {
-		return fmt.Errorf("could not determine device to use for %v", name)
+		return mpathSize, fmt.Errorf("could not determine device to use for %v", name)
 	}
 	devicePath := "/dev/" + deviceToUse
 	if err := waitForDevice(ctx, devicePath); err != nil {
-		return fmt.Errorf("could not find device %v; %s", devicePath, err)
+		return mpathSize, fmt.Errorf("could not find device %v; %s", devicePath, err)
 	}
 
 	var isLUKSDevice, luksFormatted bool
 	if publishInfo.LUKSEncryption != "" {
 		isLUKSDevice, err = strconv.ParseBool(publishInfo.LUKSEncryption)
 		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+			return mpathSize, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v",
+				publishInfo.LUKSEncryption)
 		}
 	}
 
@@ -218,7 +274,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		luksDevice, _ := NewLUKSDevice(devicePath, name)
 		luksFormatted, err = EnsureLUKSDeviceMappedOnHost(ctx, luksDevice, name, secrets)
 		if err != nil {
-			return err
+			return mpathSize, err
 		}
 		devicePath = luksDevice.MappedDevicePath()
 	}
@@ -227,36 +283,36 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	publishInfo.DevicePath = devicePath
 
 	if publishInfo.FilesystemType == fsRaw {
-		return nil
+		return mpathSize, nil
 	}
 
 	existingFstype, err := getDeviceFSType(ctx, devicePath)
 	if err != nil {
-		return err
+		return mpathSize, err
 	}
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := isDeviceUnformatted(ctx, devicePath); err != nil {
 				Logc(ctx).WithField("device",
 					devicePath).Errorf("Unable to identify if the device is unformatted; err: %v", err)
-				return err
+				return mpathSize, err
 			} else if !unformatted {
 				Logc(ctx).WithField("device", devicePath).Errorf("Device is not unformatted; err: %v", err)
-				return fmt.Errorf("device %v is not unformatted", devicePath)
+				return mpathSize, fmt.Errorf("device %v is not unformatted", devicePath)
 			}
 		} else {
 			// We can safely assume if we just luksFormatted the device, we can also add a filesystem without dataloss
 			if !luksFormatted {
 				Logc(ctx).WithField("device",
 					devicePath).Errorf("Unable to identify if the luks device is empty; err: %v", err)
-				return err
+				return mpathSize, err
 			}
 		}
 
 		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
 		err := formatVolume(ctx, devicePath, publishInfo.FilesystemType)
 		if err != nil {
-			return fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
+			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
 	} else if existingFstype != unknownFstype && existingFstype != publishInfo.FilesystemType {
 		Logc(ctx).WithFields(LogFields{
@@ -264,7 +320,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 			"existingFstype":  existingFstype,
 			"requestedFstype": publishInfo.FilesystemType,
 		}).Error("LUN already formatted with a different file system type.")
-		return fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
+		return mpathSize, fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
 			name, deviceToUse, existingFstype)
 	} else {
 		Logc(ctx).WithFields(LogFields{
@@ -279,21 +335,37 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 	// even if they are completely and automatically fixed, so we don't return any error here.
 	mounted, err := IsMounted(ctx, devicePath, "", "")
 	if err != nil {
-		return err
+		return mpathSize, err
 	}
 	if !mounted {
-		_ = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		err = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				logFields := LogFields{
+					"volume": name,
+					"fstype": deviceInfo.Filesystem,
+					"device": devicePath,
+				}
+
+				if exitErr.ExitCode() == 1 {
+					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
+				} else {
+					logFields["exitCode"] = exitErr.ExitCode()
+					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
+				}
+			}
+		}
 	}
 
 	// Optionally mount the device
 	if mountpoint != "" {
 		if err := MountDevice(ctx, devicePath, mountpoint, publishInfo.MountOptions, false); err != nil {
-			return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
+			return mpathSize, fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
 				name, deviceToUse, mountpoint, err)
 		}
 	}
 
-	return nil
+	return mpathSize, nil
 }
 
 // GetInitiatorIqns returns parsed contents of /etc/iscsi/initiatorname.iscsi
@@ -301,7 +373,7 @@ func GetInitiatorIqns(ctx context.Context) ([]string, error) {
 	Logc(ctx).Debug(">>>> iscsi.GetInitiatorIqns")
 	defer Logc(ctx).Debug("<<<< iscsi.GetInitiatorIqns")
 
-	out, err := execCommand(ctx, "cat", "/etc/iscsi/initiatorname.iscsi")
+	out, err := command.Execute(ctx, "cat", "/etc/iscsi/initiatorname.iscsi")
 	if err != nil {
 		Logc(ctx).WithField("Error", err).Warn("Could not read initiatorname.iscsi; perhaps iSCSI is not installed?")
 		return nil, err
@@ -377,6 +449,89 @@ func (h *IscsiReconcileHelper) GetDevicesForLUN(paths []string) ([]string, error
 	return devices, nil
 }
 
+// GetMultipathDeviceUUID find the /sys/block/dmX/dm/uuid UUID that contains DM device serial in hex format.
+func (h *IscsiReconcileHelper) GetMultipathDeviceUUID(multipathDevicePath string) (string, error) {
+	multipathDevice := strings.TrimPrefix(multipathDevicePath, "/dev/")
+
+	deviceUUIDPath := chrootPathPrefix + fmt.Sprintf("/sys/block/%s/dm/uuid", multipathDevice)
+
+	exists, err := PathExists(deviceUUIDPath)
+	if !exists || err != nil {
+		return "", errors.NotFoundError("multipath device '%s' UUID not found", multipathDevice)
+	}
+
+	UUID, err := os.ReadFile(deviceUUIDPath)
+	if err != nil {
+		return "", err
+	}
+
+	return string(UUID), nil
+}
+
+// GetMultipathDeviceDisks find the /sys/block/dmX/slaves/sdX disks.
+func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(ctx context.Context, multipathDevicePath string) ([]string,
+	error,
+) {
+	devices := make([]string, 0)
+	multipathDevice := strings.TrimPrefix(multipathDevicePath, "/dev/")
+
+	diskPath := chrootPathPrefix + fmt.Sprintf("/sys/block/%s/slaves/", multipathDevice)
+	diskDirs, err := os.ReadDir(diskPath)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Could not read %s", diskDirs)
+		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read '%s'", diskDirs)
+	}
+
+	for _, diskDir := range diskDirs {
+		contentName := diskDir.Name()
+		if !strings.HasPrefix(contentName, "sd") {
+			continue
+		}
+
+		devices = append(devices, contentName)
+	}
+
+	return devices, nil
+}
+
+// GetMultipathDeviceBySerial find DM device whose UUID /sys/block/dmX/dm/uuid contains serial in hex format.
+func (h *IscsiReconcileHelper) GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error) {
+	sysPath := chrootPathPrefix + "/sys/block/"
+
+	blockDirs, err := os.ReadDir(sysPath)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Could not read %s", sysPath)
+		return "", fmt.Errorf("failed to find multipath device by serial; unable to read '%s'", sysPath)
+	}
+
+	for _, blockDir := range blockDirs {
+		dmDeviceName := blockDir.Name()
+		if !strings.HasPrefix(dmDeviceName, "dm-") {
+			continue
+		}
+
+		uuid, err := h.GetMultipathDeviceUUID(dmDeviceName)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"UUID":            hexSerial,
+				"multipathDevice": dmDeviceName,
+				"err":             err,
+			}).Error("Failed to get UUID of multipath device.")
+			continue
+		}
+
+		if strings.Contains(uuid, hexSerial) {
+			Logc(ctx).WithFields(LogFields{
+				"UUID":            hexSerial,
+				"multipathDevice": dmDeviceName,
+			}).Debug("Found multipath device by UUID.")
+			return dmDeviceName, nil
+		}
+	}
+
+	return "", errors.NotFoundError("no multipath device found")
+}
+
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
 // SCSI disk-by-path devices for that LUN are present on the host.
 func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) error {
@@ -426,22 +581,22 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 		Logc(ctx).Warnf("Could not find any devices ")
 
 		// log info about current status of host when no devices are found
-		if _, err := execCommand(ctx, "ls", "-al", "/dev"); err != nil {
+		if _, err := command.Execute(ctx, "ls", "-al", "/dev"); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al /dev: %v", err)
 		}
-		if _, err := execCommand(ctx, "ls", "-al", devMapperRoot); err != nil {
+		if _, err := command.Execute(ctx, "ls", "-al", devMapperRoot); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al %s: %v", devMapperRoot, err)
 		}
-		if _, err := execCommand(ctx, "ls", "-al", "/dev/disk/by-path"); err != nil {
+		if _, err := command.Execute(ctx, "ls", "-al", "/dev/disk/by-path"); err != nil {
 			Logc(ctx).Warnf("Could not run ls -al /dev/disk/by-path: %v", err)
 		}
-		if _, err := execCommand(ctx, "lsscsi"); err != nil {
+		if _, err := command.Execute(ctx, "lsscsi"); err != nil {
 			Logc(ctx).Warnf("Could not run lsscsi: %v", err)
 		}
-		if _, err := execCommand(ctx, "lsscsi", "-t"); err != nil {
+		if _, err := command.Execute(ctx, "lsscsi", "-t"); err != nil {
 			Logc(ctx).Warnf("Could not run lsscsi -t: %v", err)
 		}
-		if _, err := execCommand(ctx, "free"); err != nil {
+		if _, err := command.Execute(ctx, "free"); err != nil {
 			Logc(ctx).Warnf("Could not run free: %v", err)
 		}
 
@@ -809,7 +964,7 @@ func getLunSerial(ctx context.Context, path string) (string, error) {
 	// so we don't need to open the device and send the ioctl
 	// ourselves.
 	filename := path + "/vpd_pg80"
-	b, err := ioutil.ReadFile(filename)
+	b, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}
@@ -936,6 +1091,88 @@ func handleInvalidSerials(
 	return nil
 }
 
+// verifyMultipathDeviceSerial compares the serial number of the DM device with the serial
+// of the LUN to ensure correct DM device has been discovered
+func verifyMultipathDeviceSerial(
+	ctx context.Context, multipathDevice, lunSerial string,
+) error {
+	if lunSerial == "" {
+		// Empty string means don't care
+		return nil
+	}
+
+	// Multipath UUID contains LUN serial in hex format
+	lunSerialHex := hex.EncodeToString([]byte(lunSerial))
+
+	multipathDeviceUUID, err := IscsiUtils.GetMultipathDeviceUUID(multipathDevice)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			// If UUID does not exist, then it is hard to verify the DM serial
+			Logc(ctx).WithFields(LogFields{
+				"multipathDevice": multipathDevice,
+				"lunSerialNumber": lunSerial,
+			}).Warn("Unable to verify multipath device serial.")
+
+			return nil
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"multipathDevice": multipathDevice,
+			"lunSerialNumber": lunSerial,
+			"error":           err,
+		}).Error("Failed to verify multipath device serial.")
+
+		return err
+	}
+
+	if !strings.Contains(multipathDeviceUUID, lunSerialHex) {
+		Logc(ctx).WithFields(LogFields{
+			"multipathDevice":     multipathDevice,
+			"lunSerialNumber":     lunSerial,
+			"lunSerialNumberHex":  lunSerialHex,
+			"multipathDeviceUUID": multipathDeviceUUID,
+		}).Error("Failed to verify multipath device serial.")
+
+		return fmt.Errorf("multipath device '%s' serial check failed", multipathDevice)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"multipathDevice":     multipathDevice,
+		"lunSerialNumber":     lunSerial,
+		"lunSerialNumberHex":  lunSerialHex,
+		"multipathDeviceUUID": multipathDeviceUUID,
+	}).Debug("Multipath device serial check passed.")
+
+	return nil
+}
+
+// verifyMultipathDeviceSize compares the size of the DM device with the size
+// of a device to ensure correct DM device has the correct size.
+func verifyMultipathDeviceSize(
+	ctx context.Context, multipathDevice, device string,
+) (int64, bool, error) {
+	deviceSize, err := getISCSIDiskSize(ctx, "/dev/"+device)
+	if err != nil {
+		return 0, false, err
+	}
+
+	mpathSize, err := getISCSIDiskSize(ctx, "/dev/"+multipathDevice)
+	if err != nil {
+		return 0, false, err
+	}
+
+	if deviceSize != mpathSize {
+		return deviceSize, false, nil
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"multipathDevice": multipathDevice,
+		"device":          device,
+	}).Debug("Multipath device size check passed.")
+
+	return 0, true, nil
+}
+
 // GetISCSIHostSessionMapForTarget returns a map of iSCSI host numbers to iSCSI session numbers
 // for a given iSCSI target.
 func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Context, iSCSINodeName string) map[int]int {
@@ -951,7 +1188,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 	hostSessionMap := make(map[int]int)
 
 	sysPath := chrootPathPrefix + "/sys/class/iscsi_host/"
-	if hostDirs, err := ioutil.ReadDir(sysPath); err != nil {
+	if hostDirs, err := os.ReadDir(sysPath); err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Could not read %s", sysPath)
 		return hostSessionMap
 	} else {
@@ -966,7 +1203,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 			}
 
 			devicePath := sysPath + hostName + "/device/"
-			if deviceDirs, err := ioutil.ReadDir(devicePath); err != nil {
+			if deviceDirs, err := os.ReadDir(devicePath); err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"error":         err,
 					"rawDevicePath": devicePath,
@@ -985,7 +1222,7 @@ func (h *IscsiReconcileHelper) GetISCSIHostSessionMapForTarget(ctx context.Conte
 					}
 
 					targetNamePath := devicePath + sessionName + "/iscsi_session/" + sessionName + "/targetname"
-					if targetName, err := ioutil.ReadFile(targetNamePath); err != nil {
+					if targetName, err := os.ReadFile(targetNamePath); err != nil {
 						Logc(ctx).WithFields(LogFields{
 							"path":  targetNamePath,
 							"error": err,
@@ -1029,7 +1266,7 @@ func multipathdIsRunning(ctx context.Context) bool {
 	defer Logc(ctx).Debug("<<<< iscsi.multipathdIsRunning")
 
 	// use pgrep to look for mulipathd in the list of running processes
-	out, err := execCommand(ctx, "pgrep", "multipathd")
+	out, err := command.Execute(ctx, "pgrep", "multipathd")
 	if err == nil {
 		pid := strings.TrimSpace(string(out))
 		if pidRegex.MatchString(pid) {
@@ -1040,7 +1277,7 @@ func multipathdIsRunning(ctx context.Context) bool {
 		Logc(ctx).Error(err)
 	}
 
-	out, err = execCommand(ctx, "multipathd", "show", "daemon")
+	out, err = command.Execute(ctx, "multipathd", "show", "daemon")
 	if err == nil {
 		if pidRunningOrIdleRegex.MatchString(string(out)) {
 			Logc(ctx).Debug("multipathd is running")
@@ -1081,7 +1318,7 @@ func getTargets(ctx context.Context, tp string) ([]string, error) {
 	}).Debug(">>>> iscsi.getTargets")
 	defer Logc(ctx).Debug("<<<< iscsi.getTargets")
 
-	output, err := execCommand(ctx, "iscsiadm", "-m", "node")
+	output, err := command.Execute(ctx, "iscsiadm", "-m", "node")
 	if nil != err {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
@@ -1214,7 +1451,7 @@ func ensureIscsiTarget(
 
 		exitErr, ok := err.(*exec.ExitError)
 		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == ISCSIErrLoginAuthFailed {
-			return AuthError("failed to discover targets: CHAP authorization failure")
+			return errors.AuthError("failed to discover targets: CHAP authorization failure")
 		}
 
 		return fmt.Errorf("failed to discover targets: %v", err)
@@ -1259,7 +1496,7 @@ func GetAllVolumeIDs(ctx context.Context, trackingFileDirectory string) []string
 	Logc(ctx).WithField("trackingFileDirectory", trackingFileDirectory).Debug(">>>> iscsi.GetAllVolumeIDs")
 	defer Logc(ctx).Debug("<<<< iscsi.GetAllVolumeIDs")
 
-	files, err := ioutil.ReadDir(trackingFileDirectory)
+	files, err := os.ReadDir(trackingFileDirectory)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"error": err,
@@ -1388,7 +1625,7 @@ func LoginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 		Logc(ctx).WithField("error", err).Error("Error logging in to iSCSI target.")
 		exitErr, ok := err.(*exec.ExitError)
 		if ok && exitErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus() == ISCSIErrLoginAuthFailed {
-			return AuthError("iSCSI login failed: CHAP authorization failure")
+			return errors.AuthError("iSCSI login failed: CHAP authorization failure")
 		}
 
 		return err
@@ -1428,7 +1665,7 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 			}).Errorf("unable to ensure iSCSI target exists: %v", err)
 
 			if !loginFailedDueToChap {
-				if IsAuthError(err) {
+				if errors.IsAuthError(err) {
 					Logc(ctx).Debug("Unable to ensure iSCSI target exists - authorization failed using CHAP")
 					loginFailedDueToChap = true
 				}
@@ -1462,7 +1699,7 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 				"portalIP": portal,
 			}).Error("Login to iSCSI target failed.")
 			if !loginFailedDueToChap {
-				if IsAuthError(err) {
+				if errors.IsAuthError(err) {
 					Logc(ctx).Debug("iSCSI login failed - authorization failed using CHAP")
 					loginFailedDueToChap = true
 				}
@@ -1504,7 +1741,7 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 		// login failed for all portals using CHAP, verify if any login failed due to authorization failure,
 		// return AuthError; NodeStageISCSIVolume() would handle appropriately
 		if loginFailedDueToChap {
-			return successfulLogin, AuthError("iSCSI login failed: CHAP authorization failure")
+			return successfulLogin, errors.AuthError("iSCSI login failed: CHAP authorization failure")
 		}
 	}
 
@@ -1606,17 +1843,17 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 func execIscsiadmCommandRedacted(ctx context.Context, args []string, secretsToRedact map[string]string) ([]byte,
 	error,
 ) {
-	return execCommandRedacted(ctx, "iscsiadm", args, secretsToRedact)
+	return command.ExecuteRedacted(ctx, "iscsiadm", args, secretsToRedact)
 }
 
 // execIscsiadmCommand uses the 'iscsiadm' command to perform operations
 func execIscsiadmCommand(ctx context.Context, args ...string) ([]byte, error) {
-	return execCommand(ctx, "iscsiadm", args...)
+	return command.Execute(ctx, "iscsiadm", args...)
 }
 
 // execIscsiadmCommandWithTimeout uses the 'iscsiadm' command to perform operations with timeout
 func execIscsiadmCommandWithTimeout(ctx context.Context, timeout time.Duration, args ...string) ([]byte, error) {
-	return execCommandWithTimeout(ctx, "iscsiadm", timeout, true, args...)
+	return command.ExecuteWithTimeout(ctx, "iscsiadm", timeout, true, args...)
 }
 
 // SafeToLogOut looks for remaining block devices on a given iSCSI host, and returns
@@ -1632,7 +1869,7 @@ func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 	// See drivers/scsi/scsi_scan.c in Linux
 	// We assume the channel/bus and device/controller are always zero for iSCSI
 	targetPath := devicePath + fmt.Sprintf("/session%d/target%d:0:0", sessionNumber, hostNumber)
-	dirs, err := ioutil.ReadDir(targetPath)
+	dirs, err := os.ReadDir(targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return true
@@ -1655,19 +1892,18 @@ func SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 
 // identifyFindMultipathsValue reads /etc/multipath.conf and identifies find_multipaths value (if set)
 func identifyFindMultipathsValue(ctx context.Context) (string, error) {
-	if output, err := execCommandWithTimeout(ctx, "multipathd", 5*time.Second, false, "show", "config"); err != nil {
+	output, err := command.ExecuteWithTimeout(ctx, "multipathd", 5*time.Second, false, "show", "config")
+	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"error": err,
 		}).Error("Could not read multipathd configuration")
 
 		return "", fmt.Errorf("could not read multipathd configuration: %v", err)
-	} else {
-		findMultipathsValue := GetFindMultipathValue(string(output))
-
-		Logc(ctx).WithField("findMultipathsValue", findMultipathsValue).Debug("Multipath find_multipaths value found.")
-
-		return findMultipathsValue, nil
 	}
+
+	findMultipathsValue := GetFindMultipathValue(string(output))
+	Logc(ctx).WithField("findMultipathsValue", findMultipathsValue).Debug("Multipath find_multipaths value found.")
+	return findMultipathsValue, nil
 }
 
 // ISCSIPreChecks to check if all the required tools are present and configured correctly for the  volume
@@ -1729,7 +1965,7 @@ func IsISCSISessionStale(ctx context.Context, sessionID string) bool {
 
 	// Find the session state from the session at /sys/class/iscsi_session/sessionXXX/state
 	filename := fmt.Sprintf(chrootPathPrefix+"/sys/class/iscsi_session/session%s/state", sessionID)
-	sessionStateBytes, err := ioutil.ReadFile(filename)
+	sessionStateBytes, err := os.ReadFile(filename)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"path":  filename,
@@ -2027,7 +2263,7 @@ func InspectAllISCSISessions(ctx context.Context, publishedSessions, currentSess
 		// GET currentSessionData and currentPortalInfo
 		currentSessionData, err := currentSessions.ISCSISessionData(portal)
 		if err != nil {
-			if IsNotFoundError(err) {
+			if errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Warning("Portal is missing from the current sessions.")
 				publishedSessionData.Remediation = LoginScan
 

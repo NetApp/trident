@@ -19,6 +19,7 @@ const (
 	Region           = "region"
 	Zone             = "zone"
 	NASType          = "nasType"
+	SANType          = "sanType"
 
 	// Constants for label attributes
 	Labels   = "labels"
@@ -42,6 +43,13 @@ const (
 	// Values for NAS protocol
 	NFS = "nfs"
 	SMB = "smb"
+
+	// Values for SAN protocol
+	ISCSI = "iscsi"
+	NVMe  = "nvme"
+
+	// NVMeTransport is used to get NVMe TCP dataLIFs.
+	NVMeTransport = "nvme_tcp"
 
 	RequiredStorage        = "requiredStorage" // deprecated, use additionalStoragePools
 	StoragePools           = "storagePools"
@@ -67,4 +75,5 @@ var attrTypes = map[string]Type{
 	NonexistentBool:  boolType,
 	Replication:      boolType,
 	NASType:          stringType,
+	SANType:          stringType,
 }

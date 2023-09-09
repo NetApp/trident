@@ -1,11 +1,12 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2023 NetApp, Inc. All Rights Reserved.
 
 package storage
+
+//go:generate mockgen -destination=../mocks/mock_storage/mock_storage_driver.go github.com/netapp/trident/storage Driver
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -20,6 +21,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // Driver provides a common interface for storage related operations
@@ -66,7 +68,7 @@ type Driver interface {
 	// available if using the passthrough store (i.e. Docker).
 	GetVolumeExternalWrappers(context.Context, chan *VolumeExternalWrapper)
 	GetUpdateType(ctx context.Context, driver Driver) *roaring.Bitmap
-	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID string) error
+	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID, tridentUUID string) error
 	GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig
 }
 
@@ -87,7 +89,24 @@ type Mirrorer interface {
 	PromoteMirror(ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string) (bool, error)
 	GetMirrorStatus(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, error)
 	ReleaseMirror(ctx context.Context, localInternalVolumeName string) error
-	GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
+	GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string,
+		string, error)
+	UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error
+	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+}
+
+// StateGetter provides a common interface for backends that support polling backend for state information.
+type StateGetter interface {
+	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
+}
+
+// VolumeUpdater provides a common interface for backends that support updating the volume
+type VolumeUpdater interface {
+	Update(
+		ctx context.Context, volConfig *VolumeConfig,
+		updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*Volume,
+	) (map[string]*Volume, error)
 }
 
 type StorageBackend struct {
@@ -96,10 +115,22 @@ type StorageBackend struct {
 	backendUUID        string
 	online             bool
 	state              BackendState
+	userState          UserBackendState
+	stateReason        string
 	storage            map[string]Pool
 	volumes            map[string]*Volume
 	configRef          string
 	nodeAccessUpToDate bool
+}
+
+func (b *StorageBackend) UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo) (map[string]*Volume, error) {
+	volUpdateDriver, ok := b.driver.(VolumeUpdater)
+	if !ok {
+		return nil, errors.UnsupportedError(
+			fmt.Sprintf("volume update is not supported for backend of type %v", b.driver.Name()))
+	}
+
+	return volUpdateDriver.Update(ctx, volConfig, updateInfo, b.volumes)
 }
 
 func (b *StorageBackend) Driver() Driver {
@@ -138,8 +169,26 @@ func (b *StorageBackend) State() BackendState {
 	return b.state
 }
 
-func (b *StorageBackend) SetState(State BackendState) {
-	b.state = State
+func (b *StorageBackend) UserState() UserBackendState {
+	return b.userState
+}
+
+func (b *StorageBackend) StateReason() string {
+	return b.stateReason
+}
+
+// SetState sets the 'state' and 'online' fields of StorageBackend accordingly.
+func (b *StorageBackend) SetState(state BackendState) {
+	b.state = state
+	if state.IsOnline() {
+		b.online = true
+	} else {
+		b.online = false
+	}
+}
+
+func (b *StorageBackend) SetUserState(state UserBackendState) {
+	b.userState = state
 }
 
 func (b *StorageBackend) Storage() map[string]Pool {
@@ -167,15 +216,8 @@ func (b *StorageBackend) SetConfigRef(ConfigRef string) {
 }
 
 type UpdateBackendStateRequest struct {
-	State string `json:"state"`
-}
-
-type NotManagedError struct {
-	volumeName string
-}
-
-func (e *NotManagedError) Error() string {
-	return fmt.Sprintf("volume %s is not managed by Trident", e.volumeName)
+	BackendState     string `json:"state"`
+	UserBackendState string `json:"userState"`
 }
 
 type BackendState string
@@ -224,13 +266,47 @@ func (s BackendState) IsFailed() bool {
 	return s == Failed
 }
 
+type UserBackendState string
+
+const (
+	UserSuspended = UserBackendState("suspended")
+	UserNormal    = UserBackendState("normal")
+)
+
+func (s UserBackendState) String() string {
+	switch s {
+	case UserSuspended, UserNormal:
+		return string(s)
+	default:
+		return "unknown"
+	}
+}
+
+func (s UserBackendState) IsSuspended() bool {
+	return s == UserSuspended
+}
+
+func (s UserBackendState) IsNormal() bool {
+	return s == UserNormal
+}
+
+func (s UserBackendState) Validate() error {
+	switch s {
+	case UserSuspended, UserNormal:
+		return nil
+	default:
+		return fmt.Errorf("invalid UserBackendState: %v", s)
+	}
+}
+
 func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, error) {
 	backend := StorageBackend{
-		driver:  driver,
-		state:   Online,
-		online:  true,
-		storage: make(map[string]Pool),
-		volumes: make(map[string]*Volume),
+		driver:    driver,
+		state:     Online,
+		online:    true,
+		userState: UserNormal,
+		storage:   make(map[string]Pool),
+		volumes:   make(map[string]*Volume),
 	}
 
 	// retrieve backend specs
@@ -302,6 +378,11 @@ func (b *StorageBackend) AddVolume(
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
+	}
+
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return nil, fmt.Errorf("volume is not created because the backend %s is suspended", b.name)
 	}
 
 	// Ensure the internal name exists
@@ -396,22 +477,34 @@ func (b *StorageBackend) CloneVolume(
 	Logc(ctx).WithFields(LogFields{
 		"backend":                cloneVolConfig.Name,
 		"backendUUID":            b.backendUUID,
-		"storage_class":          cloneVolConfig.StorageClass,
-		"source_volume":          cloneVolConfig.CloneSourceVolume,
-		"source_volume_internal": cloneVolConfig.CloneSourceVolumeInternal,
-		"source_snapshot":        cloneVolConfig.CloneSourceSnapshot,
-		"clone_volume":           cloneVolConfig.Name,
-		"clone_volume_internal":  cloneVolConfig.InternalName,
+		"storageClass":           cloneVolConfig.StorageClass,
+		"sourceVolume":           cloneVolConfig.CloneSourceVolume,
+		"sourceVolumeInternal":   cloneVolConfig.CloneSourceVolumeInternal,
+		"sourceSnapshot":         cloneVolConfig.CloneSourceSnapshot,
+		"sourceSnapshotInternal": cloneVolConfig.CloneSourceSnapshotInternal,
+		"cloneVolume":            cloneVolConfig.Name,
+		"cloneVolumeInternal":    cloneVolConfig.InternalName,
 	}).Debug("Attempting volume clone.")
+
+	if cloneVolConfig.ReadOnlyClone {
+		if tridentconfig.DisableExtraFeatures {
+			return nil, errors.UnsupportedError("read only clone is not supported")
+		}
+	}
 
 	// Ensure volume is managed
 	if cloneVolConfig.ImportNotManaged {
-		return nil, &NotManagedError{cloneVolConfig.InternalName}
+		return nil, errors.NotManagedError("volume %s is not managed by Trident", cloneVolConfig.InternalName)
 	}
 
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
+	}
+
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return nil, fmt.Errorf("volume is not cloned because the backend %s is suspended", b.name)
 	}
 
 	// Ensure the internal names exist
@@ -441,25 +534,29 @@ func (b *StorageBackend) CloneVolume(
 		}
 	}
 
-	// The clone may not be fully created when the clone API returns, so wait here until it exists.
-	checkCloneExists := func() error {
-		return b.driver.Get(ctx, cloneVolConfig.InternalName)
-	}
-	cloneExistsNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("Clone not yet present, waiting.")
-	}
-	cloneBackoff := backoff.NewExponentialBackOff()
-	cloneBackoff.InitialInterval = 1 * time.Second
-	cloneBackoff.Multiplier = 2
-	cloneBackoff.RandomizationFactor = 0.1
-	cloneBackoff.MaxElapsedTime = 90 * time.Second
+	// If it's RO clone, skip clone volume check in the driver
+	if !cloneVolConfig.ReadOnlyClone {
+		// The clone may not be fully created when the clone API returns, so wait here until it exists.
+		checkCloneExists := func() error {
+			return b.driver.Get(ctx, cloneVolConfig.InternalName)
+		}
+		cloneExistsNotify := func(err error, duration time.Duration) {
+			Logc(ctx).WithField("increment", duration).Debug("Clone not yet present, waiting.")
+		}
+		cloneBackoff := backoff.NewExponentialBackOff()
+		cloneBackoff.InitialInterval = 1 * time.Second
+		cloneBackoff.Multiplier = 2
+		cloneBackoff.RandomizationFactor = 0.1
+		cloneBackoff.MaxElapsedTime = 90 * time.Second
 
-	// Run the clone check using an exponential backoff
-	if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
-		Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
-			float64(cloneBackoff.MaxElapsedTime))
-	} else {
-		Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Debug("Clone found.")
+		// Run the clone check using an exponential backoff
+		if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
+			Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
+				float64(cloneBackoff.MaxElapsedTime))
+		} else {
+			Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Debug("Clone found.")
+		}
+
 	}
 
 	if err := b.driver.CreateFollowup(ctx, cloneVolConfig); err != nil {
@@ -574,6 +671,11 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 		return nil, err
 	}
 
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return nil, fmt.Errorf("volume is not imported because the backend %s is suspended", b.name)
+	}
+
 	if volConfig.ImportNotManaged {
 		// The volume is not managed and will not be renamed during import.
 		volConfig.InternalName = volConfig.ImportOriginalName
@@ -586,6 +688,9 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 	if err != nil {
 		return nil, fmt.Errorf("driver import volume failed: %v", err)
 	}
+
+	// Ensure snapshot reserve is set to empty in case of volume import
+	volConfig.SnapshotReserve = ""
 
 	err = b.driver.CreateFollowup(ctx, volConfig)
 	if err != nil {
@@ -600,12 +705,17 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error {
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return err
+	}
+
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return fmt.Errorf("volume is not resized because the backend %s is suspended", b.name)
 	}
 
 	// Determine volume size in bytes
@@ -631,7 +741,7 @@ func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConf
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{oldName}
+		return errors.NotManagedError("volume %s is not managed by Trident", oldName)
 	}
 
 	if b.state != Online {
@@ -661,7 +771,7 @@ func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConf
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
 		b.RemoveCachedVolume(volConfig.Name)
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -669,11 +779,15 @@ func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConf
 		return err
 	}
 
-	if err := b.driver.Destroy(ctx, volConfig); err != nil {
-		// TODO:  Check the error being returned once the nDVP throws errors
-		// for volumes that aren't found.
-		return err
+	// If it's a RO clone, no need to delete the volume in the driver
+	if !volConfig.ReadOnlyClone {
+		if err := b.driver.Destroy(ctx, volConfig); err != nil {
+			// TODO:  Check the error being returned once the nDVP throws errors
+			// for volumes that aren't found.
+			return err
+		}
 	}
+
 	b.RemoveCachedVolume(volConfig.Name)
 	return nil
 }
@@ -690,12 +804,13 @@ func (b *StorageBackend) CanSnapshot(ctx context.Context, snapConfig *SnapshotCo
 func (b *StorageBackend) GetSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) (*Snapshot, error) {
-	Logc(ctx).WithFields(LogFields{
-		"backend":        b.name,
-		"volume":         snapConfig.Name,
-		"volumeInternal": snapConfig.InternalName,
-		"snapshotName":   snapConfig.Name,
-	}).Debug("GetSnapshot.")
+	fields := LogFields{
+		"backend":              b.name,
+		"volumeName":           snapConfig.VolumeName,
+		"snapshotName":         snapConfig.Name,
+		"snapshotInternalName": snapConfig.InternalName,
+	}
+	Logc(ctx).WithFields(fields).Debug("GetSnapshot.")
 
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
@@ -707,13 +822,11 @@ func (b *StorageBackend) GetSnapshot(
 		return nil, err
 	} else if snapshot == nil {
 		// No error and no snapshot means the snapshot doesn't exist.
+		Logc(ctx).WithFields(fields).Debug("Snapshot not found.")
 
-		Logc(ctx).WithFields(LogFields{
-			"snapshotName": snapConfig.Name,
-			"volumeName":   snapConfig.VolumeInternalName,
-		}).Debug("Snapshot not found.")
-
-		return nil, fmt.Errorf("snapshot %s on volume %s not found", snapConfig.Name, snapConfig.VolumeName)
+		return nil, errors.NotFoundError(
+			fmt.Sprintf("snapshot %s of volume %s not found", snapConfig.Name, snapConfig.VolumeName),
+		)
 	} else {
 		return snapshot, nil
 	}
@@ -746,7 +859,7 @@ func (b *StorageBackend) CreateSnapshot(
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return nil, &NotManagedError{volConfig.InternalName}
+		return nil, errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -790,7 +903,7 @@ func (b *StorageBackend) RestoreSnapshot(
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -806,15 +919,20 @@ func (b *StorageBackend) DeleteSnapshot(
 	ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig,
 ) error {
 	Logc(ctx).WithFields(LogFields{
-		"backend":        b.name,
-		"volume":         snapConfig.Name,
-		"volumeInternal": snapConfig.InternalName,
-		"snapshot":       snapConfig.Name,
+		"backend":          b.name,
+		"volumeName":       snapConfig.VolumeName,
+		"snapInternalName": snapConfig.InternalName,
+		"snapshotName":     snapConfig.Name,
 	}).Debug("Attempting snapshot delete.")
+
+	// Ensure snapshot is managed
+	if snapConfig.ImportNotManaged {
+		return errors.NotManagedError("snapshot %s is not managed by Trident", snapConfig.InternalName)
+	}
 
 	// Ensure volume is managed
 	if volConfig.ImportNotManaged {
-		return &NotManagedError{volConfig.InternalName}
+		return errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	// Ensure backend is ready
@@ -850,6 +968,11 @@ const (
 	PasswordChange
 	PrefixChange
 	CredentialsChange
+)
+
+const (
+	BackendStateReasonChange = iota
+	BackendStatePoolsChange
 )
 
 func (b *StorageBackend) GetUpdateType(ctx context.Context, origBackend Backend) *roaring.Bitmap {
@@ -893,7 +1016,7 @@ func (b *StorageBackend) InvalidateNodeAccess() {
 // ReconcileNodeAccess will ensure that the driver only has allowed access
 // to its volumes from active nodes in the k8s cluster. This is usually
 // handled via export policies or initiators
-func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node) error {
+func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, tridentUUID string) error {
 	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
 		// Only reconcile backends that need it
 		if b.nodeAccessUpToDate {
@@ -901,13 +1024,50 @@ func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils
 			return nil
 		}
 		Logc(ctx).WithField("backend", b.name).Trace("Backend node access rules are out-of-date, updating.")
-		err = b.driver.ReconcileNodeAccess(ctx, nodes, b.backendUUID)
+		err = b.driver.ReconcileNodeAccess(ctx, nodes, b.backendUUID, tridentUUID)
 		if err == nil {
 			b.nodeAccessUpToDate = true
 		}
 		return err
 	}
 	return nil
+}
+
+func (b *StorageBackend) CanGetState() bool {
+	_, ok := b.driver.(StateGetter)
+	return ok
+}
+
+// GetBackendState gets the up-to-date state of SVM and updates associated Trident's data structures.
+func (b *StorageBackend) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
+	stateDriver, ok := b.driver.(StateGetter)
+	if !ok {
+		Logc(ctx).WithError(errors.UnsupportedError(
+			fmt.Sprintf("polling is not implemented by backends of type %v", b.driver.Name())))
+		return "", nil
+	}
+
+	reason, changeMap := stateDriver.GetBackendState(ctx)
+
+	if reason != b.StateReason() || (reason == "" && !b.Online()) {
+		// Inform caller that update is needed as there is change in either state or StateReason.
+		// Being defensive here, as changeMap could never be nil.
+		if changeMap == nil {
+			changeMap = roaring.New()
+		}
+		changeMap.Add(BackendStateReasonChange)
+	}
+
+	if reason == "" {
+		b.state = Online
+		b.online = true
+	} else {
+		b.state = Offline
+		b.online = false
+	}
+	b.stateReason = reason
+
+	return reason, changeMap
 }
 
 func (b *StorageBackend) ensureOnline(ctx context.Context) error {
@@ -932,6 +1092,14 @@ func (b *StorageBackend) ensureOnlineOrDeleting(ctx context.Context) error {
 	return nil
 }
 
+func (b *StorageBackend) isProvisioningAllowed() bool {
+	if b.userState == UserSuspended {
+		return false
+	} else {
+		return true
+	}
+}
+
 type BackendExternal struct {
 	Name        string                 `json:"name"`
 	BackendUUID string                 `json:"backendUUID"`
@@ -939,7 +1107,9 @@ type BackendExternal struct {
 	Config      interface{}            `json:"config"`
 	Storage     map[string]interface{} `json:"storage"`
 	State       BackendState           `json:"state"`
+	UserState   UserBackendState       `json:"userState"`
 	Online      bool                   `json:"online"`
+	StateReason string                 `json:"StateReason"`
 	Volumes     []string               `json:"volumes"`
 	ConfigRef   string                 `json:"configRef"`
 }
@@ -953,6 +1123,8 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 		Storage:     make(map[string]interface{}),
 		Online:      b.online,
 		State:       b.state,
+		UserState:   b.userState,
+		StateReason: b.stateReason,
 		Volumes:     make([]string, 0),
 		ConfigRef:   b.configRef,
 	}
@@ -963,6 +1135,7 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 	for volName := range b.volumes {
 		backendExternal.Volumes = append(backendExternal.Volumes, volName)
 	}
+
 	return &backendExternal
 }
 
@@ -1005,6 +1178,8 @@ type BackendPersistent struct {
 	BackendUUID string                         `json:"backendUUID"`
 	Online      bool                           `json:"online"`
 	State       BackendState                   `json:"state"`
+	UserState   UserBackendState               `json:"userState"`
+	StateReason string                         `json:"stateReason"`
 	ConfigRef   string                         `json:"configRef"`
 }
 
@@ -1015,6 +1190,8 @@ func (b *StorageBackend) ConstructPersistent(ctx context.Context) *BackendPersis
 		Name:        b.name,
 		Online:      b.online,
 		State:       b.state,
+		UserState:   b.userState,
+		StateReason: b.stateReason,
 		BackendUUID: b.backendUUID,
 		ConfigRef:   b.configRef,
 	}
@@ -1064,7 +1241,7 @@ func (p *BackendPersistent) GetBackendCredentials() (string, string, error) {
 
 // ExtractBackendSecrets clones itself (a BackendPersistent struct), identified if the backend is using
 // trident created secret (tbe-<backendUUID>) or user-provided secret (via credentials field),
-// if these valus are same or not and accordingly sets usingTridentSecretName boolean field.
+// if these values are same or not and accordingly sets usingTridentSecretName boolean field.
 // From the clone it builds a map of secret data it contains (username, password, etc.),
 // replaces those fields with the correct secret name, and returns the clone,
 // the secret data map (or empty map if using credentials field) and usingTridentSecretName field.
@@ -1136,7 +1313,7 @@ func (b *StorageBackend) EstablishMirror(
 ) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return utils.UnsupportedError(
+		return errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
@@ -1149,7 +1326,7 @@ func (b *StorageBackend) PromoteMirror(
 ) (bool, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return false, utils.UnsupportedError(
+		return false, errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
@@ -1162,7 +1339,7 @@ func (b *StorageBackend) ReestablishMirror(
 ) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return utils.UnsupportedError(
+		return errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
@@ -1175,7 +1352,7 @@ func (b *StorageBackend) GetMirrorStatus(
 ) (string, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return "", utils.UnsupportedError(fmt.Sprintf(
+		return "", errors.UnsupportedError(fmt.Sprintf(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 	return mirrorDriver.GetMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle)
@@ -1189,26 +1366,57 @@ func (b *StorageBackend) CanMirror() bool {
 func (b *StorageBackend) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return utils.UnsupportedError(
+		return errors.UnsupportedError(
 			fmt.Sprintf("mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 
 	return mirrorDriver.ReleaseMirror(ctx, localInternalVolumeName)
 }
 
-func (b *StorageBackend) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+func (b *StorageBackend) GetReplicationDetails(
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	mirrorDriver, ok := b.driver.(Mirrorer)
 	if !ok {
-		return "", "", "", utils.UnsupportedError(fmt.Sprintf(
+		return "", "", "", errors.UnsupportedError(fmt.Sprintf(
 			"mirroring is not implemented by backends of type %v", b.driver.Name()))
 	}
 	return mirrorDriver.GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
+func (b *StorageBackend) UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	mirrorDriver, ok := b.driver.(Mirrorer)
+	if !ok {
+		return errors.UnsupportedError(fmt.Sprintf(
+			"mirroring is not implemented by backends of type %v", b.driver.Name()))
+	}
+	return mirrorDriver.UpdateMirror(ctx, localInternalVolumeName, snapshotName)
+}
+
+func (b *StorageBackend) CheckMirrorTransferState(ctx context.Context, localInternalVolumeName string) (*time.Time, error) {
+	mirrorDriver, ok := b.driver.(Mirrorer)
+	if !ok {
+		return nil, errors.UnsupportedError(fmt.Sprintf(
+			"mirroring is not implemented by backends of type %v", b.driver.Name()))
+	}
+	return mirrorDriver.CheckMirrorTransferState(ctx, localInternalVolumeName)
+}
+
+func (b *StorageBackend) GetMirrorTransferTime(ctx context.Context, localInternalVolumeName string) (*time.Time,
+	error,
+) {
+	mirrorDriver, ok := b.driver.(Mirrorer)
+	if !ok {
+		return nil, errors.UnsupportedError(fmt.Sprintf(
+			"mirroring is not implemented by backends of type %v", b.driver.Name()))
+	}
+	return mirrorDriver.GetMirrorTransferTime(ctx, localInternalVolumeName)
+}
+
 func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {
 	chapEnabledDriver, ok := b.driver.(ChapEnabled)
 	if !ok {
-		return nil, utils.UnsupportedError(fmt.Sprintf(
+		return nil, errors.UnsupportedError(fmt.Sprintf(
 			"retrieving chap credentials is not supported on backends of type %v", b.driver.Name()))
 	}
 	return chapEnabledDriver.GetChapInfo(ctx, volumeName, nodeName)
@@ -1217,7 +1425,7 @@ func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName s
 func (b *StorageBackend) EnablePublishEnforcement(ctx context.Context, volume *Volume) error {
 	driver, ok := b.driver.(PublishEnforceable)
 	if !ok {
-		return utils.UnsupportedError(fmt.Sprintf(
+		return errors.UnsupportedError(fmt.Sprintf(
 			"publish enforcement is not supported on backends of type %v", b.driver.Name()))
 	}
 	return driver.EnablePublishEnforcement(ctx, volume)
