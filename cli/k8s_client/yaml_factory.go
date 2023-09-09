@@ -377,7 +377,7 @@ const acpContainerYAMLTemplate = `
 `
 
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
-	var debugLine, sideCarLogLevel, ipLocalhost string
+	var debugLine, sideCarLogLevel, ipLocalhost, enableACP string
 	Log().WithFields(LogFields{
 		"Args": args,
 	}).Trace(">>>> GetCSIDeploymentYAML")
@@ -452,6 +452,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	}
 
 	if args.EnableACP {
+		enableACP = "- \"-enable_acp\""
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_IMAGE}", args.ACPImage)
 	} else {
@@ -487,7 +488,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", strconv.FormatBool(args.EnableACP))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", enableACP)
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -547,8 +548,8 @@ spec:
         - "--address={IP_LOCALHOST}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
-        - "--enable_acp={ENABLE_ACP}"
         - "--metrics"
+        {ENABLE_ACP}
         {DEBUG}
         livenessProbe:
           exec:
@@ -590,6 +591,7 @@ spec:
         - "--k8s-pod"
         - "--log-format={LOG_FORMAT}"
         - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {ENABLE_ACP}
         {AUTOSUPPORT_PROXY}
         {AUTOSUPPORT_CUSTOM_URL}
         {AUTOSUPPORT_SERIAL_NUMBER}
