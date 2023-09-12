@@ -446,10 +446,16 @@ func getSVMState(
 
 // resizeValidation performs needed validation checks prior to the resize operation.
 func resizeValidation(
-	ctx context.Context, name string, sizeBytes uint64, volumeExists func(context.Context, string) (bool, error),
+	ctx context.Context,
+	volConfig *storage.VolumeConfig,
+	requestedSizeBytes uint64,
+	volumeExists func(context.Context, string) (bool, error),
 	volumeSize func(context.Context, string) (uint64, error),
+	volumeInfo func(context.Context, string) (*api.Volume, error),
 ) (uint64, error) {
-	// Check that volume exists
+	name := volConfig.InternalName
+
+	// Ensure the volume exists
 	volExists, err := volumeExists(ctx, name)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Error checking for existing volume.")
@@ -459,7 +465,7 @@ func resizeValidation(
 		return 0, fmt.Errorf("volume %s does not exist", name)
 	}
 
-	// Check that current size is smaller than requested size
+	// Lookup the volume's current size on the storage system
 	volSize, err := volumeSize(ctx, name)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Errorf("Error checking volume size.")
@@ -467,12 +473,40 @@ func resizeValidation(
 	}
 	volSizeBytes := uint64(volSize)
 
-	if sizeBytes < volSizeBytes {
-		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf(
-			"requested size %d is less than existing volume size %d", sizeBytes, volSize))
+	// Determine original volume size in bytes
+	volConfigSize, err := utils.ConvertSizeToBytes(volConfig.Size)
+	if err != nil {
+		return 0, fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
+	}
+	volConfigSizeBytes, err := strconv.ParseUint(volConfigSize, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 
-	return volSizeBytes, nil
+	// Ensure the requested size is greater than the original size that we stored in the vol config
+	if requestedSizeBytes < volConfigSizeBytes {
+		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf("requested size %d is less than previous volume size %d",
+			requestedSizeBytes, volConfigSizeBytes))
+	}
+
+	if requestedSizeBytes == volConfigSizeBytes {
+		Logc(ctx).Debugf("Requested volume size %s is the same as the current volume size %s.", requestedSizeBytes, volSizeBytes)
+		// nothing to do
+		return 0, nil
+	}
+
+	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, volumeInfo)
+	if err != nil {
+		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
+	}
+
+	// Ensure the final effective volume size is larger than the current volume size
+	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	if newFlexvolSize < volSizeBytes {
+		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf("effective volume size %d including any snapshot reserve is less than the existing volume size %d", newFlexvolSize, volSizeBytes))
+	}
+
+	return newFlexvolSize, nil
 }
 
 // reconcileSANNodeAccess ensures unused igroups are removed. Unused igroups are the legacy per-backend igroup and

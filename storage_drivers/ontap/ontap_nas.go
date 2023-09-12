@@ -1173,27 +1173,22 @@ func (d *NASStorageDriver) Resize(
 		"Method":             "Resize",
 		"Type":               "NASStorageDriver",
 		"name":               name,
+		"volConfig.Size":     volConfig.Size,
 		"requestedSizeBytes": requestedSizeBytes,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
-	flexvolSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.VolumeExists, d.API.VolumeSize)
+	// Validation checks
+	newFlexvolSize, err := resizeValidation(ctx, volConfig, requestedSizeBytes,
+		d.API.VolumeExists, d.API.VolumeSize, d.API.VolumeInfo)
 	if err != nil {
 		return err
 	}
-
-	volConfig.Size = strconv.FormatUint(flexvolSize, 10)
-	if flexvolSize == requestedSizeBytes {
+	if newFlexvolSize == 0 && err == nil {
+		// nothing to do
 		return nil
 	}
-
-	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeInfo)
-	if err != nil {
-		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
-	}
-
-	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
@@ -1211,6 +1206,7 @@ func (d *NASStorageDriver) Resize(
 		return err
 	}
 
+	// update with the resized volume size
 	volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
 	return nil
 }
