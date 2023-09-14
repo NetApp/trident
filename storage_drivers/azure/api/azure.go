@@ -348,10 +348,14 @@ func (c Client) GenerateAzureResources(ctx context.Context) error {
 		}
 
 		Logc(ctx).Info("Creating and delegating subnet")
+		vnetResourceGroup := c.config.VnetResourceGroup
+		if vnetResourceGroup == "" {
+			vnetResourceGroup = c.config.ResourceGroup
+		}
 		subnetName := DefaultSubnetNamePrefix + utils.RandomNumber(8)
 		subnetPollerResp, err := c.sdkClient.SubnetsClient.BeginCreateOrUpdate(
 			ctx,
-			c.config.VnetResourceGroup,
+			vnetResourceGroup,
 			c.config.VnetName,
 			subnetName,
 			armnetwork.Subnet{
@@ -407,7 +411,11 @@ func (c Client) poolExists(ctx context.Context, accountName string) (bool, error
 }
 
 func (c Client) subnetExists(ctx context.Context) (*armnetwork.VirtualNetworksClientGetResponse, bool, error) {
-	vnetGetResp, err := c.sdkClient.VnetClient.Get(ctx, c.config.VnetResourceGroup, c.config.VnetName, nil)
+	vnetResourceGroup := c.config.VnetResourceGroup
+	if vnetResourceGroup == "" {
+		vnetResourceGroup = c.config.ResourceGroup
+	}
+	vnetGetResp, err := c.sdkClient.VnetClient.Get(ctx, vnetResourceGroup, c.config.VnetName, nil)
 	if err != nil {
 		return nil, false, err
 	}
