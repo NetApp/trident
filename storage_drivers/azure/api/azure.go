@@ -351,7 +351,7 @@ func (c Client) GenerateAzureResources(ctx context.Context) error {
 		subnetName := DefaultSubnetNamePrefix + utils.RandomNumber(8)
 		subnetPollerResp, err := c.sdkClient.SubnetsClient.BeginCreateOrUpdate(
 			ctx,
-			c.config.ResourceGroup,
+			c.config.VnetResourceGroup,
 			c.config.VnetName,
 			subnetName,
 			armnetwork.Subnet{
@@ -407,7 +407,7 @@ func (c Client) poolExists(ctx context.Context, accountName string) (bool, error
 }
 
 func (c Client) subnetExists(ctx context.Context) (*armnetwork.VirtualNetworksClientGetResponse, bool, error) {
-	vnetGetResp, err := c.sdkClient.VnetClient.Get(ctx, c.config.ResourceGroup, c.config.VnetName, nil)
+	vnetGetResp, err := c.sdkClient.VnetClient.Get(ctx, c.config.VnetResourceGroup, c.config.VnetName, nil)
 	if err != nil {
 		return nil, false, err
 	}
