@@ -286,6 +286,7 @@ func (i *Installer) setInstallationParams(
 	autosupportImage = commonconfig.DefaultAutosupportImage
 	httpTimeout = commonconfig.HTTPTimeoutString
 	imagePullPolicy = DefaultImagePullPolicy
+	acpImage = commonconfig.DefaultACPImage
 
 	imagePullSecrets = []string{}
 

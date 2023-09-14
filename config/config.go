@@ -176,8 +176,6 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.07"
-
 	// IscsiSelfHealingInterval is an interval with which the iSCSI self-healing thread is called periodically
 	IscsiSelfHealingInterval = 300 * time.Second
 
@@ -252,6 +250,12 @@ var (
 	// DisableExtraFeatures makes a subset of Trident features disabled
 	// This can be removed when ACP replaces feature-gating
 	DisableExtraFeatures = false
+
+	// DefaultAutosupportImage default image used by tridentctl and operator for asup sidecar
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.07"
+
+	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
+	DefaultACPImage = ""
 )
 
 func IsValidProtocol(p Protocol) bool {

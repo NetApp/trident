@@ -223,7 +223,8 @@ func init() {
 		"Override the HTTP request timeout for Trident controller’s REST API")
 
 	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the trident-acp premium features.")
-	installCmd.Flags().StringVar(&acpImage, "acp-image", "", "Override the default trident-acp container image.")
+	installCmd.Flags().StringVar(&acpImage, "acp-image", tridentconfig.DefaultACPImage,
+		"Override the default trident-acp container image.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
