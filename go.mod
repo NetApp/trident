@@ -1,6 +1,6 @@
 module github.com/netapp/trident
 
-go 1.20
+go 1.21
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.7.0
@@ -26,6 +26,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
+	github.com/jarcoal/httpmock v1.3.0
 	github.com/kr/secureheader v0.2.0
 	github.com/kubernetes-csi/csi-lib-utils v0.14.0
 	github.com/kubernetes-csi/csi-proxy/client v1.1.2

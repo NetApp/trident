@@ -53,8 +53,9 @@ var obliviateCRDCmd = &cobra.Command{
 				}
 			}
 			command := []string{"obliviate", "crd", fmt.Sprintf("--%s", forceConfirmation)}
-			TunnelCommand(command)
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			if err := initClients(); err != nil {
 				return err

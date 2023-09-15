@@ -46,8 +46,9 @@ var updateBackendCmd = &cobra.Command{
 				"update", "backend",
 				"--base64", base64.StdEncoding.EncodeToString(jsonData),
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return backendUpdate(args, jsonData)
 		}

@@ -61,7 +61,7 @@ type OntapAPI interface {
 	FlexgroupCreate(ctx context.Context, volume Volume) error
 	FlexgroupExists(ctx context.Context, volumeName string) (bool, error)
 	FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error)
-	FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error
+	FlexgroupModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error
 	FlexgroupSetComment(ctx context.Context, volumeNameInternal, volumeNameExternal, comment string) error
 	FlexgroupModifyUnixPermissions(
 		ctx context.Context, volumeNameInternal, volumeNameExternal, unixPermissions string,
@@ -191,7 +191,7 @@ type OntapAPI interface {
 
 	VolumeCreate(ctx context.Context, volume Volume) error
 	VolumeDestroy(ctx context.Context, volumeName string, force bool) error
-	VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error
+	VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	VolumeInfo(ctx context.Context, volumeName string) (*Volume, error)
 	VolumeListByPrefix(ctx context.Context, prefix string) (Volumes, error)

@@ -152,7 +152,8 @@ type OntapStorageDriverPool struct {
 // StorageBackendPool is a type constraint that enables drivers to generically report non-overlapping storage pools
 // within a backend.
 type StorageBackendPool interface {
-	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool
+	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
+		ANFStorageBackendPool | ANFSubvolumeStorageBackendPool | SolidfireStorageBackendPool | GCPNFSStorageBackendPool
 }
 
 // OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
@@ -351,6 +352,13 @@ type SolidfireStorageDriverPool struct {
 	SolidfireStorageDriverConfigDefaults `json:"defaults"`
 }
 
+// SolidfireStorageBackendPool is a non-overlapping section of a SolidFire backend that may be used for
+// provisioning storage.
+type SolidfireStorageBackendPool struct {
+	AccountID  int64  `json:"accountID,string"`
+	TenantName string `json:"tenantName"`
+}
+
 type SolidfireStorageDriverConfigDefaults struct {
 	CommonStorageDriverConfigDefaults
 }
@@ -458,6 +466,23 @@ type AzureNASStorageDriverPool struct {
 	AzureNASStorageDriverConfigDefaults `json:"defaults"`
 }
 
+// ANFStorageBackendPool is a non-overlapping section of an Azure backend that may be used for provisioning storage.
+type ANFStorageBackendPool struct {
+	SubscriptionID string `json:"subscriptionID"`
+	ResourceGroup  string `json:"resourceGroup"`
+	NetappAccount  string `json:"netappAccount"`
+	Location       string `json:"location"`
+	CapacityPool   string `json:"capacityPool"`
+}
+
+// ANFSubvolumeStorageBackendPool is a non-overlapping section of an Azure file backend that may be used for
+// provisioning storage.
+type ANFSubvolumeStorageBackendPool struct {
+	SubscriptionID string `json:"subscriptionID"`
+	Location       string `json:"location"`
+	FilePoolVolume string `json:"filePoolVolume"`
+}
+
 type AzureNASStorageDriverConfigDefaults struct {
 	ExportRule      string `json:"exportRule"`
 	SnapshotDir     string `json:"snapshotDir"`
@@ -561,6 +586,14 @@ type GCPNFSStorageDriverPool struct {
 	Network                           string              `json:"network"`
 	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
 	GCPNFSStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// GCPNFSStorageBackendPool is a non-overlapping section of a GCP backend that may be used for provisioning storage.
+type GCPNFSStorageBackendPool struct {
+	ProjectNumber string `json:"projectNumber"`
+	APIRegion     string `json:"apiRegion"`
+	ServiceLevel  string `json:"serviceLevel"`
+	StoragePool   string `json:"storagePool"`
 }
 
 type GCPNFSStorageDriverConfigDefaults struct {

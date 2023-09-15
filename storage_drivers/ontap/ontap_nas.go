@@ -380,9 +380,8 @@ func (d *NASStorageDriver) Create(
 			continue
 		}
 
-		// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 		if !enableSnapshotDir {
-			if err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, name); err != nil {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
 				createErrors = append(createErrors,
 					fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
 						storagePool.Name(), name, err))
@@ -597,13 +596,6 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
-	// Get the volume size
-	if api.IsVolumeSpaceAttributesReadError(err) {
-		Logc(ctx).WithField("originalName", originalName).Errorf("Could not import volume, size not available")
-		return err
-	}
-	volConfig.Size = flexvol.Size
-
 	// Rename the volume if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
 		if err := d.API.VolumeRename(ctx, originalName, volConfig.InternalName); err != nil {
@@ -643,6 +635,18 @@ func (d *NASStorageDriver) Import(
 			ctx, volConfig.InternalName, originalName, unixPerms,
 		); err != nil {
 			return err
+		}
+	}
+
+	// Update the snapshot directory access for managed volume import
+	if !volConfig.ImportNotManaged && volConfig.SnapshotDir != "" {
+		if enable, err := strconv.ParseBool(volConfig.SnapshotDir); err != nil {
+			return fmt.Errorf("could not import volume %s, invalid snapshotDirectory annotation; %s",
+				originalName, volConfig.SnapshotDir)
+		} else {
+			if err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, volConfig.InternalName, enable); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1169,27 +1173,22 @@ func (d *NASStorageDriver) Resize(
 		"Method":             "Resize",
 		"Type":               "NASStorageDriver",
 		"name":               name,
+		"volConfig.Size":     volConfig.Size,
 		"requestedSizeBytes": requestedSizeBytes,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
-	flexvolSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.VolumeExists, d.API.VolumeSize)
+	// Validation checks
+	newFlexvolSize, err := resizeValidation(ctx, volConfig, requestedSizeBytes,
+		d.API.VolumeExists, d.API.VolumeSize, d.API.VolumeInfo)
 	if err != nil {
 		return err
 	}
-
-	volConfig.Size = strconv.FormatUint(flexvolSize, 10)
-	if flexvolSize == requestedSizeBytes {
+	if newFlexvolSize == 0 && err == nil {
+		// nothing to do
 		return nil
 	}
-
-	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeInfo)
-	if err != nil {
-		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
-	}
-
-	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
@@ -1207,6 +1206,7 @@ func (d *NASStorageDriver) Resize(
 		return err
 	}
 
+	// update with the resized volume size
 	volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
 	return nil
 }

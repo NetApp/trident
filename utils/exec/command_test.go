@@ -426,3 +426,59 @@ func TestSanitizeExecOutput(t *testing.T) {
 		})
 	}
 }
+
+func TestExecuteWithoutLog(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		name string
+		args []string
+	}
+
+	tests := []struct {
+		name        string
+		args        args
+		want        []byte
+		wantErr     bool
+		execResults fakeExecResults
+	}{
+		{
+			name: "Success",
+			args: args{
+				ctx:  context.Background(),
+				name: "foo",
+				args: nil,
+			},
+			want:    []byte("\x1B[A" + "HelloWorld"),
+			wantErr: false,
+			execResults: fakeExecResults{
+				out:  "\x1B[A" + "HelloWorld",
+				code: 0,
+			},
+		},
+		{
+			name: "Fail",
+			args: args{
+				ctx:  context.Background(),
+				name: "foo",
+				args: nil,
+			},
+			want:    []byte("Hello"),
+			wantErr: true,
+			execResults: fakeExecResults{
+				out:  "Hello",
+				code: 1,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &command{
+				executor: newFakeExecCommand(tt.execResults),
+			}
+			got, err := client.ExecuteWithoutLog(tt.args.ctx, tt.args.name, tt.args.args...)
+			assert.Equalf(t, tt.wantErr, err != nil, "Execute(%v, %v, %v)", tt.args.ctx, tt.args.name, tt.args.args)
+			assert.Equalf(t, tt.want, got, "Execute(%v, %v, %v)", tt.args.ctx, tt.args.name, tt.args.args)
+		})
+	}
+}

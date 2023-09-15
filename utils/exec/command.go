@@ -35,6 +35,7 @@ type Command interface {
 	ExecuteWithTimeoutAndInput(
 		ctx context.Context, name string, timeout time.Duration, logOutput bool, stdin string, args ...string,
 	) ([]byte, error)
+	ExecuteWithoutLog(ctx context.Context, name string, args ...string) ([]byte, error)
 }
 
 // command is a receiver for the Command interface.
@@ -200,4 +201,24 @@ func sanitizeExecOutput(s string) string {
 	// Strip trailing newline
 	s = strings.TrimSuffix(s, "\n")
 	return s
+}
+
+// ExecuteWithoutLog invokes an external process, and does not log output returned by the command.
+func (c *command) ExecuteWithoutLog(ctx context.Context, name string, args ...string) ([]byte, error) {
+	Logc(ctx).WithFields(LogFields{
+		"command": name,
+		"args":    args,
+	}).Debug(">>>> command.ExecuteWithoutLog")
+
+	// create context with a cancellation
+	cancelCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	out, err := c.executor(cancelCtx, name, args...).CombinedOutput()
+
+	Logc(ctx).WithFields(LogFields{
+		"command": name,
+		"error":   err,
+	}).Debug("<<<< command.ExecuteWithoutLog")
+	return out, err
 }

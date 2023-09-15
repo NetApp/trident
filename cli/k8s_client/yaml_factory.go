@@ -358,8 +358,26 @@ spec:
       values: ["system-node-critical"]
 `
 
+const acpContainerYAMLTemplate = `
+      - name: trident-acp
+        image: {ACP_IMAGE}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          runAsNonRoot: false
+          capabilities:
+            drop:
+            - all
+        command:
+        - /bin/trident-acp
+        args:
+        - "--k8s_pod"
+        - "--log_format={LOG_FORMAT}"
+        - "--log_level={LOG_LEVEL}"
+        {DEBUG}
+`
+
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
-	var debugLine, sideCarLogLevel, ipLocalhost string
+	var debugLine, sideCarLogLevel, ipLocalhost, enableACP string
 	Log().WithFields(LogFields{
 		"Args": args,
 	}).Trace(">>>> GetCSIDeploymentYAML")
@@ -443,6 +461,14 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}", "")
 	}
 
+	if args.EnableACP {
+		enableACP = "- \"-enable_acp\""
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_IMAGE}", args.ACPImage)
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", "")
+	}
+
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
@@ -472,6 +498,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", enableACP)
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -532,6 +559,7 @@ spec:
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
         - "--metrics"
+        {ENABLE_ACP}
         {DEBUG}
         livenessProbe:
           exec:
@@ -575,6 +603,7 @@ spec:
         - "--k8s-pod"
         - "--log-format={LOG_FORMAT}"
         - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {ENABLE_ACP}
         {AUTOSUPPORT_PROXY}
         {AUTOSUPPORT_CUSTOM_URL}
         {AUTOSUPPORT_SERIAL_NUMBER}
@@ -654,6 +683,7 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
+      {ACP_YAML}
       {IMAGE_PULL_SECRETS}
       affinity:
         nodeAffinity:
@@ -1235,6 +1265,7 @@ spec:
                     values:
                       - node.csi.trident.netapp.io
               topologyKey: kubernetes.io/hostname
+      {NODE_TOLERATIONS}
       volumes:
         - name: trident-tracking-dir
           hostPath:

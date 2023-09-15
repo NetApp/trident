@@ -25,8 +25,10 @@ type Backend interface {
 	Online() bool
 	SetOnline(Online bool)
 	State() BackendState
+	UserState() UserBackendState
 	StateReason() string
 	SetState(State BackendState)
+	SetUserState(State UserBackendState)
 	Storage() map[string]Pool
 	SetStorage(Storage map[string]Pool)
 	Volumes() map[string]*Volume
@@ -50,6 +52,7 @@ type Backend interface {
 		ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
 	) error
 	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
+	UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo) (map[string]*Volume, error)
 	GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error)
 	ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error)
 	ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error

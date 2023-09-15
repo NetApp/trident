@@ -191,6 +191,13 @@ func (d *NASStorageDriver) Initialize(
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
 	}
 
+	// Identify non-overlapping storage backend pools on the driver backend.
+	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to encode storage backend pools: %v", err)
+	}
+	d.Config.BackendPools = pools
+
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
 		if i, parseErr := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64); parseErr != nil {
@@ -1133,8 +1140,15 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		"sizeBytes":     volume.QuotaInBytes,
 	}).Debug("Found volume to import.")
 
+	var snapshotDirAccess bool
 	// Modify the volume if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
+		if volConfig.SnapshotDir != "" {
+			if snapshotDirAccess, err = strconv.ParseBool(volConfig.SnapshotDir); err != nil {
+				return fmt.Errorf("could not import volume %s, snapshot directory access is set to %s",
+					originalName, volConfig.SnapshotDir)
+			}
+		}
 
 		// Update the volume labels
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, volume.Labels[storage.ProvisioningLabelTag]) {
@@ -1143,7 +1157,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		labels := d.updateTelemetryLabels(ctx, volume)
 
 		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == api.ProtocolTypeCIFS {
-			if err = d.SDK.ModifyVolume(ctx, volume, labels, nil); err != nil {
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1171,7 +1185,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 					return fmt.Errorf("could not import volume %s; %v", originalName, err)
 				}
 			}
-			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions); err != nil {
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1803,6 +1817,35 @@ func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
 func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []string {
 	return []string{}
+}
+
+// getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
+func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.ANFStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. Resource Group - contains at least one netapp account; names are unique within a subscription.
+	// 2. NetappAccount - contains at least one capacity pool; names are unique to resource group OR region;
+	//   names can only be reused if resource group AND region differ from matching account name.
+	// 3. Capacity Pool - names are unique within a given ResourceGroup and NetappAccount.
+
+	// CapacityPoolsForStoragePools relies on an internal mapping of storage pools created from the driver config.
+	// If the behavior of that method should ever change, this method will need to change as well.
+	cPools := d.SDK.CapacityPoolsForStoragePools(ctx)
+	backendPools := make([]drivers.ANFStorageBackendPool, 0, len(cPools))
+	for _, cPool := range cPools {
+		backendPools = append(backendPools, drivers.ANFStorageBackendPool{
+			SubscriptionID: d.Config.SubscriptionID,
+			ResourceGroup:  cPool.ResourceGroup,
+			NetappAccount:  cPool.NetAppAccount,
+			Location:       cPool.Location,
+			CapacityPool:   cPool.Name,
+		})
+	}
+
+	return backendPools
 }
 
 // GetInternalVolumeName accepts the name of a volume being created and returns what the internal name

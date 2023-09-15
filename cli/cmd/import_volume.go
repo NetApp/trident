@@ -58,8 +58,9 @@ Volume path').`,
 			if importNoManage {
 				command = append(command, "--no-manage")
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return volumeImport(args[0], args[1], importNoManage, pvcDataJSON)
 		}

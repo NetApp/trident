@@ -140,6 +140,9 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 
 	transportConfig := client.DefaultTransportConfig()
 	transportConfig.Host = config.ManagementLIF
+	if config.unitTestTransportConfigSchemes != "" {
+		transportConfig.Schemes = []string{config.unitTestTransportConfigSchemes}
+	}
 
 	result.api = client.NewHTTPClientWithConfig(formats, transportConfig)
 
@@ -420,7 +423,7 @@ func (c RestClient) getAllVolumePayloadRecords(
 				payload.NumRecords = utils.Ptr(int64(0))
 			}
 			payload.NumRecords = utils.Ptr(*payload.NumRecords + *resultNext.Payload.NumRecords)
-			payload.VolumeResponseInlineRecords = append(resultNext.Payload.VolumeResponseInlineRecords, resultNext.Payload.VolumeResponseInlineRecords...)
+			payload.VolumeResponseInlineRecords = append(payload.VolumeResponseInlineRecords, resultNext.Payload.VolumeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				break
@@ -456,7 +459,7 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = &c.svmUUID
 	params.SetName(utils.Ptr(pattern))
@@ -1302,7 +1305,7 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = &c.svmUUID
 
@@ -1648,9 +1651,8 @@ func (c RestClient) SnapshotRestoreFlexgroup(ctx context.Context, snapshotName, 
 	return c.restoreSnapshotByNameAndStyle(ctx, snapshotName, volumeName, models.VolumeStyleFlexgroup)
 }
 
-// VolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
+// VolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c RestClient) VolumeModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexvol)
 	if err != nil {
 		return err
@@ -1670,7 +1672,7 @@ func (c RestClient) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, vo
 	params.UUID = uuid
 
 	volumeInfo := &models.Volume{}
-	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(false)
+	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
 	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
@@ -1729,7 +1731,7 @@ func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.Iscs
 	params.HTTPClient = c.httpClient
 	params.ReturnRecords = utils.Ptr(true)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.Initiator = utils.Ptr("default")
@@ -3852,7 +3854,9 @@ func (c RestClient) FlexGroupCreate(
 	exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool,
 	snapshotReserve int,
 ) error {
-	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, models.VolumeStyleFlexgroup, false)
+	return c.createVolumeByStyle(ctx, name, int64(size), aggrs, spaceReserve, snapshotPolicy, unixPermissions,
+		exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve,
+		models.VolumeStyleFlexgroup, false)
 }
 
 // FlexgroupCloneSplitStart starts splitting the flexgroup clone
@@ -3912,10 +3916,9 @@ func (c RestClient) FlexgroupSetQosPolicyGroupName(
 	return c.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, volumeName, qosPolicyGroup, models.VolumeStyleFlexgroup)
 }
 
-// FlexGroupVolumeDisableSnapshotDirectoryAccess disables access to the ".snapshot" directory
-// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
-func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
-	ctx context.Context, flexGroupVolumeName string,
+// FlexGroupVolumeModifySnapshotDirectoryAccess modifies access to the ".snapshot" directory
+func (c RestClient) FlexGroupVolumeModifySnapshotDirectoryAccess(
+	ctx context.Context, flexGroupVolumeName string, enable bool,
 ) error {
 	volume, err := c.getVolumeByNameAndStyle(ctx, flexGroupVolumeName, models.VolumeStyleFlexgroup)
 	if err != nil {
@@ -3936,7 +3939,7 @@ func (c RestClient) FlexGroupVolumeDisableSnapshotDirectoryAccess(
 	params.UUID = uuid
 
 	volumeInfo := &models.Volume{}
-	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(false)
+	volumeInfo.SnapshotDirectoryAccessEnabled = utils.Ptr(enable)
 	params.SetInfo(volumeInfo)
 
 	volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
@@ -4046,7 +4049,8 @@ func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName stri
 	checkStatus := func() error {
 		qtree, err := c.QtreeGetByName(ctx, qtreeName, volumeName)
 		if qtree == nil {
-			return fmt.Errorf("Qtree '%v' does not exit within volume '%v', will continue checking", qtreeName, volumeName)
+			return fmt.Errorf("Qtree '%v' does not exit within volume '%v', will continue checking", qtreeName,
+				volumeName)
 		}
 		return err
 	}
@@ -4061,8 +4065,7 @@ func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName stri
 
 	// Run the existence check using an exponential backoff
 	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
-		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.",
-			statusBackoff.MaxElapsedTime.Seconds())
+		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.", statusBackoff.MaxElapsedTime.Seconds())
 		return err
 	}
 
@@ -4162,7 +4165,7 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string) 
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(namePattern))         // Qtree name prefix
@@ -4215,7 +4218,7 @@ func (c RestClient) QtreeGetByPath(ctx context.Context, path string) (*models.Qt
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetPath(utils.Ptr(path))
@@ -4249,7 +4252,7 @@ func (c RestClient) QtreeGetByName(ctx context.Context, name, volumeName string)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetName(utils.Ptr(name))
@@ -4284,7 +4287,7 @@ func (c RestClient) QtreeCount(ctx context.Context, volumeName string) (int, err
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetVolumeName(utils.Ptr(volumeName)) // Flexvol name
@@ -4347,7 +4350,7 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))                // Qtree name
@@ -4424,7 +4427,7 @@ func (c RestClient) QtreeGet(ctx context.Context, name, volumePrefix string) (*m
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
 	params.SetName(utils.Ptr(name))          // qtree name
@@ -4467,7 +4470,7 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.SetVolumeName(utils.Ptr(pattern)) // Flexvol name prefix
@@ -4710,7 +4713,7 @@ func (c RestClient) QuotaGetEntry(
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SetType(utils.Ptr(quotaType))
 	params.SetSvmUUID(utils.Ptr(c.svmUUID))
@@ -4780,7 +4783,7 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 
-	// params.MaxRecords = ToInt64Pointer(1) // use for testing, forces pagination
+	// params.MaxRecords = utils.Ptr(int64(1)) // use for testing, forces pagination
 
 	params.SvmUUID = utils.Ptr(c.svmUUID)
 	params.VolumeName = utils.Ptr(volumeName)
@@ -5654,7 +5657,7 @@ func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (
 	if nsCreateAccepted.IsSuccess() {
 		nsResponse := nsCreateAccepted.GetPayload()
 		// Verify that the created namespace is the same as the one we requested.
-		if nsResponse != nil && *nsResponse.NumRecords == 1 &&
+		if nsResponse != nil && nsResponse.NumRecords != nil && *nsResponse.NumRecords == 1 &&
 			*nsResponse.NvmeNamespaceResponseInlineRecords[0].Name == ns.Name {
 			return *nsResponse.NvmeNamespaceResponseInlineRecords[0].UUID, nil
 		}
@@ -5727,8 +5730,7 @@ func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string) (*nvm
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords,
-				resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
+			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords, resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true

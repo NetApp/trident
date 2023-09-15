@@ -90,7 +90,8 @@ type VolumePublishInfo struct {
 	HostName          string   `json:"hostName,omitempty"`
 	FilesystemType    string   `json:"fstype,omitempty"`
 	SharedTarget      bool     `json:"sharedTarget,omitempty"`
-	DevicePath        string   `json:"rawDevicePath,omitempty"`
+	DevicePath        string   `json:"devicePath,omitempty"`
+	RawDevicePath     string   `json:"rawDevicePath,omitempty"` // NOTE: devicePath was renamed to this 23.01-23.04
 	Unmanaged         bool     `json:"unmanaged,omitempty"`
 	StagingMountpoint string   `json:"stagingMountpoint,omitempty"` // NOTE: Added in 22.04 release
 	TridentUUID       string   `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
@@ -150,6 +151,11 @@ func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 		ReadOnly:   v.ReadOnly,
 		AccessMode: v.AccessMode,
 	}
+}
+
+type VolumeUpdateInfo struct {
+	SnapshotDirectory string `json:"snapshotDirectory"`
+	PoolLevel         bool   `json:"poolLevel"`
 }
 
 type Node struct {
@@ -245,7 +251,8 @@ func (f *NodePublicationStateFlags) IsNodeCleaned() bool {
 }
 
 func (f *NodePublicationStateFlags) String() string {
-	return fmt.Sprintf("OrchestratorReady: %s; AdministratorReady: %s; ProvisionerReady: %s", PtrToString(f.OrchestratorReady), PtrToString(f.AdministratorReady),
+	return fmt.Sprintf("OrchestratorReady: %s; AdministratorReady: %s; ProvisionerReady: %s",
+		PtrToString(f.OrchestratorReady), PtrToString(f.AdministratorReady),
 		PtrToString(f.ProvisionerReady))
 }
 

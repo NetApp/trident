@@ -1147,18 +1147,18 @@ func (mr *MockOrchestratorMockRecorder) UpdateBackendByBackendUUID(arg0, arg1, a
 }
 
 // UpdateBackendState mocks base method.
-func (m *MockOrchestrator) UpdateBackendState(arg0 context.Context, arg1, arg2 string) (*storage.BackendExternal, error) {
+func (m *MockOrchestrator) UpdateBackendState(arg0 context.Context, arg1, arg2, arg3 string) (*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBackendState", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateBackendState", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*storage.BackendExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateBackendState indicates an expected call of UpdateBackendState.
-func (mr *MockOrchestratorMockRecorder) UpdateBackendState(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) UpdateBackendState(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockOrchestrator)(nil).UpdateBackendState), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockOrchestrator)(nil).UpdateBackendState), arg0, arg1, arg2, arg3)
 }
 
 // UpdateMirror mocks base method.
@@ -1190,7 +1190,7 @@ func (mr *MockOrchestratorMockRecorder) UpdateNode(arg0, arg1, arg2 interface{})
 }
 
 // UpdateVolume mocks base method.
-func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 *[]string) error {
+func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 *utils.VolumeUpdateInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -1201,4 +1201,18 @@ func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 
 func (mr *MockOrchestratorMockRecorder) UpdateVolume(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolume), arg0, arg1, arg2)
+}
+
+// UpdateVolumeLUKSPassphraseNames mocks base method.
+func (m *MockOrchestrator) UpdateVolumeLUKSPassphraseNames(arg0 context.Context, arg1 string, arg2 *[]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumeLUKSPassphraseNames", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumeLUKSPassphraseNames indicates an expected call of UpdateVolumeLUKSPassphraseNames.
+func (mr *MockOrchestratorMockRecorder) UpdateVolumeLUKSPassphraseNames(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeLUKSPassphraseNames", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolumeLUKSPassphraseNames), arg0, arg1, arg2)
 }

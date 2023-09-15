@@ -69,6 +69,9 @@ var (
 	imagePullPolicy string
 	cloudProvider   string
 
+	acpImage  string
+	enableACP bool
+
 	autosupportImage        string
 	autosupportProxy        string
 	autosupportSerialNumber string
@@ -284,6 +287,7 @@ func (i *Installer) setInstallationParams(
 	autosupportImage = commonconfig.DefaultAutosupportImage
 	httpTimeout = commonconfig.HTTPTimeoutString
 	imagePullPolicy = DefaultImagePullPolicy
+	acpImage = commonconfig.DefaultACPImage
 
 	imagePullSecrets = []string{}
 
@@ -293,6 +297,11 @@ func (i *Installer) setInstallationParams(
 		disableAuditLog = true
 	} else {
 		disableAuditLog = *cr.Spec.DisableAuditLog
+	}
+
+	enableACP = cr.Spec.EnableACP
+	if cr.Spec.ACPImage != "" {
+		acpImage = cr.Spec.ACPImage
 	}
 
 	useIPv6 = cr.Spec.IPv6
@@ -613,6 +622,8 @@ func (i *Installer) InstallOrPatchTrident(
 		NodePluginNodeSelector:  nodePluginNodeSelector,
 		NodePluginTolerations:   nodePluginTolerations,
 		ImagePullPolicy:         imagePullPolicy,
+		EnableACP:               strconv.FormatBool(enableACP),
+		ACPImage:                acpImage,
 	}
 
 	Log().WithFields(LogFields{
@@ -1405,6 +1416,8 @@ func (i *Installer) createOrPatchTridentDeployment(
 		ImagePullPolicy:         imagePullPolicy,
 		EnableForceDetach:       enableForceDetach,
 		CloudProvider:           cloudProvider,
+		ACPImage:                acpImage,
+		EnableACP:               enableACP,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -1446,7 +1459,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		createDaemonSet = true
 	}
 
-	if err = i.client.RemoveMultipleDaemonSets(unwantedDaemonSets, true); err != nil {
+	if err = i.client.RemoveMultipleDaemonSets(unwantedDaemonSets); err != nil {
 		return fmt.Errorf("failed to remove unwanted Trident daemonsets; %v", err)
 	}
 

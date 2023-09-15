@@ -3511,31 +3511,57 @@ func mockVolumeSizeLarger(ctx context.Context, name string) (uint64, error) {
 	return 10000, nil
 }
 
+func mockVolumeInfo(ctx context.Context, name string) (*api.Volume, error) {
+	return &api.Volume{
+		Name:            name,
+		SnapshotPolicy:  "fakePolicy",
+		SnapshotReserve: 0,
+	}, nil
+}
+
+func mockVolumeInfoWithSnapshotReserve(ctx context.Context, name string) (*api.Volume, error) {
+	return &api.Volume{
+		Name:            name,
+		SnapshotPolicy:  "fakePolicy",
+		SnapshotReserve: 90,
+	}, nil
+}
+
 func TestResizeValidation(t *testing.T) {
 	// Test1: Positive flow
 	ctx := context.Background()
 	name := "test"
 	sizeBytes := 1024
 
-	val, err := resizeValidation(ctx, name, uint64(sizeBytes), mockVolumeExists, mockVolumeSize)
+	volConfig := &storage.VolumeConfig{
+		Name:         name,
+		InternalName: name + "internal",
+		Size:         "1024",
+	}
 
+	// Test1: No change, volume size and new size are the same value
+	val, err := resizeValidation(ctx, volConfig, uint64(sizeBytes), mockVolumeExists, mockVolumeSize, mockVolumeInfo)
 	assert.NoError(t, err)
-	assert.Equal(t, uint64(sizeBytes), val)
+	assert.Equal(t, uint64(0), val)
 
-	// Test2: Error flow: volume does not exists
-	_, err = resizeValidation(ctx, name, uint64(sizeBytes), mockVolumeExistsError, mockVolumeSize)
-
+	// Test2: Error flow: volume does not exist
+	_, err = resizeValidation(ctx, volConfig, uint64(sizeBytes), mockVolumeExistsError, mockVolumeSize, mockVolumeInfo)
 	assert.Error(t, err)
 
 	// Test3: Error flow: Volume size error
-	_, err = resizeValidation(ctx, name, uint64(sizeBytes), mockVolumeExists, mockVolumeSizeError)
-
+	_, err = resizeValidation(ctx, volConfig, uint64(sizeBytes), mockVolumeExists, mockVolumeSizeError, mockVolumeInfo)
 	assert.Error(t, err)
 
-	// Test4: Error flow: Volume size is less
-	_, err = resizeValidation(ctx, name, uint64(sizeBytes), mockVolumeExists, mockVolumeSizeLarger)
-
+	// Test4: Error flow: Requested Volume size is less than the previous size
+	_, err = resizeValidation(ctx, volConfig, uint64(sizeBytes-100), mockVolumeExists, mockVolumeSizeLarger, mockVolumeInfo)
 	assert.Error(t, err)
+	ok, _ := errors.HasUnsupportedCapacityRangeError(err)
+	assert.Equal(t, true, ok)
+
+	// Test5: Positive flow: Volume should resize
+	newSize, err := resizeValidation(ctx, volConfig, uint64(sizeBytes*10), mockVolumeExists, mockVolumeSizeLarger, mockVolumeInfoWithSnapshotReserve)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(sizeBytes*100), newSize)
 }
 
 func TestGetISCSITargetInfo(t *testing.T) {

@@ -1244,7 +1244,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 
 // ModifyVolume updates attributes of a volume.
 func (c Client) ModifyVolume(
-	ctx context.Context, filesystem *FileSystem, labels map[string]string, unixPermissions *string,
+	ctx context.Context, filesystem *FileSystem, labels map[string]string, unixPermissions *string, snapshotDirAccess *bool,
 ) error {
 	logFields := LogFields{
 		"API":    "VolumesClient.Get",
@@ -1289,6 +1289,10 @@ func (c Client) ModifyVolume(
 
 	if unixPermissions != nil {
 		anfVolume.Properties.UnixPermissions = unixPermissions
+	}
+
+	if snapshotDirAccess != nil {
+		anfVolume.Properties.SnapshotDirectoryVisible = snapshotDirAccess
 	}
 
 	// Clear out ReadOnly and other fields that we don't want to change when merely relabeling.

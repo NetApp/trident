@@ -115,6 +115,8 @@ var (
 	probePort               int64
 	k8sTimeout              time.Duration
 	httpRequestTimeout      time.Duration
+	acpImage                string
+	enableACP               bool
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -219,6 +221,10 @@ func init() {
 		"The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout,
 		"Override the HTTP request timeout for Trident controller’s REST API")
+
+	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the trident-acp premium features.")
+	installCmd.Flags().StringVar(&acpImage, "acp-image", tridentconfig.DefaultACPImage,
+		"Override the default trident-acp container image.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -602,6 +608,8 @@ func prepareYAMLFiles() error {
 		ServiceAccountName:      getControllerRBACResourceName(),
 		ImagePullPolicy:         imagePullPolicy,
 		EnableForceDetach:       enableForceDetach,
+		ACPImage:                acpImage,
+		EnableACP:               enableACP,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -1022,6 +1030,8 @@ func installTrident() (returnError error) {
 			ServiceAccountName:      getControllerRBACResourceName(),
 			ImagePullPolicy:         imagePullPolicy,
 			EnableForceDetach:       enableForceDetach,
+			ACPImage:                acpImage,
+			EnableACP:               enableACP,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))

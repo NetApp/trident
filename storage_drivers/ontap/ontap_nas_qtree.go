@@ -1113,7 +1113,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 
 	// Disable '.snapshot' as needed
 	if !enableSnapshotDir {
-		err := d.API.VolumeDisableSnapshotDirectoryAccess(ctx, flexvol)
+		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
 		if err != nil {
 			if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
 				Logc(ctx).Error(err)
@@ -2223,6 +2223,19 @@ func (d NASQtreeStorageDriver) SetVolumePatternToFindQtree(
 	return volumePattern, qtreeName, nil
 }
 
+func (d NASQtreeStorageDriver) getQtreesInPool(poolName string, allVolumes map[string]*storage.Volume) map[string]*storage.Volume {
+	poolVolumes := make(map[string]*storage.Volume)
+
+	for _, vol := range allVolumes {
+		_, flexvol, _, err := d.ParseQtreeInternalID(vol.Config.InternalID)
+		if err == nil && flexvol == poolName {
+			poolVolumes[vol.Config.Name] = vol
+		}
+	}
+
+	return poolVolumes
+}
+
 // EnsureSMBShare ensures that required SMB share is made available.
 func (d *NASQtreeStorageDriver) EnsureSMBShare(
 	ctx context.Context, name string,
@@ -2256,4 +2269,117 @@ func (d *NASQtreeStorageDriver) EnsureSMBShare(
 	}
 
 	return nil
+}
+
+func (d *NASQtreeStorageDriver) Update(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+	updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*storage.Volume,
+) (map[string]*storage.Volume, error) {
+	fields := LogFields{
+		"Method":     "Update",
+		"Type":       "NASQtreeStorageDriver",
+		"name":       volConfig.Name,
+		"updateInfo": updateInfo,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> Update")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< Update")
+
+	updateGenericError := fmt.Sprintf("failed to update volume %v", volConfig.Name)
+
+	if updateInfo == nil {
+		msg := fmt.Sprintf("nothing to update for volume %v", volConfig.Name)
+		err := errors.InvalidInputError(msg)
+		Logc(ctx).WithError(err).Error(updateGenericError)
+		return nil, err
+	}
+
+	// Get the qtree and parent flexvol
+	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
+		d.FlexvolNamePrefix())
+	if err != nil {
+		return nil, err
+	}
+
+	exists, flexvol, err := d.API.QtreeExists(ctx, name, volumePattern)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("Error checking for existing volume.")
+		return nil, err
+	}
+	if !exists {
+		Logc(ctx).WithFields(LogFields{"qtree": name, "flexvol": flexvol}).Debug("Qtree does not exist.")
+		return nil, fmt.Errorf("volume %s does not exist", name)
+	}
+
+	var updatedVols map[string]*storage.Volume
+	var updateErr error
+
+	// Update snapshot directory
+	if updateInfo.SnapshotDirectory != "" {
+		updatedVols, updateErr = d.setSnapshotDirectory(ctx, volConfig, updateInfo.SnapshotDirectory, updateInfo.PoolLevel, flexvol, allVolumes)
+		if updateErr != nil {
+			Logc(ctx).WithError(updateErr).Error(updateGenericError)
+			return nil, updateErr
+		}
+	}
+
+	// If qtree exists, update the volConfig.InternalID in case it was not set
+	// This is useful for "legacy" volumes which do not have InternalID set when they were created
+	if volConfig.InternalID == "" {
+		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("setting InternalID")
+	}
+
+	return updatedVols, updateErr
+}
+
+func (d *NASQtreeStorageDriver) setSnapshotDirectory(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+	snapshotDir string, poolLevel bool,
+	poolName string, allVolumes map[string]*storage.Volume,
+) (map[string]*storage.Volume, error) {
+	fields := LogFields{
+		"Method":      "setSnapshotDirectory",
+		"Type":        "NASQtreeStorageDriver",
+		"name":        volConfig.Name,
+		"snapshotDir": snapshotDir,
+		"poolLevel":   poolLevel,
+		"poolName":    poolName,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> setSnapshotDirectory")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< setSnapshotDirectory")
+
+	genericErrMsg := fmt.Sprintf("failed to set snapshot directory for %v.", volConfig.Name)
+
+	// Validate request
+	snapDirRequested, err := strconv.ParseBool(snapshotDir)
+	if err != nil {
+		msg := fmt.Sprintf("invalid value for snapshot directory %v", snapshotDir)
+		Logc(ctx).WithError(err).Error(msg)
+		inputErr := errors.InvalidInputError(msg)
+		return nil, inputErr
+	}
+
+	// Ensure poolLevel is always set to true for modifying snapshot directory
+	if !poolLevel {
+		msg := fmt.Sprintf("pool level must be set to true for updating snapshot directory of %v volume", d.Config.StorageDriverName)
+		inputErr := errors.InvalidInputError(msg)
+		Logc(ctx).WithError(inputErr).Error(genericErrMsg)
+		return nil, inputErr
+	}
+
+	// Modify snapshotDirectory access for the pool i.e parent flexvol
+	err = d.API.VolumeModifySnapshotDirectoryAccess(ctx, poolName, snapDirRequested)
+	if err != nil {
+		Logc(ctx).WithError(err).Error(genericErrMsg)
+		return nil, err
+	}
+
+	// Once snapshot directory is modified for the parent flexvol aka qtree pool,
+	// find all volumes belonging to same qtree pool and update their value
+	allQtreePoolVols := d.getQtreesInPool(poolName, allVolumes)
+	for _, vol := range allQtreePoolVols {
+		vol.Config.SnapshotDir = snapshotDir
+	}
+
+	return allQtreePoolVols, nil
 }

@@ -40,8 +40,9 @@ var getSnapshotCmd = &cobra.Command{
 			if getSnapshotVolume != "" {
 				command = append(command, "--volume", getSnapshotVolume)
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return snapshotList(args)
 		}

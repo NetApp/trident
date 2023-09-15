@@ -142,7 +142,7 @@ func fakeTASR(name, namespace, pvcName, vsName string) *netappv1.TridentActionSn
 }
 
 func TestHandleActionSnapshotRestore(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)
@@ -242,6 +242,9 @@ func TestHandleActionSnapshotRestore(t *testing.T) {
 }
 
 func TestHandleActionSnapshotRestore_Disabled(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = true
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -310,7 +313,7 @@ func TestHandleActionSnapshotRestore_Disabled(t *testing.T) {
 }
 
 func TestHandleActionSnapshotRestore_InProgressError(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)

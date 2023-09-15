@@ -658,9 +658,8 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 
-	// Disable '.snapshot' to allow official mysql container's chmod-in-init to work
 	if !enableSnapshotDir {
-		if err := d.API.FlexgroupDisableSnapshotDirectoryAccess(ctx, name); err != nil {
+		if err := d.API.FlexgroupModifySnapshotDirectoryAccess(ctx, name, false); err != nil {
 			createErrors = append(createErrors,
 				fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error disabling snapshot directory access for volume %v: %v",
 					storagePool.Name(), name, err))
@@ -903,9 +902,6 @@ func (d *NASFlexGroupStorageDriver) Import(
 		Logc(ctx).WithField("originalName", originalName).Error("Could not import volume, type is not rw.")
 		return fmt.Errorf("could not import volume %s, type is %s, not rw", originalName, flexgroup.AccessType)
 	}
-
-	// Get the volume size
-	volConfig.Size = flexgroup.Size
 
 	// We cannot rename flexgroups, so internal name should match the imported originalName
 	volConfig.InternalName = originalName
@@ -1592,33 +1588,27 @@ func (d *NASFlexGroupStorageDriver) Resize(
 		"Method":             "Resize",
 		"Type":               "NASFlexGroupStorageDriver",
 		"name":               name,
+		"volConfig.Size":     volConfig.Size,
 		"requestedSizeBytes": requestedSizeBytes,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
-	flexgroupSize, err := resizeValidation(ctx, name, requestedSizeBytes, d.API.FlexgroupExists,
-		d.API.FlexgroupSize)
+	newFlexgroupSize, err := resizeValidation(ctx, volConfig, requestedSizeBytes,
+		d.API.FlexgroupExists, d.API.FlexgroupSize, d.API.FlexgroupInfo)
 	if err != nil {
 		return err
 	}
-
-	volConfig.Size = strconv.FormatUint(flexgroupSize, 10)
-	if flexgroupSize == requestedSizeBytes {
+	if newFlexgroupSize == 0 && err == nil {
+		// nothing to do
 		return nil
 	}
-
-	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.FlexgroupInfo)
-	if err != nil {
-		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
-	}
-
-	newFlexgroupSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 
 	if err := d.API.FlexgroupSetSize(ctx, name, strconv.FormatUint(newFlexgroupSize, 10)); err != nil {
 		return err
 	}
 
+	// update with the resized flexgroup size
 	volConfig.Size = strconv.FormatUint(requestedSizeBytes, 10)
 	return nil
 }

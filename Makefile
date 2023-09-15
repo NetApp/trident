@@ -14,7 +14,7 @@ REGISTRY ?= $(DEFAULT_REGISTRY)
 BUILDX_OUTPUT ?= load
 
 # GO_IMAGE golang image used in default GO_SHELL
-GO_IMAGE ?= golang:1.20
+GO_IMAGE ?= golang:1.21
 
 # GO_CMD go command used for go build
 GO_CMD ?= go
@@ -82,6 +82,12 @@ OPERATOR_MANIFEST_TAG ?= $(OPERATOR_TAG)
 # cross-platform builds, see example config: https://github.com/moby/buildkit/blob/master/docs/buildkitd.toml.md
 BUILDX_CONFIG_FILE ?=
 
+# DEFAULT_AUTOSUPPORT_IMAGE override the default asup image in tridentctl and operator
+DEFAULT_AUTOSUPPORT_IMAGE ?=
+
+# DEFAULT_ACP_IMAGE override the default acp image in tridentctl and operator
+DEFAULT_ACP_IMAGE ?=
+
 # Constants
 ALL_PLATFORMS = linux/amd64 linux/arm64 windows/amd64/ltsc2022 windows/amd64/1809 darwin/amd64
 DEFAULT_REGISTRY = docker.io/netapp
@@ -118,8 +124,8 @@ TRIDENT_IMAGE_REPO := $(REGISTRY)/$(TRIDENT_IMAGE):
 DEFAULT_OPERATOR_TAG := $(DEFAULT_REGISTRY)/$(OPERATOR_IMAGE):$(VERSION)
 
 # linker flags need to be properly encapsulated with double quotes to handle spaces in values
-LINKER_FLAGS = "-s -w -X \"$(TRIDENT_CONFIG_PKG).BuildHash=$(GITHASH)\" -X \"$(TRIDENT_CONFIG_PKG).BuildType=$(BUILD_TYPE)\" -X \"$(TRIDENT_CONFIG_PKG).BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"$(TRIDENT_CONFIG_PKG).BuildTime=$(BUILD_TIME)\" -X \"$(TRIDENT_CONFIG_PKG).BuildImage=$(TRIDENT_TAG)\" -X \"$(OPERATOR_CONFIG_PKG).BuildImage=$(OPERATOR_TAG)\""
-OPERATOR_LINKER_FLAGS = "-s -w -X \"$(OPERATOR_CONFIG_PKG).BuildHash=$(GITHASH)\" -X \"$(OPERATOR_CONFIG_PKG).BuildType=$(BUILD_TYPE)\" -X \"$(OPERATOR_CONFIG_PKG).BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"$(OPERATOR_CONFIG_PKG).BuildTime=$(BUILD_TIME)\" -X \"$(OPERATOR_CONFIG_PKG).BuildImage=$(OPERATOR_TAG)\" -X \"$(OPERATOR_INSTALLER_CONFIG_PKG).DefaultTridentVersion=$(TRIDENT_VERSION)\" -X \"$(OPERATOR_INSTALLER_CONFIG_PKG).DefaultTridentRepo=$(TRIDENT_IMAGE_REPO)\""
+LINKER_FLAGS = "-s -w -X \"$(TRIDENT_CONFIG_PKG).BuildHash=$(GITHASH)\" -X \"$(TRIDENT_CONFIG_PKG).BuildType=$(BUILD_TYPE)\" -X \"$(TRIDENT_CONFIG_PKG).BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"$(TRIDENT_CONFIG_PKG).BuildTime=$(BUILD_TIME)\" -X \"$(TRIDENT_CONFIG_PKG).BuildImage=$(TRIDENT_TAG)\" -X \"$(OPERATOR_CONFIG_PKG).BuildImage=$(OPERATOR_TAG)\"$(if $(DEFAULT_AUTOSUPPORT_IMAGE), -X \"$(TRIDENT_CONFIG_PKG).DefaultAutosupportImage=$(DEFAULT_AUTOSUPPORT_IMAGE)\")$(if $(DEFAULT_ACP_IMAGE), -X \"$(TRIDENT_CONFIG_PKG).DefaultACPImage=$(DEFAULT_ACP_IMAGE)\")"
+OPERATOR_LINKER_FLAGS = "-s -w -X \"$(OPERATOR_CONFIG_PKG).BuildHash=$(GITHASH)\" -X \"$(OPERATOR_CONFIG_PKG).BuildType=$(BUILD_TYPE)\" -X \"$(OPERATOR_CONFIG_PKG).BuildTypeRev=$(BUILD_TYPE_REV)\" -X \"$(OPERATOR_CONFIG_PKG).BuildTime=$(BUILD_TIME)\" -X \"$(OPERATOR_CONFIG_PKG).BuildImage=$(OPERATOR_TAG)\" -X \"$(OPERATOR_INSTALLER_CONFIG_PKG).DefaultTridentVersion=$(TRIDENT_VERSION)\" -X \"$(OPERATOR_INSTALLER_CONFIG_PKG).DefaultTridentRepo=$(TRIDENT_IMAGE_REPO)\"$(if $(DEFAULT_AUTOSUPPORT_IMAGE), -X \"$(TRIDENT_CONFIG_PKG).DefaultAutosupportImage=$(DEFAULT_AUTOSUPPORT_IMAGE)\")$(if $(DEFAULT_ACP_IMAGE), -X \"$(TRIDENT_CONFIG_PKG).DefaultACPImage=$(DEFAULT_ACP_IMAGE)\")"
 
 # Functions
 

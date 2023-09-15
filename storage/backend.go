@@ -101,17 +101,36 @@ type StateGetter interface {
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
 }
 
+// VolumeUpdater provides a common interface for backends that support updating the volume
+type VolumeUpdater interface {
+	Update(
+		ctx context.Context, volConfig *VolumeConfig,
+		updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*Volume,
+	) (map[string]*Volume, error)
+}
+
 type StorageBackend struct {
 	driver             Driver
 	name               string
 	backendUUID        string
 	online             bool
 	state              BackendState
+	userState          UserBackendState
 	stateReason        string
 	storage            map[string]Pool
 	volumes            map[string]*Volume
 	configRef          string
 	nodeAccessUpToDate bool
+}
+
+func (b *StorageBackend) UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo) (map[string]*Volume, error) {
+	volUpdateDriver, ok := b.driver.(VolumeUpdater)
+	if !ok {
+		return nil, errors.UnsupportedError(
+			fmt.Sprintf("volume update is not supported for backend of type %v", b.driver.Name()))
+	}
+
+	return volUpdateDriver.Update(ctx, volConfig, updateInfo, b.volumes)
 }
 
 func (b *StorageBackend) Driver() Driver {
@@ -150,6 +169,10 @@ func (b *StorageBackend) State() BackendState {
 	return b.state
 }
 
+func (b *StorageBackend) UserState() UserBackendState {
+	return b.userState
+}
+
 func (b *StorageBackend) StateReason() string {
 	return b.stateReason
 }
@@ -162,6 +185,10 @@ func (b *StorageBackend) SetState(state BackendState) {
 	} else {
 		b.online = false
 	}
+}
+
+func (b *StorageBackend) SetUserState(state UserBackendState) {
+	b.userState = state
 }
 
 func (b *StorageBackend) Storage() map[string]Pool {
@@ -189,7 +216,8 @@ func (b *StorageBackend) SetConfigRef(ConfigRef string) {
 }
 
 type UpdateBackendStateRequest struct {
-	State string `json:"state"`
+	BackendState     string `json:"state"`
+	UserBackendState string `json:"userState"`
 }
 
 type BackendState string
@@ -238,13 +266,47 @@ func (s BackendState) IsFailed() bool {
 	return s == Failed
 }
 
+type UserBackendState string
+
+const (
+	UserSuspended = UserBackendState("suspended")
+	UserNormal    = UserBackendState("normal")
+)
+
+func (s UserBackendState) String() string {
+	switch s {
+	case UserSuspended, UserNormal:
+		return string(s)
+	default:
+		return "unknown"
+	}
+}
+
+func (s UserBackendState) IsSuspended() bool {
+	return s == UserSuspended
+}
+
+func (s UserBackendState) IsNormal() bool {
+	return s == UserNormal
+}
+
+func (s UserBackendState) Validate() error {
+	switch s {
+	case UserSuspended, UserNormal:
+		return nil
+	default:
+		return fmt.Errorf("invalid UserBackendState: %v", s)
+	}
+}
+
 func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, error) {
 	backend := StorageBackend{
-		driver:  driver,
-		state:   Online,
-		online:  true,
-		storage: make(map[string]Pool),
-		volumes: make(map[string]*Volume),
+		driver:    driver,
+		state:     Online,
+		online:    true,
+		userState: UserNormal,
+		storage:   make(map[string]Pool),
+		volumes:   make(map[string]*Volume),
 	}
 
 	// retrieve backend specs
@@ -316,6 +378,11 @@ func (b *StorageBackend) AddVolume(
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
+	}
+
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return nil, fmt.Errorf("volume is not created because the backend %s is suspended", b.name)
 	}
 
 	// Ensure the internal name exists
@@ -433,6 +500,11 @@ func (b *StorageBackend) CloneVolume(
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
+	}
+
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return nil, fmt.Errorf("volume is not cloned because the backend %s is suspended", b.name)
 	}
 
 	// Ensure the internal names exist
@@ -599,6 +671,11 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 		return nil, err
 	}
 
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return nil, fmt.Errorf("volume is not imported because the backend %s is suspended", b.name)
+	}
+
 	if volConfig.ImportNotManaged {
 		// The volume is not managed and will not be renamed during import.
 		volConfig.InternalName = volConfig.ImportOriginalName
@@ -611,6 +688,9 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 	if err != nil {
 		return nil, fmt.Errorf("driver import volume failed: %v", err)
 	}
+
+	// Ensure snapshot reserve is set to empty in case of volume import
+	volConfig.SnapshotReserve = ""
 
 	err = b.driver.CreateFollowup(ctx, volConfig)
 	if err != nil {
@@ -631,6 +711,11 @@ func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConf
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return err
+	}
+
+	// Ensure provisioning is allowed
+	if !b.isProvisioningAllowed() {
+		return fmt.Errorf("volume is not resized because the backend %s is suspended", b.name)
 	}
 
 	// Determine volume size in bytes
@@ -1007,6 +1092,14 @@ func (b *StorageBackend) ensureOnlineOrDeleting(ctx context.Context) error {
 	return nil
 }
 
+func (b *StorageBackend) isProvisioningAllowed() bool {
+	if b.userState == UserSuspended {
+		return false
+	} else {
+		return true
+	}
+}
+
 type BackendExternal struct {
 	Name        string                 `json:"name"`
 	BackendUUID string                 `json:"backendUUID"`
@@ -1014,6 +1107,7 @@ type BackendExternal struct {
 	Config      interface{}            `json:"config"`
 	Storage     map[string]interface{} `json:"storage"`
 	State       BackendState           `json:"state"`
+	UserState   UserBackendState       `json:"userState"`
 	Online      bool                   `json:"online"`
 	StateReason string                 `json:"StateReason"`
 	Volumes     []string               `json:"volumes"`
@@ -1029,6 +1123,7 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 		Storage:     make(map[string]interface{}),
 		Online:      b.online,
 		State:       b.state,
+		UserState:   b.userState,
 		StateReason: b.stateReason,
 		Volumes:     make([]string, 0),
 		ConfigRef:   b.configRef,
@@ -1083,6 +1178,7 @@ type BackendPersistent struct {
 	BackendUUID string                         `json:"backendUUID"`
 	Online      bool                           `json:"online"`
 	State       BackendState                   `json:"state"`
+	UserState   UserBackendState               `json:"userState"`
 	StateReason string                         `json:"stateReason"`
 	ConfigRef   string                         `json:"configRef"`
 }
@@ -1094,6 +1190,7 @@ func (b *StorageBackend) ConstructPersistent(ctx context.Context) *BackendPersis
 		Name:        b.name,
 		Online:      b.online,
 		State:       b.state,
+		UserState:   b.userState,
 		StateReason: b.stateReason,
 		BackendUUID: b.backendUUID,
 		ConfigRef:   b.configRef,

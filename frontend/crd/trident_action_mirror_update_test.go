@@ -108,7 +108,7 @@ func fakeTAMU(name, namespace, tmrName, snapshotHandle string) *netappv1.Trident
 }
 
 func TestHandleActionMirrorUpdate(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)
@@ -262,7 +262,7 @@ func TestHandleActionMirrorUpdate_ValidateFailure(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)
@@ -328,6 +328,9 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgress_Disabled(t *testing.T) {
+	defer func() { config.DisableExtraFeatures = false }()
+	config.DisableExtraFeatures = true
+
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
@@ -374,7 +377,7 @@ func TestHandleActionMirrorUpdate_InProgress_Disabled(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)
@@ -418,7 +421,7 @@ func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)
@@ -456,7 +459,7 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)
@@ -492,7 +495,7 @@ func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Failed(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = true }()
+	defer func() { config.DisableExtraFeatures = false }()
 	config.DisableExtraFeatures = false
 
 	mockCtrl := gomock.NewController(t)

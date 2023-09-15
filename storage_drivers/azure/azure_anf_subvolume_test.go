@@ -394,6 +394,17 @@ func TestSubvolumeInitialize(t *testing.T) {
 	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID, "wrong backend UUID")
 	assert.Equal(t, driver.volumeCreateTimeout, 600*time.Second, "volume create timeout mismatch")
 	assert.True(t, driver.Initialized(), "not initialized")
+
+	assert.Equal(t, len(driver.getAllFilePoolVolumes()), len(driver.Config.BackendPools),
+		"physical and backend pools should be the same size")
+	for _, encodedPool := range driver.Config.BackendPools {
+		var backendPool drivers.ANFSubvolumeStorageBackendPool
+		if err := utils.DecodeBase64StringToObject(encodedPool, &backendPool); err != nil {
+			t.Fatalf(err.Error())
+		}
+		assert.Equal(t, driver.Config.SubscriptionID, backendPool.SubscriptionID)
+		assert.Equal(t, driver.Config.Location, backendPool.Location)
+	}
 }
 
 // TestSubvolumeInitialize_SDKInitError : This method will check if we are making calls using actual SDK.
@@ -3609,6 +3620,24 @@ func TestSubvolumeGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	result := driver.GetStorageBackendPhysicalPoolNames(ctx)
 
 	assert.NotNil(t, result, "unable to get physical pool names")
+}
+
+func TestSubvolumeGetStorageBackendPools(t *testing.T) {
+	_, driver := newMockANFSubvolumeDriver(t)
+
+	tempPool := make(map[string]storage.Pool)
+	pool := storage.NewStoragePool(nil, "test-pool")
+	tempPool[pool.Name()] = pool
+
+	driver.virtualPools = tempPool
+
+	backendPools := driver.getStorageBackendPools(ctx)
+	assert.NotEmpty(t, backendPools, "unable to get backend pool names")
+
+	backendPool := backendPools[0]
+	assert.Equal(t, driver.Config.SubscriptionID, backendPool.SubscriptionID)
+	assert.Equal(t, driver.Config.Location, backendPool.Location)
+	assert.Equal(t, pool.InternalAttributes()[FilePoolVolumes], backendPool.FilePoolVolume)
 }
 
 func TestSubvolumeGetInternalVolumeName(t *testing.T) {

@@ -844,7 +844,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SnapshotDisabled(t *testing.
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().FlexgroupDisableSnapshotDirectoryAccess(ctx, "vol1").Return(
+	mockAPI.EXPECT().FlexgroupModifySnapshotDirectoryAccess(ctx, "vol1", false).Return(
 		fmt.Errorf("failed to disable snapshot directory access"))
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
@@ -1532,7 +1532,8 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 			} else if test.name == "FlexgroupVolumeExistsFailed" {
 				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true,
+					fmt.Errorf(test.errMessage))
 
 				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
@@ -1598,11 +1599,11 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 					mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, nil),
 				)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf(test.errMessage))
 
 				cloneConfig.QosPolicy = "fake-qos-policy"
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)

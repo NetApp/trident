@@ -475,6 +475,7 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 	var responseUUID string
 	var responseSerial string
 	var responseState string
+	var responseCreateTime string
 	var responseVolumeName string
 	var responseSpaceReserved bool
 	var responseSpaceAllocated bool
@@ -527,6 +528,10 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		responseSpaceAllocated = lunResponse.IsSpaceAllocEnabled()
 	}
 
+	if lunResponse.CreationTimestampPtr != nil {
+		responseCreateTime = time.Unix(int64(lunResponse.CreationTimestamp()), 0).UTC().Format(utils.TimestampFormat)
+	}
+
 	lunInfo := &Lun{
 		Comment:        responseComment,
 		Name:           responseName,
@@ -539,6 +544,7 @@ func lunInfoFromZapiAttrsHelper(lunResponse azgo.LunInfoType) (*Lun, error) {
 		VolumeName:     responseVolumeName,
 		SpaceReserved:  utils.Ptr(responseSpaceReserved),
 		SpaceAllocated: utils.Ptr(responseSpaceAllocated),
+		CreateTime:     responseCreateTime,
 	}
 	return lunInfo, nil
 }
@@ -1115,10 +1121,10 @@ func (d OntapAPIZAPI) FlexgroupCloneSplitStart(ctx context.Context, cloneName st
 	return d.VolumeCloneSplitStart(ctx, cloneName)
 }
 
-func (d OntapAPIZAPI) FlexgroupDisableSnapshotDirectoryAccess(ctx context.Context, volumeName string) error {
-	snapDirResponse, err := d.api.FlexGroupVolumeDisableSnapshotDirectoryAccess(ctx, volumeName)
+func (d OntapAPIZAPI) FlexgroupModifySnapshotDirectoryAccess(ctx context.Context, volumeName string, enable bool) error {
+	snapDirResponse, err := d.api.FlexGroupVolumeModifySnapshotDirectoryAccess(ctx, volumeName, enable)
 	if err = azgo.GetError(ctx, snapDirResponse, err); err != nil {
-		return fmt.Errorf("error disabling snapshot directory access: %v", err)
+		return fmt.Errorf("error modifying snapshot directory access: %v", err)
 	}
 
 	return nil
@@ -1425,10 +1431,10 @@ func (d OntapAPIZAPI) GetSVMAggregateSpace(ctx context.Context, aggregate string
 	return svmAggregateSpaceList, nil
 }
 
-func (d OntapAPIZAPI) VolumeDisableSnapshotDirectoryAccess(ctx context.Context, name string) error {
-	snapDirResponse, err := d.api.VolumeDisableSnapshotDirectoryAccess(name)
+func (d OntapAPIZAPI) VolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) error {
+	snapDirResponse, err := d.api.VolumeModifySnapshotDirectoryAccess(name, enable)
 	if err = azgo.GetError(ctx, snapDirResponse, err); err != nil {
-		return fmt.Errorf("error disabling snapshot directory access: %v", err)
+		return fmt.Errorf("error modifying snapshot directory access: %v", err)
 	}
 
 	return nil
@@ -2509,8 +2515,7 @@ func (d OntapAPIZAPI) VolumeWaitForStates(ctx context.Context, volumeName string
 		"abortStates":   abortStates,
 	}
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> VolumeWaitForStates")
-	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeWaitForStates")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< VolumeWaitForStates")
 
 	var volumeState string
 

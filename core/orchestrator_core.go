@@ -262,6 +262,13 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 		newBackend, found := o.backends[b.BackendUUID]
 		if found {
 			newBackend.SetOnline(b.Online)
+
+			if b.UserState != "" {
+				newBackend.SetUserState(b.UserState)
+			} else {
+				newBackend.SetUserState(storage.UserNormal)
+			}
+
 			if backendErr != nil {
 				newBackend.SetState(storage.Failed)
 			} else {
@@ -1253,6 +1260,10 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	if err != nil {
 		return nil, err
 	}
+
+	// Preserving user-state.
+	backend.SetUserState(originalBackend.UserState())
+
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
 		return nil, err
 	}
@@ -1395,7 +1406,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 
 // UpdateBackendState updates an existing backend's state.
 func (o *TridentOrchestrator) UpdateBackendState(
-	ctx context.Context, backendName, backendState string,
+	ctx context.Context, backendName, backendState, userBackendState string,
 ) (backendExternal *storage.BackendExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -1405,34 +1416,76 @@ func (o *TridentOrchestrator) UpdateBackendState(
 
 	defer recordTiming("backend_update_state", &err)()
 
+	// Extra check to ensure exactly one is set.
+	if (backendState == "" && userBackendState == "") || (backendState != "" && userBackendState != "") {
+		return nil, fmt.Errorf("exactly one of backendState or userBackendState must be set")
+	}
+
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 	defer o.updateMetrics()
-
-	return o.updateBackendState(ctx, backendName, backendState)
-}
-
-// updateBackendState updates an existing backend's state. It assumes the mutex lock is already held.
-func (o *TridentOrchestrator) updateBackendState(
-	ctx context.Context, backendName, backendState string,
-) (backendExternal *storage.BackendExternal, err error) {
-	var backend storage.Backend
-
-	Logc(ctx).WithFields(LogFields{
-		"backendName":  backendName,
-		"backendState": backendState,
-	}).Debug("UpdateBackendState")
 
 	// First, check whether the backend exists.
 	backendUUID, err := o.getBackendUUIDByBackendName(backendName)
 	if err != nil {
 		return nil, err
 	}
+
 	backend, found := o.backends[backendUUID]
 	if !found {
 		return nil, errors.NotFoundError("backend %v was not found", backendName)
 	}
 
+	if userBackendState != "" {
+		backendExternal, err = o.updateUserBackendState(ctx, backend, userBackendState)
+	}
+	if backendState != "" {
+		backendExternal, err = o.updateBackendState(ctx, backend, backendState)
+	}
+
+	return backendExternal, err
+}
+
+func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, backend storage.Backend, userBackendState string) (backendExternal *storage.BackendExternal, err error) {
+	Logc(ctx).WithFields(LogFields{
+		"backendName":      backend.Name(),
+		"userBackendState": userBackendState,
+	}).Debug("updateUserBackendState")
+
+	userBackendState = strings.ToLower(userBackendState)
+	newUserBackendState := storage.UserBackendState(userBackendState)
+
+	// An extra check to ensure that the user-backend state is valid.
+	if err = newUserBackendState.Validate(); err != nil {
+		return nil, err
+	}
+
+	// Idempotent check.
+	if backend.UserState() == newUserBackendState {
+		return backend.ConstructExternal(ctx), nil
+	}
+
+	// If the user requested for the backend to be suspended.
+	if newUserBackendState.IsSuspended() {
+		// Backend is only suspended when its current state is either online, offline or failed.
+		if !backend.State().IsOnline() && !backend.State().IsOffline() && !backend.State().IsFailed() {
+			return nil, fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(), backend.State())
+		}
+	}
+
+	// Update the user-backend state.
+	backend.SetUserState(newUserBackendState)
+
+	return backend.ConstructExternal(ctx), o.storeClient.UpdateBackend(ctx, backend)
+}
+
+func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backend storage.Backend, backendState string) (backendExternal *storage.BackendExternal, err error) {
+	Logc(ctx).WithFields(LogFields{
+		"backendName":      backend.Name(),
+		"userBackendState": backendState,
+	}).Debug("updateBackendState")
+
+	backendState = strings.ToLower(backendState)
 	newBackendState := storage.BackendState(backendState)
 
 	// Limit the command to Failed
@@ -1983,8 +2036,81 @@ func (o *TridentOrchestrator) addVolumeFinish(
 	return externalVol, nil
 }
 
-// UpdateVolume updates the LUKS passphrase names stored on a volume in the cache and persistent store.
-func (o *TridentOrchestrator) UpdateVolume(ctx context.Context, volume string, passphraseNames *[]string) error {
+// UpdateVolume updates the allowed fields of a volume in the backend, persistent store and cache.
+func (o *TridentOrchestrator) UpdateVolume(
+	ctx context.Context, volumeName string,
+	volumeUpdateInfo *utils.VolumeUpdateInfo,
+) error {
+	fields := LogFields{
+		"Method":     "UpdateVolume",
+		"Type":       "TridentOrchestrator",
+		"volume":     volumeName,
+		"updateInfo": volumeUpdateInfo,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> UpdateVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< UpdateVolume")
+
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	if volumeUpdateInfo == nil {
+		err := errors.InvalidInputError(fmt.Sprintf("no volume update information provided for volume %v", volumeName))
+		Logc(ctx).WithError(err).Error("Failed to update volume")
+		return err
+	}
+
+	genericUpdateErr := fmt.Sprintf("failed to update volume %v", volumeName)
+
+	// Get the volume
+	volume, found := o.volumes[volumeName]
+	if !found {
+		err := errors.NotFoundError("volume %v was not found", volumeName)
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	// Get the backend
+	backend, err := o.getBackendByBackendUUID(volume.BackendUUID)
+	if err != nil {
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	// Update volume
+	updatedVols, err := backend.UpdateVolume(ctx, volume.Config, volumeUpdateInfo)
+	if err != nil {
+		Logc(ctx).WithError(err).Error(genericUpdateErr)
+		return err
+	}
+
+	if updatedVols != nil {
+		// Update persistent layer
+		for _, v := range updatedVols {
+			err := o.updateVolumeOnPersistentStore(ctx, v)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf(genericUpdateErr)
+				return err
+			}
+		}
+
+		// Update cache
+		for name, updatedVol := range updatedVols {
+			o.volumes[name] = updatedVol
+		}
+	}
+
+	return nil
+}
+
+// UpdateVolumeLUKSPassphraseNames updates the LUKS passphrase names stored on a volume in the cache and persistent store.
+func (o *TridentOrchestrator) UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames *[]string) error {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -3441,8 +3567,15 @@ func (o *TridentOrchestrator) AttachVolume(
 			return utils.MountDevice(ctx, loopDeviceName, mountpoint, publishInfo.SubvolumeMountOptions, isRawBlock)
 		}
 	} else {
-		_, err := utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
-			AttachISCSIVolumeTimeoutLong)
+		var err error
+		if publishInfo.SANType == sa.NVMe {
+			err = utils.AttachNVMeVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{}, utils.NVMeAttachTimeout)
+		}
+
+		if publishInfo.SANType == sa.ISCSI {
+			_, err = utils.AttachISCSIVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
+				AttachISCSIVolumeTimeoutLong)
+		}
 		return err
 	}
 }
@@ -4253,6 +4386,14 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 		}
 		delete(o.snapshots, snapshot.ID())
 		return nil
+	}
+
+	// Check if the snapshot is a source for a read-only volume. If so, return error.
+	for _, vol := range o.volumes {
+		if vol.Config.ReadOnlyClone && vol.Config.CloneSourceSnapshot == snapshotName {
+			return fmt.Errorf("unable to delete snapshot %s as it is a source for read-only clone %s", snapshotName,
+				vol.Config.Name)
+		}
 	}
 
 	backend, ok := o.backends[volume.BackendUUID]

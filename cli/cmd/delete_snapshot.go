@@ -37,8 +37,9 @@ var deleteSnapshotCmd = &cobra.Command{
 			if allSnapshots {
 				command = append(command, "--all")
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return snapshotDelete(args)
 		}

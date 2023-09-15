@@ -66,8 +66,9 @@ var updateLoggingConfig = &cobra.Command{
 				"--log-workflows", workflows,
 				"--log-layers", layers,
 			}
-			TunnelCommand(append(command, args...))
-			return nil
+			out, err := TunnelCommand(append(command, args...))
+			printOutput(cmd, out, err)
+			return err
 		} else {
 			return logConfigUpdate(level, workflows, layers)
 		}
