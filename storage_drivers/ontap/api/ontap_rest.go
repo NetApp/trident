@@ -487,6 +487,9 @@ func (c RestClient) getAllVolumesByPatternStyleAndState(
 
 // checkVolumeExistsByNameAndStyle tests for the existence of a volume of the style and name specified
 func (c RestClient) checkVolumeExistsByNameAndStyle(ctx context.Context, volumeName, style string) (bool, error) {
+	if volumeName == "" {
+		return false, nil
+	}
 	volume, err := c.getVolumeByNameAndStyle(ctx, volumeName, style)
 	if err != nil {
 		return false, err

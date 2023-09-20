@@ -4192,3 +4192,15 @@ func TestOntapRest_JobScheduleExists(t *testing.T) {
 		})
 	}
 }
+
+func TestOntapRest_VolumeExists(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(mockResourceNotFound))
+	defer server.Close()
+
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	volumeExists, err := rs.VolumeExists(ctx, "")
+	assert.NoError(t, err, "could not check if the volume exists")
+	assert.False(t, volumeExists)
+}

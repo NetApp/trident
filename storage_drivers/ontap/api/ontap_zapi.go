@@ -1379,6 +1379,10 @@ func (c Client) VolumeSetQosPolicyGroupName(
 
 // VolumeExists tests for the existence of a Flexvol
 func (c Client) VolumeExists(ctx context.Context, name string) (bool, error) {
+	if name == "" {
+		return false, nil
+	}
+
 	response, err := azgo.NewVolumeSizeRequest().
 		SetVolume(name).
 		ExecuteUsing(c.zr)

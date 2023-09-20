@@ -20,3 +20,13 @@ func TestGetError(t *testing.T) {
 
 	assert.Equal(t, "unexpected nil ZAPI result", e.(azgo.ZapiError).Reason(), "Strings not equal")
 }
+
+func TestVolumeExists_EmptyVolumeName(t *testing.T) {
+	ctx := context.Background()
+
+	zapiClient := Client{}
+	volumeExists, err := zapiClient.VolumeExists(ctx, "")
+
+	assert.NoError(t, err, "VolumeExists should not have errored with a missing volume name")
+	assert.False(t, volumeExists)
+}
