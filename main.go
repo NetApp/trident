@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/netapp/trident/acp"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
@@ -74,7 +75,8 @@ var (
 	nodePrep            = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
 
 	// Trident-ACP
-	enableACP = flag.Bool("enable_acp", false, "Enable the trident-acp premium features.")
+	enableACP  = flag.Bool("enable_acp", false, "Enable the trident-acp premium features.")
+	acpAddress = flag.String("acp_address", acp.DefaultBaseURL, "Specify the trident-acp REST API address.")
 
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
@@ -507,6 +509,26 @@ func main() {
 			}
 			preBootstrapFrontends = append(preBootstrapFrontends, httpsServer)
 			Log().WithFields(LogFields{"name": httpsServer.GetName()}).Info("Added frontend.")
+		}
+	}
+
+	var acpAPI acp.API
+	if *enableACP {
+		// See if Trident-ACP is responsive at the supplied address.
+		acpAPI, err = acp.NewAPI(*acpAddress, config.HTTPTimeout)
+		if err != nil {
+			Log().WithField("address", *acpAddress).WithError(err).Warning(
+				"Failed to initialize trident-acp API client; premium workflows may not be available.",
+			)
+		} else {
+			Log().WithField("name", acpAPI.GetName()).Info("Created trident-acp API client.")
+
+			// Check if ACP is there initially; this check should not be blocking.
+			go func() {
+				if err := acpAPI.Activate(); err != nil {
+					Log().Error(err)
+				}
+			}()
 		}
 	}
 
