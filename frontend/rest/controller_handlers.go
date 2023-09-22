@@ -675,6 +675,8 @@ func volumeUpdater(
 			return http.StatusBadRequest
 		} else if errors.IsNotFoundError(err) {
 			return http.StatusNotFound
+		} else if errors.IsUnsupportedError(err) {
+			return http.StatusForbidden
 		} else {
 			return http.StatusInternalServerError
 		}

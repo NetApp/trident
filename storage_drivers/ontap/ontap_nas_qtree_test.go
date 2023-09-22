@@ -4393,6 +4393,33 @@ func TestNASQtreeStorageDriver_UpdateVolume_Success(t *testing.T) {
 	}
 }
 
+func TestNASQtreeStorageDriver_UpdateVolume_Disabled(t *testing.T) {
+	_, driver := newMockOntapNasQtreeDriver(t)
+
+	internalID := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
+	mockVol := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f854", internalID)
+	mockVol.Config.SnapshotDir = "true"
+
+	allVolumes := map[string]*storage.Volume{
+		"pvc-99138d85-6259-4830-ada0-30e45e21f854": mockVol,
+	}
+
+	updateInfo := &utils.VolumeUpdateInfo{
+		SnapshotDirectory: "false",
+		PoolLevel:         true,
+	}
+
+	original := tridentconfig.DisableExtraFeatures
+	defer func() { tridentconfig.DisableExtraFeatures = original }()
+	tridentconfig.DisableExtraFeatures = true
+
+	result, resultErr := driver.Update(ctx, mockVol.Config, updateInfo, allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.Equal(t, errors.UnsupportedError("update volume is not enabled"), resultErr)
+	assert.Nil(t, result)
+}
+
 func TestNASQtreeStorageDriver_UpdateVolume_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	fakeErr := errors.New("fake error")

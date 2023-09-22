@@ -2284,6 +2284,10 @@ func (d *NASQtreeStorageDriver) Update(
 	Logc(ctx).WithFields(fields).Debug(">>>> Update")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< Update")
 
+	if tridentconfig.DisableExtraFeatures {
+		return nil, errors.UnsupportedError("update volume is not enabled")
+	}
+
 	updateGenericError := fmt.Sprintf("failed to update volume %v", volConfig.Name)
 
 	if updateInfo == nil {
