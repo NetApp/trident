@@ -22,9 +22,12 @@ const (
 	logNameNodePrevious            = "trident-node-previous"
 	logNameTridentOperator         = "trident-operator"
 	logNameTridentOperatorPrevious = "trident-operator-previous"
+	logNameTridentACP              = "trident-acp"
+	logNameTridentACPPrevious      = "trident-acp-previous"
 
 	logTypeAuto            = "auto"
 	logTypeTrident         = "trident"
+	logTypeTridentACP      = "acp"
 	logTypeTridentOperator = "trident-operator"
 	logTypeAll             = "all"
 
@@ -48,9 +51,11 @@ var (
 func init() {
 	RootCmd.AddCommand(logsCmd)
 	logsCmd.Flags().StringVarP(&logType, "log", "l", logTypeAuto,
-		"Trident log to display. One of trident|auto|trident-operator|all")
-	logsCmd.Flags().BoolVarP(&archive, "archive", "a", false, "Create a support archive with all logs unless otherwise specified.")
-	logsCmd.Flags().BoolVarP(&previous, "previous", "p", false, "Get the logs for the previous container instance if it exists.")
+		"Trident log to display. One of trident|acp|auto|trident-operator|all")
+	logsCmd.Flags().BoolVarP(&archive, "archive", "a", false,
+		"Create a support archive with all logs unless otherwise specified.")
+	logsCmd.Flags().BoolVarP(&previous, "previous", "p", false,
+		"Get the logs for the previous container instance if it exists.")
 	logsCmd.Flags().StringVar(&node, "node", "", "The kubernetes node name to gather node pod logs from.")
 	logsCmd.Flags().BoolVar(&sidecars, "sidecars", false, "Get the logs for the sidecar containers as well.")
 }
@@ -145,7 +150,8 @@ func archiveLogs() error {
 	defer zipWriter.Close()
 
 	if err := getLogs(); err != nil {
-		fmt.Fprintf(os.Stderr, "Errors collected during log aggregation. Please check %s for more information.\n", zipFileName)
+		fmt.Fprintf(os.Stderr, "Errors collected during log aggregation. Please check %s for more information.\n",
+			zipFileName)
 	}
 
 	if len(logErrors) > 0 {
@@ -194,6 +200,10 @@ func getLogs() error {
 		} else {
 			err = getNodeLogs(logNameNode, node)
 		}
+	case logTypeTridentACP:
+		if err = getTridentLogs(logNameTridentACP); err != nil {
+			logErrors = appendErrorf(logErrors, "error retrieving ACP logs from running container: %s", err)
+		}
 	case logTypeAll:
 		if err := getTridentLogs(logNameTrident); err != nil {
 			logErrors = appendErrorf(logErrors, "error retrieving trident logs from running container: %s", err)
@@ -218,10 +228,16 @@ func getLogs() error {
 			} else {
 				err = getNodeLogs(logNameNodePrevious, node)
 			}
+		case logTypeTridentACP:
+			if err = getTridentLogs(logNameTridentACPPrevious); err != nil {
+				logErrors = appendErrorf(logErrors, "error retrieving ACP logs from previously running container: %s",
+					err)
+			}
 		case logTypeAll:
 			err = getTridentLogs(logNameTridentPrevious)
 			if err != nil {
-				logErrors = appendErrorf(logErrors, "error retrieving trident logs from previously running container: %s", err)
+				logErrors = appendErrorf(logErrors,
+					"error retrieving trident logs from previously running container: %s", err)
 			}
 			if node == "" {
 				err = getAllNodeLogs(logNameNodePrevious)
@@ -240,7 +256,7 @@ func getLogs() error {
 
 func checkValidLog() error {
 	switch logType {
-	case logTypeTrident, logTypeAuto, logTypeAll, logTypeTridentOperator:
+	case logTypeTrident, logTypeTridentACP, logTypeAuto, logTypeAll, logTypeTridentOperator:
 		return nil
 	default:
 		return fmt.Errorf("%s is not a valid Trident log", logType)
@@ -256,6 +272,12 @@ func getTridentLogs(logName string) error {
 		container, prev = config.ContainerTrident, false
 	case logNameTridentPrevious:
 		container, prev = config.ContainerTrident, true
+	case logNameTridentACP:
+		container, prev = config.ContainerACP, false
+		sidecars = false
+	case logNameTridentACPPrevious:
+		container, prev = config.ContainerACP, true
+		sidecars = false
 	default:
 		return fmt.Errorf("%s is not a valid Trident log", logName)
 	}
@@ -365,7 +387,8 @@ func getNodeLogs(logName, nodeName string) error {
 				logErrors = appendError(logErrors, logBytes)
 			} else {
 				if err = writeLogs(nodeLogName+"-sidecar-"+sidecar, logBytes); err != nil {
-					logErrors = appendErrorf(logErrors, "could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
+					logErrors = appendErrorf(logErrors, "could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar,
+						err)
 				}
 			}
 		}
@@ -434,7 +457,8 @@ func getAllNodeLogs(logName string) error {
 					logErrors = appendError(logErrors, logBytes)
 				} else {
 					if err = writeLogs(nodeLogName+"-sidecar-"+sidecar, logBytes); err != nil {
-						logErrors = appendErrorf(logErrors, "could not write log %s; %v", nodeLogName+"-sidecar-"+sidecar, err)
+						logErrors = appendErrorf(logErrors, "could not write log %s; %v",
+							nodeLogName+"-sidecar-"+sidecar, err)
 					}
 				}
 			}

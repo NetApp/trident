@@ -144,6 +144,7 @@ const (
 
 	/* Kubernetes deployment constants */
 	ContainerTrident = "trident-main"
+	ContainerACP     = "trident-acp"
 
 	ContextDocker DriverContext = "docker"
 	ContextCSI    DriverContext = "csi"
