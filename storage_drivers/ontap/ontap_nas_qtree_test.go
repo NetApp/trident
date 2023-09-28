@@ -155,6 +155,7 @@ func TestInitialize_Success(t *testing.T) {
 	// Assert that no error occurs and that driver is initialized
 	assert.NoError(t, result, "Expected nil in initialize, got error")
 	assert.True(t, driver.initialized, "Driver not initialized")
+	assert.Equal(t, "trident_qtree_pool_t_e_s_t_", driver.flexvolNamePrefix, "Invalid FlexvolNamePrefix")
 }
 
 func TestInitialize_WithInvalidDriverAPI(t *testing.T) {
@@ -402,6 +403,7 @@ func getStructsForInitializeDriver() (*drivers.CommonStorageDriverConfig, *strin
 		BackendName:       "myOntapNasEcoBackend",
 		DriverContext:     driverContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     utils.Ptr("t-e-s-t"),
 	}
 
 	configJSON := `

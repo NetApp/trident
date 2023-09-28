@@ -137,7 +137,8 @@ func (d *NASQtreeStorageDriver) Initialize(
 	// Set up internal driver state
 	d.quotaResizeMap = make(map[string]bool)
 	d.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
-	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1)
+	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "-", "_", -1)  // ONTAP disallows hyphens
+	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1) // Remove any double underscores
 	if d.Config.AutoExportPolicy {
 		d.flexvolExportPolicy = "<automatic>"
 	} else {
