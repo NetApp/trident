@@ -451,6 +451,11 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		autosupportDebugLine = "#" + autosupportDebugLine
 	}
 
+	autosupportInsecureLine := ""
+	if args.AutosupportInsecure {
+		autosupportInsecureLine = "- -insecure"
+	}
+
 	if args.EnableACP {
 		enableACP = "- \"-enable_acp\""
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
@@ -473,6 +478,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_IMAGE}", args.AutosupportImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_PROXY}", autosupportProxyLine)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_INSECURE}", autosupportInsecureLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_CUSTOM_URL}", autosupportCustomURLLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SERIAL_NUMBER}", autosupportSerialNumberLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
@@ -597,6 +603,7 @@ spec:
         {AUTOSUPPORT_SERIAL_NUMBER}
         {AUTOSUPPORT_HOSTNAME}
         {AUTOSUPPORT_DEBUG}
+        {AUTOSUPPORT_INSECURE}
         resources:
           limits:
             memory: 1Gi

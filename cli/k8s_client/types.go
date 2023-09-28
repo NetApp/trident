@@ -142,6 +142,7 @@ type DeploymentYAMLArguments struct {
 	TridentImage            string                `json:"tridentImage"`
 	AutosupportImage        string                `json:"autosupportImage"`
 	AutosupportProxy        string                `json:"autosupportProxy"`
+	AutosupportInsecure     bool                  `json:"autosupportInsecure"`
 	AutosupportCustomURL    string                `json:"autosupportCustomURL"`
 	AutosupportSerialNumber string                `json:"autosupportSerialNumber"`
 	AutosupportHostname     string                `json:"autosupportHostname"`

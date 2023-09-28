@@ -11,6 +11,7 @@ spec:
   silenceAutosupport: {{ include "trident.silenceAutosupport" $ }}
   autosupportImage: {{ include "trident.autosupportImage" $ }}
   autosupportProxy: {{ .Values.tridentAutosupportProxy }}
+  autosupportInsecure: {{ .Values.tridentAutosupportInsecure }}
   logFormat: {{ include "trident.logFormat" $ }}
   disableAuditLog: {{ include "trident.disableAuditLog" $ }}
   {{- if .Values.tridentDebug }}

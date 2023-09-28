@@ -73,6 +73,7 @@ var (
 
 	autosupportImage        string
 	autosupportProxy        string
+	autosupportInsecure     bool
 	autosupportSerialNumber string
 	autosupportHostname     string
 
@@ -306,6 +307,7 @@ func (i *Installer) setInstallationParams(
 	useIPv6 = cr.Spec.IPv6
 	windows = cr.Spec.Windows
 	silenceAutosupport = cr.Spec.SilenceAutosupport
+	autosupportInsecure = cr.Spec.AutosupportInsecure
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
 	}
@@ -611,6 +613,7 @@ func (i *Installer) InstallOrPatchTrident(
 		ProbePort:               probePort,
 		AutosupportImage:        autosupportImage,
 		AutosupportProxy:        autosupportProxy,
+		AutosupportInsecure:     autosupportInsecure,
 		AutosupportSerialNumber: autosupportSerialNumber,
 		AutosupportHostname:     autosupportHostname,
 		KubeletDir:              kubeletDir,
@@ -1390,6 +1393,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		TridentImage:            tridentImage,
 		AutosupportImage:        autosupportImage,
 		AutosupportProxy:        autosupportProxy,
+		AutosupportInsecure:     autosupportInsecure,
 		AutosupportCustomURL:    "",
 		AutosupportSerialNumber: autosupportSerialNumber,
 		AutosupportHostname:     autosupportHostname,

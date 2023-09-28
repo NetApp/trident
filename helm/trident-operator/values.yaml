@@ -82,6 +82,9 @@ tridentAutosupportImageTag: "23.07"
 # tridentAutosupportProxy allows Trident's autosupport container to phone home via an HTTP proxy.
 tridentAutosupportProxy: ""
 
+# tridentAutosupportInsecure allows Trident's autosupport container to skip TLS verification
+tridentAutosupportInsecure: false
+
 # tridentLogFormat sets the Trident logging format (text or json).
 tridentLogFormat: "text"
 

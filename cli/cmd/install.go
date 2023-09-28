@@ -103,6 +103,7 @@ var (
 	tridentImage            string
 	autosupportImage        string
 	autosupportProxy        string
+	autosupportInsecure     bool
 	autosupportCustomURL    string
 	autosupportSerialNumber string
 	autosupportHostname     string
@@ -206,6 +207,8 @@ func init() {
 			"consult the Trident documentation.")
 	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "",
 		"The address/port of a proxy for sending Autosupport Telemetry")
+	installCmd.Flags().BoolVar(&autosupportInsecure, "autosupport-insecure", false,
+		"Skip TLS verification in Autosupport client.")
 	installCmd.Flags().StringVar(&autosupportCustomURL, "autosupport-custom-url", "", "Custom Autosupport endpoint")
 	installCmd.Flags().StringVar(&autosupportImage, "autosupport-image", "",
 		"Trident Autosupport container image. When "+
@@ -587,6 +590,7 @@ func prepareYAMLFiles() error {
 		TridentImage:            tridentImage,
 		AutosupportImage:        autosupportImage,
 		AutosupportProxy:        autosupportProxy,
+		AutosupportInsecure:     autosupportInsecure,
 		AutosupportCustomURL:    autosupportCustomURL,
 		AutosupportSerialNumber: autosupportSerialNumber,
 		AutosupportHostname:     autosupportHostname,
@@ -1009,6 +1013,7 @@ func installTrident() (returnError error) {
 			TridentImage:            tridentImage,
 			AutosupportImage:        autosupportImage,
 			AutosupportProxy:        autosupportProxy,
+			AutosupportInsecure:     autosupportInsecure,
 			AutosupportCustomURL:    autosupportCustomURL,
 			AutosupportSerialNumber: autosupportSerialNumber,
 			AutosupportHostname:     autosupportHostname,

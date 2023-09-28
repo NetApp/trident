@@ -42,6 +42,7 @@ type TridentOrchestratorSpec struct {
 	SilenceAutosupport           bool              `json:"silenceAutosupport,omitempty"`
 	AutosupportImage             string            `json:"autosupportImage,omitempty"`
 	AutosupportProxy             string            `json:"autosupportProxy,omitempty"`
+	AutosupportInsecure          bool              `json:"autosupportInsecure,omitempty"`
 	AutosupportSerialNumber      string            `json:"autosupportSerialNumber,omitempty"`
 	AutosupportHostname          string            `json:"autosupportHostname,omitempty"`
 	Uninstall                    bool              `json:"uninstall,omitempty"`
@@ -118,6 +119,7 @@ type TridentOrchestratorSpecValues struct {
 	SilenceAutosupport      string            `json:"silenceAutosupport"`
 	AutosupportImage        string            `json:"autosupportImage"`
 	AutosupportProxy        string            `json:"autosupportProxy"`
+	AutosupportInsecure     bool              `json:"autosupportInsecure"`
 	AutosupportSerialNumber string            `json:"autosupportSerialNumber"`
 	AutosupportHostname     string            `json:"autosupportHostname"`
 	K8sTimeout              string            `json:"k8sTimeout"`
