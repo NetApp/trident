@@ -61,3 +61,4 @@ spec:
   {{- end }}
   imagePullPolicy: {{ include "imagePullPolicy" $ }}
   windows: {{ .Values.windows }}
+  cloudProvider: {{ .Values.cloudProvider }}

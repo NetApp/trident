@@ -199,13 +199,13 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 	numSubnets := len(newSubnetMap)
 
 	if numResourceGroups == 0 {
-		return errors.New("no resource groups discovered; check connectivity, credentials")
+		return errors.NotFoundError("no resource groups discovered; check connectivity, credentials")
 	}
 	if numCapacityPools == 0 {
-		return errors.New("no capacity pools discovered; volume provisioning may fail until corrected")
+		return errors.NotFoundError("no capacity pools discovered; volume provisioning may fail until corrected")
 	}
 	if numSubnets == 0 {
-		return errors.New("no ANF subnets discovered; volume provisioning may fail until corrected")
+		return errors.NotFoundError("no ANF subnets discovered; volume provisioning may fail until corrected")
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -576,7 +576,7 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 
 	if resourceList.Data == nil || resourceList.Count == nil || *resourceList.Count == 0 {
 		Logc(ctx).WithFields(logFields).Error("Capacity pool query returned no data.")
-		return nil, errors.New("capacity pool query returned no data")
+		return nil, errors.NotFoundError("capacity pool query returned no data")
 	} else if data, ok = resourceList.Data.([]interface{}); !ok {
 		Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid data.")
 		return nil, errors.New("capacity pool query returned invalid data")
@@ -730,7 +730,7 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 
 	if resourceList.Data == nil || resourceList.Count == nil || *resourceList.Count == 0 {
 		Logc(ctx).WithFields(logFields).Error("Subnet query returned no data.")
-		return nil, errors.New("subnet query returned no data")
+		return nil, errors.NotFoundError("subnet query returned no data")
 	} else if data, ok = resourceList.Data.([]interface{}); !ok {
 		Logc(ctx).WithFields(logFields).Error("Subnet query returned invalid data.")
 		return nil, errors.New("subnet pool query returned invalid data")

@@ -321,9 +321,7 @@ func GetV(opts map[string]string, keys, defaultValue string) string {
 	return defaultValue
 }
 
-// RandomString returns a string of the specified length consisting only of alphabetic characters.
-func RandomString(strSize int) string {
-	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+func Random(chars string, strSize int) string {
 	bytes := make([]byte, strSize)
 	_, err := rand.Read(bytes)
 	if err != nil {
@@ -333,6 +331,15 @@ func RandomString(strSize int) string {
 		bytes[i] = chars[b%byte(len(chars))]
 	}
 	return string(bytes)
+}
+
+// RandomString returns a string of the specified length consisting only of alphabetic characters.
+func RandomString(strSize int) string {
+	return Random("ABCDEFGHIJKLMNOPQRSTUVWXYZ", strSize)
+}
+
+func RandomNumber(numSize int) string {
+	return Random("0123456789", numSize)
 }
 
 // StringInSlice checks whether a string is in a list of strings

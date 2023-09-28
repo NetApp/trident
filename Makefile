@@ -427,11 +427,15 @@ k8s_codegen:
 	@rm -rf $(K8S_CODE_GENERATOR)
 
 k8s_codegen_operator:
-	@tar zxvf $(K8S_CODE_GENERATOR).tar.gz -C ./../ --no-same-owner
+	@tar zxvf $(K8S_CODE_GENERATOR).tar.gz --no-same-owner
 	@chmod +x $(K8S_CODE_GENERATOR)/generate-groups.sh
 	@$(K8S_CODE_GENERATOR)/generate-groups.sh all $(OPERATOR_KUBERNETES_PKG)/client \
-		$(OPERATOR_KUBERNETES_PKG)/apis "netapp:v1" -h ./../hack/boilerplate.go.txt
+		$(OPERATOR_KUBERNETES_PKG)/apis "netapp:v1" -h ./hack/boilerplate.go.txt
 	@rm -rf $(K8S_CODE_GENERATOR)
+	@rm -rf ./operator/controllers/orchestrator/client/*
+	@mv $(OPERATOR_KUBERNETES_PKG)/client/* ./operator/controllers/orchestrator/client/
+	@rm -rf ./operator/controllers/orchestrator/apis/netapp/v1/zz_generated.deepcopy.go
+	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/controllers/orchestrator/apis/netapp/v1/
 
 mocks:
 	@go install github.com/golang/mock/mockgen@v1.6.0

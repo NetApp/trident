@@ -451,6 +451,16 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		autosupportDebugLine = "#" + autosupportDebugLine
 	}
 
+	if strings.EqualFold(args.CloudProvider, CloudProviderAzure) {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_ENV}", "- name: AZURE_CREDENTIAL_FILE\n          value: /etc/kubernetes/azure.json")
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME}", "- name: azure-cred\n        hostPath:\n          path: /etc/kubernetes\n          type: DirectoryOrCreate")
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}", "- name: azure-cred\n          mountPath: /etc/kubernetes")
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_ENV}", "")
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME}", "")
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}", "")
+	}
+
 	if args.EnableACP {
 		enableACP = "- \"-enable_acp\""
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
@@ -572,12 +582,14 @@ spec:
           value: unix://plugin/csi.sock
         - name: TRIDENT_SERVER
           value: "{IP_LOCALHOST}:8000"
+        {AZURE_CREDENTIAL_FILE_ENV}
         volumeMounts:
         - name: socket-dir
           mountPath: /plugin
         - name: certs
           mountPath: /certs
           readOnly: true
+        {AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}
       - name: trident-autosupport
         image: {AUTOSUPPORT_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
@@ -703,6 +715,7 @@ spec:
         emptyDir:
           medium: ""
           sizeLimit: 1Gi
+      {AZURE_CREDENTIAL_FILE_VOLUME}
 `
 
 func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {

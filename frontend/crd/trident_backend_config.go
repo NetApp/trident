@@ -189,7 +189,20 @@ func (c *TridentCrdController) addBackendConfig(
 	}).Trace("Adding backend in core.")
 
 	backendDetails, err := c.orchestrator.AddBackend(ctx, string(rawJSONData), string(backendConfig.UID))
-	if err != nil {
+	if err == nil {
+		newStatus := tridentv1.TridentBackendConfigStatus{
+			Message:             fmt.Sprintf("Backend '%v' created", backendDetails.Name),
+			BackendInfo:         c.getBackendInfo(ctx, backendDetails.Name, backendDetails.BackendUUID),
+			Phase:               string(tridentv1.PhaseBound),
+			DeletionPolicy:      deletionPolicy,
+			LastOperationStatus: OperationStatusSuccess,
+		}
+
+		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Backend created.",
+			corev1.EventTypeNormal); statusErr != nil {
+			err = fmt.Errorf("encountered an error while updating the status: %v", statusErr)
+		}
+	} else if !errors.IsReconcileDeferredError(err) {
 		newStatus := tridentv1.TridentBackendConfigStatus{
 			Message:             fmt.Sprintf("Failed to create backend: %v", err),
 			BackendInfo:         c.getBackendInfo(ctx, "", ""),
@@ -202,19 +215,6 @@ func (c *TridentCrdController) addBackendConfig(
 			corev1.EventTypeWarning); statusErr != nil {
 			err = fmt.Errorf("failed to create backend: %v; Also encountered error while updating the status: %v", err,
 				statusErr)
-		}
-	} else {
-		newStatus := tridentv1.TridentBackendConfigStatus{
-			Message:             fmt.Sprintf("Backend '%v' created", backendDetails.Name),
-			BackendInfo:         c.getBackendInfo(ctx, backendDetails.Name, backendDetails.BackendUUID),
-			Phase:               string(tridentv1.PhaseBound),
-			DeletionPolicy:      deletionPolicy,
-			LastOperationStatus: OperationStatusSuccess,
-		}
-
-		if _, statusErr := c.updateTbcEventAndStatus(ctx, backendConfig, newStatus, "Backend created.",
-			corev1.EventTypeNormal); statusErr != nil {
-			err = fmt.Errorf("encountered an error while updating the status: %v", statusErr)
 		}
 	}
 
