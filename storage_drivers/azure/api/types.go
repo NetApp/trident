@@ -35,7 +35,7 @@ type Azure interface {
 	VolumeExistsByID(context.Context, string) (bool, *FileSystem, error)
 	WaitForVolumeState(context.Context, *FileSystem, string, []string, time.Duration) (string, error)
 	CreateVolume(context.Context, *FilesystemCreateRequest) (*FileSystem, error)
-	ModifyVolume(context.Context, *FileSystem, map[string]string, *string, *bool) error
+	ModifyVolume(context.Context, *FileSystem, map[string]string, *string, *bool, *ExportRule) error
 	ResizeVolume(context.Context, *FileSystem, int64) error
 	DeleteVolume(context.Context, *FileSystem) error
 

@@ -23,6 +23,10 @@ const (
 	ProtocolTypeNFSv41    = ProtocolTypeNFSPrefix + "4.1"
 	ProtocolTypeCIFS      = "CIFS"
 
+	MountOptionKerberos5  = "sec=krb5"
+	MountOptionKerberos5I = "sec=krb5i"
+	MountOptionKerberos5P = "sec=krb5p"
+
 	ServiceLevelStandard = "Standard"
 	ServiceLevelPremium  = "Premium"
 	ServiceLevelUltra    = "Ultra"
@@ -126,6 +130,7 @@ type FileSystem struct {
 	MountTargets      []MountTarget
 	SubvolumesEnabled bool
 	NetworkFeatures   string
+	KerberosEnabled   bool
 }
 
 // FilesystemCreateRequest embodies all the details of a volume to be created.
@@ -144,6 +149,7 @@ type FilesystemCreateRequest struct {
 	SnapshotID        string
 	UnixPermissions   string
 	NetworkFeatures   string
+	KerberosEnabled   bool
 }
 
 // ExportPolicy records details of a discovered Azure volume export policy.
@@ -153,13 +159,19 @@ type ExportPolicy struct {
 
 // ExportRule records details of a discovered Azure volume export policy rule.
 type ExportRule struct {
-	AllowedClients string
-	Cifs           bool
-	Nfsv3          bool
-	Nfsv41         bool
-	RuleIndex      int32
-	UnixReadOnly   bool
-	UnixReadWrite  bool
+	AllowedClients      string
+	Cifs                bool
+	Nfsv3               bool
+	Nfsv41              bool
+	RuleIndex           int32
+	UnixReadOnly        bool
+	UnixReadWrite       bool
+	Kerberos5ReadOnly   bool
+	Kerberos5ReadWrite  bool
+	Kerberos5IReadOnly  bool
+	Kerberos5IReadWrite bool
+	Kerberos5PReadOnly  bool
+	Kerberos5PReadWrite bool
 }
 
 // MountTarget records details of a discovered Azure volume mount target.
@@ -167,7 +179,7 @@ type MountTarget struct {
 	MountTargetID string
 	FileSystemID  string
 	IPAddress     string
-	SmbServerFqdn string
+	ServerFqdn    string
 }
 
 // Snapshot records details of a discovered Azure snapshot.

@@ -463,6 +463,7 @@ type AzureNASStorageDriverPool struct {
 	CapacityPools                       []string            `json:"capacityPools"`
 	FilePoolVolumes                     []string            `json:"filePoolVolumes"`
 	NASType                             string              `json:"nasType"`
+	Kerberos                            string              `json:"kerberos"`
 	AzureNASStorageDriverConfigDefaults `json:"defaults"`
 }
 

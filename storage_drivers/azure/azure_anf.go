@@ -31,13 +31,14 @@ const (
 	MinimumVolumeSizeBytes    = uint64(1000000000)   // 1 GB
 	MinimumANFVolumeSizeBytes = uint64(107374182400) // 100 GiB
 
-	defaultUnixPermissions = "" // TODO (cknight): change to "0777" when whitelisted permissions feature reaches GA
-	defaultNfsMountOptions = "nfsvers=3"
-	defaultSnapshotDir     = "false"
-	defaultLimitVolumeSize = ""
-	defaultExportRule      = "0.0.0.0/0"
-	defaultVolumeSizeStr   = "107374182400"
-	defaultNetworkFeatures = "" // Leave empty, some regions may never support this
+	defaultUnixPermissions         = "" // TODO (cknight): change to "0777" when whitelisted permissions feature reaches GA
+	defaultNfsMountOptions         = "nfsvers=3"
+	defaultKerberosNfsMountOptions = "nfsvers=4.1"
+	defaultSnapshotDir             = "false"
+	defaultLimitVolumeSize         = ""
+	defaultExportRule              = "0.0.0.0/0"
+	defaultVolumeSizeStr           = "107374182400"
+	defaultNetworkFeatures         = "" // Leave empty, some regions may never support this
 
 	// Constants for internal pool attributes
 
@@ -53,6 +54,7 @@ const (
 	NetappAccounts  = "netappAccounts"
 	CapacityPools   = "capacityPools"
 	FilePoolVolumes = "filePoolVolumes"
+	Kerberos        = "kerberos"
 
 	nfsVersion3  = "3"
 	nfsVersion4  = "4"
@@ -258,7 +260,11 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 	}
 
 	if config.NfsMountOptions == "" {
-		config.NfsMountOptions = defaultNfsMountOptions
+		if config.Kerberos != "" {
+			config.NfsMountOptions = defaultKerberosNfsMountOptions
+		} else {
+			config.NfsMountOptions = defaultNfsMountOptions
+		}
 	}
 
 	if config.SnapshotDir == "" {
@@ -332,6 +338,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 		pool.InternalAttributes()[ResourceGroups] = strings.Join(d.Config.ResourceGroups, ",")
 		pool.InternalAttributes()[NetappAccounts] = strings.Join(d.Config.NetappAccounts, ",")
 		pool.InternalAttributes()[CapacityPools] = strings.Join(d.Config.CapacityPools, ",")
+		pool.InternalAttributes()[Kerberos] = d.Config.Kerberos
 
 		pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
@@ -413,6 +420,11 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 				subnet = vpool.Subnet
 			}
 
+			kerberos := d.Config.Kerberos
+			if vpool.Kerberos != "" {
+				kerberos = vpool.Kerberos
+			}
+
 			pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
 
 			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
@@ -447,6 +459,7 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 			pool.InternalAttributes()[ResourceGroups] = strings.Join(resourceGroups, ",")
 			pool.InternalAttributes()[NetappAccounts] = strings.Join(netappAccounts, ",")
 			pool.InternalAttributes()[CapacityPools] = strings.Join(capacityPools, ",")
+			pool.InternalAttributes()[Kerberos] = kerberos
 
 			pool.SetSupportedTopologies(supportedTopologies)
 
@@ -620,6 +633,10 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		default:
 			return fmt.Errorf("invalid value for networkFeatures in pool %s", poolName)
 		}
+
+		if pool.InternalAttributes()[Kerberos] != "" && tridentconfig.DisableExtraFeatures {
+			return fmt.Errorf("kerberos support is not enabled ")
+		}
 	}
 
 	return nil
@@ -748,11 +765,26 @@ func (d *NASStorageDriver) Create(
 		mountOptions = volConfig.MountOptions
 	}
 
+	// Take kerberos option from backend config first, then from pool
+	kerberos := d.Config.Kerberos
+	if kerberos == "" {
+		kerberos = pool.InternalAttributes()[Kerberos]
+	}
+
 	// Determine protocol from mount options
 	var protocolTypes []string
-	var cifsAccess, nfsV3Access, nfsV41Access bool
+	var cifsAccess, nfsV3Access, nfsV41Access, kerberosEnabled bool
 	var apiExportRule api.ExportRule
 	var exportPolicy api.ExportPolicy
+
+	switch kerberos {
+	case api.MountOptionKerberos5, api.MountOptionKerberos5I, api.MountOptionKerberos5P:
+		kerberosEnabled = true
+	case "":
+		kerberosEnabled = false
+	default:
+		return fmt.Errorf("unsupported kerberos type: %s", kerberos)
+	}
 
 	if d.Config.NASType == sa.SMB {
 		protocolTypes = []string{api.ProtocolTypeCIFS}
@@ -781,6 +813,24 @@ func (d *NASStorageDriver) Create(
 			UnixReadOnly:   false,
 			UnixReadWrite:  true,
 		}
+
+		if kerberosEnabled {
+			protocolTypes = []string{api.ProtocolTypeNFSv41}
+			apiExportRule.Nfsv3 = false
+			apiExportRule.Nfsv41 = true
+			apiExportRule.UnixReadOnly = false
+			apiExportRule.UnixReadWrite = false
+
+			switch kerberos {
+			case api.MountOptionKerberos5:
+				apiExportRule.Kerberos5ReadWrite = true
+			case api.MountOptionKerberos5I:
+				apiExportRule.Kerberos5IReadWrite = true
+			case api.MountOptionKerberos5P:
+				apiExportRule.Kerberos5PReadWrite = true
+			}
+		}
+
 		exportPolicy = api.ExportPolicy{
 			Rules: []api.ExportRule{apiExportRule},
 		}
@@ -856,6 +906,7 @@ func (d *NASStorageDriver) Create(
 			QuotaInBytes:      int64(sizeBytes),
 			SnapshotDirectory: snapshotDirBool,
 			NetworkFeatures:   networkFeatures,
+			KerberosEnabled:   kerberosEnabled,
 		}
 
 		// Add unix permissions and export policy fields only to NFS volume
@@ -1056,6 +1107,7 @@ func (d *NASStorageDriver) CreateClone(
 	if d.Config.NASType == sa.NFS {
 		createRequest.ExportPolicy = sourceVolume.ExportPolicy
 		createRequest.UnixPermissions = sourceVolume.UnixPermissions
+		createRequest.KerberosEnabled = sourceVolume.KerberosEnabled
 	}
 
 	// Clone the volume
@@ -1126,6 +1178,38 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			}
 		}
 
+		// Check for kerberos option from backend config first, then from pool
+		kerberos := d.Config.Kerberos
+		if kerberos == "" {
+			for _, pool := range d.pools {
+				// Update the first successful match, if there's more than one pool
+				if kerberos = pool.InternalAttributes()[Kerberos]; kerberos != "" {
+					break
+				}
+			}
+		}
+
+		if kerberos != "" && !volume.KerberosEnabled {
+			return fmt.Errorf("could not import non-kerberos volume '%s', on a kerberos enabled backend", originalName)
+		}
+
+		if kerberos == "" && volume.KerberosEnabled {
+			return fmt.Errorf("could not import kerberos volume '%s', on a non-kerberos enabled backend", originalName)
+		}
+
+		modifiedExportRule := api.ExportRule{}
+		switch kerberos {
+		case api.MountOptionKerberos5:
+			modifiedExportRule.Nfsv41 = true
+			modifiedExportRule.Kerberos5ReadWrite = true
+		case api.MountOptionKerberos5I:
+			modifiedExportRule.Nfsv41 = true
+			modifiedExportRule.Kerberos5IReadWrite = true
+		case api.MountOptionKerberos5P:
+			modifiedExportRule.Nfsv41 = true
+			modifiedExportRule.Kerberos5PReadWrite = true
+		}
+
 		// Update the volume labels
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, volume.Labels[storage.ProvisioningLabelTag]) {
 			volume.Labels[storage.ProvisioningLabelTag] = ""
@@ -1133,7 +1217,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		labels := d.updateTelemetryLabels(ctx, volume)
 
 		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == api.ProtocolTypeCIFS {
-			if err = d.SDK.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess); err != nil {
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess, &modifiedExportRule); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1161,7 +1245,8 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 					return fmt.Errorf("could not import volume %s; %v", originalName, err)
 				}
 			}
-			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess); err != nil {
+
+			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess, &modifiedExportRule); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1377,7 +1462,7 @@ func (d *NASStorageDriver) Publish(
 	// Add required fields for attaching SMB volume
 	if d.Config.NASType == sa.SMB {
 		publishInfo.SMBPath = volConfig.AccessInfo.SMBPath
-		publishInfo.SMBServer = (volume.MountTargets)[0].SmbServerFqdn
+		publishInfo.SMBServer = (volume.MountTargets)[0].ServerFqdn
 		publishInfo.FilesystemType = sa.SMB
 	} else {
 		// Add fields needed by Attach
@@ -1385,6 +1470,11 @@ func (d *NASStorageDriver) Publish(
 		publishInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
 		publishInfo.FilesystemType = sa.NFS
 		publishInfo.MountOptions = mountOptions
+	}
+
+	// Replace server IP with FQDN for kerberos volume
+	if volume.KerberosEnabled {
+		publishInfo.NfsServerIP = (volume.MountTargets)[0].ServerFqdn
 	}
 
 	return nil
@@ -1887,12 +1977,17 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	// Set the mount target based on the NASType
 	if d.Config.NASType == sa.SMB {
 		volConfig.AccessInfo.SMBPath = constructVolumeAccessPath(volConfig, volume, sa.SMB)
-		volConfig.AccessInfo.SMBServer = (volume.MountTargets)[0].SmbServerFqdn
+		volConfig.AccessInfo.SMBServer = (volume.MountTargets)[0].ServerFqdn
 		volConfig.FileSystem = sa.SMB
 	} else {
 		volConfig.AccessInfo.NfsPath = constructVolumeAccessPath(volConfig, volume, sa.NFS)
 		volConfig.AccessInfo.NfsServerIP = (volume.MountTargets)[0].IPAddress
 		volConfig.FileSystem = sa.NFS
+	}
+
+	// Replace server IP with FQDN for kerberos volume
+	if volume.KerberosEnabled {
+		volConfig.AccessInfo.NfsServerIP = (volume.MountTargets)[0].ServerFqdn
 	}
 
 	return nil

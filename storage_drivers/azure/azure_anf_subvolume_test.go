@@ -2264,7 +2264,7 @@ func getStructsForSubvolumePublish() (
 			MountTargetID: "mountTargetID",
 			FileSystemID:  "filesystemID",
 			IPAddress:     "1.1.1.1",
-			SmbServerFqdn: "",
+			ServerFqdn:    "",
 		},
 	}
 
@@ -3728,7 +3728,7 @@ func TestSubvolumeCreateFollowUp_MountTarget(t *testing.T) {
 			MountTargetID: "mountTargetID",
 			FileSystemID:  "filesystemID",
 			IPAddress:     "1.1.1.1",
-			SmbServerFqdn: "",
+			ServerFqdn:    "",
 		},
 	}
 

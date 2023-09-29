@@ -505,15 +505,27 @@ func exportPolicyExport(exportPolicy *ExportPolicy) *netapp.VolumePropertiesExpo
 		nfsv3 := rule.Nfsv3
 		nfsv41 := rule.Nfsv41
 		allowedClients := rule.AllowedClients
+		kerberos5ReadOnly := rule.Kerberos5ReadOnly
+		kerberos5ReadWrite := rule.Kerberos5ReadWrite
+		kerberos5IReadOnly := rule.Kerberos5IReadOnly
+		kerberos5IReadWrite := rule.Kerberos5IReadWrite
+		kerberos5PReadOnly := rule.Kerberos5PReadOnly
+		kerberos5PReadWrite := rule.Kerberos5PReadWrite
 
 		anfRule := netapp.ExportPolicyRule{
-			RuleIndex:      &ruleIndex,
-			UnixReadOnly:   &unixReadOnly,
-			UnixReadWrite:  &unixReadWrite,
-			Cifs:           &cifs,
-			Nfsv3:          &nfsv3,
-			Nfsv41:         &nfsv41,
-			AllowedClients: &allowedClients,
+			RuleIndex:           &ruleIndex,
+			UnixReadOnly:        &unixReadOnly,
+			UnixReadWrite:       &unixReadWrite,
+			Cifs:                &cifs,
+			Nfsv3:               &nfsv3,
+			Nfsv41:              &nfsv41,
+			AllowedClients:      &allowedClients,
+			Kerberos5ReadOnly:   &kerberos5ReadOnly,
+			Kerberos5ReadWrite:  &kerberos5ReadWrite,
+			Kerberos5IReadOnly:  &kerberos5IReadOnly,
+			Kerberos5IReadWrite: &kerberos5IReadWrite,
+			Kerberos5PReadOnly:  &kerberos5PReadOnly,
+			Kerberos5PReadWrite: &kerberos5PReadWrite,
 		}
 
 		anfRules = append(anfRules, &anfRule)
@@ -535,13 +547,19 @@ func exportPolicyImport(anfExportPolicy *netapp.VolumePropertiesExportPolicy) *E
 	for _, anfRule := range anfExportPolicy.Rules {
 
 		rule := ExportRule{
-			RuleIndex:      DerefInt32(anfRule.RuleIndex),
-			UnixReadOnly:   DerefBool(anfRule.UnixReadOnly),
-			UnixReadWrite:  DerefBool(anfRule.UnixReadWrite),
-			Cifs:           DerefBool(anfRule.Cifs),
-			Nfsv3:          DerefBool(anfRule.Nfsv3),
-			Nfsv41:         DerefBool(anfRule.Nfsv41),
-			AllowedClients: DerefString(anfRule.AllowedClients),
+			RuleIndex:           DerefInt32(anfRule.RuleIndex),
+			UnixReadOnly:        DerefBool(anfRule.UnixReadOnly),
+			UnixReadWrite:       DerefBool(anfRule.UnixReadWrite),
+			Cifs:                DerefBool(anfRule.Cifs),
+			Nfsv3:               DerefBool(anfRule.Nfsv3),
+			Nfsv41:              DerefBool(anfRule.Nfsv41),
+			AllowedClients:      DerefString(anfRule.AllowedClients),
+			Kerberos5ReadOnly:   DerefBool(anfRule.Kerberos5ReadOnly),
+			Kerberos5ReadWrite:  DerefBool(anfRule.Kerberos5ReadWrite),
+			Kerberos5IReadOnly:  DerefBool(anfRule.Kerberos5IReadOnly),
+			Kerberos5IReadWrite: DerefBool(anfRule.Kerberos5IReadWrite),
+			Kerberos5PReadOnly:  DerefBool(anfRule.Kerberos5PReadOnly),
+			Kerberos5PReadWrite: DerefBool(anfRule.Kerberos5PReadWrite),
 		}
 
 		rules = append(rules, rule)
@@ -598,6 +616,7 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 		MountTargets:      c.getMountTargetsFromVolume(ctx, vol),
 		SubvolumesEnabled: c.getSubvolumesEnabledFromVolume(vol.Properties.EnableSubvolumes),
 		NetworkFeatures:   DerefNetworkFeatures(vol.Properties.NetworkFeatures),
+		KerberosEnabled:   DerefBool(vol.Properties.KerberosEnabled),
 	}, nil
 }
 
@@ -624,7 +643,7 @@ func (c Client) getMountTargetsFromVolume(ctx context.Context, vol *netapp.Volum
 			MountTargetID: DerefString(mtp.MountTargetID),
 			FileSystemID:  DerefString(mtp.FileSystemID),
 			IPAddress:     DerefString(mtp.IPAddress),
-			SmbServerFqdn: DerefString(mtp.SmbServerFqdn),
+			ServerFqdn:    DerefString(mtp.SmbServerFqdn),
 		}
 
 		mounts = append(mounts, mt)
@@ -940,6 +959,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 			SubnetID:                 &request.SubnetID,
 			SnapshotDirectoryVisible: &request.SnapshotDirectory,
 			NetworkFeatures:          &networkFeatures,
+			KerberosEnabled:          &request.KerberosEnabled,
 		},
 	}
 
@@ -994,7 +1014,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 
 // ModifyVolume updates attributes of a volume.
 func (c Client) ModifyVolume(
-	ctx context.Context, filesystem *FileSystem, labels map[string]string, unixPermissions *string, snapshotDirAccess *bool,
+	ctx context.Context, filesystem *FileSystem, labels map[string]string, unixPermissions *string, snapshotDirAccess *bool, exportRule *ExportRule,
 ) error {
 	logFields := LogFields{
 		"API":    "VolumesClient.Get",
@@ -1045,12 +1065,19 @@ func (c Client) ModifyVolume(
 		anfVolume.Properties.SnapshotDirectoryVisible = snapshotDirAccess
 	}
 
+	// Modify the export-rule to restrict the kerberos protocol type
+	anfVolume.Properties.ExportPolicy.Rules[0].Nfsv41 = &exportRule.Nfsv41
+	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadWrite = &exportRule.Kerberos5ReadWrite
+	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadOnly = &exportRule.Kerberos5ReadOnly
+	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5IReadWrite = &exportRule.Kerberos5IReadWrite
+	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5IReadOnly = &exportRule.Kerberos5IReadOnly
+	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5PReadWrite = &exportRule.Kerberos5PReadWrite
+	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5PReadOnly = &exportRule.Kerberos5PReadOnly
+
 	// Clear out ReadOnly and other fields that we don't want to change when merely relabeling.
 	serviceLevel := netapp.ServiceLevel("")
 	anfVolume.Properties.ServiceLevel = &serviceLevel
 	anfVolume.Properties.ProvisioningState = nil
-	anfVolume.Properties.ExportPolicy = nil
-	anfVolume.Properties.ProtocolTypes = nil
 	anfVolume.Properties.MountTargets = nil
 	anfVolume.Properties.ThroughputMibps = nil
 	anfVolume.Properties.BaremetalTenantID = nil

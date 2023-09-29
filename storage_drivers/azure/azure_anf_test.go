@@ -812,6 +812,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 	pool.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool.InternalAttributes()[CapacityPools] = "CP1,CP2"
+	pool.InternalAttributes()[Kerberos] = ""
 
 	pool.SetSupportedTopologies(supportedTopologies)
 
@@ -868,6 +869,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 				Zone:                "zone2",
 				SupportedTopologies: supportedTopologies,
 				NASType:             "nfs",
+				Kerberos:            "sec=krb5i",
 			},
 			{
 				AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
@@ -913,6 +915,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool0.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool0.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool0.InternalAttributes()[CapacityPools] = "CP1"
+	pool0.InternalAttributes()[Kerberos] = "sec=krb5i"
 
 	pool0.SetSupportedTopologies(supportedTopologies)
 
@@ -938,6 +941,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool1.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool1.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool1.InternalAttributes()[CapacityPools] = "CP2"
+	pool1.InternalAttributes()[Kerberos] = ""
 
 	pool1.SetSupportedTopologies(supportedTopologies)
 
@@ -947,6 +951,92 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedPools, driver.pools, "pools do not match")
+}
+
+func TestInitialize_KerberosDisabledInConfig(t *testing.T) {
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "fake-location",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1",
+        "volumeCreateTimeout": "600",
+        "sdkTimeout": "60",
+        "maxCacheAge": "300",
+        "kerberos": "sec-krb5"
+    }`
+
+	mockAPI, driver := newMockANFDriver(t)
+	tridentconfig.DisableExtraFeatures = true
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialized")
+	assert.False(t, driver.Initialized(), "initialized")
+}
+
+func TestInitialize_KerberosDisabledInPool(t *testing.T) {
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+       "storageDriverName": "azure-netapp-files",
+       "location": "fake-location",
+       "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+       "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+       "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+       "clientSecret": "myClientSecret",
+       "serviceLevel": "Premium",
+       "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	   "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	   "virtualNetwork": "VN1",
+	   "subnet": "RG1/VN1/SN1",
+       "volumeCreateTimeout": "600",
+       "sdkTimeout": "60",
+       "maxCacheAge": "300",
+       "storage": [{"labels":{"type":"kerb"},"kerberos" : "sec=krb5i"}]
+    }`
+
+	mockAPI, driver := newMockANFDriver(t)
+	tridentconfig.DisableExtraFeatures = true
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialized")
+	assert.False(t, driver.Initialized(), "initialized")
 }
 
 func TestValidate_InvalidServiceLevel(t *testing.T) {
@@ -1356,6 +1446,192 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 
 	assert.Error(t, result, "create failed")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+}
+
+func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.NfsMountOptions = ""
+	driver.Config.Kerberos = "sec=krb5"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	createRequest.KerberosEnabled = true
+	createRequest.ExportPolicy.Rules[0].Kerberos5ReadWrite = true
+	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
+	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
+	createRequest.ExportPolicy.Rules[0].UnixReadWrite = false
+	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.KerberosEnabled = true
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5i"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	createRequest.KerberosEnabled = true
+	createRequest.ExportPolicy.Rules[0].Kerberos5IReadWrite = true
+	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
+	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
+	createRequest.ExportPolicy.Rules[0].UnixReadWrite = false
+	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.KerberosEnabled = true
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5p"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	createRequest.KerberosEnabled = true
+	createRequest.ExportPolicy.Rules[0].Kerberos5PReadWrite = true
+	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
+	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
+	createRequest.ExportPolicy.Rules[0].UnixReadWrite = false
+	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.KerberosEnabled = true
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_Kerberos_type5P_failure(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5P"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "unsupported kerberos type: sec=krb5P", "create succeeded")
+	assert.NotNil(t, result, "expected nil")
 }
 
 func TestCreate_DiscoveryFailed(t *testing.T) {
@@ -2754,6 +3030,19 @@ func getStructsForImport(ctx context.Context, driver *NASStorageDriver) (*storag
 
 	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
 
+	apiExportRule := api.ExportRule{
+		AllowedClients:      defaultExportRule,
+		Cifs:                false,
+		Nfsv3:               false,
+		Nfsv41:              false,
+		RuleIndex:           1,
+		UnixReadOnly:        false,
+		UnixReadWrite:       false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5PReadWrite: false,
+		Kerberos5IReadWrite: false,
+	}
+
 	labels := make(map[string]string)
 	labels[drivers.TridentLabelTag] = driver.getTelemetryLabels(ctx)
 	labels[storage.ProvisioningLabelTag] = ""
@@ -2775,6 +3064,7 @@ func getStructsForImport(ctx context.Context, driver *NASStorageDriver) (*storag
 		SnapshotDirectory: true,
 		SubnetID:          subnetID,
 		UnixPermissions:   defaultUnixPermissions,
+		ExportPolicy:      api.ExportPolicy{Rules: []api.ExportRule{apiExportRule}},
 	}
 
 	return volConfig, originalFilesystem
@@ -2830,6 +3120,13 @@ func TestImport_Managed(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
 	expectedLabels := map[string]string{
@@ -2841,7 +3138,7 @@ func TestImport_Managed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2850,6 +3147,304 @@ func TestImport_Managed(t *testing.T) {
 	assert.NoError(t, result, "import failed")
 	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
 	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestImport_ManagedWithKerberos5(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	originalName := "importMe"
+	var snapshotDirAccess bool
+
+	exportRule := api.ExportRule{
+		Nfsv41:              true,
+		Kerberos5ReadWrite:  true,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = true
+	originalFilesystem.ExportPolicy.Rules[0].Nfsv41 = true
+	originalFilesystem.ExportPolicy.Rules[0].Kerberos5ReadWrite = true
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+	expectedUnixPermissions := "0770"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.True(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5ReadWrite, "kerberos protocol type mismatch")
+}
+
+func TestImport_ManagedWithKerberos5I(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5i"
+
+	originalName := "importMe"
+	var snapshotDirAccess bool
+
+	exportRule := api.ExportRule{
+		Nfsv41:              true,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: true,
+		Kerberos5PReadWrite: false,
+	}
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = true
+	originalFilesystem.ExportPolicy.Rules[0].Nfsv41 = true
+	originalFilesystem.ExportPolicy.Rules[0].Kerberos5IReadWrite = true
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+	expectedUnixPermissions := "0770"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.True(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5IReadWrite, "kerberos protocol type mismatch")
+}
+
+func TestImport_ManagedWithKerberos5P(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5p"
+
+	originalName := "importMe"
+	var snapshotDirAccess bool
+
+	exportRule := api.ExportRule{
+		Nfsv41:              true,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: true,
+	}
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = true
+	originalFilesystem.ExportPolicy.Rules[0].Nfsv41 = true
+	originalFilesystem.ExportPolicy.Rules[0].Kerberos5PReadWrite = true
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+	expectedUnixPermissions := "0770"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.True(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5PReadWrite, "kerberos protocol type mismatch")
+}
+
+func TestImport_ManagedWithMultipleKerberosEnabledStoragePools(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.Config.Storage = []drivers.AzureNASStorageDriverPool{
+		{
+			Kerberos: "sec=krb5i",
+		},
+		{
+			Kerberos: "sec=krb5p",
+		},
+	}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+
+	originalName := "importMe"
+	var snapshotDirAccess bool
+
+	exportRule := api.ExportRule{
+		Nfsv41:              true,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: true,
+		Kerberos5PReadWrite: false,
+	}
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = true
+	originalFilesystem.ExportPolicy.Rules[0].Nfsv41 = true
+	originalFilesystem.ExportPolicy.Rules[0].Kerberos5IReadWrite = true
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+	expectedUnixPermissions := "0770"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, result, "import failed")
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
+	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.True(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5IReadWrite, "kerberos protocol type mismatch")
+}
+
+func TestImport_ManagedWithKerberos_IncorrectProtocolType(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	originalName := "importMe"
+	var snapshotDirAccess bool
+
+	exportRule := api.ExportRule{
+		Nfsv41:              true,
+		Kerberos5ReadWrite:  true,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = true
+	originalFilesystem.ExportPolicy.Rules[0].Nfsv41 = true
+	originalFilesystem.ExportPolicy.Rules[0].Kerberos5ReadWrite = false
+	originalFilesystem.ExportPolicy.Rules[0].Kerberos5IReadWrite = true
+
+	expectedLabels := map[string]string{
+		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
+	}
+	expectedUnixPermissions := "0770"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess,
+		&exportRule).Return(errors.New("Could not import volume, volume modify failed.")).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import succeeded")
+	assert.False(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5ReadWrite, "kerberos protocol type mismatch")
+}
+
+func TestImport_ManagedWithKerberosDisabled(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = false
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import succeeded")
+	assert.False(t, originalFilesystem.KerberosEnabled, "kerberosEnabled flag is set")
+}
+
+func TestImport_ManagedWithKerberosNotSetInConfig(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = true
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import succeeded")
+	assert.True(t, originalFilesystem.KerberosEnabled, "kerberosEnabled flag is set")
 }
 
 func TestImport_ManagedWithSnapshotDir(t *testing.T) {
@@ -2865,6 +3460,13 @@ func TestImport_ManagedWithSnapshotDir(t *testing.T) {
 
 	originalName := "importMe"
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
 	volConfig.SnapshotDir = "true"
@@ -2879,7 +3481,7 @@ func TestImport_ManagedWithSnapshotDir(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2903,6 +3505,13 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 
 	originalName := "importMe"
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
 	volConfig.SnapshotDir = "false"
@@ -2917,7 +3526,7 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2926,6 +3535,33 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 	assert.NoError(t, result, "import failed")
 	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
 	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestImport_ManagedWithInvalidSnapshotDirValue(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+
+	volConfig.SnapshotDir = "xxxffa"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import succeeded")
+	assert.NotNil(t, result, "received nil")
 }
 
 func TestImport_SMB_Managed(t *testing.T) {
@@ -2941,6 +3577,13 @@ func TestImport_SMB_Managed(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
 
 	expectedLabels := map[string]string{
@@ -2951,7 +3594,7 @@ func TestImport_SMB_Managed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		nil, &snapshotDirAccess).Return(nil).Times(1)
+		nil, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -2976,6 +3619,13 @@ func TestImport_SMB_Failed(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
 
 	expectedLabels := map[string]string{
@@ -2986,7 +3636,7 @@ func TestImport_SMB_Failed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		nil, &snapshotDirAccess).Return(errors.New("unix permissions not applicable for SMB")).Times(1)
+		nil, &snapshotDirAccess, &exportRule).Return(errors.New("unix permissions not applicable for SMB")).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -3031,6 +3681,13 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 	originalFilesystem.UnixPermissions = "0700"
 	originalFilesystem.Labels = map[string]string{
@@ -3047,7 +3704,7 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
 
@@ -3196,6 +3853,13 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
 	expectedLabels := map[string]string{
@@ -3207,7 +3871,7 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess).Return(errFailed).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -3230,6 +3894,13 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
+	exportRule := api.ExportRule{
+		Nfsv41:              false,
+		Kerberos5ReadWrite:  false,
+		Kerberos5IReadWrite: false,
+		Kerberos5PReadWrite: false,
+	}
+
 	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
 
 	expectedLabels := map[string]string{
@@ -3241,7 +3912,7 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess).Return(nil).Times(1)
+		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
 		driver.defaultTimeout()).Return("", errFailed).Times(1)
 
@@ -3697,7 +4368,7 @@ func getStructsForPublishNFSVolume(
 			MountTargetID: "mountTargetID",
 			FileSystemID:  "filesystemID",
 			IPAddress:     "1.1.1.1",
-			SmbServerFqdn: "",
+			ServerFqdn:    "",
 		},
 	}
 
@@ -3754,7 +4425,7 @@ func getStructsForPublishSMBVolume(
 			MountTargetID: "mountTargetID",
 			FileSystemID:  "filesystemID",
 			IPAddress:     "1.1.1.1",
-			SmbServerFqdn: "trident-1234.trident.com",
+			ServerFqdn:    "trident-1234.trident.com",
 		},
 	}
 
@@ -3801,6 +4472,60 @@ func TestPublish_NFSVolume(t *testing.T) {
 	assert.Equal(t, "1.1.1.1", publishInfo.NfsServerIP, "NFS server IP mismatch")
 	assert.Equal(t, "nfs", publishInfo.FilesystemType, "filesystem type mismatch")
 	assert.Equal(t, "nfsvers=3", publishInfo.MountOptions, "mount options mismatch")
+}
+
+func TestPublish_NFSVolume_Kerberos_Type5(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	volConfig, filesystem, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
+
+	filesystem.MountTargets[0].ServerFqdn = "trident-1234.trident.com"
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	filesystem.KerberosEnabled = true
+
+	volConfig.MountOptions = "nfsvers=4.1"
+
+	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+
+	result := driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.Nil(t, result, "not nil")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, "/trident-testvol1", publishInfo.NfsPath, "NFS path mismatch")
+	assert.Equal(t, "trident-1234.trident.com", publishInfo.NfsServerIP, "server fqdn mismatch")
+	assert.Equal(t, "nfs", publishInfo.FilesystemType, "filesystem type mismatch")
+	assert.Equal(t, "nfsvers=4.1", publishInfo.MountOptions, "mount options mismatch")
+}
+
+func TestPublish_NFSVolume_Kerberos_Type5_NotSet(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	volConfig, filesystem, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
+
+	filesystem.MountTargets[0].ServerFqdn = "trident-1234.trident.com"
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	filesystem.KerberosEnabled = false
+
+	volConfig.MountOptions = "nfsvers=4.1"
+
+	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+
+	result := driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.Nil(t, result, "not nil")
+	assert.NotEqual(t, "trident-1234.trident.com", publishInfo.NfsServerIP, "server fqdn mismatch")
 }
 
 func TestPublish_ROClone_NFSVolume(t *testing.T) {
@@ -5050,6 +5775,52 @@ func TestCreateFollowup_NFSVolume(t *testing.T) {
 	assert.Equal(t, "nfs", volConfig.FileSystem, "filesystem type mismatch")
 }
 
+func TestCreateFollowup_NFSVolume_Kerberos_Type5(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
+
+	filesystem.MountTargets[0].ServerFqdn = "trident-1234.trident.com"
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	filesystem.KerberosEnabled = true
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	assert.Nil(t, result, "not nil")
+	assert.Equal(t, (filesystem.MountTargets)[0].ServerFqdn, volConfig.AccessInfo.NfsServerIP,
+		"server fqdn mismatch")
+	assert.Equal(t, "/"+filesystem.CreationToken, volConfig.AccessInfo.NfsPath, "NFS path mismatch")
+	assert.Equal(t, "nfs", volConfig.FileSystem, "filesystem type mismatch")
+}
+
+func TestCreateFollowup_NFSVolume_Kerberos_Type5_NotSet(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
+
+	filesystem.MountTargets[0].ServerFqdn = "trident-1234.trident.com"
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	filesystem.KerberosEnabled = false
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+
+	result := driver.CreateFollowup(ctx, volConfig)
+
+	assert.Nil(t, result, "not nil")
+	assert.NotEqual(t, (filesystem.MountTargets)[0].ServerFqdn, volConfig.AccessInfo.NfsServerIP,
+		"server fqdn mismatch")
+}
+
 func TestCreateFollowup_ROClone_NFSVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
@@ -5086,7 +5857,7 @@ func TestCreateFollowup_SMBVolume(t *testing.T) {
 	result := driver.CreateFollowup(ctx, volConfig)
 
 	assert.Nil(t, result, "not nil")
-	assert.Equal(t, (filesystem.MountTargets)[0].SmbServerFqdn, volConfig.AccessInfo.SMBServer, "SMB server mismatch")
+	assert.Equal(t, (filesystem.MountTargets)[0].ServerFqdn, volConfig.AccessInfo.SMBServer, "SMB server mismatch")
 	assert.Equal(t, "\\"+filesystem.CreationToken, volConfig.AccessInfo.SMBPath, "SMB path mismatch")
 	assert.Equal(t, "smb", volConfig.FileSystem, "filesystem type mismatch")
 }
@@ -5108,7 +5879,7 @@ func TestCreateFollowup_ROClone_SMBVolume(t *testing.T) {
 
 	assert.Nil(t, result, "not nil")
 	assert.NoError(t, result, "error occurred")
-	assert.Equal(t, (filesystem.MountTargets)[0].SmbServerFqdn, volConfig.AccessInfo.SMBServer, "SMB server mismatch")
+	assert.Equal(t, (filesystem.MountTargets)[0].ServerFqdn, volConfig.AccessInfo.SMBServer, "SMB server mismatch")
 	assert.Equal(t, "\\testvol1\\~snapshot\\deadbeef-5c0d-4afa-8cd8-afa3fba5665c", volConfig.AccessInfo.SMBPath,
 		"SMB path mismatch")
 	assert.Equal(t, "smb", volConfig.FileSystem, "filesystem type mismatch")
