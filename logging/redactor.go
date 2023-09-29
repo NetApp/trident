@@ -15,6 +15,11 @@ type redactedPattern struct {
 var redactedPatterns = []redactedPattern{
 	basicAuthorization,
 	csiSecrets,
+	chapAuthorization,
+	chapAuthorizationUser,
+	backendCreateCHAPSecrets,
+	backendCreateCHAPUsername,
+	backendAuthorization,
 }
 
 // Redactor is a formatter that redacts pre-defined regex patterns

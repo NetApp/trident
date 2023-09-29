@@ -71,3 +71,158 @@ func TestCSISecretsRedactor(t *testing.T) {
 		})
 	}
 }
+
+func TestCHAPAuthorizationRedactor(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{
+			name:     "simple case",
+			line:     "\\\"password\\\":\\\"password1234*&^%$#-+=_!@toberedacted\\\"",
+			expected: "\\\"password\\\":<REDACTED>",
+		},
+		{
+			name:     "password truncated at first '\"' ",
+			line:     "\\\"password\\\":\\\"double quote\\\"\"",
+			expected: "\\\"password\\\":<REDACTED>\"",
+		},
+		{
+			name:     "simple case with wrong key",
+			line:     "\"password:\":\"password1234*&^%$#toberedacted\"",
+			expected: "\"password:\":\"password1234*&^%$#toberedacted\"",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			input := []byte(test.line)
+			actual := chapAuthorization.re.ReplaceAll(input, chapAuthorization.rep)
+			assert.Equal(t, test.expected, string(actual))
+		})
+	}
+}
+
+func TestCHAPAuthorizationUserRedactor(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{
+			name:     "simple case",
+			line:     "\\\"user\\\":\\\"password1234*&^%$#-+=_!@toberedacted\\\"",
+			expected: "\\\"user\\\":<REDACTED>",
+		},
+		{
+			name:     "password truncated at first '\"' ",
+			line:     "\\\"user\\\":\\\"double quote\\\"\"",
+			expected: "\\\"user\\\":<REDACTED>\"",
+		},
+		{
+			name:     "simple case with wrong key",
+			line:     "\"user:\":\"password1234*&^%$#toberedacted\"",
+			expected: "\"user:\":\"password1234*&^%$#toberedacted\"",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			input := []byte(test.line)
+			actual := chapAuthorizationUser.re.ReplaceAll(input, chapAuthorizationUser.rep)
+			assert.Equal(t, test.expected, string(actual))
+		})
+	}
+}
+
+func TestBackendCreateCHAPSecretsRedactor(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{
+			name:     "simple case",
+			line:     "\\\"chapInitiatorSecret\\\":\\\"password1234*&^%$#-+=_!@toberedacted\\\"",
+			expected: "\\\"chap[Target]InitiatorSecrets\\\":<REDACTED>",
+		},
+		{
+			name:     "simple case for target secret ",
+			line:     "\\\"chapTargetInitiatorSecret\\\":\\\"chaptarget123%$#@^&*\\\"",
+			expected: "\\\"chap[Target]InitiatorSecrets\\\":<REDACTED>",
+		},
+		{
+			name:     "simple case with wrong key",
+			line:     "\"chapInitiatorSecret:\":\"password1234*&^%$#toberedacted\"",
+			expected: "\"chapInitiatorSecret:\":\"password1234*&^%$#toberedacted\"",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			input := []byte(test.line)
+			actual := backendCreateCHAPSecrets.re.ReplaceAll(input, backendCreateCHAPSecrets.rep)
+			assert.Equal(t, test.expected, string(actual))
+		})
+	}
+}
+
+func TestBackendCreateCHAPUsernameRedactor(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{
+			name:     "simple case",
+			line:     "\\\"chapUsername\\\":\\\"username1234*&^%$#-+=_!@toberedacted\\\"",
+			expected: "\\\"chap[Target]Username\\\":<REDACTED>",
+		},
+		{
+			name:     "simple case for target secret ",
+			line:     "\\\"chapTargetUsername\\\":\\\"chaptargetusername123%$#@^&*\\\"",
+			expected: "\\\"chap[Target]Username\\\":<REDACTED>",
+		},
+		{
+			name:     "simple case with wrong key",
+			line:     "\"chapUsername:\":\"password1234*&^%$#toberedacted\"",
+			expected: "\"chapUsername:\":\"password1234*&^%$#toberedacted\"",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			input := []byte(test.line)
+			actual := backendCreateCHAPUsername.re.ReplaceAll(input, backendCreateCHAPUsername.rep)
+			assert.Equal(t, test.expected, string(actual))
+		})
+	}
+}
+
+func TestBackendAuthorizationRedactor(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{
+			name:     "simple case",
+			line:     "\\\"username\\\":\\\"admin1234*&^%$#-+=_!@toberedacted\\\"",
+			expected: "\\\"username\\\":<REDACTED>",
+		},
+		{
+			name:     "password truncated at first '\"' ",
+			line:     "\\\"username\\\":\\\"double quote\\\"\"",
+			expected: "\\\"username\\\":<REDACTED>\"",
+		},
+		{
+			name:     "simple case with wrong key",
+			line:     "\"username:\":\"admin1234*&^%$#toberedacted\"",
+			expected: "\"username:\":\"admin1234*&^%$#toberedacted\"",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			input := []byte(test.line)
+			actual := backendAuthorization.re.ReplaceAll(input, backendAuthorization.rep)
+			assert.Equal(t, test.expected, string(actual))
+		})
+	}
+}
