@@ -298,12 +298,9 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 		// For iSCSI case confirm iSCSI `devicePath` exists, if not check
 		// `rawDevicePath` exist, if yes then copy the value else log an
 		// error message in logs.
-		if volumeTrackingInfo.VolumePublishInfo.IscsiTargetPortal == "" {
-			Logc(ctx).Debug("IscsiTargetPortal was empty in volume publish info.")
-			return false, nil
+		if volumeTrackingInfo.VolumePublishInfo.IscsiTargetPortal != "" {
+			v.ensureTrackingFileCorrect(ctx, volumeId, volumeTrackingInfo, publishedPaths, pvToDeviceMappings)
 		}
-
-		v.ensureTrackingFileCorrect(ctx, volumeId, volumeTrackingInfo, publishedPaths, pvToDeviceMappings)
 		return false, nil
 	}
 
@@ -454,9 +451,7 @@ func deleteStagedDeviceInfo(ctx context.Context, stagingPath, volumeId string) {
 	}
 }
 
-// Previous versions of Trident stored the path where the volumePublishInfo.json was stored for SMB volumes, instead
-// of the stagingTargetPath, which is the attachment point for an SMB volume. We need to know if the "stagingTargetPath"
-// in the tracking file is the actual stagingTargetPath or not.
+// isUpgradeWindowsTrackingFile verifies if this is windows tracking file.
 func (v *VolumePublishManager) isUpgradedWindowsTrackingFile(trackInfo *utils.VolumeTrackingInfo) bool {
-	return runtime.GOOS == "windows" && strings.Contains(trackInfo.StagingTargetPath, v.volumeTrackingInfoPath)
+	return runtime.GOOS == "windows" && trackInfo.FilesystemType == utils.SMB
 }

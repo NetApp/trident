@@ -125,11 +125,6 @@ func (h *helper) reconcileVolumePublishInfo(ctx context.Context) error {
 	}
 
 	for _, file := range files {
-		// On Windows, the staging path is a directory whose name is the volume ID (e.g. pvc-<uuid>). We don't want to
-		// attempt to reconcile directories.
-		if file.IsDir() {
-			continue
-		}
 		err := h.reconcileVolumePublishInfoFile(ctx, file.Name(), pvToDeviceMappings)
 		if err != nil {
 			return err
