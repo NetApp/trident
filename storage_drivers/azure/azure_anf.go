@@ -765,11 +765,8 @@ func (d *NASStorageDriver) Create(
 		mountOptions = volConfig.MountOptions
 	}
 
-	// Take kerberos option from backend config first, then from pool
-	kerberos := d.Config.Kerberos
-	if kerberos == "" {
-		kerberos = pool.InternalAttributes()[Kerberos]
-	}
+	// Take kerberos option from pool
+	kerberos := pool.InternalAttributes()[Kerberos]
 
 	// Determine protocol from mount options
 	var protocolTypes []string
@@ -1178,16 +1175,8 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			}
 		}
 
-		// Check for kerberos option from backend config first, then from pool
+		// Check for kerberos option from backend config
 		kerberos := d.Config.Kerberos
-		if kerberos == "" {
-			for _, pool := range d.pools {
-				// Update the first successful match, if there's more than one pool
-				if kerberos = pool.InternalAttributes()[Kerberos]; kerberos != "" {
-					break
-				}
-			}
-		}
 
 		if kerberos != "" && !volume.KerberosEnabled {
 			return fmt.Errorf("could not import non-kerberos volume '%s', on a kerberos enabled backend", originalName)

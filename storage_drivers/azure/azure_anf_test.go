@@ -3293,62 +3293,6 @@ func TestImport_ManagedWithKerberos5P(t *testing.T) {
 	assert.True(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5PReadWrite, "kerberos protocol type mismatch")
 }
 
-func TestImport_ManagedWithMultipleKerberosEnabledStoragePools(t *testing.T) {
-	mockAPI, driver := newMockANFDriver(t)
-	driver.Config.BackendName = "anf"
-	driver.Config.ServiceLevel = api.ServiceLevelUltra
-
-	driver.Config.Storage = []drivers.AzureNASStorageDriverPool{
-		{
-			Kerberos: "sec=krb5i",
-		},
-		{
-			Kerberos: "sec=krb5p",
-		},
-	}
-
-	driver.populateConfigurationDefaults(ctx, &driver.Config)
-	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
-	driver.Config.UnixPermissions = "0770"
-	driver.Config.NASType = "nfs"
-
-	originalName := "importMe"
-	var snapshotDirAccess bool
-
-	exportRule := api.ExportRule{
-		Nfsv41:              true,
-		Kerberos5ReadWrite:  false,
-		Kerberos5IReadWrite: true,
-		Kerberos5PReadWrite: false,
-	}
-
-	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
-	originalFilesystem.KerberosEnabled = true
-	originalFilesystem.ExportPolicy.Rules[0].Nfsv41 = true
-	originalFilesystem.ExportPolicy.Rules[0].Kerberos5IReadWrite = true
-
-	expectedLabels := map[string]string{
-		drivers.TridentLabelTag: driver.getTelemetryLabels(ctx),
-	}
-	expectedUnixPermissions := "0770"
-
-	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
-	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
-	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
-		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
-
-	result := driver.Import(ctx, volConfig, originalName)
-
-	assert.NoError(t, result, "import failed")
-	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
-	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
-	assert.True(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5IReadWrite, "kerberos protocol type mismatch")
-}
-
 func TestImport_ManagedWithKerberos_IncorrectProtocolType(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
