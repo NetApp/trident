@@ -248,10 +248,6 @@ var (
 		7: "SINGLE_NODE_MULTI_WRITER",
 	}
 
-	// DisableExtraFeatures makes a subset of Trident features disabled
-	// This can be removed when ACP replaces feature-gating
-	DisableExtraFeatures = false
-
 	// DefaultAutosupportImage default image used by tridentctl and operator for asup sidecar
 	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.07"
 

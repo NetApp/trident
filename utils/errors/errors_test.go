@@ -348,6 +348,38 @@ func TestUnsupportedConfigError(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestUnlicensedError(t *testing.T) {
+	err := UnlicensedError("error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsUnlicensedError(err))
+
+	assert.False(t, IsUnlicensedError(nil))
+
+	err = UnlicensedError("")
+	assert.True(t, IsUnlicensedError(err))
+
+	// Multierr tests
+	err = multierr.Combine(
+		fmt.Errorf("not unlicensed err"),
+		UnlicensedError("is unlicensed error"),
+	)
+	assert.True(t, IsUnlicensedError(err))
+
+	err = multierr.Combine(
+		fmt.Errorf("not unlicensed err"),
+		fmt.Errorf("not unlicensed err"),
+	)
+	assert.False(t, IsUnlicensedError(err))
+
+	err = WrapUnlicensedError(fmt.Errorf("not unlicensed err"))
+	assert.True(t, IsUnlicensedError(err))
+
+	err = WrapUnlicensedError(nil)
+	assert.Nil(t, err)
+}
+
 func TestReconcileFailedError(t *testing.T) {
 	err := ReconcileFailedError("deferred error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))

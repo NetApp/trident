@@ -11,7 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/acp"
 	. "github.com/netapp/trident/logging"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
@@ -62,8 +62,10 @@ func (c *TridentCrdController) handleActionSnapshotRestore(keyItem *KeyItem) (re
 		}
 	}()
 
-	if config.DisableExtraFeatures {
-		return errors.UnsupportedError("snapshot restore is not enabled")
+	// Check if this feature is supported by reaching out to trident-acp via API.
+	if err = acp.API().IsFeatureEnabled(ctx, acp.FeatureSnapshotRestore); err != nil {
+		Logc(ctx).WithField("key", key).WithError(err).Error("Could not complete snapshot restore.")
+		return err
 	}
 
 	// Detect a CR that is in progress but is not a retry from the workqueue.  This can only happen

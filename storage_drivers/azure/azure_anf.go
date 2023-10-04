@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
 
+	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -634,8 +635,14 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 			return fmt.Errorf("invalid value for networkFeatures in pool %s", poolName)
 		}
 
-		if pool.InternalAttributes()[Kerberos] != "" && tridentconfig.DisableExtraFeatures {
-			return fmt.Errorf("kerberos support is not enabled ")
+		if pool.InternalAttributes()[Kerberos] != "" {
+			if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption); err != nil {
+				// Log a warning to avoid putting the backend into a failed state.
+				Logc(ctx).WithFields(LogFields{
+					"attribute": Kerberos,
+					"value":     pool.InternalAttributes()[Kerberos],
+				}).WithError(err).Warning("Pool attribute requires ACP; workflows using this option may fail.")
+			}
 		}
 	}
 
@@ -679,6 +686,16 @@ func (d *NASStorageDriver) Create(
 	pool, ok := d.pools[storagePool.Name()]
 	if !ok {
 		return fmt.Errorf("pool %s does not exist", storagePool.Name())
+	}
+
+	// Check if this volume landed on a Kerberos-enabled storage pool. If so, check if ACP allows it.
+	if pool.InternalAttributes()[Kerberos] != "" {
+		if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption); err != nil {
+			Logc(ctx).WithField(
+				"feature", acp.FeatureInflightEncryption,
+			).WithError(err).Errorf("Failed to create volume.")
+			return fmt.Errorf("feature %s requires ACP; %w", acp.FeatureInflightEncryption, err)
+		}
 	}
 
 	// If the volume already exists, bail out
@@ -976,6 +993,16 @@ func (d *NASStorageDriver) CreateClone(
 		return fmt.Errorf("could not find source volume; %v", err)
 	}
 
+	// If source volume has kerberos enabled, check if ACP allows it.
+	if sourceVolume.KerberosEnabled {
+		if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption); err != nil {
+			Logc(ctx).WithField(
+				"feature", acp.FeatureInflightEncryption,
+			).WithError(err).Errorf("Failed to clone volume.")
+			return fmt.Errorf("feature %s requires ACP; %w", acp.FeatureInflightEncryption, err)
+		}
+	}
+
 	// We always clone to the same capacity pool, so we can use the source volume's info to find
 	// a pre-existing clone more efficiently.
 	cloneID := api.CreateVolumeID(d.Config.SubscriptionID, sourceVolume.ResourceGroup, sourceVolume.NetAppAccount,
@@ -1177,6 +1204,15 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 		// Check for kerberos option from backend config
 		kerberos := d.Config.Kerberos
+		if kerberos != "" {
+			// Check if this volume landed on a Kerberos-enabled storage pool. If so, check if ACP allows it.
+			if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption); err != nil {
+				Logc(ctx).WithField(
+					"feature", acp.FeatureInflightEncryption,
+				).WithError(err).Errorf("Could not import volume.")
+				return fmt.Errorf("feature %s requires ACP; %w", acp.FeatureInflightEncryption, err)
+			}
+		}
 
 		if kerberos != "" && !volume.KerberosEnabled {
 			return fmt.Errorf("could not import non-kerberos volume '%s', on a kerberos enabled backend", originalName)

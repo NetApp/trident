@@ -17,8 +17,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_azure"
 	"github.com/netapp/trident/storage"
 	storagefake "github.com/netapp/trident/storage/fake"
@@ -215,6 +217,13 @@ func TestDefaultTimeout(t *testing.T) {
 }
 
 func TestInitialize(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -239,7 +248,8 @@ func TestInitialize(t *testing.T) {
 	    "subnet": "RG1/VN1/SN1",
         "volumeCreateTimeout": "600",
         "sdkTimeout": "60",
-        "maxCacheAge": "300"
+        "maxCacheAge": "300",
+        "kerberos": "sec-krb5"
     }`
 
 	// Have to at least one CapacityPool for ANF backends.
@@ -250,9 +260,8 @@ func TestInitialize(t *testing.T) {
 		ResourceGroup: "RG1",
 	}
 
-	mockAPI, driver := newMockANFDriver(t)
-
 	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
@@ -953,7 +962,14 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	assert.Equal(t, expectedPools, driver.pools, "pools do not match")
 }
 
-func TestInitialize_KerberosDisabledInConfig(t *testing.T) {
+func TestInitialize_KerberosDisabledInPool(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "azure-netapp-files",
@@ -982,61 +998,30 @@ func TestInitialize_KerberosDisabledInConfig(t *testing.T) {
         "kerberos": "sec-krb5"
     }`
 
-	mockAPI, driver := newMockANFDriver(t)
-	tridentconfig.DisableExtraFeatures = true
-
-	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
-
-	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
-		map[string]string{}, BackendUUID)
-
-	assert.Error(t, result, "initialized")
-	assert.False(t, driver.Initialized(), "initialized")
-}
-
-func TestInitialize_KerberosDisabledInPool(t *testing.T) {
-	commonConfig := &drivers.CommonStorageDriverConfig{
-		Version:           1,
-		StorageDriverName: "azure-netapp-files",
-		BackendName:       "myANFBackend",
-		DriverContext:     tridentconfig.ContextCSI,
-		DebugTraceFlags:   debugTraceFlags,
+	// Have to at least one CapacityPool for ANF backends.
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "fake-location",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
 	}
 
-	configJSON := `
-    {
-		"version": 1,
-       "storageDriverName": "azure-netapp-files",
-       "location": "fake-location",
-       "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
-       "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
-       "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
-       "clientSecret": "myClientSecret",
-       "serviceLevel": "Premium",
-       "debugTraceFlags": {"method": true, "api": true, "discovery": true},
-	   "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
-	   "virtualNetwork": "VN1",
-	   "subnet": "RG1/VN1/SN1",
-       "volumeCreateTimeout": "600",
-       "sdkTimeout": "60",
-       "maxCacheAge": "300",
-       "storage": [{"labels":{"type":"kerb"},"kerberos" : "sec=krb5i"}]
-    }`
-
-	mockAPI, driver := newMockANFDriver(t)
-	tridentconfig.DisableExtraFeatures = true
-
-	driver.populateConfigurationDefaults(ctx, &driver.Config)
-	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
-
 	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(errFailed).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
 
 	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
 		map[string]string{}, BackendUUID)
 
-	assert.Error(t, result, "initialized")
-	assert.False(t, driver.Initialized(), "initialized")
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config, "config is nil")
+	assert.Equal(t, "deadbeef-784c-4b35-8329-460f52a3ad50", driver.Config.ClientID)
+	assert.Equal(t, "myClientSecret", driver.Config.ClientSecret)
+	assert.Equal(t, "trident-", *driver.Config.StoragePrefix, "wrong storage prefix")
+	assert.Equal(t, 1, len(driver.pools), "wrong number of pools")
+	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID, "wrong backend UUID")
+	assert.Equal(t, driver.volumeCreateTimeout, 600*time.Second, "volume create timeout mismatch")
+	assert.True(t, driver.Initialized(), "not initialized")
 }
 
 func TestValidate_InvalidServiceLevel(t *testing.T) {
@@ -1449,7 +1434,13 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 }
 
 func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
@@ -1479,6 +1470,7 @@ func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
 	filesystem.KerberosEnabled = true
 	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
 
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
@@ -1500,8 +1492,59 @@ func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
-func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
+func TestCreate_NFSVolume_Kerberos_type5_FailsEntitlementCheck(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.NfsMountOptions = ""
+	driver.Config.Kerberos = "sec=krb5"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	createRequest.KerberosEnabled = true
+	createRequest.ExportPolicy.Rules[0].Kerberos5ReadWrite = true
+	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
+	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
+	createRequest.ExportPolicy.Rules[0].UnixReadWrite = false
+	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.KerberosEnabled = true
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(errFailed).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create suceeded")
+}
+
+func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
@@ -1531,6 +1574,7 @@ func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
 	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
@@ -1551,8 +1595,58 @@ func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
-func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
+func TestCreate_NFSVolume_Kerberos_type5I_FailsEntitlementCheck(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5i"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	createRequest.KerberosEnabled = true
+	createRequest.ExportPolicy.Rules[0].Kerberos5IReadWrite = true
+	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
+	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
+	createRequest.ExportPolicy.Rules[0].UnixReadWrite = false
+	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.KerberosEnabled = true
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(errFailed).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create succeeded")
+}
+
+func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
@@ -1582,6 +1676,7 @@ func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
 	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
@@ -1602,8 +1697,58 @@ func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
-func TestCreate_NFSVolume_Kerberos_type5P_failure(t *testing.T) {
+func TestCreate_NFSVolume_Kerberos_type5P_FailsEntitlementCheck(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5p"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	createRequest.KerberosEnabled = true
+	createRequest.ExportPolicy.Rules[0].Kerberos5PReadWrite = true
+	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
+	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
+	createRequest.ExportPolicy.Rules[0].UnixReadWrite = false
+	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.KerberosEnabled = true
+	filesystem.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(errFailed).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create succeeded")
+}
+
+func TestCreate_NFSVolume_Kerberos_type5P_failure(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
@@ -1625,6 +1770,7 @@ func TestCreate_NFSVolume_Kerberos_type5P_failure(t *testing.T) {
 	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 
@@ -3150,7 +3296,13 @@ func TestImport_Managed(t *testing.T) {
 }
 
 func TestImport_ManagedWithKerberos5(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 
@@ -3184,6 +3336,9 @@ func TestImport_ManagedWithKerberos5(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
+
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
@@ -3198,7 +3353,13 @@ func TestImport_ManagedWithKerberos5(t *testing.T) {
 }
 
 func TestImport_ManagedWithKerberos5I(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 
@@ -3232,6 +3393,9 @@ func TestImport_ManagedWithKerberos5I(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
+
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
@@ -3246,7 +3410,13 @@ func TestImport_ManagedWithKerberos5I(t *testing.T) {
 }
 
 func TestImport_ManagedWithKerberos5P(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 
@@ -3280,6 +3450,9 @@ func TestImport_ManagedWithKerberos5P(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
+
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
@@ -3294,7 +3467,13 @@ func TestImport_ManagedWithKerberos5P(t *testing.T) {
 }
 
 func TestImport_ManagedWithKerberos_IncorrectProtocolType(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 
@@ -3329,6 +3508,9 @@ func TestImport_ManagedWithKerberos_IncorrectProtocolType(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).AnyTimes()
+
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess,
 		&exportRule).Return(errors.New("Could not import volume, volume modify failed.")).Times(1)
 
@@ -3339,7 +3521,13 @@ func TestImport_ManagedWithKerberos_IncorrectProtocolType(t *testing.T) {
 }
 
 func TestImport_ManagedWithKerberosDisabled(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
 	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 
@@ -3358,6 +3546,8 @@ func TestImport_ManagedWithKerberosDisabled(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).AnyTimes()
 
 	result := driver.Import(ctx, volConfig, originalName)
 

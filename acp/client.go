@@ -3,142 +3,110 @@
 package acp
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+
+	"github.com/netapp/trident/acp/rest"
+	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/version"
 )
 
-// Client is a concrete reference for interfacing directly with ACP REST APIs.
-type Client struct {
-	baseURL    string
-	httpClient http.Client
+var (
+	initialInterval = 1 * time.Second
+	multiplier      = 1.414 // approx sqrt(2)
+	maxInterval     = 24 * time.Second
+	randomFactor    = 0.1
+	maxElapsedTime  = 60 * time.Second
+)
+
+// tridentACP is a global API for interacting with Trident-ACP. It is a singleton.
+var tridentACP TridentACP
+
+// Initialize creates a singleton Trident-ACP API instance.
+// This should only be called once during startup.
+func Initialize(url string, enabled bool, timeout time.Duration) {
+	tridentACP = newClient(rest.NewClient(url, timeout), enabled)
 }
 
-// NewAPI accepts a base URL and timeout and returns a reference for interfacing directly with trident-acp REST APIs.
-func NewAPI(baseURL string, timeout time.Duration) (*Client, error) {
-	if _, err := url.Parse(baseURL); baseURL == "" || err != nil {
-		return nil, fmt.Errorf("invalid URL [%s] specified for trident-acp API client; %v", baseURL, err)
-	} else if timeout < 1 {
-		return nil, fmt.Errorf("invalid timeout [%v] specified for trident-acp API client", timeout)
+// API returns a singleton Trident-ACP API client.
+func API() TridentACP {
+	return tridentACP
+}
+
+// SetAPI should only be used for testing.
+// It enables testing by replacing the package-level Trident-ACP API with a mock ACP API.
+// This should not be used anywhere outside unit tests.
+func SetAPI(acp TridentACP) {
+	tridentACP = acp
+}
+
+// client is a mediator between Trident and the direct Trident-ACP REST API.
+type client struct {
+	restClient REST
+	acpEnabled bool
+}
+
+// newClient builds a Trident-ACP client using package-level configuration state.
+func newClient(restAPI REST, acpEnabled bool) TridentACP {
+	return &client{restAPI, acpEnabled}
+}
+
+func (c *client) GetVersionWithBackoff(ctx context.Context) (*version.Version, error) {
+	Logc(ctx).Debug("Checking if Trident-ACP REST API is responsive.")
+	var v *version.Version
+	var err error
+
+	getVersion := func() error {
+		v, err = c.restClient.GetVersion(ctx)
+		return err
 	}
 
-	return &Client{
-		baseURL:    baseURL,
-		httpClient: http.Client{Timeout: timeout},
-	}, nil
-}
+	getVersionBackoff := backoff.NewExponentialBackOff()
+	getVersionBackoff.InitialInterval = initialInterval
+	getVersionBackoff.Multiplier = multiplier
+	getVersionBackoff.MaxInterval = maxInterval
+	getVersionBackoff.RandomizationFactor = randomFactor
+	getVersionBackoff.MaxElapsedTime = maxElapsedTime
 
-type getVersionResponse struct {
-	Version string `json:"version"`
-	Error   string `json:"error,omitempty"`
-}
+	getVersionNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"increment": duration,
+			"error":     err,
+		}).Debug("Could not get Trident-ACP version; retrying...")
+	}
 
-// GetVersion gets the installed ACP version.
-// Example: http://<host>:<port>/trident-acp/v1/version
-func (c *Client) GetVersion(ctx context.Context) (*version.Version, error) {
-	// Create a new HTTP request.
-	url := c.baseURL + versionEndpoint
-	req, err := c.newRequest(ctx, http.MethodGet, url, nil)
-	if err != nil {
+	if err = backoff.RetryNotify(getVersion, getVersionBackoff, getVersionNotify); err != nil {
+		Logc(ctx).WithError(err).Error("Unable to communicate with Trident-ACP REST API.")
 		return nil, err
+	} else if v == nil {
+		Logc(ctx).Error("No version in response from Trident-ACP REST API.")
+		return nil, fmt.Errorf("no version in response from Trident-ACP REST API")
 	}
 
-	// Assign headers.
-	req.Header.Set("User-Agent", userAgent())
-
-	// Make the request.
-	res, data, err := c.invokeAPI(req)
-	if err != nil {
-		return nil, err
-	} else if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("non-ok status code: [%v]; status %v", res.StatusCode, res.Status)
-	}
-
-	// Parse the response data into a struct.
-	var versionResponse getVersionResponse
-	if err := json.Unmarshal(data, &versionResponse); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response body; %v", err)
-	} else if versionResponse.Error != "" {
-		return nil, fmt.Errorf("failed to get trident-acp version; %v", err)
-	}
-
-	return version.ParseDate(versionResponse.Version)
+	Logc(ctx).WithField("version", v.String()).Debug("The Trident-ACP REST API is responsive.")
+	return v, nil
 }
 
-// Entitled accepts a feature and makes a request to ACP APIs to check if the supplied feature in Trident is allowed.
-// Example: http://<host>:<port>/trident-acp/v1/entitled?feature=<feature>
-func (c *Client) Entitled(ctx context.Context, feature string) (bool, error) {
-	// Create a new HTTP request.
-	url := c.baseURL + entitledEndpoint
-	req, err := c.newRequest(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return false, nil
+func (c *client) IsFeatureEnabled(ctx context.Context, feature string) error {
+	fields := LogFields{"feature": feature}
+	Logc(ctx).WithFields(fields).Debug("Checking if feature is enabled.")
+
+	if !c.acpEnabled {
+		Logc(ctx).WithFields(fields).Warning("Feature requires Trident-ACP to be enabled.")
+		return errors.UnsupportedConfigError("acp is not enabled")
 	}
 
-	// Assign headers.
-	req.Header.Set("User-Agent", userAgent())
-
-	// Add or Set query parameters.
-	params := req.URL.Query()
-	params.Set("feature", feature)
-	req.URL.RawQuery = params.Encode()
-
-	// Make the request.
-	// TODO: Inspect the response body when the Entitled API changes.
-	res, _, err := c.invokeAPI(req)
-	if err != nil {
-		return false, err
-	} else if res.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("non-OK status code: [%v]; status %v", res.StatusCode, res.Status)
+	// Entitled will return different errors based on the response from the API call. Return the exact error
+	// so consumers of this client may act on certain error conditions.
+	if err := c.restClient.Entitled(ctx, feature); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Feature enablement failed.")
+		return err
 	}
 
-	return true, nil
-}
-
-// newRequest accepts necessary fields to construct a new http request.
-// It returns a new http request or an error if one occurs.
-func (c *Client) newRequest(ctx context.Context, method, url string, data []byte) (*http.Request, error) {
-	// Ideally, the context should never be empty. If it is, set it to the default value used in new requests.
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	// Construct a new http request.
-	var body io.Reader
-	if data != nil {
-		body = bytes.NewBuffer(data)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new request: [%s, %s]; %v", method, url, err)
-	}
-
-	return req, nil
-}
-
-// invokeAPI accepts a http request, makes the request, and parses the response.
-// It returns the http response, the response body or an error if one occurs.
-func (c *Client) invokeAPI(req *http.Request) (*http.Response, []byte, error) {
-	// Make the request.
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error making request: [%s]; %v", req.URL.String(), err)
-	}
-	defer func() { _ = res.Body.Close() }()
-
-	// Read the response body.
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return res, nil, fmt.Errorf("failed to parse response body; %v", err)
-	}
-
-	return res, data, nil
+	Logc(ctx).WithFields(fields).Debug("Feature is enabled.")
+	return nil
 }

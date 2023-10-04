@@ -192,9 +192,8 @@ func NewTridentCrdController(
 
 // newTridentCrdControllerImpl returns a new Trident CRD controller frontend
 func newTridentCrdControllerImpl(
-	orchestrator core.Orchestrator, tridentNamespace string,
-	kubeClientset kubernetes.Interface, snapshotClientset k8ssnapshots.Interface,
-	crdClientset tridentv1clientset.Interface,
+	orchestrator core.Orchestrator, tridentNamespace string, kubeClientset kubernetes.Interface,
+	snapshotClientset k8ssnapshots.Interface, crdClientset tridentv1clientset.Interface,
 ) (*TridentCrdController, error) {
 	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).WithFields(LogFields{
@@ -617,9 +616,9 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 		if handleFunction != nil {
 			if err := handleFunction(&keyItem); err != nil {
 				if errors.IsUnsupportedConfigError(err) {
-					errMessage := fmt.Sprintf("found unsupported backend configuration, "+
+					errMessage := fmt.Sprintf("found unsupported configuration, "+
 						"needs manual intervention to fix the issue; "+
-						"error syncing '%v', not requeuing; %v", keyItem.key, err.Error())
+						"error syncing '%v', not requeuing", keyItem.key)
 
 					c.workqueue.Forget(keyItem)
 
@@ -627,7 +626,19 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 					Log().Info("-------------------------------------------------")
 					Log().Info("-------------------------------------------------")
 
-					return fmt.Errorf(errMessage)
+					return fmt.Errorf("%s; %w", errMessage, err)
+				} else if errors.IsUnlicensedError(err) {
+					errMessage := fmt.Sprintf("licensed workflow requires ACP, "+
+						"needs manual intervention to fix the issue; "+
+						"error syncing '%v', not requeuing", keyItem.key)
+
+					c.workqueue.Forget(keyItem)
+
+					Logx(keyItem.ctx).WithError(err).Errorf(errMessage)
+					Log().Info("-------------------------------------------------")
+					Log().Info("-------------------------------------------------")
+
+					return fmt.Errorf("%s; %w", errMessage, err)
 				} else if errors.IsReconcileDeferredError(err) {
 					// If it is a deferred error, then do not remove the object from the queue and retry in due time
 					errMessage := fmt.Sprintf("deferred syncing %v '%v', requeuing; %v", keyItem.objectType,

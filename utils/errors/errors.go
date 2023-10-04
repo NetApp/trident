@@ -437,6 +437,37 @@ func IsUnsupportedConfigError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// unlicensedError
+// ///////////////////////////////////////////////////////////////////////////
+
+type unlicensedError struct {
+	message string
+}
+
+func (e *unlicensedError) Error() string { return e.message }
+
+func UnlicensedError(message string, a ...any) error {
+	return &unlicensedError{
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func WrapUnlicensedError(err error) error {
+	if err == nil {
+		return nil
+	}
+	return multierr.Combine(UnlicensedError("unlicensed"), err)
+}
+
+func IsUnlicensedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPointer *unlicensedError
+	return errors.As(err, &errPointer)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // tempOperatorError
 // ///////////////////////////////////////////////////////////////////////////
 

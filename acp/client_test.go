@@ -4,288 +4,116 @@ package acp
 
 import (
 	"context"
-	"encoding/json"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"os"
+	"fmt"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/logging"
+	mock_acp "github.com/netapp/trident/mocks/mock_acp/mock_rest"
+	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/version"
 )
 
-func TestMain(m *testing.M) {
-	// Disable any standard log output
-	logging.InitLogOutput(io.Discard)
-	os.Exit(m.Run())
+var ctx = context.Background()
+
+// setupBackoff is a helper to set the backoff values used in the API client's GetVersionWithBackoff method.
+func setupBackoff(interval, intervalCeiling, timeCeiling time.Duration, timeMultiplier, randomization float64) {
+	initialInterval = interval
+	maxInterval = intervalCeiling
+	maxElapsedTime = timeCeiling
+	multiplier = timeMultiplier
+	randomFactor = randomization
 }
 
-// newHttpTestServer sets up a httptest server with a supplied handler and pattern.
-func newHttpTestServer(pattern string, handler http.HandlerFunc) *httptest.Server {
-	router := http.NewServeMux()
-	router.HandleFunc(pattern, handler)
-	return httptest.NewServer(router)
-}
-
-func TestNewAPI(t *testing.T) {
-	tests := map[string]struct {
-		baseURL string
-		timeout time.Duration
-	}{
-		"WithMisconfiguredBaseURL": {
-			baseURL: "://127.0.0.1:8100",
-			timeout: httpClientTimeout,
-		},
-		// ΗΤΤΡ here is defined using unicode: Η = capital eta; Τ = capital tau; Ρ=capital rho
-		"WithInvalidCharactersInBaseURL": {
-			baseURL: "ΗΤΤΡ://127.0.0.1:8100",
-			timeout: httpClientTimeout,
-		},
-		"WithNegativeTimeoutSpecified": {
-			baseURL: "http://127.0.0.1.8100",
-			timeout: time.Duration(-1),
-		},
-		"WithZeroTimeoutSpecified": {
-			baseURL: "http://127.0.0.1.8100",
-			timeout: time.Duration(0),
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			c, err := NewAPI(test.baseURL, test.timeout)
-			assert.Nil(t, c, "expected nil client")
-			assert.Error(t, err, "expected error")
-		})
-	}
-}
-
-func TestClient_GetVersion(t *testing.T) {
-	ctx := context.Background()
+func TestTridentACP_GetVersionWithBackoff(t *testing.T) {
 	t.Run("WithNoServerRunning", func(t *testing.T) {
-		server := newHttpTestServer(versionEndpoint, func(w http.ResponseWriter, request *http.Request) {})
-		// Close the server immediately.
-		server.Close()
+		// Reset the backoff to the initial values after the test exits.
+		defer setupBackoff(initialInterval, maxInterval, maxElapsedTime, multiplier, randomFactor)
+		setupBackoff(50*time.Millisecond, 100*time.Millisecond, 250*time.Millisecond, 1.414, 1.0)
 
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
+		mockCtrl := gomock.NewController(t)
+		mockRest := mock_acp.NewMockREST(mockCtrl)
+		mockRest.EXPECT().GetVersion(ctx).Return(nil, fmt.Errorf("no server; status 500")).AnyTimes()
 
-		version, err := client.GetVersion(ctx)
-		assert.Nil(t, version, "expected version to be nil")
+		client := newClient(mockRest, true)
+		v, err := client.GetVersionWithBackoff(ctx)
+		// For now expect no error even though one occurs.
 		assert.Error(t, err, "expected error")
+		assert.Nil(t, v, "expected nil version")
 	})
 
-	t.Run("WithInternalServerError", func(t *testing.T) {
-		handler := func(w http.ResponseWriter, request *http.Request) {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte{})
-		}
-		server := newHttpTestServer(versionEndpoint, handler)
-		defer server.Close()
+	t.Run("WithCorrectResponseTypeAsync", func(t *testing.T) {
+		// Reset the backoff to the initial values after the test exits.
+		defer setupBackoff(initialInterval, maxInterval, maxElapsedTime, multiplier, randomFactor)
+		setupBackoff(50*time.Millisecond, 100*time.Millisecond, 250*time.Millisecond, 1.414, 1.0)
 
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
+		expectedVersion := version.MustParseDate("23.07.0")
+		mockCtrl := gomock.NewController(t)
+		mockRest := mock_acp.NewMockREST(mockCtrl)
+		mockRest.EXPECT().GetVersion(ctx).Return(expectedVersion, nil).AnyTimes()
 
-		version, err := client.GetVersion(ctx)
-		assert.Nil(t, version, "expected version to be nil")
-		assert.Error(t, err, "expected error")
-	})
+		client := newClient(mockRest, true)
 
-	t.Run("WithIncorrectResponseType", func(t *testing.T) {
-		handler := func(w http.ResponseWriter, request *http.Request) {
-			if _, err := w.Write(nil); err != nil {
-				t.Fatalf("failed to write response for GetVersion")
-			}
-		}
-		server := newHttpTestServer(versionEndpoint, handler)
-		defer server.Close()
+		var wg sync.WaitGroup
 
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
+		var v *version.Version
+		var err error
+		func() {
+			wg.Add(1)
+			defer wg.Done()
+			v, err = client.GetVersionWithBackoff(ctx)
+			// Give the backoff-retry time to make the API calls.
+			time.Sleep(200 * time.Millisecond)
+		}()
 
-		version, err := client.GetVersion(ctx)
-		assert.Nil(t, version, "expected version to be nil")
-		assert.Error(t, err, "expected error")
-	})
-
-	t.Run("WithErrorInResponse", func(t *testing.T) {
-		expectedVersion := "23.10.0-custom+unknown"
-		handler := func(w http.ResponseWriter, request *http.Request) {
-			v := &getVersionResponse{Version: expectedVersion, Error: "non-empty error"}
-			bytes, err := json.Marshal(v)
-			if err != nil {
-				t.Fatalf("failed to create fake response for GetVersion")
-			}
-
-			if _, err = w.Write(bytes); err != nil {
-				t.Fatalf("failed to write response for GetVersion")
-			}
-		}
-		server := newHttpTestServer(versionEndpoint, handler)
-		defer server.Close()
-
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
-
-		version, err := client.GetVersion(ctx)
-		assert.Nil(t, version, "expected version to be nil")
-		assert.Error(t, err, "expected error")
-	})
-
-	t.Run("WithCorrectResponseType", func(t *testing.T) {
-		expectedVersion := "23.10.0-custom+unknown"
-		handler := func(w http.ResponseWriter, request *http.Request) {
-			bytes, err := json.Marshal(&getVersionResponse{Version: expectedVersion})
-			if err != nil {
-				t.Fatalf("failed to create fake response for GetVersion")
-			}
-
-			if _, err = w.Write(bytes); err != nil {
-				t.Fatalf("failed to write response for GetVersion")
-			}
-		}
-		server := newHttpTestServer(versionEndpoint, handler)
-		defer server.Close()
-
-		client := &Client{baseURL: server.URL, httpClient: http.Client{Timeout: httpClientTimeout}}
-
-		version, err := client.GetVersion(ctx)
-		assert.NotNil(t, version, "expected version to exist")
-		assert.Equal(t, version.String(), expectedVersion, "expected equivalent versions")
+		wg.Wait()
+		// For now expect no error even though one occurs.
 		assert.NoError(t, err, "unexpected error")
+		assert.NotNil(t, v, "unexpected nil version")
+		assert.Equal(t, expectedVersion.String(), v.String(), "expected equal versions")
 	})
 }
 
-func TestClient_Entitled(t *testing.T) {
-	ctx := context.Background()
-	feature := FeatureSnapshotMirrorUpdate
-	t.Run("WithNoServerRunning", func(t *testing.T) {
-		server := newHttpTestServer("/any", func(w http.ResponseWriter, request *http.Request) {})
-		// Close the server immediately.
-		server.Close()
-
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
-
-		allowed, err := client.Entitled(ctx, feature)
-		assert.False(t, allowed, "expected allowed to be false")
+func TestTridentACP_IsFeatureEnabled(t *testing.T) {
+	t.Run("WithACPNotEnabled", func(t *testing.T) {
+		// Reset the package-level state after the test completes.
+		client := newClient(nil, false)
+		err := client.IsFeatureEnabled(ctx, FeatureSnapshotRestore)
 		assert.Error(t, err, "expected error")
+		assert.True(t, errors.IsUnsupportedConfigError(err), "should be unsupported config error")
+		assert.False(t, errors.IsUnlicensedError(err), "should not be unlicensed error")
 	})
 
-	t.Run("WithInternalServerError", func(t *testing.T) {
-		handler := func(w http.ResponseWriter, request *http.Request) {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte{})
-		}
-		server := newHttpTestServer(entitledEndpoint, handler)
-		defer server.Close()
+	t.Run("WithAPIErrorDuringFeatureEntitlementCheck", func(t *testing.T) {
+		// Reset the package-level state after the test completes.
+		testFeature := FeatureSnapshotRestore
 
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
+		mockCtrl := gomock.NewController(t)
+		mockRest := mock_acp.NewMockREST(mockCtrl)
+		mockRest.EXPECT().Entitled(ctx, testFeature).Return(fmt.Errorf("api error"))
 
-		allowed, err := client.Entitled(ctx, feature)
-		assert.False(t, allowed, "expected allowed to be false")
+		client := newClient(mockRest, true)
+		err := client.IsFeatureEnabled(ctx, testFeature)
 		assert.Error(t, err, "expected error")
+		assert.False(t, errors.IsUnsupportedConfigError(err), "should not be unsupported config error")
+		assert.False(t, errors.IsUnlicensedError(err), "should not be unlicensed error")
 	})
 
-	t.Run("WithAllowedResponse", func(t *testing.T) {
-		handler := func(w http.ResponseWriter, request *http.Request) {
-			w.WriteHeader(200)
-		}
-		server := newHttpTestServer(entitledEndpoint, handler)
-		defer server.Close()
+	t.Run("WhenFeatureIsNotSupported", func(t *testing.T) {
+		// Reset the package-level state after the test completes.
+		testFeature := FeatureSnapshotRestore
 
-		client := &Client{baseURL: server.URL, httpClient: http.Client{Timeout: httpClientTimeout}}
+		mockCtrl := gomock.NewController(t)
+		mockRest := mock_acp.NewMockREST(mockCtrl)
+		mockRest.EXPECT().Entitled(ctx, testFeature).Return(errors.UnlicensedError("unlicensed error"))
 
-		allowed, err := client.Entitled(ctx, feature)
-		assert.True(t, allowed, "expected allowed to be true")
-		assert.NoError(t, err, "unexpected error")
-	})
-	// TODO: Add unit tests for inspecting the response body when the Entitled API changes.
-}
-
-func TestClient_newRequest(t *testing.T) {
-	tests := map[string]struct {
-		ctx         context.Context
-		method, url string
-		data        []byte
-	}{
-		"WithNilContext": {
-			method: "GET",
-			url:    versionEndpoint,
-		},
-		"WithNonNilBody": {
-			method: "GET",
-			url:    versionEndpoint,
-			data:   []byte{'t', 'r', 'i', 'd', 'e', 'n', 't'},
-		},
-		"WithEmptyMethod": {
-			method: "",
-			url:    versionEndpoint,
-		},
-		"WithEmptyURL": {
-			method: "GET",
-			url:    "",
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			client, err := NewAPI("http://127.0.0.1:8100", httpClientTimeout)
-			if err != nil {
-				t.Fatalf("failed to create ACP API client for tests")
-			}
-
-			req, err := client.newRequest(test.ctx, test.method, test.url, test.data)
-			assert.NotNil(t, req)
-			assert.NoError(t, err)
-
-			var body []byte
-			if test.data != nil {
-				body, err = io.ReadAll(req.Body)
-				if err != nil {
-					t.Fatalf("failed to parse fake request body; %v", err)
-				}
-			}
-			assert.Equal(t, test.data, body)
-		})
-	}
-}
-
-func TestClient_invokeAPI(t *testing.T) {
-	ctx := context.Background()
-	t.Run("WithNoServerRunning", func(t *testing.T) {
-		server := newHttpTestServer(versionEndpoint, func(w http.ResponseWriter, request *http.Request) {})
-		// Close the server immediately.
-		server.Close()
-
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
-		req, err := client.newRequest(ctx, "GET", server.URL+versionEndpoint, nil)
-		if err != nil {
-			t.Fatalf("failed to create fake test request; %v", err)
-		}
-
-		res, body, err := client.invokeAPI(req)
-		assert.Nil(t, res, "expected res to be nil")
-		assert.Nil(t, body, "expected body to be nil")
+		client := newClient(mockRest, true)
+		err := client.IsFeatureEnabled(ctx, testFeature)
 		assert.Error(t, err, "expected error")
-	})
-
-	t.Run("WithInternalServerError", func(t *testing.T) {
-		handler := func(w http.ResponseWriter, request *http.Request) {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte{})
-		}
-		server := newHttpTestServer(versionEndpoint, handler)
-		defer server.Close()
-
-		client := &Client{baseURL: server.URL, httpClient: *server.Client()}
-		req, err := client.newRequest(ctx, "GET", server.URL+versionEndpoint, nil)
-		if err != nil {
-			t.Fatalf("failed to create fake test request; %v", err)
-		}
-
-		res, body, err := client.invokeAPI(req)
-		assert.NotNil(t, res, "expected res to not be nil")
-		assert.Equal(t, http.StatusInternalServerError, res.StatusCode, "expected internal server error")
-		assert.NotNil(t, body, "expected body to not be nil")
-		assert.NoError(t, err, "expected no error")
+		assert.False(t, errors.IsUnsupportedConfigError(err), "should be unsupported config error")
+		assert.True(t, errors.IsUnlicensedError(err), "should be unlicensed error")
 	})
 }

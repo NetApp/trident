@@ -15,6 +15,7 @@ import (
 	"github.com/RoaringBitmap/roaring"
 	"github.com/google/uuid"
 
+	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -902,8 +903,9 @@ func (d *NASQtreeStorageDriver) CreateSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
-	if tridentconfig.DisableExtraFeatures {
-		return nil, errors.UnsupportedError(fmt.Sprintf("snapshots are not supported by backend type %s", d.Name()))
+	if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureReadOnlyClone); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not create snapshot.")
+		return nil, err
 	}
 
 	if volConfig.ReadOnlyClone {
@@ -2285,8 +2287,9 @@ func (d *NASQtreeStorageDriver) Update(
 	Logc(ctx).WithFields(fields).Debug(">>>> Update")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< Update")
 
-	if tridentconfig.DisableExtraFeatures {
-		return nil, errors.UnsupportedError("update volume is not enabled")
+	if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureReadOnlyClone); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not update volume.")
+		return nil, err
 	}
 
 	updateGenericError := fmt.Sprintf("failed to update volume %v", volConfig.Name)

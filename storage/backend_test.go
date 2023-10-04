@@ -6,9 +6,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/acp"
+	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -148,8 +150,16 @@ func TestDeleteSnapshot_NotManaged(t *testing.T) {
 }
 
 func TestCloneVolume_FeatureDisabled(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = false }()
-	tridentconfig.DisableExtraFeatures = true
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	// Mock out any expected calls on the ACP API.
+	err := errors.UnsupportedError("unsupported")
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(err)
 
 	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
 	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
@@ -171,15 +181,23 @@ func TestCloneVolume_FeatureDisabled(t *testing.T) {
 	pool := NewStoragePool(nil, "test-pool1")
 
 	// Both volume and snapshot not managed
-	_, err := backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)
+	_, err = backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)
 
 	assert.Error(t, err, "expected err")
 	assert.True(t, errors.IsUnsupportedError(err))
 }
 
 func TestCloneVolume_BackendOffline(t *testing.T) {
-	defer func() { tridentconfig.DisableExtraFeatures = false }()
-	tridentconfig.DisableExtraFeatures = false
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	// Mock out any expected calls on the ACP API.
+	err := errors.UnsupportedError("unsupported")
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(err).AnyTimes()
 
 	volumeName := "pvc-e9748b6b-8240-4fd8-97bc-868bf064ecd4"
 	volumeInternalName := "trident_pvc_e9748b6b_8240_4fd8_97bc_868bf064ecd4"
@@ -203,7 +221,7 @@ func TestCloneVolume_BackendOffline(t *testing.T) {
 	pool := NewStoragePool(nil, "test-pool1")
 
 	// Both volume and snapshot not managed
-	_, err := backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)
+	_, err = backend.CloneVolume(context.Background(), volumeConfig, volumeConfigDest, pool, false)
 
 	assert.Errorf(t, err, "expected err")
 	assert.Equal(t, err.Error(), "backend test-backend is not Online")

@@ -225,7 +225,7 @@ func init() {
 	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout,
 		"Override the HTTP request timeout for Trident controller’s REST API")
 
-	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the trident-acp premium features.")
+	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the Trident-ACP premium features.")
 	installCmd.Flags().StringVar(&acpImage, "acp-image", tridentconfig.DefaultACPImage,
 		"Override the default trident-acp container image.")
 

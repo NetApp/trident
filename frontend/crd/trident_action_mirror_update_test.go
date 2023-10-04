@@ -13,7 +13,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/acp"
+	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils"
@@ -108,10 +109,12 @@ func fakeTAMU(name, namespace, tmrName, snapshotHandle string) *netappv1.Trident
 }
 
 func TestHandleActionMirrorUpdate(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = false }()
-	config.DisableExtraFeatures = false
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
 
 	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
@@ -122,6 +125,9 @@ func TestHandleActionMirrorUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
+
+	// Mock out any expected calls on the ACP API.
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSnapshotMirrorUpdate).Return(nil).AnyTimes()
 
 	orchestrator.EXPECT().GetMirrorTransferTime(gomock.Any(), pv1).Return(nil, nil).Times(1)
 	orchestrator.EXPECT().UpdateMirror(gomock.Any(), pv1, snapName1).Return(nil).Times(1)
@@ -262,10 +268,12 @@ func TestHandleActionMirrorUpdate_ValidateFailure(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = false }()
-	config.DisableExtraFeatures = false
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
 
 	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
@@ -276,6 +284,9 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
+
+	// Mock out any expected calls on the ACP API.
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSnapshotMirrorUpdate).Return(nil).AnyTimes()
 
 	// Fail in the driver a couple times with InProgressError, expecting a retry
 	orchestrator.EXPECT().UpdateMirror(gomock.Any(), pv1, snapName1).Return(
@@ -328,10 +339,12 @@ func TestHandleActionMirrorUpdate_InProgress(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgress_Disabled(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = false }()
-	config.DisableExtraFeatures = true
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
 
 	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
@@ -342,6 +355,10 @@ func TestHandleActionMirrorUpdate_InProgress_Disabled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
+
+	// Mock out any expected calls on the ACP API.
+	err = errors.UnsupportedError("unsupported")
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSnapshotMirrorUpdate).Return(err).AnyTimes()
 
 	// Activate the CRD controller and start monitoring
 	if err = crdController.Activate(); err != nil {
@@ -377,10 +394,12 @@ func TestHandleActionMirrorUpdate_InProgress_Disabled(t *testing.T) {
 }
 
 func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = false }()
-	config.DisableExtraFeatures = false
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
 
 	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
@@ -391,6 +410,9 @@ func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
+
+	// Mock out any expected calls on the ACP API.
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSnapshotMirrorUpdate).Return(nil).AnyTimes()
 
 	tamu := fakeTAMU(tamu1, namespace1, tmrName1, snapHandle1)
 	tamu.Status.State = netappv1.TridentActionStateInProgress
@@ -421,10 +443,12 @@ func TestHandleActionMirrorUpdate_InProgressAtStartup(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = false }()
-	config.DisableExtraFeatures = false
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
 
 	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	transferTime, _ := time.Parse(utils.TimestampFormat, previousTransferTime)
 
@@ -436,6 +460,9 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
+
+	// Mock out any expected calls on the ACP API.
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSnapshotMirrorUpdate).Return(nil).AnyTimes()
 
 	err = crdController.updateActionMirrorUpdateCRInProgress(ctx(), namespace1, tamu1, localVolHandle,
 		remoteVolHandle, snapName1, &transferTime)
@@ -459,10 +486,12 @@ func TestUpdateActionMirrorUpdateCRInProgress(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = false }()
-	config.DisableExtraFeatures = false
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
 
 	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
@@ -473,6 +502,9 @@ func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
+
+	// Mock out any expected calls on the ACP API.
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSnapshotMirrorUpdate).Return(nil).AnyTimes()
 
 	err = crdController.updateActionMirrorUpdateCRComplete(ctx(), namespace1, tamu1, nil)
 
@@ -495,10 +527,12 @@ func TestUpdateActionMirrorUpdateCRComplete_Succeeded(t *testing.T) {
 }
 
 func TestUpdateActionMirrorUpdateCRComplete_Failed(t *testing.T) {
-	defer func() { config.DisableExtraFeatures = false }()
-	config.DisableExtraFeatures = false
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
 
 	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	tridentNamespace := "trident"
@@ -509,6 +543,9 @@ func TestUpdateActionMirrorUpdateCRComplete_Failed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
+
+	// Mock out any expected calls on the ACP API.
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSnapshotMirrorUpdate).Return(nil).AnyTimes()
 
 	err = crdController.updateActionMirrorUpdateCRComplete(ctx(), namespace1, tamu1, nil)
 

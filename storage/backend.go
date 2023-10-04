@@ -16,6 +16,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/mitchellh/copystructure"
 
+	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -309,7 +310,7 @@ func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, err
 		volumes:   make(map[string]*Volume),
 	}
 
-	// retrieve backend specs
+	// Retrieve backend specs.
 	if err := backend.Driver().GetStorageBackendSpecs(ctx, &backend); err != nil {
 		return nil, err
 	}
@@ -474,7 +475,7 @@ func (b *StorageBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool
 func (b *StorageBackend) CloneVolume(
 	ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool, retry bool,
 ) (*Volume, error) {
-	Logc(ctx).WithFields(LogFields{
+	fields := LogFields{
 		"backend":                cloneVolConfig.Name,
 		"backendUUID":            b.backendUUID,
 		"storageClass":           cloneVolConfig.StorageClass,
@@ -484,11 +485,13 @@ func (b *StorageBackend) CloneVolume(
 		"sourceSnapshotInternal": cloneVolConfig.CloneSourceSnapshotInternal,
 		"cloneVolume":            cloneVolConfig.Name,
 		"cloneVolumeInternal":    cloneVolConfig.InternalName,
-	}).Debug("Attempting volume clone.")
+	}
+	Logc(ctx).WithFields(fields).Debug("Attempting volume clone.")
 
 	if cloneVolConfig.ReadOnlyClone {
-		if tridentconfig.DisableExtraFeatures {
-			return nil, errors.UnsupportedError("read only clone is not supported")
+		if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureReadOnlyClone); err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not clone a read-only volume.")
+			return nil, err
 		}
 	}
 

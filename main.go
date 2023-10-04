@@ -75,8 +75,8 @@ var (
 	nodePrep            = flag.Bool("node_prep", true, "Attempt to install required packages on nodes.")
 
 	// Trident-ACP
-	enableACP  = flag.Bool("enable_acp", false, "Enable the trident-acp premium features.")
-	acpAddress = flag.String("acp_address", acp.DefaultBaseURL, "Specify the trident-acp REST API address.")
+	enableACP  = flag.Bool("enable_acp", false, "Enable ACP premium features.")
+	acpAddress = flag.String("acp_address", acp.DefaultBaseURL, "Specify the Trident-ACP REST API address.")
 
 	// Persistence
 	useInMemory = flag.Bool("no_persistence", false, "Does not persist "+
@@ -348,6 +348,24 @@ func main() {
 
 	orchestrator := core.NewTridentOrchestrator(storeClient)
 
+	// Set configuration values used for ACP for the lifecycle of Trident.
+	// This always needs to happen regardless of if ACP is enabled or not.
+	acp.Initialize(*acpAddress, *enableACP, config.HTTPTimeout)
+
+	// Initialize a Trident-ACP Client.
+	if *enableACP {
+		Log().Info("Created Trident-ACP REST API Client.")
+		// Reach out to see if the Trident-ACP API is available.
+		version, err := acp.API().GetVersionWithBackoff(ctx)
+		if err != nil {
+			Log().Warning("Failed to communicate with Trident-ACP REST API.")
+		} else {
+			Log().WithField("version", version.String()).Info("Discovered Trident-ACP Version.")
+		}
+	} else {
+		Log().Info("ACP is not enabled; premium ACP workflows will fail.")
+	}
+
 	// Create HTTP metrics frontend
 	if *enableMetrics {
 		if *metricsPort == "" {
@@ -509,26 +527,6 @@ func main() {
 			}
 			preBootstrapFrontends = append(preBootstrapFrontends, httpsServer)
 			Log().WithFields(LogFields{"name": httpsServer.GetName()}).Info("Added frontend.")
-		}
-	}
-
-	var acpAPI acp.API
-	if *enableACP {
-		// See if Trident-ACP is responsive at the supplied address.
-		acpAPI, err = acp.NewAPI(*acpAddress, config.HTTPTimeout)
-		if err != nil {
-			Log().WithField("address", *acpAddress).WithError(err).Warning(
-				"Failed to initialize trident-acp API client; premium workflows may not be available.",
-			)
-		} else {
-			Log().WithField("name", acpAPI.GetName()).Info("Created trident-acp API client.")
-
-			// Check if ACP is there initially; this check should not be blocking.
-			go func() {
-				if err := acpAPI.Activate(); err != nil {
-					Log().Error(err)
-				}
-			}()
 		}
 	}
 
