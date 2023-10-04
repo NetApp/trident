@@ -256,7 +256,7 @@ var (
 	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.07"
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
-	DefaultACPImage = ""
+	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:23.10.0"
 )
 
 func IsValidProtocol(p Protocol) bool {
