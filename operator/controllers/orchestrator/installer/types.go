@@ -23,11 +23,12 @@ type TridentInstaller interface {
 	CreateOrPatchCRD(crdName, crdYAML string, performOperationOnce bool) error
 	InstallOrPatchTrident(
 		cr v15.TridentOrchestrator, currentInstallationVersion string, shouldUpdate, crdUpdateNeeded bool,
-	) (*v15.TridentOrchestratorSpecValues, string, error)
+	) (*v15.TridentOrchestratorSpecValues, string, string, error)
 	ObliviateCRDs() error
 	TridentDeploymentInformation(deploymentLabel string) (*appsv1.Deployment, []appsv1.Deployment, bool, error)
 	TridentDaemonSetInformation() (*appsv1.DaemonSet, []appsv1.DaemonSet, bool, error)
 	UninstallTrident() error
+	GetACPVersion() string
 }
 
 // ExtendedK8sClient extends the vanilla k8s client Interface and is responsible for enabling the TridentInstaller.

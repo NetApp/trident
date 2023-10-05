@@ -59,14 +59,29 @@ func (mr *MockTridentInstallerMockRecorder) CreateOrPatchCRD(arg0, arg1, arg2 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrPatchCRD", reflect.TypeOf((*MockTridentInstaller)(nil).CreateOrPatchCRD), arg0, arg1, arg2)
 }
 
+// GetACPVersion mocks base method.
+func (m *MockTridentInstaller) GetACPVersion() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetACPVersion")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetACPVersion indicates an expected call of GetACPVersion.
+func (mr *MockTridentInstallerMockRecorder) GetACPVersion() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetACPVersion", reflect.TypeOf((*MockTridentInstaller)(nil).GetACPVersion))
+}
+
 // InstallOrPatchTrident mocks base method.
-func (m *MockTridentInstaller) InstallOrPatchTrident(arg0 v1.TridentOrchestrator, arg1 string, arg2, arg3 bool) (*v1.TridentOrchestratorSpecValues, string, error) {
+func (m *MockTridentInstaller) InstallOrPatchTrident(arg0 v1.TridentOrchestrator, arg1 string, arg2, arg3 bool) (*v1.TridentOrchestratorSpecValues, string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InstallOrPatchTrident", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*v1.TridentOrchestratorSpecValues)
 	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
 }
 
 // InstallOrPatchTrident indicates an expected call of InstallOrPatchTrident.

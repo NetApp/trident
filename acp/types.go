@@ -13,6 +13,7 @@ import (
 
 // TridentACP is a set of methods for exposing Trident-ACP REST APIs to Trident.
 type TridentACP interface {
+	GetVersion(context.Context) (*version.Version, error)
 	GetVersionWithBackoff(context.Context) (*version.Version, error)
 	IsFeatureEnabled(context.Context, string) error
 }

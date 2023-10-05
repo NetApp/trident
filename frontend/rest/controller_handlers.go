@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/netapp/trident/acp"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/common"
@@ -244,9 +245,10 @@ func (r *AddBackendResponse) logFailure(ctx context.Context) {
 }
 
 type GetVersionResponse struct {
-	Version   string `json:"version"`
-	GoVersion string `json:"goVersion"`
-	Error     string `json:"error,omitempty"`
+	Version    string `json:"version"`
+	GoVersion  string `json:"goVersion"`
+	Error      string `json:"error,omitempty"`
+	ACPVersion string `json:"acpVersion,omitempty"`
 }
 
 func GetVersion(w http.ResponseWriter, r *http.Request) {
@@ -261,9 +263,26 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 				response.Error = err.Error()
 			}
 			response.Version = version
+
+			response.ACPVersion = GetACPVersion(ctx)
 			return httpStatusCodeForGetUpdateList(err)
 		},
 	)
+}
+
+func GetACPVersion(ctx context.Context) string {
+	version, err := acp.API().GetVersion(ctx)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Could not get trident-acp version.")
+		return ""
+	}
+
+	if version == nil {
+		Logc(ctx).WithError(err).Error("trident-acp version is empty.")
+		return ""
+	}
+
+	return version.String()
 }
 
 func AddBackend(w http.ResponseWriter, r *http.Request) {
@@ -351,7 +370,8 @@ func UpdateBackendState(w http.ResponseWriter, r *http.Request) {
 			}
 			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowBackendUpdate, LogLayerRESTFrontend)
 
-			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.BackendState, request.UserBackendState)
+			backend, err := orchestrator.UpdateBackendState(ctx, vars["backend"], request.BackendState,
+				request.UserBackendState)
 			if err != nil {
 				updateResponse.Error = err.Error()
 			}
@@ -622,7 +642,8 @@ func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, re
 
 	err = orchestrator.UpdateVolumeLUKSPassphraseNames(r.Context(), vars["volume"], passphraseNames)
 	if err != nil {
-		response.setError(fmt.Errorf("failed to update LUKS passphrase names for volume %s: %s", vars["volume"], err.Error()))
+		response.setError(fmt.Errorf("failed to update LUKS passphrase names for volume %s: %s", vars["volume"],
+			err.Error()))
 		if errors.IsNotFoundError(err) {
 			return http.StatusNotFound
 		}

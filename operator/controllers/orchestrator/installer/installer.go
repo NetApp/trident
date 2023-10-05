@@ -464,14 +464,14 @@ func (i *Installer) setInstallationParams(
 
 func (i *Installer) InstallOrPatchTrident(
 	cr netappv1.TridentOrchestrator, currentInstallationVersion string, k8sUpdateNeeded, crdUpdateNeeded bool,
-) (*netappv1.TridentOrchestratorSpecValues, string, error) {
+) (*netappv1.TridentOrchestratorSpecValues, string, string, error) {
 	var returnError error
 	reuseServiceAccountMap := make(map[string]bool)
 
 	// Set installation params
 	controllingCRDetails, labels, tridentUpdateNeeded, err := i.setInstallationParams(cr, currentInstallationVersion)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	// Remove any leftover transient Trident
@@ -491,25 +491,25 @@ func (i *Installer) InstallOrPatchTrident(
 
 	// Create namespace, if one does not exist
 	if returnError = i.createOrPatchTridentInstallationNamespace(); returnError != nil {
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create or patch or update the RBAC objects
 	if reuseServiceAccountMap, returnError = i.createRBACObjects(controllingCRDetails, labels,
 		shouldUpdate); returnError != nil {
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create CRDs and ensure they are established
 	returnError = i.createAndEnsureCRDs(crdUpdateNeeded)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Patch the CRD definitions with finalizers to protect them
 	if returnError = i.client.AddFinalizerToCRDs(CRDnames); returnError != nil {
-		return nil, "", fmt.Errorf("failed to add finalizers for Trident CRDs %v; err: %v", CRDnames, returnError)
+		return nil, "", "", fmt.Errorf("failed to add finalizers for Trident CRDs %v; err: %v", CRDnames, returnError)
 	}
 
 	// Create or patch or update the RBAC PSPs
@@ -517,7 +517,7 @@ func (i *Installer) InstallOrPatchTrident(
 		returnError = i.createOrPatchTridentPodSecurityPolicy(controllingCRDetails, labels, shouldUpdate)
 		if returnError != nil {
 			returnError = fmt.Errorf("failed to create the Trident pod security policy; %v", returnError)
-			return nil, "", returnError
+			return nil, "", "", returnError
 		}
 	}
 
@@ -525,42 +525,42 @@ func (i *Installer) InstallOrPatchTrident(
 	returnError = i.createOrPatchK8sCSIDriver(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Kubernetes CSI Driver object; %v", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create or patch or update the Trident Service
 	returnError = i.createOrPatchTridentService(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident Service; %v", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create or update the Trident Secret
 	returnError = i.createOrPatchTridentProtocolSecret(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident Protocol Secret; %v", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create or update the Trident Encryption Secret
 	returnError = i.createOrConsumeTridentEncryptionSecret(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident Encryption Secret; %v", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create or update the Trident Resource Quota
 	returnError = i.createOrPatchTridentResourceQuota(controllingCRDetails, labels, shouldUpdate)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident Resource Quota; %v", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create or update the Trident CSI deployment
 	returnError = i.createOrPatchTridentDeployment(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap)
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create the Trident Deployment; %v", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	returnError = i.createOrPatchTridentDaemonSet(controllingCRDetails, labels, shouldUpdate, reuseServiceAccountMap,
@@ -568,7 +568,7 @@ func (i *Installer) InstallOrPatchTrident(
 	if returnError != nil {
 		returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(false),
 			returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Create or update the Trident CSI daemonset
@@ -579,7 +579,7 @@ func (i *Installer) InstallOrPatchTrident(
 		if returnError != nil {
 			returnError = fmt.Errorf("failed to create or patch Trident daemonset %s; %v", getDaemonSetName(true),
 				returnError)
-			return nil, "", returnError
+			return nil, "", "", returnError
 		}
 	}
 
@@ -588,15 +588,17 @@ func (i *Installer) InstallOrPatchTrident(
 
 	tridentPod, returnError = i.waitForTridentPod()
 	if returnError != nil {
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
 
 	// Wait for Trident REST interface to be available
 	returnError = i.waitForRESTInterface(tridentPod.Name)
 	if returnError != nil {
 		returnError = fmt.Errorf("%v; use 'tridentctl logs' to learn more", returnError)
-		return nil, "", returnError
+		return nil, "", "", returnError
 	}
+
+	acpVersion := i.GetACPVersion()
 
 	identifiedSpecValues := netappv1.TridentOrchestratorSpecValues{
 		EnableForceDetach:       strconv.FormatBool(enableForceDetach),
@@ -628,10 +630,11 @@ func (i *Installer) InstallOrPatchTrident(
 	}
 
 	Log().WithFields(LogFields{
-		"namespace": i.namespace,
-		"version":   labels[TridentVersionLabelKey],
+		"namespace":   i.namespace,
+		"version":     labels[TridentVersionLabelKey],
+		"ACP version": acpVersion,
 	}).Info("Trident is installed.")
-	return &identifiedSpecValues, labels[TridentVersionLabelKey], nil
+	return &identifiedSpecValues, labels[TridentVersionLabelKey], acpVersion, nil
 }
 
 // createCRDs creates and establishes each of the CRDs individually
@@ -691,6 +694,8 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 // TODO: Once Trident v22.01 approaches EOL or CRD versioning schema is established,
 //
 //	re-evaluate if performOperationOnce is necessary.
+//
+// TODO (victorir): use this to patch version CRD after bootstrap
 func (i *Installer) CreateOrPatchCRD(crdName, crdYAML string, performOperationOnce bool) error {
 	var currentCRD *apiextensionv1.CustomResourceDefinition
 	var err error
@@ -1688,7 +1693,8 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 		}
 
 		if err != nil {
-			Log().Errorf("Trident REST interface was not available after %3.2f seconds; err: %v", totalWaitTime.Seconds(),
+			Log().Errorf("Trident REST interface was not available after %3.2f seconds; err: %v",
+				totalWaitTime.Seconds(),
 				err)
 			return err
 		}
@@ -1705,6 +1711,50 @@ func (i *Installer) waitForRESTInterface(tridentPodName string) error {
 	Log().WithField("version", version).Info("Trident REST interface is up.")
 
 	return nil
+}
+
+func (i *Installer) GetACPVersion() string {
+	var acpVersion, controllerServer string
+	if useIPv6 {
+		controllerServer = "[::1]:8000"
+	} else {
+		controllerServer = "127.0.0.1:8000"
+	}
+
+	tridentPod, returnError := i.waitForTridentPod()
+	if returnError != nil {
+		return ""
+	}
+
+	cliCommand := []string{"tridentctl", "-s", controllerServer, "version", "-o", "json"}
+	versionJSON, err := i.client.Exec(tridentPod.Name, TridentContainer, cliCommand)
+	if err != nil {
+		if len(versionJSON) > 0 {
+			err = fmt.Errorf("%v; %s", err, strings.TrimSpace(string(versionJSON)))
+			Log().WithError(err)
+		}
+		return acpVersion
+	}
+
+	var versionResponse api.VersionResponse
+	err = json.Unmarshal(versionJSON, &versionResponse)
+	if err != nil {
+		return acpVersion
+	}
+
+	acpVersionWithMetadata := versionResponse.ACPServer.Version
+	if acpVersionWithMetadata != "" {
+		versionInfo, err := versionutils.ParseDate(acpVersionWithMetadata)
+		if err != nil {
+			Log().WithField("acpVersion", acpVersionWithMetadata).Errorf("unable to parse ACP version")
+			acpVersion = acpVersionWithMetadata
+		} else {
+			acpVersion = versionInfo.ShortStringWithRelease()
+		}
+		Log().WithField("acpVersion", acpVersion).Info("trident-acp is up.")
+	}
+
+	return acpVersion
 }
 
 // getTridentClientVersionInfo takes trident image name and identifies the Trident client version

@@ -35,6 +35,21 @@ func (m *MockTridentACP) EXPECT() *MockTridentACPMockRecorder {
 	return m.recorder
 }
 
+// GetVersion mocks base method.
+func (m *MockTridentACP) GetVersion(arg0 context.Context) (*version.Version, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVersion", arg0)
+	ret0, _ := ret[0].(*version.Version)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVersion indicates an expected call of GetVersion.
+func (mr *MockTridentACPMockRecorder) GetVersion(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVersion", reflect.TypeOf((*MockTridentACP)(nil).GetVersion), arg0)
+}
+
 // GetVersionWithBackoff mocks base method.
 func (m *MockTridentACP) GetVersionWithBackoff(arg0 context.Context) (*version.Version, error) {
 	m.ctrl.T.Helper()

@@ -68,8 +68,9 @@ type Version struct {
 }
 
 type VersionResponse struct {
-	Server Version `json:"server"`
-	Client Version `json:"client"`
+	Server    Version `json:"server"`
+	Client    Version `json:"client"`
+	ACPServer Version `json:"acpServer,omitempty"`
 }
 
 type ClientVersionResponse struct {

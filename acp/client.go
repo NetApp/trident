@@ -55,6 +55,29 @@ func newClient(restAPI REST, acpEnabled bool) TridentACP {
 	return &client{restAPI, acpEnabled}
 }
 
+func (c *client) GetVersion(ctx context.Context) (*version.Version, error) {
+	Logc(ctx).Debug("Getting Trident-ACP version.")
+
+	if !c.acpEnabled {
+		Logc(ctx).Warning("ACP not enabled.")
+		return nil, nil
+	}
+
+	acpVersion, err := c.restClient.GetVersion(ctx)
+	if err != nil {
+		Logc(ctx).Error("Could not get Trident-ACP version.")
+		return nil, err
+	}
+
+	if acpVersion == nil {
+		Logc(ctx).Error("No version in response from Trident-ACP REST API.")
+		return nil, fmt.Errorf("no version in response from Trident-ACP REST API")
+	}
+
+	Logc(ctx).WithField("version", acpVersion.String()).Debug("Received Trident-ACP version.")
+	return acpVersion, nil
+}
+
 func (c *client) GetVersionWithBackoff(ctx context.Context) (*version.Version, error) {
 	Logc(ctx).Debug("Checking if Trident-ACP REST API is responsive.")
 	var v *version.Version

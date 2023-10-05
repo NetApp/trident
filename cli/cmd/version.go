@@ -60,11 +60,23 @@ var versionCmd = &cobra.Command{
 				return err
 			}
 
+			// Add the ACP version
+			var parsedACPServerVersion *versionutils.Version
+			if serverVersion.ACPVersion != "" {
+				parsedACPServerVersion, err = versionutils.ParseDate(serverVersion.ACPVersion)
+				if err != nil {
+					return err
+				}
+			}
+
 			// Add the client version, which is always hardcoded at compile time
-			versions := addClientVersion(parsedServerVersion)
+			versions := addClientVersion(parsedServerVersion, parsedACPServerVersion)
 
 			// Add the server's Go version
 			versions.Server.GoVersion = serverVersion.GoVersion
+
+			// TODO: Add the ACP server's Go version
+			// versions.ACPServer.GoVersion = serverVersion.GoVersion
 
 			writeVersions(versions)
 		}
@@ -118,8 +130,9 @@ func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 	}
 
 	version := rest.GetVersionResponse{
-		Version:   tunnelVersionResponse.Server.Version,
-		GoVersion: tunnelVersionResponse.Server.GoVersion,
+		Version:    tunnelVersionResponse.Server.Version,
+		GoVersion:  tunnelVersionResponse.Server.GoVersion,
+		ACPVersion: tunnelVersionResponse.ACPServer.Version,
 	}
 	return version, nil
 }
@@ -140,7 +153,7 @@ func getClientVersion() *api.ClientVersionResponse {
 }
 
 // addClientVersion accepts the server version and fills in the client version
-func addClientVersion(serverVersion *versionutils.Version) *api.VersionResponse {
+func addClientVersion(serverVersion, acpServerVersion *versionutils.Version) *api.VersionResponse {
 	versions := api.VersionResponse{}
 
 	versions.Server.Version = serverVersion.String()
@@ -150,6 +163,16 @@ func addClientVersion(serverVersion *versionutils.Version) *api.VersionResponse 
 	versions.Server.PreRelease = serverVersion.PreRelease()
 	versions.Server.BuildMetadata = serverVersion.BuildMetadata()
 	versions.Server.APIVersion = config.OrchestratorAPIVersion
+
+	if acpServerVersion != nil {
+		versions.ACPServer.Version = acpServerVersion.String()
+		versions.ACPServer.MajorVersion = acpServerVersion.MajorVersion()
+		versions.ACPServer.MinorVersion = acpServerVersion.MinorVersion()
+		versions.ACPServer.PatchVersion = acpServerVersion.PatchVersion()
+		versions.ACPServer.PreRelease = acpServerVersion.PreRelease()
+		versions.ACPServer.BuildMetadata = acpServerVersion.BuildMetadata()
+		versions.ACPServer.APIVersion = config.OrchestratorAPIVersion
+	}
 
 	versions.Client = getClientVersion().Client
 
@@ -195,13 +218,21 @@ func writeVersionTable(version *api.ClientVersionResponse) {
 
 func writeVersionsTable(versions *api.VersionResponse) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Server Version", "Client Version"})
+	if versions.ACPServer.Version != "" {
+		table.SetHeader([]string{"Server Version", "Client Version", "ACP Version"})
+		table.Append([]string{
+			versions.Server.Version,
+			versions.Client.Version,
+			versions.ACPServer.Version,
+		})
+	} else {
+		table.SetHeader([]string{"Server Version", "Client Version"})
 
-	table.Append([]string{
-		versions.Server.Version,
-		versions.Client.Version,
-	})
-
+		table.Append([]string{
+			versions.Server.Version,
+			versions.Client.Version,
+		})
+	}
 	table.Render()
 }
 
