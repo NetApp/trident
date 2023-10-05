@@ -159,8 +159,8 @@ const (
 	Darwin  = "darwin"
 
 	// Minimum and maximum supported Kubernetes versions
-	KubernetesVersionMin = "v1.22"
-	KubernetesVersionMax = "v1.27"
+	KubernetesVersionMin = "v1.23"
+	KubernetesVersionMax = "v1.28"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"
