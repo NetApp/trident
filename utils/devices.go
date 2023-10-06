@@ -947,6 +947,31 @@ func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) {
 		}).Error("Error encountered in multipath flush(remove) mapping command.")
 	}
 
+	exists, err := PathExists(devicePath)
+	if err != nil {
+		Logc(ctx).WithField("error", err).Error("Error trying to determine if device path exists.")
+	} else if !exists {
+		return
+	}
+
+	serial, err := execCommandWithTimeout(ctx, "multipath", 10*time.Second, true, "-l", devicePath, "-v", "1")
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"error":  err,
+			"output": string(serial),
+		}).Error("Error trying to retrieve serial for device path.")
+	}
+
+	out1, err := execCommandWithTimeout(ctx, "dmsetup", 10*time.Second, false, "remove", "-f", string(serial))
+	if err != nil {
+		// Nothing to do if it generates an error, but log it.
+		Logc(ctx).WithFields(LogFields{
+			"error":      err,
+			"output":     string(out1),
+			"devicePath": devicePath,
+		}).Error("Error encountered in dmsetup remove command.")
+	}
+
 	return
 }
 
