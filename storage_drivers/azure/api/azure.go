@@ -16,11 +16,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4"
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -53,11 +53,9 @@ var (
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
 	// Azure API authentication parameters
-	SubscriptionID    string
-	TenantID          string
-	ClientID          string
-	ClientSecret      string
-	Location          string
+	azclient.AzureAuthConfig
+	SubscriptionID    string `json:"subscriptionId"`
+	Location          string `json:"location"`
 	StorageDriverName string
 
 	// Options
@@ -68,7 +66,7 @@ type ClientConfig struct {
 
 // AzureClient holds operational Azure SDK objects.
 type AzureClient struct {
-	Credential       *azidentity.ClientSecretCredential
+	Credential       azcore.TokenCredential
 	FeaturesClient   *features.Client
 	GraphClient      *resourcegraph.Client
 	VolumesClient    *netapp.VolumesClient
@@ -137,7 +135,7 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		return nil, errors.New("location must be specified in the config")
 	}
 
-	credential, err := azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, nil)
+	credential, err := GetAzureCredential(config)
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +195,18 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		config:    &config,
 		sdkClient: sdkClient,
 	}, nil
+}
+
+func GetAzureCredential(config ClientConfig) (credential azcore.TokenCredential, err error) {
+	clientOptions, err := azclient.GetDefaultAuthClientOption(nil)
+	if err != nil {
+		return nil, errors.New("error getting default auth client option: " + err.Error())
+	}
+	authProvider, err := azclient.NewAuthProvider(config.AzureAuthConfig, clientOptions)
+	if err != nil {
+		return nil, errors.New("error creating azure auth provider: " + err.Error())
+	}
+	return authProvider.GetAzIdentity()
 }
 
 // Init runs startup logic after allocating the driver resources.

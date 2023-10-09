@@ -559,10 +559,6 @@ func (d AzureNASStorageDriverConfig) SpecOnlyValidation() error {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
 	}
 
-	if !d.HasCredentials() {
-		return fmt.Errorf("input is missing the credentials field")
-	}
-
 	return nil
 }
 

@@ -118,6 +118,7 @@ var (
 	httpRequestTimeout      time.Duration
 	acpImage                string
 	enableACP               bool
+	cloudProvider           string
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -228,6 +229,8 @@ func init() {
 	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the Trident-ACP premium features.")
 	installCmd.Flags().StringVar(&acpImage, "acp-image", tridentconfig.DefaultACPImage,
 		"Override the default trident-acp container image.")
+
+	installCmd.Flags().StringVar(&cloudProvider, "cloud-provider", "", "Name of the cloud provider")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -614,6 +617,7 @@ func prepareYAMLFiles() error {
 		EnableForceDetach:       enableForceDetach,
 		ACPImage:                acpImage,
 		EnableACP:               enableACP,
+		CloudProvider:           cloudProvider,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -1037,6 +1041,7 @@ func installTrident() (returnError error) {
 			EnableForceDetach:       enableForceDetach,
 			ACPImage:                acpImage,
 			EnableACP:               enableACP,
+			CloudProvider:           cloudProvider,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))

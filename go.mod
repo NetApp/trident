@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.7.2
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.1
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4 v4.1.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures v1.1.0
@@ -58,10 +58,18 @@ require (
 	k8s.io/mount-utils v0.28.2 // github.com/kubernetes/mount-utils
 )
 
+require sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230630014945-aa1d574ce779
+
 require (
 	cloud.google.com/go/compute v1.21.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5 v5.0.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4 v4.0.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v3 v3.0.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.1.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.1.1 // indirect
+	github.com/Azure/go-armbalancer v0.0.2 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.1.1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -116,11 +124,12 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
-	go.opentelemetry.io/otel v1.15.0 // indirect
-	go.opentelemetry.io/otel/trace v1.15.0 // indirect
+	go.opentelemetry.io/otel v1.16.0 // indirect
+	go.opentelemetry.io/otel/metric v1.16.0 // indirect
+	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/term v0.12.0 // indirect
-	golang.org/x/tools v0.8.0 // indirect
+	golang.org/x/tools v0.9.3 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
@@ -130,7 +139,7 @@ require (
 	howett.net/plist v0.0.0-20181124034731-591f970eefbb // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
-	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2 // indirect
+	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect

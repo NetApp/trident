@@ -7,3 +7,4 @@ spec:
   namespace: trident
   imagePullPolicy: IfNotPresent
   windows: false
+  cloudProvider: ""

@@ -972,7 +972,7 @@ func TestAzureNASStorageDriverConfig_SpecOnlyValidation(t *testing.T) {
 		},
 	}
 	err = config.SpecOnlyValidation()
-	assert.Error(t, err)
+	assert.Nil(t, err)
 }
 
 // GCPNFSStorageDriverConfig
