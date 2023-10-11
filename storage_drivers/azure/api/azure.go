@@ -1076,13 +1076,15 @@ func (c Client) ModifyVolume(
 	}
 
 	// Modify the export-rule to restrict the kerberos protocol type
-	anfVolume.Properties.ExportPolicy.Rules[0].Nfsv41 = &exportRule.Nfsv41
-	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadWrite = &exportRule.Kerberos5ReadWrite
-	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadOnly = &exportRule.Kerberos5ReadOnly
-	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5IReadWrite = &exportRule.Kerberos5IReadWrite
-	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5IReadOnly = &exportRule.Kerberos5IReadOnly
-	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5PReadWrite = &exportRule.Kerberos5PReadWrite
-	anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5PReadOnly = &exportRule.Kerberos5PReadOnly
+	if &anfVolume.Properties.ExportPolicy.Rules[0] != nil && &exportRule != nil {
+		anfVolume.Properties.ExportPolicy.Rules[0].Nfsv41 = &exportRule.Nfsv41
+		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadWrite = &exportRule.Kerberos5ReadWrite
+		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadOnly = &exportRule.Kerberos5ReadOnly
+		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5IReadWrite = &exportRule.Kerberos5IReadWrite
+		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5IReadOnly = &exportRule.Kerberos5IReadOnly
+		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5PReadWrite = &exportRule.Kerberos5PReadWrite
+		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5PReadOnly = &exportRule.Kerberos5PReadOnly
+	}
 
 	// Clear out ReadOnly and other fields that we don't want to change when merely relabeling.
 	serviceLevel := netapp.ServiceLevel("")

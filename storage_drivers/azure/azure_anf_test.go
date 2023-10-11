@@ -3711,12 +3711,7 @@ func TestImport_SMB_Managed(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
-	exportRule := api.ExportRule{
-		Nfsv41:              false,
-		Kerberos5ReadWrite:  false,
-		Kerberos5IReadWrite: false,
-		Kerberos5PReadWrite: false,
-	}
+	exportRule := api.ExportRule{}
 
 	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
 
@@ -3753,12 +3748,7 @@ func TestImport_SMB_Failed(t *testing.T) {
 	originalName := "importMe"
 	var snapshotDirAccess bool
 
-	exportRule := api.ExportRule{
-		Nfsv41:              false,
-		Kerberos5ReadWrite:  false,
-		Kerberos5IReadWrite: false,
-		Kerberos5PReadWrite: false,
-	}
+	exportRule := api.ExportRule{}
 
 	volConfig, originalFilesystem := getStructsForSMBImport(ctx, driver)
 
