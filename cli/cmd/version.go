@@ -130,10 +130,14 @@ func getVersionFromTunnel() (rest.GetVersionResponse, error) {
 	}
 
 	version := rest.GetVersionResponse{
-		Version:    tunnelVersionResponse.Server.Version,
-		GoVersion:  tunnelVersionResponse.Server.GoVersion,
-		ACPVersion: tunnelVersionResponse.ACPServer.Version,
+		Version:   tunnelVersionResponse.Server.Version,
+		GoVersion: tunnelVersionResponse.Server.GoVersion,
 	}
+
+	if tunnelVersionResponse.ACPServer != nil {
+		version.ACPVersion = tunnelVersionResponse.ACPServer.Version
+	}
+
 	return version, nil
 }
 
@@ -154,27 +158,31 @@ func getClientVersion() *api.ClientVersionResponse {
 
 // addClientVersion accepts the server version and fills in the client version
 func addClientVersion(serverVersion, acpServerVersion *versionutils.Version) *api.VersionResponse {
-	versions := api.VersionResponse{}
-
-	versions.Server.Version = serverVersion.String()
-	versions.Server.MajorVersion = serverVersion.MajorVersion()
-	versions.Server.MinorVersion = serverVersion.MinorVersion()
-	versions.Server.PatchVersion = serverVersion.PatchVersion()
-	versions.Server.PreRelease = serverVersion.PreRelease()
-	versions.Server.BuildMetadata = serverVersion.BuildMetadata()
-	versions.Server.APIVersion = config.OrchestratorAPIVersion
-
-	if acpServerVersion != nil {
-		versions.ACPServer.Version = acpServerVersion.String()
-		versions.ACPServer.MajorVersion = acpServerVersion.MajorVersion()
-		versions.ACPServer.MinorVersion = acpServerVersion.MinorVersion()
-		versions.ACPServer.PatchVersion = acpServerVersion.PatchVersion()
-		versions.ACPServer.PreRelease = acpServerVersion.PreRelease()
-		versions.ACPServer.BuildMetadata = acpServerVersion.BuildMetadata()
-		versions.ACPServer.APIVersion = config.OrchestratorAPIVersion
+	versions := api.VersionResponse{
+		Server: &api.Version{
+			Version:       serverVersion.String(),
+			MajorVersion:  serverVersion.MajorVersion(),
+			MinorVersion:  serverVersion.MinorVersion(),
+			PatchVersion:  serverVersion.PatchVersion(),
+			PreRelease:    serverVersion.PreRelease(),
+			BuildMetadata: serverVersion.BuildMetadata(),
+			APIVersion:    config.OrchestratorAPIVersion,
+		},
+		Client: &getClientVersion().Client,
 	}
 
-	versions.Client = getClientVersion().Client
+	ACPServer := &api.Version{}
+	if acpServerVersion != nil {
+		ACPServer.Version = acpServerVersion.String()
+		ACPServer.MajorVersion = acpServerVersion.MajorVersion()
+		ACPServer.MinorVersion = acpServerVersion.MinorVersion()
+		ACPServer.PatchVersion = acpServerVersion.PatchVersion()
+		ACPServer.PreRelease = acpServerVersion.PreRelease()
+		ACPServer.BuildMetadata = acpServerVersion.BuildMetadata()
+		ACPServer.APIVersion = config.OrchestratorAPIVersion
+
+		versions.ACPServer = ACPServer
+	}
 
 	return &versions
 }
@@ -218,7 +226,7 @@ func writeVersionTable(version *api.ClientVersionResponse) {
 
 func writeVersionsTable(versions *api.VersionResponse) {
 	table := tablewriter.NewWriter(os.Stdout)
-	if versions.ACPServer.Version != "" {
+	if versions.ACPServer != nil {
 		table.SetHeader([]string{"Server Version", "Client Version", "ACP Version"})
 		table.Append([]string{
 			versions.Server.Version,
