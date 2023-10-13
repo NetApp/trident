@@ -273,12 +273,12 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 func GetACPVersion(ctx context.Context) string {
 	version, err := acp.API().GetVersion(ctx)
 	if err != nil {
-		Logc(ctx).WithError(err).Error("Could not get trident-acp version.")
+		Logc(ctx).WithError(err).Error("Could not get Trident-ACP version.")
 		return ""
 	}
 
 	if version == nil {
-		Logc(ctx).WithError(err).Error("trident-acp version is empty.")
+		Logc(ctx).WithError(err).Error("Trident-ACP version is empty.")
 		return ""
 	}
 
@@ -616,7 +616,9 @@ func (r *UpdateVolumeResponse) logFailure(ctx context.Context) {
 	}).Error(r.Error)
 }
 
-func volumeLUKSPassphraseNamesUpdater(_ http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
+func volumeLUKSPassphraseNamesUpdater(
+	_ http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte,
+) int {
 	updateResponse, ok := response.(*UpdateVolumeResponse)
 	if !ok {
 		response.setError(fmt.Errorf("response object must be of type UpdateVolumeResponse"))
@@ -1027,7 +1029,9 @@ func (u *UpdateNodeResponse) logFailure(ctx context.Context) {
 }
 
 // nodeUpdater updates a Trident Node's persistent state asynchronously.
-func nodeUpdater(_ http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte) int {
+func nodeUpdater(
+	_ http.ResponseWriter, r *http.Request, response httpResponse, vars map[string]string, body []byte,
+) int {
 	updateNodeResponse, ok := response.(*UpdateNodeResponse)
 	if !ok {
 		response.setError(fmt.Errorf("response object must be of type UpdateNodeResponse"))

@@ -90,13 +90,13 @@ func (c *Client) Entitled(ctx context.Context, feature string) error {
 	}
 
 	switch res.StatusCode {
-	case http.StatusForbidden:
-		return errors.UnlicensedError("feature %s requires a valid ACP license", feature)
 	case http.StatusOK:
 		return nil
+	case http.StatusForbidden:
+		return errors.UnlicensedError("feature %s requires a valid ACP license", feature)
 	}
 
-	return fmt.Errorf("unexpected status code: [%s]", res.Status)
+	return fmt.Errorf("unexpected status code during entitlement check: [%s]", res.Status)
 }
 
 // newRequest accepts necessary fields to construct a new http request.

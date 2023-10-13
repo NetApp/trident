@@ -40,8 +40,18 @@ func TestTridentACP_GetVersionWithBackoff(t *testing.T) {
 
 		client := newClient(mockRest, true)
 		v, err := client.GetVersionWithBackoff(ctx)
-		// For now expect no error even though one occurs.
 		assert.Error(t, err, "expected error")
+		assert.Nil(t, v, "expected nil version")
+	})
+
+	t.Run("WithACPNotEnabled", func(t *testing.T) {
+		// Reset the backoff to the initial values after the test exits.
+		defer setupBackoff(initialInterval, maxInterval, maxElapsedTime, multiplier, randomFactor)
+		setupBackoff(50*time.Millisecond, 100*time.Millisecond, 250*time.Millisecond, 1.414, 1.0)
+
+		client := newClient(nil, false)
+		v, err := client.GetVersionWithBackoff(ctx)
+		assert.Nil(t, err, "unexpected error")
 		assert.Nil(t, v, "expected nil version")
 	})
 
