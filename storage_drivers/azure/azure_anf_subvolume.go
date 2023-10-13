@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -566,17 +568,39 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 		}
 	}
 
-	client, err := api.NewDriver(api.ClientConfig{
-		SubscriptionID:    config.SubscriptionID,
-		TenantID:          config.TenantID,
-		ClientID:          config.ClientID,
-		ClientSecret:      config.ClientSecret,
+	clientConfig := api.ClientConfig{
+		SubscriptionID: config.SubscriptionID,
+		AzureAuthConfig: azclient.AzureAuthConfig{
+			TenantID:        config.TenantID,
+			AADClientID:     config.ClientID,
+			AADClientSecret: config.ClientSecret,
+		},
 		Location:          config.Location,
 		StorageDriverName: config.StorageDriverName,
 		DebugTraceFlags:   config.DebugTraceFlags,
 		SDKTimeout:        sdkTimeout,
 		MaxCacheAge:       maxCacheAge,
-	})
+	}
+
+	if config.ClientSecret == "" && config.ClientID == "" {
+		credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
+		if credFilePath == "" {
+			credFilePath = DefaultConfigurationFilePath
+		}
+		Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credential config file.")
+		credFile, err := os.ReadFile(credFilePath)
+		if err != nil {
+			return errors.New("error reading from azure config file: " + err.Error())
+		}
+		if err = json.Unmarshal(credFile, &clientConfig); err != nil {
+			return errors.New("error parsing azureAuthConfig: " + err.Error())
+		}
+
+		// Set SubscriptionID
+		d.Config.SubscriptionID = clientConfig.SubscriptionID
+	}
+
+	client, err := api.NewDriver(clientConfig)
 	if err != nil {
 		return err
 	}
@@ -947,7 +971,8 @@ func (d *NASBlockStorageDriver) Rename(ctx context.Context, name, newName string
 // waitForSubvolumeCreate waits for volume creation to complete by reaching the Available state.  If the
 // volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
-func (d *NASBlockStorageDriver) waitForSubvolumeCreate(ctx context.Context, subvolume *api.Subvolume,
+func (d *NASBlockStorageDriver) waitForSubvolumeCreate(
+	ctx context.Context, subvolume *api.Subvolume,
 	poller api.PollerResponse, operation Operation, handleErrorInFollowup bool,
 ) error {
 	var pollForError bool
@@ -2051,7 +2076,8 @@ func (d *NASBlockStorageDriver) ensureSubvolumeDelete(subvolumeID, snapshotID st
 	subvolumesToDelete[subvolumeID] = snapshotID
 }
 
-func (d *NASBlockStorageDriver) deleteSubvolumeInSnapshotContext(ctx context.Context, subvolumeID,
+func (d *NASBlockStorageDriver) deleteSubvolumeInSnapshotContext(
+	ctx context.Context, subvolumeID,
 	snapshotID string,
 ) (bool, error) {
 	var deletedInCurrentSnapshotContext bool

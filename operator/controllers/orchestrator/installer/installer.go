@@ -67,6 +67,7 @@ var (
 	imageRegistry   string
 	kubeletDir      string
 	imagePullPolicy string
+	cloudProvider   string
 
 	acpImage  string
 	enableACP bool
@@ -400,6 +401,7 @@ func (i *Installer) setInstallationParams(
 	if cr.Spec.ImagePullPolicy != "" {
 		imagePullPolicy = cr.Spec.ImagePullPolicy
 	}
+	cloudProvider = cr.Spec.CloudProvider
 
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
@@ -1422,6 +1424,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		ServiceAccountName:      serviceAccName,
 		ImagePullPolicy:         imagePullPolicy,
 		EnableForceDetach:       enableForceDetach,
+		CloudProvider:           cloudProvider,
 		ACPImage:                acpImage,
 		EnableACP:               enableACP,
 	}

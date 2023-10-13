@@ -168,6 +168,7 @@ type DeploymentYAMLArguments struct {
 	EnableForceDetach       bool                  `json:"enableForceDetach"`
 	ACPImage                string                `json:"acpImage"`
 	EnableACP               bool                  `json:"enableACP"`
+	CloudProvider           string                `json:"cloudProvider"`
 }
 
 type DaemonsetYAMLArguments struct {

@@ -126,3 +126,6 @@ enableForceDetach: false
 
 # excludePodSecurityPolicy excludes the operator pod security policy from creation.
 excludePodSecurityPolicy: false
+
+# cloudProvider indicates which cloud platform Trident is running on.
+cloudProvider: ""
