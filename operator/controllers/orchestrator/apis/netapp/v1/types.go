@@ -109,7 +109,7 @@ type TridentOrchestratorStatus struct {
 	Version                   string                        `json:"version"`
 	Namespace                 string                        `json:"namespace"`
 	CurrentInstallationParams TridentOrchestratorSpecValues `json:"currentInstallationParams"`
-	ACPVersion                string                        `json:"acpVersion"`
+	ACPVersion                string                        `json:"acpVersion,omitempty"`
 }
 
 type TridentOrchestratorSpecValues struct {
