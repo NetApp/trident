@@ -574,6 +574,9 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 		if err = json.Unmarshal(credFile, &clientConfig); err != nil {
 			return errors.New("error parsing azureAuthConfig: " + err.Error())
 		}
+
+		// Set SubscriptionID
+		d.Config.SubscriptionID = clientConfig.SubscriptionID
 	}
 
 	client, err := api.NewDriver(clientConfig)
