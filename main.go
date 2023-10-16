@@ -348,24 +348,6 @@ func main() {
 
 	orchestrator := core.NewTridentOrchestrator(storeClient)
 
-	// Set configuration values used for ACP for the lifecycle of Trident.
-	// This always needs to happen regardless of if ACP is enabled or not.
-	acp.Initialize(*acpAddress, *enableACP, config.HTTPTimeout)
-
-	// Initialize a Trident-ACP Client.
-	if *enableACP {
-		Log().Info("Created Trident-ACP REST API Client.")
-		// Reach out to see if the Trident-ACP API is available.
-		version, err := acp.API().GetVersionWithBackoff(ctx)
-		if err != nil {
-			Log().Warning("Failed to communicate with Trident-ACP REST API.")
-		} else {
-			Log().WithField("version", version.String()).Info("Discovered Trident-ACP Version.")
-		}
-	} else {
-		Log().Info("ACP is not enabled; premium ACP workflows will fail.")
-	}
-
 	// Create HTTP metrics frontend
 	if *enableMetrics {
 		if *metricsPort == "" {
@@ -529,6 +511,21 @@ func main() {
 			Log().WithFields(LogFields{"name": httpsServer.GetName()}).Info("Added frontend.")
 		}
 	}
+
+	// Set configuration values used for ACP for the lifecycle of Trident.
+	// This always needs to happen regardless of if ACP is enabled or not and must happen before bootstrapping.
+	acp.Initialize(*acpAddress, *enableACP, config.HTTPTimeout)
+	Log().Info("Created Trident-ACP REST API Client.")
+
+	// Asynchronously check if the Trident-ACP API is available.
+	go func() {
+		version, err := acp.API().GetVersionWithBackoff(ctx)
+		if err != nil || version == nil {
+			Log().Warning("Failed to get version from Trident-ACP REST API; premium workflows may fail.")
+		} else {
+			Log().WithField("version", version.String()).Info("Discovered Trident-ACP Version.")
+		}
+	}()
 
 	// Bootstrap the orchestrator and start its frontends.  Some frontends, notably REST and Docker, must
 	// start before the core so that the external interfaces are minimally responding while the core is
