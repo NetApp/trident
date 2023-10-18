@@ -3,8 +3,7 @@ module github.com/netapp/trident
 go 1.21
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.7.2
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.1 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.8.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4 v4.1.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures v1.1.0
@@ -44,10 +43,10 @@ require (
 	github.com/vishvananda/netlink v1.1.0
 	github.com/zcalusic/sysinfo v1.0.1
 	go.uber.org/multierr v1.11.0 // github.com/uber-go/multierr
-	golang.org/x/crypto v0.13.0 // github.com/golang/crypto
-	golang.org/x/net v0.15.0 // github.com/golang/net
+	golang.org/x/crypto v0.14.0 // github.com/golang/crypto
+	golang.org/x/net v0.17.0 // github.com/golang/net
 	golang.org/x/oauth2 v0.12.0 // github.com/golang/oauth2
-	golang.org/x/sys v0.12.0 // github.com/golang/sys
+	golang.org/x/sys v0.13.0 // github.com/golang/sys
 	golang.org/x/text v0.13.0 // github.com/golang/text
 	golang.org/x/time v0.3.0 // github.com/golang/time
 	google.golang.org/grpc v1.58.2 // github.com/grpc/grpc-go
@@ -56,20 +55,20 @@ require (
 	k8s.io/apimachinery v0.28.2 // github.com/kubernetes/apimachinery
 	k8s.io/client-go v0.28.2 // github.com/kubernetes/client-go
 	k8s.io/mount-utils v0.28.2 // github.com/kubernetes/mount-utils
+	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20231013064142-1a359a0d4d3b
 )
-
-require sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.0-20230630014945-aa1d574ce779
 
 require (
 	cloud.google.com/go/compute v1.21.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5 v5.0.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4 v4.0.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v3 v3.0.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5 v5.2.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerregistry/armcontainerregistry v1.1.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4 v4.3.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v4 v4.2.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns v1.1.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.1.1 // indirect
-	github.com/Azure/go-armbalancer v0.0.2 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.1.1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -127,9 +126,10 @@ require (
 	go.opentelemetry.io/otel v1.16.0 // indirect
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
-	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
-	golang.org/x/tools v0.9.3 // indirect
+	golang.org/x/mod v0.12.0 // indirect
+	golang.org/x/sync v0.4.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/tools v0.12.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
