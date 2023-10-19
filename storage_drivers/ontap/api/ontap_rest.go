@@ -3882,7 +3882,8 @@ func (c RestClient) FlexGroupDestroy(ctx context.Context, name string) error {
 		return err
 	}
 	if volume == nil || volume.UUID == nil {
-		return fmt.Errorf("unexpected response from volume lookup")
+		Logc(ctx).Warnf("volume %s may already be deleted, unexpected response from volume lookup", name)
+		return nil
 	}
 	params := storage.NewVolumeDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
