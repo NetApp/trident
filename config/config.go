@@ -39,7 +39,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "23.10.0"
+	DefaultOrchestratorVersion       = "24.01.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -252,7 +252,7 @@ var (
 	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.07"
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
-	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:23.10.0"
+	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:24.01.0"
 )
 
 func IsValidProtocol(p Protocol) bool {
