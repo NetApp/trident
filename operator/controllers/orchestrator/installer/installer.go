@@ -1745,16 +1745,18 @@ func (i *Installer) GetACPVersion() string {
 		return acpVersion
 	}
 
-	acpVersionWithMetadata := versionResponse.ACPServer.Version
-	if acpVersionWithMetadata != "" {
-		versionInfo, err := versionutils.ParseDate(acpVersionWithMetadata)
-		if err != nil {
-			Log().WithField("acpVersion", acpVersionWithMetadata).Errorf("unable to parse ACP version")
-			acpVersion = acpVersionWithMetadata
-		} else {
-			acpVersion = versionInfo.ShortStringWithRelease()
+	if versionResponse.ACPServer != nil {
+		acpVersionWithMetadata := versionResponse.ACPServer.Version
+		if acpVersionWithMetadata != "" {
+			versionInfo, err := versionutils.ParseDate(acpVersionWithMetadata)
+			if err != nil {
+				Log().WithField("acpVersion", acpVersionWithMetadata).Errorf("unable to parse ACP version")
+				acpVersion = acpVersionWithMetadata
+			} else {
+				acpVersion = versionInfo.ShortStringWithRelease()
+			}
+			Log().WithField("acpVersion", acpVersion).Info("trident-acp is up.")
 		}
-		Log().WithField("acpVersion", acpVersion).Info("trident-acp is up.")
 	}
 
 	return acpVersion
