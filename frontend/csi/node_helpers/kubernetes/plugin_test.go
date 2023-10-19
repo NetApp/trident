@@ -102,8 +102,7 @@ func TestReconcileVolumeTrackingInfo(t *testing.T) {
 
 	_ = osFs.Mkdir("/pods", 0o777)
 	mockVolumePublishManager.EXPECT().GetVolumeTrackingFiles().Return([]os.FileInfo{fInfo}, nil)
-	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, make(map[string]struct{}),
-		make(map[string]string)).
+	mockVolumePublishManager.EXPECT().UpgradeVolumeTrackingFile(ctx, volId, make(map[string]struct{}), gomock.Any()).
 		Return(false, errors.New("foo"))
 	err = h.reconcileVolumePublishInfo(ctx)
 	assert.Error(t, err, "expected error if reconcile file fails")
