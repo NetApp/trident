@@ -47,9 +47,11 @@ var updateVolumeCmd = &cobra.Command{
 		}
 
 		if OperatingMode == ModeTunnel {
+			snapDirBool, _ := strconv.ParseBool(snapDir)
+
 			command := []string{
 				"update", "volume",
-				"--snapshot-dir", snapDir,
+				"--snapshot-dir", strconv.FormatBool(snapDirBool),
 				"--pool-level", poolLevelVal,
 			}
 			out, err := TunnelCommand(append(command, args...))
@@ -94,10 +96,11 @@ func validateCmd(args []string, snapshotDir, poolLevel string) error {
 func updateVolume(volumeName, snapDirValue, poolLevelVal string) error {
 	url := BaseURL() + "/volume/" + volumeName
 
+	snapDirBool, _ := strconv.ParseBool(snapDirValue)
 	poolLevelBool, _ := strconv.ParseBool(poolLevelVal)
 
 	request := utils.VolumeUpdateInfo{
-		SnapshotDirectory: snapDirValue,
+		SnapshotDirectory: strconv.FormatBool(snapDirBool),
 		PoolLevel:         poolLevelBool,
 	}
 

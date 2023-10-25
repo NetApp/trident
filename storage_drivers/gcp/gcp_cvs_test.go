@@ -484,6 +484,71 @@ func TestInitializeStoragePoolsUnixPermissions(t *testing.T) {
 	assert.Equal(t, "0777", virtualPool.InternalAttributes()[UnixPermissions])
 }
 
+func TestPopulateConfigurationDefaultsSnapshotDir(t *testing.T) {
+	ctx := context.Background()
+	d := newTestGCPDriver(nil)
+
+	tests := []struct {
+		name                string
+		inputSnapshotDir    string
+		expectedSnapshotDir string
+		expectErr           bool
+	}{
+		{"Default snapshotDir", "", "false", false},
+		{"Uppercase snapshotDir", "TRUE", "true", false},
+		{"Invalid snapshotDir", "TrUE", "", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			d.Config.SnapshotDir = test.inputSnapshotDir
+			response := d.populateConfigurationDefaults(ctx, &d.Config)
+			if test.expectErr {
+				assert.Error(t, response)
+			} else {
+				assert.Equal(t, test.expectedSnapshotDir, d.Config.SnapshotDir)
+			}
+		})
+	}
+}
+
+func TestInitializeStoragePoolsSnapshotDir(t *testing.T) {
+	// Test with multiple vpools defined, one with snapshotDir set
+	ctx := context.Background()
+	d := newTestGCPDriver(nil)
+
+	d.Config.SnapshotDir = "TRUE"
+	d.Config.Storage = []drivers.GCPNFSStorageDriverPool{
+		{
+			Region: "us_east_1",
+			Zone:   "us_east_1a",
+		},
+		{
+			GCPNFSStorageDriverConfigDefaults: drivers.GCPNFSStorageDriverConfigDefaults{SnapshotDir: "False"},
+			Region:                            "us_east_1",
+			Zone:                              "us_east_1a",
+		},
+		{
+			GCPNFSStorageDriverConfigDefaults: drivers.GCPNFSStorageDriverConfigDefaults{SnapshotDir: "Invalid"},
+			Region:                            "us_east_1",
+			Zone:                              "us_east_1a",
+		},
+	}
+	d.initializeStoragePools(ctx)
+
+	// Case1: Ensure snapshotDir is picked from driver config and is lower case if valid
+	virtualPool1 := d.pools["gcpcvs_12345_pool_0"]
+	assert.Equal(t, "true", virtualPool1.InternalAttributes()[SnapshotDir])
+
+	// Case2: Ensure snapshotDir is picked from virtual pool and is lower case if valid
+	virtualPool2 := d.pools["gcpcvs_12345_pool_1"]
+	assert.Equal(t, "false", virtualPool2.InternalAttributes()[SnapshotDir])
+
+	// Case3: Ensure snapshotDir is picked from virtual pool and is same as passed if invalid bool
+	virtualPool3 := d.pools["gcpcvs_12345_pool_2"]
+	assert.Equal(t, "Invalid", virtualPool3.InternalAttributes()[SnapshotDir])
+}
+
 func TestEnsureTopologyRegionAndZone(t *testing.T) {
 	tests := []struct {
 		Name            string

@@ -1078,3 +1078,13 @@ func DecodeBase64StringToObject(encodedObject string, destination any) error {
 	}
 	return nil
 }
+
+// GetFormattedBool Returns lowercase string value for a valid boolean value, else returns same value with error.
+func GetFormattedBool(value string) (string, error) {
+	valBool, err := strconv.ParseBool(value)
+	if err != nil {
+		return value, err
+	}
+
+	return strconv.FormatBool(valBool), nil
+}

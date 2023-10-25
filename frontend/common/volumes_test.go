@@ -126,12 +126,53 @@ func TestGetVolumeConfig(t *testing.T) {
 		VolumeMode:          config.VolumeMode(dummyString),
 		RequisiteTopologies: dummyMap,
 		PreferredTopologies: dummyMap,
+		SnapshotDir:         "",
 	}
 
+	// Case: volumeConfig created with empty parameters
 	vol, err := GetVolumeConfig(context.Background(), dummyString, dummyString, 100, map[string]string{},
 		config.Protocol(dummyString), config.AccessMode(dummyString), config.VolumeMode(dummyString),
 		dummyMap, dummyMap)
 
 	assert.Nil(t, err, "Error while creating VolumeConfig object")
 	assert.Equal(t, expected, vol, "VolumeConfig object does not match")
+
+	// Case: volumeConfig created with valid snapshotDir value
+	expected = &storage.VolumeConfig{
+		Name:                dummyString,
+		Size:                "100",
+		StorageClass:        dummyString,
+		Protocol:            config.Protocol(dummyString),
+		AccessMode:          config.AccessMode(dummyString),
+		VolumeMode:          config.VolumeMode(dummyString),
+		RequisiteTopologies: dummyMap,
+		PreferredTopologies: dummyMap,
+		SnapshotDir:         "true",
+	}
+
+	vol, err = GetVolumeConfig(context.Background(), dummyString, dummyString, 100, map[string]string{"snapshotDir": "True"},
+		config.Protocol(dummyString), config.AccessMode(dummyString), config.VolumeMode(dummyString),
+		dummyMap, dummyMap)
+
+	assert.Nil(t, err, "Error while creating VolumeConfig object")
+	assert.Equal(t, expected, vol, "VolumeConfig object does not match")
+
+	// Case: volumeConfig created with invalid snapshotDir value
+	expected = &storage.VolumeConfig{
+		Name:                dummyString,
+		Size:                "100",
+		StorageClass:        dummyString,
+		Protocol:            config.Protocol(dummyString),
+		AccessMode:          config.AccessMode(dummyString),
+		VolumeMode:          config.VolumeMode(dummyString),
+		RequisiteTopologies: dummyMap,
+		PreferredTopologies: dummyMap,
+	}
+
+	vol, err = GetVolumeConfig(context.Background(), dummyString, dummyString, 100, map[string]string{"snapshotDir": "TrUe"},
+		config.Protocol(dummyString), config.AccessMode(dummyString), config.VolumeMode(dummyString),
+		dummyMap, dummyMap)
+
+	assert.NotNil(t, err, "No error while creating VolumeConfig object with invalid snapshotDir")
+	assert.Nil(t, vol, "VolumeConfig object is not nil in case of error")
 }

@@ -3435,6 +3435,54 @@ func TestGetVolumeOptsCommon_InvalidEncryptionType(t *testing.T) {
 	assert.NotEqual(t, 0, len(opts))
 }
 
+func TestGetVolumeOptsCommon_DifferentSnapshotDir(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name                string
+		inputSnapshotDir    string
+		expectedSnapshotDir string
+	}{
+		{"Default snapshotDir", "", ""},
+		{"Valid uppercase snapshotDir", "TRUE", "true"},
+		{"Valid lowercase snapshotDir", "false", "false"},
+		{"Invalid snapshotDir", "fakeSnapDir", "fakeSnapDir"},
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Name:              "fakeVolName",
+		InternalName:      "fakeInternalName",
+		SnapshotPolicy:    "fakeSnapPoliy",
+		SnapshotReserve:   "fakeSnapReserve",
+		UnixPermissions:   "fakePermissions",
+		ExportPolicy:      "fakeExportPolicy",
+		SpaceReserve:      "fakeSpaceReserve",
+		SecurityStyle:     "fakeSecurityStyle",
+		SplitOnClone:      "fakeSplitOnClone",
+		FileSystem:        "fakeFilesystem",
+		Encryption:        "fakeEncryption",
+		QosPolicy:         "fakeQoSPolicy",
+		AdaptiveQosPolicy: "fakeAdaptiveQosPolicy",
+	}
+
+	// "Encryption: "false"
+	requests := map[string]sa.Request{
+		sa.IOPS:             sa.NewIntRequest(40),
+		sa.Snapshots:        sa.NewBoolRequest(true),
+		sa.Encryption:       sa.NewBoolRequest(false),
+		sa.ProvisioningType: sa.NewStringRequest("thin"),
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			volConfig.SnapshotDir = test.inputSnapshotDir
+			opts := getVolumeOptsCommon(ctx, volConfig, requests)
+			assert.NotEqual(t, 0, len(opts))
+			assert.Equal(t, test.expectedSnapshotDir, opts["snapshotDir"])
+		})
+	}
+}
+
 func TestGetVolumeOptsCommon_NoVolumeOptsReturned(t *testing.T) {
 	ctx := context.Background()
 	volConfig := &storage.VolumeConfig{
@@ -4805,7 +4853,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 		SnapshotReserve:                   "fakeSnapshotReserve",
 		SplitOnClone:                      "false",
 		UnixPermissions:                   "777",
-		SnapshotDir:                       "fakeSnapshotDir",
+		SnapshotDir:                       "TRUE",
 		ExportPolicy:                      "fakeExportPolicy",
 		SecurityStyle:                     "fakeSecurityStyle",
 		FileSystemType:                    "fakeFileSystem",
@@ -4839,6 +4887,8 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 
 	assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
 	assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
+	// Ensure snapshotDir is a lower case value
+	assert.Equal(t, "true", virtualPool["dummyBackend_pool_0"].InternalAttributes()[SnapshotDir])
 	assert.NoError(t, err)
 
 	// Test2 - Invalid value of encryption
@@ -4854,6 +4904,47 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 		SecurityStyle:                     "fakeSecurityStyle",
 		FileSystemType:                    "fakeFileSystem",
 		Encryption:                        "fakeValue",
+		LUKSEncryption:                    "false",
+		TieringPolicy:                     "fakeTieringPolicy",
+		QosPolicy:                         "fakeQosPolicy",
+		AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
+		CommonStorageDriverConfigDefaults: *CommonConfigDefault,
+	}
+	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "fakeRegion",
+			Zone:   "fakeZone",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			OntapStorageDriverConfigDefaults: *defaults,
+		},
+	}
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+
+	physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+
+	assert.Nil(t, physicalPool, "Physical Pool not expected but found")
+	assert.Nil(t, virtualPool, "Virtual pool not exepcted but found")
+	assert.Error(t, err)
+
+	// Test3 - Invalid value of snapshotDir
+	defaults = &drivers.OntapStorageDriverConfigDefaults{
+		SpaceAllocation:                   "fake",
+		SpaceReserve:                      "fakeSpaceReserve",
+		SnapshotPolicy:                    "fakeSnapshotPolicy",
+		SnapshotReserve:                   "fakeSnapshotReserve",
+		SplitOnClone:                      "false",
+		UnixPermissions:                   "777",
+		SnapshotDir:                       "FaLsE",
+		ExportPolicy:                      "fakeExportPolicy",
+		SecurityStyle:                     "fakeSecurityStyle",
+		FileSystemType:                    "fakeFileSystem",
+		Encryption:                        "true",
 		LUKSEncryption:                    "false",
 		TieringPolicy:                     "fakeTieringPolicy",
 		QosPolicy:                         "fakeQosPolicy",

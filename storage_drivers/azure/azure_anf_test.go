@@ -758,6 +758,36 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 	assert.Equal(t, "1.1.1.1/32", driver.Config.ExportRule)
 }
 
+func TestPopulateConfigurationDefaults_SnapshotDir(t *testing.T) {
+	config := &drivers.AzureNASStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			DriverContext:   tridentconfig.ContextCSI,
+			DebugTraceFlags: debugTraceFlags,
+		},
+	}
+
+	_, driver := newMockANFDriver(t)
+	driver.Config = *config
+
+	tests := []struct {
+		name                string
+		inputSnapshotDir    string
+		expectedSnapshotDir string
+	}{
+		{"Default snapshotDir", "", "false"},
+		{"Uppercase snapshotDir", "TRUE", "true"},
+		{"Invalid snapshotDir", "TrUE", "TrUE"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			driver.Config.SnapshotDir = test.inputSnapshotDir
+			driver.populateConfigurationDefaults(ctx, &driver.Config)
+			assert.Equal(t, test.expectedSnapshotDir, driver.Config.SnapshotDir)
+		})
+	}
+}
+
 func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 	supportedTopologies := []map[string]string{
 		{"topology.kubernetes.io/region": "europe-west1", "topology.kubernetes.io/zone": "us-east-1c"},
@@ -777,7 +807,7 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 					Size: "1234567890",
 				},
 				UnixPermissions: "0700",
-				SnapshotDir:     "true",
+				SnapshotDir:     "TRUE",
 				ExportRule:      "1.1.1.1/32",
 			},
 			VirtualNetwork:      "VN1",
@@ -883,7 +913,7 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 			{
 				AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 					UnixPermissions: "0770",
-					SnapshotDir:     "false",
+					SnapshotDir:     "FALSE",
 				},
 				VirtualNetwork:      "VN1",
 				Subnet:              "SN2",
@@ -960,6 +990,48 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedPools, driver.pools, "pools do not match")
+}
+
+func TestInitializeStoragePools_SnapshotDir(t *testing.T) {
+	// Test with multiple vpools each with different snapshotDir value
+	config := &drivers.AzureNASStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			BackendName:     "myANFBackend",
+			DriverContext:   tridentconfig.ContextCSI,
+			DebugTraceFlags: debugTraceFlags,
+			LimitVolumeSize: "123456789000",
+		},
+		Storage: []drivers.AzureNASStorageDriverPool{
+			{
+				Region: "us_east_1",
+				Zone:   "us_east_1a",
+			},
+			{
+				AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{SnapshotDir: "False"},
+			},
+			{
+				AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{SnapshotDir: "Invalid"},
+			},
+		},
+	}
+
+	_, driver := newMockANFDriver(t)
+	driver.Config = *config
+	driver.Config.SnapshotDir = "TRUE"
+
+	driver.initializeStoragePools(ctx)
+
+	// Case1: Ensure snapshotDir is picked from driver config and is lower case
+	virtualPool1 := driver.pools["myANFBackend_pool_0"]
+	assert.Equal(t, "true", virtualPool1.InternalAttributes()[SnapshotDir])
+
+	// Case2: Ensure snapshotDir is picked from virtual pool and is lower case
+	virtualPool2 := driver.pools["myANFBackend_pool_1"]
+	assert.Equal(t, "false", virtualPool2.InternalAttributes()[SnapshotDir])
+
+	// Case3: Ensure snapshotDir is picked from virtual pool and is same as passed in case of invalid value
+	virtualPool3 := driver.pools["myANFBackend_pool_2"]
+	assert.Equal(t, "Invalid", virtualPool3.InternalAttributes()[SnapshotDir])
 }
 
 func TestInitialize_KerberosDisabledInPool(t *testing.T) {

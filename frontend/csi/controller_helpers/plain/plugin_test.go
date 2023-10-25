@@ -86,11 +86,12 @@ func TestGetVolumeConfig(t *testing.T) {
 	}
 
 	type volumeConfigTest struct {
-		volumeName         string
-		accessMode         []config.AccessMode
-		parameters         map[string]string
-		expected           bool
-		expectedAccessMode config.AccessMode
+		volumeName          string
+		accessMode          []config.AccessMode
+		parameters          map[string]string
+		expected            bool
+		expectedAccessMode  config.AccessMode
+		expectedSnapshotDir string
 	}
 
 	accessMode1 := []config.AccessMode{config.ReadWriteOnce}
@@ -98,13 +99,23 @@ func TestGetVolumeConfig(t *testing.T) {
 	accessMode3 := []config.AccessMode{config.ModeAny}
 	tests := map[string]volumeConfigTest{
 		"volumeConfigWithOneAccessMode": {
-			"volume1", accessMode1, make(map[string]string), false, config.ReadWriteOnce,
+			"volume1", accessMode1,
+			map[string]string{"snapshotDir": "TRUE"},
+			false, config.ReadWriteOnce, "true",
 		},
 		"volumeConfigWithMultipleAccessMode": {
-			"volume1", accessMode2, make(map[string]string), false, config.ReadWriteMany,
+			"volume1", accessMode2,
+			map[string]string{"snapshotDir": "False"},
+			false, config.ReadWriteMany, "false",
 		},
 		"volumeConfigParameterNil": {
-			"volume1", accessMode3, nil, true, config.ModeAny,
+			"volume1", accessMode3, nil,
+			true, config.ModeAny, "",
+		},
+		"volumeConfigInvalidSnapshotDir": {
+			"volume1", accessMode3,
+			map[string]string{"snapshotDir": "FaLsE"},
+			true, config.ModeAny, "",
 		},
 	}
 
@@ -129,6 +140,7 @@ func TestGetVolumeConfig(t *testing.T) {
 				PreferredTopologies: dummyMap,
 				FileSystem:          "fsType",
 				AccessMode:          test.expectedAccessMode,
+				SnapshotDir:         test.expectedSnapshotDir,
 			}
 			result, err := plugin.GetVolumeConfig(ctx, test.volumeName, 100, test.parameters,
 				config.Protocol(config.File), test.accessMode, config.VolumeMode(config.Filesystem), "fsType",

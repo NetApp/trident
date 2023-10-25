@@ -126,6 +126,17 @@ func GetVolumeConfig(
 	Logc(ctx).Trace(">>>> GetVolumeConfig")
 	defer Logc(ctx).Trace("<<<< GetVolumeConfig")
 
+	// If snapshotDir is provided, ensure it is lower case
+	snapshotDir := utils.GetV(opts, "snapshotDir", "")
+	if snapshotDir != "" {
+		snapDirFormatted, err := utils.GetFormattedBool(snapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", snapshotDir)
+			return nil, err
+		}
+		snapshotDir = snapDirFormatted
+	}
+
 	cfg := &storage.VolumeConfig{
 		Name:                name,
 		Size:                fmt.Sprintf("%d", sizeBytes),
@@ -138,7 +149,7 @@ func GetVolumeConfig(
 		SplitOnClone:        utils.GetV(opts, "splitOnClone", ""),
 		SnapshotPolicy:      utils.GetV(opts, "snapshotPolicy", ""),
 		SnapshotReserve:     utils.GetV(opts, "snapshotReserve", ""),
-		SnapshotDir:         utils.GetV(opts, "snapshotDir", ""),
+		SnapshotDir:         snapshotDir,
 		ExportPolicy:        utils.GetV(opts, "exportPolicy", ""),
 		UnixPermissions:     utils.GetV(opts, "unixPermissions", ""),
 		BlockSize:           utils.GetV(opts, "blocksize", ""),

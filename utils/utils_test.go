@@ -1642,3 +1642,29 @@ func TestEncodeAndDecodeToAndFromBase64(t *testing.T) {
 	assert.Equal(t, originalObject.Bar, actualObject.Bar)
 	assert.Equal(t, originalObject.Baz, actualObject.Baz)
 }
+
+func TestGetFormattedValidBool(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		expected  string
+		expectErr bool
+	}{
+		{"Valid uppercase bool value", "TRUE", "true", false},
+		{"Valid Camelcase bool value", "True", "true", false},
+		{"Invalid bool value", "TrUe", "TrUe", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			response, responseErr := GetFormattedBool(test.input)
+
+			assert.Equal(t, test.expected, response)
+			if test.expectErr {
+				assert.Error(t, responseErr)
+			} else {
+				assert.Nil(t, responseErr)
+			}
+		})
+	}
+}

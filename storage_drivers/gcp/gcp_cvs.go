@@ -277,9 +277,17 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 		config.NfsMountOptions = defaultNfsMountOptions
 	}
 
-	if config.SnapshotDir == "" {
-		config.SnapshotDir = defaultSnapshotDir
+	// If snapshotDir is provided, ensure it is lower case
+	snapDir := defaultSnapshotDir
+	if config.SnapshotDir != "" {
+		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
+			return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+		}
+		snapDir = snapDirFormatted
 	}
+	config.SnapshotDir = snapDir
 
 	if config.SnapshotReserve == "" {
 		config.SnapshotReserve = defaultSnapshotReserve
@@ -333,6 +341,15 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
 func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 	d.pools = make(map[string]storage.Pool)
+
+	// If snapshotDir is provided, ensure it is lower case
+	if d.Config.SnapshotDir != "" {
+		snapDirFormatted, err := utils.GetFormattedBool(d.Config.SnapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", d.Config.SnapshotDir)
+		}
+		d.Config.SnapshotDir = snapDirFormatted
+	}
 
 	if len(d.Config.Storage) == 0 {
 
@@ -409,7 +426,11 @@ func (d *NFSStorageDriver) initializeStoragePools(ctx context.Context) {
 
 			snapshotDir := d.Config.SnapshotDir
 			if vpool.SnapshotDir != "" {
-				snapshotDir = vpool.SnapshotDir
+				snapDirFormatted, err := utils.GetFormattedBool(vpool.SnapshotDir)
+				if err != nil {
+					Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.", vpool.SnapshotDir)
+				}
+				snapshotDir = snapDirFormatted
 			}
 
 			snapshotReserve := d.Config.SnapshotReserve

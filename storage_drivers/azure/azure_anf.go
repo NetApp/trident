@@ -272,9 +272,16 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		}
 	}
 
-	if config.SnapshotDir == "" {
-		config.SnapshotDir = defaultSnapshotDir
+	// If snapshotDir is provided, ensure it is lower case
+	snapDir := defaultSnapshotDir
+	if config.SnapshotDir != "" {
+		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
+		}
+		snapDir = snapDirFormatted
 	}
+	config.SnapshotDir = snapDir
 
 	if config.LimitVolumeSize == "" {
 		config.LimitVolumeSize = defaultLimitVolumeSize
@@ -309,6 +316,15 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 // initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
 func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 	d.pools = make(map[string]storage.Pool)
+
+	// If snapshotDir is provided, ensure it is lower case
+	if d.Config.SnapshotDir != "" {
+		snapDirFormatted, err := utils.GetFormattedBool(d.Config.SnapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", d.Config.SnapshotDir)
+		}
+		d.Config.SnapshotDir = snapDirFormatted
+	}
 
 	if len(d.Config.Storage) == 0 {
 
@@ -402,7 +418,11 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 
 			snapshotDir := d.Config.SnapshotDir
 			if vpool.SnapshotDir != "" {
-				snapshotDir = vpool.SnapshotDir
+				snapDirFormatted, err := utils.GetFormattedBool(vpool.SnapshotDir)
+				if err != nil {
+					Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.", vpool.SnapshotDir)
+				}
+				snapshotDir = snapDirFormatted
 			}
 
 			exportRule := d.Config.ExportRule
@@ -631,7 +651,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		if pool.InternalAttributes()[SnapshotDir] != "" {
 			_, err := strconv.ParseBool(pool.InternalAttributes()[SnapshotDir])
 			if err != nil {
-				return fmt.Errorf("invalid value for snapshotDir in pool %s; %v", poolName, err)
+				return fmt.Errorf("invalid boolean value for snapshotDir in pool %s; %v", poolName, err)
 			}
 		}
 

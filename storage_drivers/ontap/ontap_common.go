@@ -1273,9 +1273,17 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 
-	if config.SnapshotDir == "" {
-		config.SnapshotDir = DefaultSnapshotDir
+	// If snapshotDir is provided, ensure it is lower case
+	snapDir := DefaultSnapshotDir
+	if config.SnapshotDir != "" {
+		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
+			return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+		}
+		snapDir = snapDirFormatted
 	}
+	config.SnapshotDir = snapDir
 
 	if config.DriverContext != tridentconfig.ContextCSI {
 		config.AutoExportPolicy = false
@@ -1852,6 +1860,14 @@ func InitializeStoragePoolsCommon(
 			pool.Attributes()[sa.Zone] = sa.NewStringOffer(config.Zone)
 		}
 
+		if config.SnapshotDir != "" {
+			config.SnapshotDir, err = utils.GetFormattedBool(config.SnapshotDir)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
+				return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+			}
+		}
+
 		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
 		pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
 		pool.Attributes()[sa.SANType] = sa.NewStringOffer(config.SANType)
@@ -1937,7 +1953,11 @@ func InitializeStoragePoolsCommon(
 
 		snapshotDir := config.SnapshotDir
 		if vpool.SnapshotDir != "" {
-			snapshotDir = vpool.SnapshotDir
+			snapshotDir, err = utils.GetFormattedBool(vpool.SnapshotDir)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.", vpool.SnapshotDir)
+				return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+			}
 		}
 
 		exportPolicy := config.ExportPolicy
@@ -2320,9 +2340,17 @@ func getVolumeOptsCommon(
 	if volConfig.UnixPermissions != "" {
 		opts["unixPermissions"] = volConfig.UnixPermissions
 	}
+
+	// If snapshotDir is provided, ensure it is lower case
 	if volConfig.SnapshotDir != "" {
-		opts["snapshotDir"] = volConfig.SnapshotDir
+		snapshotDirFormatted, err := utils.GetFormattedBool(volConfig.SnapshotDir)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf(
+				"Invalid boolean value for volume '%v' snapshotDir: %v.", volConfig.Name, volConfig.SnapshotDir)
+		}
+		opts["snapshotDir"] = snapshotDirFormatted
 	}
+
 	if volConfig.ExportPolicy != "" {
 		opts["exportPolicy"] = volConfig.ExportPolicy
 	}

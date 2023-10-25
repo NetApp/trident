@@ -556,6 +556,16 @@ func getVolumeConfig(
 		volumeMode = &volumeModeVal
 	}
 
+	// If snapshotDir annotation is provided, ensure it is lower case
+	snapshotDirAnn := getAnnotation(annotations, AnnSnapshotDir)
+	if snapshotDirAnn != "" {
+		snapDirFormatted, err := utils.GetFormattedBool(snapshotDirAnn)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir annotation: %v.", snapshotDirAnn)
+		}
+		snapshotDirAnn = snapDirFormatted
+	}
+
 	if getAnnotation(annotations, AnnReadOnlyClone) == "" {
 		annotations[AnnReadOnlyClone] = "false"
 	}
@@ -583,7 +593,7 @@ func getVolumeConfig(
 		Protocol:            config.Protocol(getAnnotation(annotations, AnnProtocol)),
 		SnapshotPolicy:      getAnnotation(annotations, AnnSnapshotPolicy),
 		SnapshotReserve:     getAnnotation(annotations, AnnSnapshotReserve),
-		SnapshotDir:         getAnnotation(annotations, AnnSnapshotDir),
+		SnapshotDir:         snapshotDirAnn,
 		ExportPolicy:        getAnnotation(annotations, AnnExportPolicy),
 		UnixPermissions:     getAnnotation(annotations, AnnUnixPermissions),
 		StorageClass:        storageClass.Name,
