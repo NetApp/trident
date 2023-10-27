@@ -71,10 +71,8 @@ Trident operator image
 {{- define "trident-operator.image" -}}
 {{- if .Values.operatorImage }}
 {{- .Values.operatorImage }}
-{{- else if .Values.imageRegistry }}
-{{- .Values.imageRegistry }}/trident-operator:{{ .Values.operatorImageTag | default .Chart.AppVersion }}
 {{- else }}
-{{- "" }}docker.io/netapp/trident-operator:{{ .Values.operatorImageTag | default .Chart.AppVersion }}
+{{- .Values.tridentImageRegistry | default .Values.imageRegistry | default "docker.io/netapp" }}/trident-operator:{{ .Values.operatorImageTag | default .Chart.AppVersion }}
 {{- end }}
 {{- end }}
 
@@ -116,10 +114,8 @@ Trident AutoSupport image
 {{- define "trident.autosupportImage" -}}
 {{- if .Values.tridentAutosupportImage }}
 {{- .Values.tridentAutosupportImage }}
-{{- else if .Values.imageRegistry }}
-{{- .Values.imageRegistry }}/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
 {{- else }}
-{{- "" }}docker.io/netapp/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
+{{- .Values.tridentImageRegistry | default .Values.imageRegistry | default "docker.io/netapp" }}/trident-autosupport:{{ .Values.tridentAutosupportImageTag | default .Chart.AppVersion | trunc 5}}
 {{- end }}
 {{- end }}
 
@@ -190,10 +186,8 @@ Trident image
 {{- define "trident.image" -}}
 {{- if .Values.tridentImage }}
 {{- .Values.tridentImage }}
-{{- else if .Values.imageRegistry }}
-{{- .Values.imageRegistry }}/trident:{{ .Values.tridentImageTag | default .Chart.AppVersion }}
 {{- else }}
-{{- "" }}docker.io/netapp/trident:{{ .Values.tridentImageTag | default .Chart.AppVersion }}
+{{- .Values.tridentImageRegistry | default .Values.imageRegistry | default "docker.io/netapp" }}/trident:{{ .Values.tridentImageTag | default .Chart.AppVersion }}
 {{- end }}
 {{- end }}
 

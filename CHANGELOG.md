@@ -2,6 +2,12 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v23.07.1
+
+**Enhancements**
+- **Kubernetes:** Added `--trident-image-registry` switch to installer
+  and value tridentImageRegistry to Helm chart. (Issue [#772](https://github.com/NetApp/trident/issues/772))
+
 ## Changes since v23.04.0
 
 **Fixes:**

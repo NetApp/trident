@@ -101,6 +101,7 @@ var (
 	enableForceDetach       bool
 	disableAuditLog         bool
 	tridentImage            string
+	tridentImageRegistry    string
 	autosupportImage        string
 	autosupportProxy        string
 	autosupportInsecure     bool
@@ -194,6 +195,8 @@ func init() {
 	installCmd.Flags().BoolVar(&disableAuditLog, "disable-audit-log", true, "Disable the audit logger.")
 	installCmd.Flags().StringVar(&tridentImage, "trident-image", "",
 		"Trident container image. When installing Trident from a private image registry, this flag must be set to the path of the container image.")
+	installCmd.Flags().StringVar(&tridentImageRegistry, "trident-image-registry", "",
+		"The address/port of an internal image registry containing trident images.")
 	installCmd.Flags().StringVar(&logFormat, "log-format", "text", "The Trident logging format (text, json).")
 	installCmd.Flags().StringVar(&logWorkflows, "log-workflows", "", "A comma-delimited list of Trident "+
 		"workflows for which to enable trace logging.")
@@ -204,8 +207,9 @@ func init() {
 	installCmd.Flags().StringVar(&kubeletDir, "kubelet-dir", "/var/lib/kubelet",
 		"The host location of kubelet's internal state.")
 	installCmd.Flags().StringVar(&imageRegistry, "image-registry", "",
-		"The address/port of an internal image registry location. For more information on specifying image locations, "+
-			"consult the Trident documentation.")
+		"The address/port of an internal image registry location containing csi sidecar images. If trident-image-registry "+
+		"is not set this is also used for trident images. For more information on specifying image locations, "+
+		"consult the Trident documentation.")
 	installCmd.Flags().StringVar(&autosupportProxy, "autosupport-proxy", "",
 		"The address/port of a proxy for sending Autosupport Telemetry")
 	installCmd.Flags().BoolVar(&autosupportInsecure, "autosupport-insecure", false,
@@ -330,7 +334,9 @@ func discoverInstallationEnvironment() error {
 		tridentImage = tridentconfig.BuildImage
 
 		// Override registry only if using the default Trident image name and an alternate registry was supplied
-		if imageRegistry != "" {
+		if tridentImageRegistry != "" {
+			tridentImage = utils.ReplaceImageRegistry(tridentImage, tridentImageRegistry)
+		} else if imageRegistry != "" {
 			tridentImage = utils.ReplaceImageRegistry(tridentImage, imageRegistry)
 		}
 	}
@@ -339,7 +345,9 @@ func discoverInstallationEnvironment() error {
 	if autosupportImage == "" {
 		autosupportImage = tridentconfig.DefaultAutosupportImage
 
-		if imageRegistry != "" {
+		if tridentImageRegistry != "" {
+			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, tridentImageRegistry)
+		} else if imageRegistry != "" {
 			autosupportImage = utils.ReplaceImageRegistry(autosupportImage, imageRegistry)
 		}
 	}
