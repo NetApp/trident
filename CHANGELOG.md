@@ -2,7 +2,32 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v23.04.0
+## Changes since v23.07.0
+
+**Fixes:**
+
+- Fixed volume expansion if a new requested size is smaller than the total volume size for ontap-nas and ontap-nas-flexgroup storage drivers (Issue [#834](https://github.com/NetApp/trident/issues/834)).
+- Fixed volume size to display only usable size of the volume during import for ontap-nas and ontap-nas-flexgroup storage drivers (Issue [#722](https://github.com/NetApp/trident/issues/722)).
+- Fixed FlexVol name conversion for ONTAP-NAS-Economy.
+- Fixed Trident initialization issue on a windows node when node is rebooted.
+
+**Enhancements:**
+
+- **Kubernetes:** Added support for Kubernetes 1.28.
+- Added support for using Azure Managed Identities(AMI) with azure-netapp-files storage driver.
+- Added support for NVMe over TCP for the ONTAP-SAN driver.
+- Added ability to pause the provisioning of a volume when backend is set to suspended state by user.
+
+**Other advanced storage management/provisioning/access features available in Astra Control include:**
+
+- Read-only clones
+- Snapshot Restore
+- Support for Kerberos in-flight encryption
+- Volume Replication
+
+Please refer to [Astra Control Documentation](https://docs.netapp.com/us-en/astra-control-center/use/enable-acp.html) for details on these features.
+
+## v23.07.0
 
 **Fixes:**
 
