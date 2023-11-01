@@ -1083,17 +1083,20 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 
 	// If Credentials are set, fetch them and set them in the configJSON matching field names
 	if len(commonConfig.Credentials) != 0 {
-		secretName, _, err := commonConfig.GetCredentials()
-		if err != nil {
-			return nil, err
+		secretName, secretType, secretErr := commonConfig.GetCredentials()
+		if secretErr != nil {
+			return nil, secretErr
 		} else if secretName == "" {
 			return nil, fmt.Errorf("credentials `name` field cannot be empty")
 		}
 
-		if backendSecret, err = o.storeClient.GetBackendSecret(ctx, secretName); err != nil {
-			return nil, err
-		} else if backendSecret == nil {
-			return nil, fmt.Errorf("backend credentials not found")
+		// Handle known secret store types here, but driver-specific ones may be handled in the drivers.
+		if secretType == string(drivers.CredentialStoreK8sSecret) {
+			if backendSecret, err = o.storeClient.GetBackendSecret(ctx, secretName); err != nil {
+				return nil, err
+			} else if backendSecret == nil {
+				return nil, fmt.Errorf("backend credentials not found")
+			}
 		}
 	}
 

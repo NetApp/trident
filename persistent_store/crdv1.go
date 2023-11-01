@@ -383,15 +383,27 @@ func (k *CRDClientV1) addSecretToBackend(
 	}
 
 	var secretName string
+	var secretType string
 	var err error
 
 	// Check if user-provided credentials are in use
-	if secretName, _, err = backendPersistent.GetBackendCredentials(); err != nil {
+	if secretName, secretType, err = backendPersistent.GetBackendCredentials(); err != nil {
 		Logc(ctx).WithFields(logFields).Errorf("Could determined if credentials field exist; %v", err)
 		return nil, err
-	} else if secretName == "" {
+	}
+
+	if secretName == "" {
 		// Credentials field not set, use the default backend secret name
 		secretName = k.backendSecretName(backendPersistent.BackendUUID)
+	}
+	if secretType == "" {
+		// Default secret type to K8s secret
+		secretType = "secret"
+	}
+
+	// If the secret type isn't that of a Kubernetes secret, return here without retrieving anything.
+	if secretType != "secret" {
+		return backendPersistent, nil
 	}
 
 	// Before retrieving the secret, ensure it exists.  If we find the secret does not exist, we

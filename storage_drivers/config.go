@@ -30,6 +30,7 @@ const (
 	TopologyLabelPrefix = "topology.kubernetes.io"
 
 	CredentialStoreK8sSecret CredentialStore = "secret"
+	CredentialStoreAWSARN    CredentialStore = "awsarn"
 
 	KeyName string = "name"
 	KeyType string = "type"

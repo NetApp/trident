@@ -8,6 +8,11 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures v1.1.0
 	github.com/RoaringBitmap/roaring v1.5.0
+	github.com/aws/aws-sdk-go-v2 v1.21.1
+	github.com/aws/aws-sdk-go-v2/config v1.18.44
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.42
+	github.com/aws/aws-sdk-go-v2/service/fsx v1.33.0
+	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.21.4
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/container-storage-interface/spec v1.8.0
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
@@ -49,7 +54,7 @@ require (
 	golang.org/x/sys v0.13.0 // github.com/golang/sys
 	golang.org/x/text v0.13.0 // github.com/golang/text
 	golang.org/x/time v0.3.0 // github.com/golang/time
-	google.golang.org/grpc v1.58.2 // github.com/grpc/grpc-go
+	google.golang.org/grpc v1.58.3 // github.com/grpc/grpc-go
 	k8s.io/api v0.28.2 // github.com/kubernetes/api
 	k8s.io/apiextensions-apiserver v0.28.2 // github.com/kubernetes/apiextensions-apiserver
 	k8s.io/apimachinery v0.28.2 // github.com/kubernetes/apimachinery
@@ -72,6 +77,15 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.1.1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.12 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.42 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.36 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.44 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.36 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.15.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.17.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.23.1 // indirect
+	github.com/aws/smithy-go v1.15.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

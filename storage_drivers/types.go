@@ -104,24 +104,25 @@ func (d *CommonStorageDriverConfig) SetBackendName(backendName string) {
 
 // OntapStorageDriverConfig holds settings for OntapStorageDrivers
 type OntapStorageDriverConfig struct {
-	*CommonStorageDriverConfig                // embedded types replicate all fields
-	ManagementLIF                    string   `json:"managementLIF"`
-	DataLIF                          string   `json:"dataLIF"`
-	IgroupName                       string   `json:"igroupName"`
-	SVM                              string   `json:"svm"`
-	Username                         string   `json:"username"`
-	Password                         string   `json:"password"`
-	Aggregate                        string   `json:"aggregate"`
-	UsageHeartbeat                   string   `json:"usageHeartbeat"`                   // in hours, default to 24.0
-	QtreePruneFlexvolsPeriod         string   `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
-	QtreeQuotaResizePeriod           string   `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
-	QtreesPerFlexvol                 string   `json:"qtreesPerFlexvol"`                 // default to 200
-	LUNsPerFlexvol                   string   `json:"lunsPerFlexvol"`                   // default to 100
-	EmptyFlexvolDeferredDeletePeriod string   `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
-	NfsMountOptions                  string   `json:"nfsMountOptions"`
-	LimitAggregateUsage              string   `json:"limitAggregateUsage"`
-	AutoExportPolicy                 bool     `json:"autoExportPolicy"`
-	AutoExportCIDRs                  []string `json:"autoExportCIDRs"`
+	*CommonStorageDriverConfig                  // embedded types replicate all fields
+	AWSConfig                        *AWSConfig `json:"aws,omitEmpty"` // AWS-specific config attributes
+	ManagementLIF                    string     `json:"managementLIF"`
+	DataLIF                          string     `json:"dataLIF"`
+	IgroupName                       string     `json:"igroupName"`
+	SVM                              string     `json:"svm"`
+	Username                         string     `json:"username"`
+	Password                         string     `json:"password"`
+	Aggregate                        string     `json:"aggregate"`
+	UsageHeartbeat                   string     `json:"usageHeartbeat"`                   // in hours, default to 24.0
+	QtreePruneFlexvolsPeriod         string     `json:"qtreePruneFlexvolsPeriod"`         // in seconds, default to 600
+	QtreeQuotaResizePeriod           string     `json:"qtreeQuotaResizePeriod"`           // in seconds, default to 60
+	QtreesPerFlexvol                 string     `json:"qtreesPerFlexvol"`                 // default to 200
+	LUNsPerFlexvol                   string     `json:"lunsPerFlexvol"`                   // default to 100
+	EmptyFlexvolDeferredDeletePeriod string     `json:"emptyFlexvolDeferredDeletePeriod"` // in seconds, default to 28800
+	NfsMountOptions                  string     `json:"nfsMountOptions"`
+	LimitAggregateUsage              string     `json:"limitAggregateUsage"`
+	AutoExportPolicy                 bool       `json:"autoExportPolicy"`
+	AutoExportCIDRs                  []string   `json:"autoExportCIDRs"`
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
@@ -147,6 +148,14 @@ type OntapStorageDriverPool struct {
 	SANType                          string              `json:"sanType"`
 	SMBShare                         string              `json:"smbShare"`
 	OntapStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// AWSConfig holds settings for ONTAP drivers used with AWS, including FSx for NetApp ONTAP.
+type AWSConfig struct {
+	APIRegion       string `json:"apiRegion"`
+	FSxFilesystemID string `json:"fsxFilesystemID"`
+	APIKey          string `json:"apiKey"`
+	SecretKey       string `json:"secretKey"`
 }
 
 // StorageBackendPool is a type constraint that enables drivers to generically report non-overlapping storage pools
@@ -720,7 +729,7 @@ func (d FakeStorageDriverConfig) GoString() string {
 }
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
-func (d *FakeStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+func (d *FakeStorageDriverConfig) InjectSecrets(_ map[string]string) error {
 	// Nothing to do
 
 	return nil
@@ -752,7 +761,7 @@ func (d *FakeStorageDriverConfig) HideSensitiveWithSecretName(secretName string)
 
 // GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
 // replaces those fields with secretName and returns the the map.
-func (d *FakeStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+func (d *FakeStorageDriverConfig) GetAndHideSensitive(_ string) map[string]string {
 	return map[string]string{}
 }
 
@@ -885,7 +894,12 @@ func getCredentialNameAndType(credentials map[string]string) (string, string, er
 		secretStore = string(CredentialStoreK8sSecret)
 	}
 
-	if secretStore != string(CredentialStoreK8sSecret) {
+	allowedCredentialTypes := []string{
+		string(CredentialStoreK8sSecret),
+		string(CredentialStoreAWSARN),
+	}
+
+	if !utils.SliceContainsString(allowedCredentialTypes, secretStore) {
 		return "", "", fmt.Errorf("credentials field does not support type '%s'", secretStore)
 	}
 

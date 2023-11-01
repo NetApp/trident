@@ -874,6 +874,7 @@ func (c Client) WaitForVolumeState(
 				return nil
 			}
 
+			volumeState = ""
 			return fmt.Errorf("could not get volume status; %v", err)
 		}
 

@@ -21,6 +21,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -54,6 +55,7 @@ const (
 	BackendUUID                 = "deadbeef-03af-4394-ace4-e177cdbcaf28"
 	ONTAPTEST_LOCALHOST         = "127.0.0.1"
 	ONTAPTEST_VSERVER_AGGR_NAME = "data"
+	FSX_ID                      = "fsx-1234"
 )
 
 func TestOntapNasStorageDriverConfigString(t *testing.T) {
@@ -63,9 +65,9 @@ func TestOntapNasStorageDriverConfigString(t *testing.T) {
 
 	ontapNasDrivers := []NASStorageDriver{
 		*newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-			"CSI", true),
+			"CSI", true, nil),
 		*newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-			"CSI", false),
+			"CSI", false, nil),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -101,7 +103,7 @@ func TestOntapNasStorageDriverConfigString(t *testing.T) {
 }
 
 func newTestOntapNASDriver(
-	vserverAdminHost, vserverAdminPort, vserverAggrName string, driverContext tridentconfig.DriverContext, useREST bool,
+	vserverAdminHost, vserverAdminPort, vserverAggrName string, driverContext tridentconfig.DriverContext, useREST bool, fsxId *string,
 ) *NASStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
@@ -118,6 +120,11 @@ func newTestOntapNASDriver(
 	config.StoragePrefix = sp("test_")
 	config.DriverContext = driverContext
 	config.UseREST = useREST
+
+	if fsxId != nil {
+		config.AWSConfig = &drivers.AWSConfig{}
+		config.AWSConfig.FSxFilesystemID = *fsxId
+	}
 
 	nasDriver := &NASStorageDriver{}
 	nasDriver.Config = *config
@@ -141,7 +148,7 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false)
+	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, nil)
 	d.API = mockAPI
 	d.Config.Storage = []drivers.OntapStorageDriverPool{
 		{
@@ -252,7 +259,7 @@ func TestOntapNasStorageDriverInitialize_WithTwoAuthMethods(t *testing.T) {
 		"clientprivatekey":  "dummy-client-private-key"
 	}`
 	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false)
+		"CSI", false, nil)
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig,
 		map[string]string{}, BackendUUID)
@@ -289,7 +296,7 @@ func TestOntapNasStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(t *testin
 		"clientcertificate": "dummy-certificate",
 	}
 	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false)
+		"CSI", false, nil)
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -326,13 +333,21 @@ func TestOntapNasStorageDriverInitialize_WithTwoAuthMethodsWithConfigAndSecrets(
 		"clientcertificate": "dummy-certificate",
 	}
 	ontapNasDriver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false)
+		"CSI", false, nil)
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
 
 	assert.Error(t, result, "driver initialization succeeded despite more than one authentication methods in config")
 	assert.Contains(t, result.Error(), "more than one authentication method", "expected error string not found")
+}
+
+func newMockAWSOntapNASDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.MockAWSAPI, *NASStorageDriver) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+	driver.AWSAPI = mockAWSAPI
+	return mockAPI, mockAWSAPI, driver
 }
 
 func newMockOntapNASDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASStorageDriver) {
@@ -342,9 +357,10 @@ func newMockOntapNASDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASStorageDriv
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	fsxId := FSX_ID
 
 	driver := newTestOntapNASDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false)
+		"CSI", false, &fsxId)
 	driver.API = mockAPI
 	return mockAPI, driver
 }
@@ -959,6 +975,69 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
 	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeDestroy_FSx(t *testing.T) {
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
+	mockAPI, mockAWSAPI, driver := newMockAWSOntapNASDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "1g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+
+	assert.NotNil(t, mockAPI)
+
+	tests := []struct {
+		message  string
+		nasType  string
+		smbShare string
+		state    string
+	}{
+		{"Test NFS volume in FSx in available state", "nfs", "", "AVAILABLE"},
+		{"Test NFS volume in FSx in deleting state", "nfs", "", "DELETING"},
+		{"Test NFS volume does not exist in FSx", "nfs", "", ""},
+		{"Test SMB volume does not exist in FSx", "smb", volConfig.InternalName, ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			vol := awsapi.Volume{
+				State: test.state,
+			}
+			isVolumeExists := vol.State != ""
+			mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+			mockAWSAPI.EXPECT().VolumeExists(ctx, volConfig).Return(isVolumeExists, &vol, nil)
+			if isVolumeExists {
+				mockAWSAPI.EXPECT().WaitForVolumeStates(
+					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+				if vol.State == awsapi.StateAvailable {
+					mockAWSAPI.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+				}
+			} else {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volConfig.InternalName, svmName).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
+				if test.nasType == sa.SMB {
+					if test.smbShare == "" {
+						mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(true, nil)
+						mockAPI.EXPECT().SMBShareDestroy(ctx, volConfig.InternalName).Return(nil)
+					}
+					driver.Config.NASType = sa.SMB
+					driver.Config.SMBShare = test.smbShare
+				}
+			}
+			result := driver.Destroy(ctx, volConfig)
+
+			assert.NoError(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
@@ -1867,7 +1946,7 @@ func TestOntapNasStorageDriverGetUpdateType(t *testing.T) {
 	}
 
 	newDriver := newTestOntapNASDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME,
-		"CSI", false)
+		"CSI", false, nil)
 	newDriver.API = mockAPI
 	prefix2 := "storage_"
 	newDriver.Config.StoragePrefix = &prefix2
@@ -1902,7 +1981,7 @@ func TestOntapNasStorageDriverGetUpdateType_Failure(t *testing.T) {
 
 	// Created a SAN driver
 	newDriver := newTestOntapNASDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME,
-		"CSI", false)
+		"CSI", false, nil)
 	newDriver.API = mockAPI
 	prefix2 := "storage_"
 	newDriver.Config.StoragePrefix = &prefix2

@@ -844,7 +844,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test no pools, ontap NAS
 	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools := map[string]storage.Pool{}
 	virtualPools := map[string]storage.Pool{}
 	storageDriver.virtualPools = virtualPools
@@ -857,7 +857,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test one valid virtual pool with NASType = NFS
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -872,7 +872,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test one valid virtual pool with NASType = SMB
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -887,7 +887,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test one valid virtual pool with invalid securityStyle
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -902,7 +902,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Positive case: Test two valid virtual pools
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool(), "test2": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -916,7 +916,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// Negative case: Test with snapshotpolicy empty
 
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -929,7 +929,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 
 	// Negative case: Test with Invalid value of Encryption
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -942,7 +942,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 
 	// Negative case: Test with empty snapshot dir
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
@@ -954,7 +954,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 
 	// Negative case: Test Invalid value of snapshot dir
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
@@ -966,7 +966,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 
 	// Negative case: Test one valid virtual with invalid value for label in pool
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -979,7 +979,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test one valid virtual with Invalid value of SecurityStyle attribute
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -992,7 +992,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 
 	// Negative case: Test one valid virtual with empty Export Policy
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1005,7 +1005,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 
 	// Negative case: Test one valid virtual with Unix Permission empty
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	storageDriver.Config.NASType = sa.NFS
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -1019,7 +1019,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 
 	// Negative case: Test one valid virtual with Invalid value of Tiering policy
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1036,7 +1036,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().SupportsFeature(ctx, api.QosPolicies).AnyTimes().Return(false)
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	storageDriver.API = mockAPI
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -1056,7 +1056,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().SupportsFeature(ctx, api.QosPolicies).AnyTimes().Return(true)
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	storageDriver.API = mockAPI
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
@@ -1090,7 +1090,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// Positive case: Test with media type set
 
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1105,7 +1105,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// Positive case: Test with Invalid media type
 
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1120,7 +1120,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// Negative case: Test with less size of the pool
 
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1135,7 +1135,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// Negative case: Test with invalid value for size in pool
 
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1151,7 +1151,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// Negative case: Test with invalid value for splitOnClone
 
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1166,7 +1166,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	// Negative case: Test with empty value for splitOnClone
 
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
-		tridentconfig.DriverContext("CSI"), false)
+		tridentconfig.DriverContext("CSI"), false, nil)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapNASPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1284,7 +1284,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Test one virtual pool, LUKS and NAS not allowed
 	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
-		false)
+		false, nil)
 	pool = getValidOntapNASPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
 	physicalPools = map[string]storage.Pool{}
@@ -5130,7 +5130,7 @@ func TestNewOntapTelemetry(t *testing.T) {
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
 	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, tridentconfig.DriverContext("CSI"),
-		false)
+		false, nil)
 
 	// Test-1 : Valid value of UsageHeartBeat
 	storageDriver.Config.UsageHeartbeat = "3.0"
