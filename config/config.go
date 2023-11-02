@@ -249,7 +249,7 @@ var (
 	}
 
 	// DefaultAutosupportImage default image used by tridentctl and operator for asup sidecar
-	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.07"
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:23.10"
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
 	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:23.10.0"
