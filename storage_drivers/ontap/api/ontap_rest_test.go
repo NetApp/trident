@@ -16,6 +16,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
@@ -4203,4 +4204,1691 @@ func TestOntapRest_VolumeExists(t *testing.T) {
 	volumeExists, err := rs.VolumeExists(ctx, "")
 	assert.NoError(t, err, "could not check if the volume exists")
 	assert.False(t, volumeExists)
+}
+
+func getVolumeInfo() *models.Volume {
+	volumeName := "fakeVolume"
+	volumeUUID := "fakeUUID"
+	volumeType := "rw"
+	aggregates := "fakeAggr"
+	comment := ""
+	path := "/fakeVolume"
+	unixPermission := int64(777)
+	exportPolicy := "fakeExportPolicy"
+	size := int64(1073741824)
+	guarantee := "none"
+	snapshotPolicy := "fakeSnapshotPolicy"
+	snapshotReservePercent := int64(20)
+	snapshotUsed := int64(1073741810)
+	snapshotDir := false
+	quotaState := "on"
+	quotaEnabled := true
+	snapshotName := "fakeSnapshot"
+	encryptionEnabled := true
+
+	volumeGuarantee := models.VolumeInlineGuarantee{Type: &guarantee}
+
+	volumeInlineAggr := models.VolumeInlineAggregatesInlineArrayItem{Name: &aggregates}
+	volumeInlineAggrList := []*models.VolumeInlineAggregatesInlineArrayItem{&volumeInlineAggr}
+
+	volumeInlineExportPolicy := models.VolumeInlineNasInlineExportPolicy{Name: &exportPolicy}
+	VolumeInlineNas := models.VolumeInlineNas{
+		Path: &path, UnixPermissions: &unixPermission,
+		ExportPolicy: &volumeInlineExportPolicy,
+	}
+
+	volumeSnapshotPolicy := models.VolumeInlineSnapshotPolicy{Name: &snapshotPolicy}
+	volumeSpaceSnapshot := models.VolumeInlineSpaceInlineSnapshot{
+		ReservePercent: &snapshotReservePercent,
+		Used:           &snapshotUsed,
+	}
+	volumeSpace := models.VolumeInlineSpace{Snapshot: &volumeSpaceSnapshot, LogicalSpace: &models.VolumeInlineSpaceInlineLogicalSpace{Used: &size}}
+	volumeQuota := models.VolumeInlineQuota{State: &quotaState, Enabled: &quotaEnabled}
+
+	clone := models.VolumeInlineClone{
+		ParentSnapshot: &models.SnapshotReference{Name: &snapshotName},
+		ParentVolume:   &models.VolumeInlineCloneInlineParentVolume{Name: &volumeName},
+	}
+
+	encryption := models.VolumeInlineEncryption{Enabled: &encryptionEnabled}
+	movement := models.VolumeInlineMovement{TieringPolicy: utils.Ptr("tieringPolicy")}
+	volume := models.Volume{
+		Name:                           &volumeName,
+		UUID:                           &volumeUUID,
+		Type:                           &volumeType,
+		VolumeInlineAggregates:         volumeInlineAggrList,
+		Comment:                        &comment,
+		Nas:                            &VolumeInlineNas,
+		Size:                           &size,
+		Guarantee:                      &volumeGuarantee,
+		SnapshotPolicy:                 &volumeSnapshotPolicy,
+		Space:                          &volumeSpace,
+		SnapshotDirectoryAccessEnabled: &snapshotDir,
+		Quota:                          &volumeQuota,
+		Clone:                          &clone,
+		Encryption:                     &encryption,
+		Movement:                       &movement,
+	}
+	return &volume
+}
+
+func mockGetVolumeResponseNumRecordsMoreThanTwo(w http.ResponseWriter, r *http.Request) {
+	volume := getVolumeInfo()
+	volume.Size = nil
+	numRecords := int64(2)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		NumRecords:                  &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockGetVolumeResponseSizeNil(w http.ResponseWriter, r *http.Request) {
+	volume := getVolumeInfo()
+	volume.Size = nil
+	numRecords := int64(1)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		NumRecords:                  &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockGetVolumeResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
+	volume := getVolumeInfo()
+	// Test case: Volume name and UUId is Nil
+	volume.UUID = nil
+	volume.Name = nil
+	numRecords := int64(1)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		NumRecords:                  &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockGetVolumeResponseNasPathNil(w http.ResponseWriter, r *http.Request) {
+	nasPath := ""
+	volume := getVolumeInfo()
+	volume.Nas.Path = &nasPath
+	numRecords := int64(1)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		NumRecords:                  &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockVolume(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/storage/volumes"
+	var hrefLink *models.VolumeResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.VolumeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+
+	volume := getVolumeInfo()
+	numRecords := int64(1)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume},
+		NumRecords:                  &numRecords,
+		Links:                       hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func TestGetAllVolumePayloadRecords(t *testing.T) {
+	href := "/api/storage/volumes"
+
+	server := getHttpServer(false, mockVolume)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	volumeResponse := models.VolumeResponse{
+		Links: &models.VolumeResponseInlineLinks{
+			Next: &models.Href{Href: &href},
+		},
+	}
+
+	volumeParam := &storage.VolumeCollectionGetParams{}
+	volumeParam.Context = ctx
+	volume, err := rs.getAllVolumePayloadRecords(&volumeResponse, volumeParam)
+	assert.NoError(t, err)
+	assert.Equal(t, "fakeVolume", *volume.VolumeResponseInlineRecords[0].Name)
+	assert.Equal(t, "fakeUUID", *volume.VolumeResponseInlineRecords[0].UUID)
+	assert.Equal(t, int64(1073741824), *volume.VolumeResponseInlineRecords[0].Size)
+	assert.Equal(t, "rw", *volume.VolumeResponseInlineRecords[0].Type)
+	assert.Equal(t, int64(777), *volume.VolumeResponseInlineRecords[0].Nas.UnixPermissions)
+	assert.Equal(t, "fakeAggr", *volume.VolumeResponseInlineRecords[0].VolumeInlineAggregates[0].Name)
+	server.Close()
+}
+
+func mockGetVolumeResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	href := "/api/storage/volumes"
+	volume := getVolumeInfo()
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		Links: &models.VolumeResponseInlineLinks{
+			Next: &models.Href{Href: &href},
+		},
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func TestGetAllVolumePayloadRecordsFail(t *testing.T) {
+	href := "/api/storage/volumes"
+
+	volumeResponse := models.VolumeResponse{
+		Links: &models.VolumeResponseInlineLinks{
+			Next: &models.Href{Href: &href},
+		},
+	}
+
+	volumeParam := &storage.VolumeCollectionGetParams{}
+	volumeParam.Context = ctx
+
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		IsErrorExpected bool
+	}{
+		{mockFunction: mockResourceNotFound, IsErrorExpected: true, name: "BackendReturnError"},
+		{
+			mockFunction: mockGetVolumeResponseNumRecordsNil, IsErrorExpected: false,
+			name: "GetVolumeResponseNumRecordsNil",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			_, err := rs.getAllVolumePayloadRecords(&volumeResponse, volumeParam)
+			if !test.IsErrorExpected {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockGetVolumeResponse(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	} else if r.Method == "PATCH" {
+		mockRequestAccepted(w, r)
+	} else {
+		volume := getVolumeInfo()
+		numRecords := int64(1)
+		volumeResponse := models.VolumeResponse{
+			VolumeResponseInlineRecords: []*models.Volume{volume},
+			NumRecords:                  &numRecords,
+		}
+
+		r.Host = "127.0.0.1"
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(volumeResponse)
+	}
+}
+
+func TestGetAllVolumesByPatternStyleAndState_failure(t *testing.T) {
+	tests := []struct {
+		style           string
+		state           string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"InvalidStyle", "InvalidState", mockGetVolumeResponse, true},
+		{models.VolumeStyleFlexvol, "InvalidState", mockGetVolumeResponse, true},
+		{models.VolumeStyleFlexvol, models.VolumeStateOnline, mockGetVolumeResponseNumRecordsNil, false},
+	}
+
+	for _, test := range tests {
+		t.Run(fmt.Sprintf(test.style), func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volumeParam := &storage.VolumeCollectionGetParams{}
+			volumeParam.Context = ctx
+			volume, err := rs.getAllVolumesByPatternStyleAndState(ctx, "trident", test.style, test.state)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the volume info")
+				assert.Equal(t, "fakeVolume", *volume.Payload.VolumeResponseInlineRecords[0].Name)
+				assert.Equal(t, "fakeUUID", *volume.Payload.VolumeResponseInlineRecords[0].UUID)
+				assert.Equal(t, int64(1073741824), *volume.Payload.VolumeResponseInlineRecords[0].Size)
+				assert.Equal(t, "rw", *volume.Payload.VolumeResponseInlineRecords[0].Type)
+				assert.Equal(t, int64(777), *volume.Payload.VolumeResponseInlineRecords[0].Nas.UnixPermissions)
+				assert.Equal(t, "fakeAggr", *volume.Payload.VolumeResponseInlineRecords[0].
+					VolumeInlineAggregates[0].Name)
+			} else {
+				assert.Error(t, err, "get the volume info")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestGetVolumeByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"GetVolume", mockGetVolumeResponse, false},
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volumeParam := &storage.VolumeCollectionGetParams{}
+			volumeParam.Context = ctx
+			_, err := rs.getVolumeByNameAndStyle(ctx, "trident", models.VolumeStyleFlexgroup)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the volume info")
+			} else {
+				assert.Error(t, err, "get the volume info")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestGetVolumeSizeByNameAndStyleFailure(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil},
+		{"GetVolumeSizeNil", mockGetVolumeResponseSizeNil},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volumeParam := &storage.VolumeCollectionGetParams{}
+			volumeParam.Context = ctx
+			_, err := rs.getVolumeSizeByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol)
+			assert.Error(t, err, "could not get volume info")
+			server.Close()
+		})
+	}
+}
+
+func mockGetVolumeResponseSpaceNil(w http.ResponseWriter, r *http.Request) {
+	volume := getVolumeInfo()
+	volume.Space = nil
+	numRecords := int64(1)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		NumRecords:                  &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockGetVolumeResponseLogicalSpaceNil(w http.ResponseWriter, r *http.Request) {
+	volume := getVolumeInfo()
+	volume.Space.LogicalSpace = nil
+	numRecords := int64(1)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		NumRecords:                  &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func mockGetVolumeResponseLogicalSpaceUsedNil(w http.ResponseWriter, r *http.Request) {
+	volume := getVolumeInfo()
+	volume.Space.LogicalSpace.Used = nil
+	numRecords := int64(1)
+	volumeResponse := models.VolumeResponse{
+		VolumeResponseInlineRecords: []*models.Volume{volume, nil},
+		NumRecords:                  &numRecords,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(volumeResponse)
+}
+
+func TestOntapRestGetVolumeUsedSizeByNameAndStyle_failure(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"GetVolumeSpaceNil", mockGetVolumeResponseSpaceNil},
+		{"GetVolumeLogicalSpaceNil", mockGetVolumeResponseLogicalSpaceNil},
+		{"GetVolumeLogicalSpaceUsedNil", mockGetVolumeResponseLogicalSpaceUsedNil},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			_, err := rs.getVolumeUsedSizeByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol)
+			assert.Error(t, err, "could not get the volume info")
+			server.Close()
+		})
+	}
+}
+
+func mockModifyFailed(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "PATCH" || r.Method == "DELETE" {
+		mockResourceNotFound(w, r)
+	} else if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	} else {
+		volume := getVolumeInfo()
+		numRecords := int64(1)
+		volumeResponse := models.VolumeResponse{
+			VolumeResponseInlineRecords: []*models.Volume{volume},
+			NumRecords:                  &numRecords,
+		}
+
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(volumeResponse)
+	}
+}
+
+func TestOntapRestSetVolumeSizeByNameAndStyle_failure(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil},
+		{"ModifySizeFail", mockModifyFailed},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volumeParam := &storage.VolumeCollectionGetParams{}
+			volumeParam.Context = ctx
+			err := rs.setVolumeSizeByNameAndStyle(ctx, "fakeVolume", "1073741824", models.VolumeStyleFlexvol)
+			assert.Error(t, err, "could not set the volume info")
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestMountVolumeByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"GetVolume", mockGetVolumeResponseAccepted, false},
+		{"MountFail", mockModifyFailed, true},
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.mountVolumeByNameAndStyle(ctx, "fakeVolume", "/fakeVolume_junctionPath", models.VolumeStyleFlexvol)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get a volume")
+			} else {
+				assert.Error(t, err, "get the volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestUnmountVolumeByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"GetVolume", mockGetVolumeResponseAccepted, false},
+		{"UnMountFail", mockModifyFailed, true},
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, false},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, false},
+		{"GetVolumeNasPathNil", mockGetVolumeResponseNasPathNil, false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.unmountVolumeByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get a volume")
+			} else {
+				assert.Error(t, err, "get the volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestRenameVolumeByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"GetVolume", mockGetVolumeResponseAccepted, false},
+		{"VolumeRenameFailed", mockModifyFailed, true},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true},
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.renameVolumeByNameAndStyle(ctx, "fakeVolume", "newVolumeName", models.VolumeStyleFlexvol)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get a volume")
+			} else {
+				assert.Error(t, err, "get the volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestDestroyVolumeByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"GetVolume", mockGetVolumeResponseAccepted, false},
+		{"VolumeDeleteFail", mockModifyFailed, true},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true},
+		{"GetVolumeNumRecordMoreThanOne", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.destroyVolumeByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete a volume")
+			} else {
+				assert.Error(t, err, "volume deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestModifyVolumeExportPolicyByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"VolumeExportFail", mockModifyFailed, true},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, true},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.modifyVolumeExportPolicyByNameAndStyle(ctx, "fakeVolume",
+				"fake-exportPolicy", models.VolumeStyleFlexvol)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify export policy on volume")
+			} else {
+				assert.Error(t, err, "export policy modified on volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_ModifyVolumeUnixPermissionsByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"modified_fail", mockModifyFailed},
+		{"getVolume_fail", mockGetVolumeResponseNumRecordsNil},
+		{"UUID_nil", mockGetVolumeResponseUUIDNil},
+		{"invalidUnixPermission", mockModifyFailed},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			if test.name != "invalidUnixPermission" {
+				err := rs.modifyVolumeUnixPermissionsByNameAndStyle(ctx, "fakeVolume",
+					"---rwxrwxrwx", models.VolumeStyleFlexvol)
+				assert.Error(t, err, "unix permission modified on volume")
+			} else {
+				err := rs.modifyVolumeUnixPermissionsByNameAndStyle(ctx, "fakeVolume",
+					"invalidUnixPermission", models.VolumeStyleFlexvol)
+				assert.Error(t, err, "unix permission modified on volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_SetVolumeCommentByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"modified_fail", mockModifyFailed},
+		{"getVolume_fail", mockGetVolumeResponseNumRecordsNil},
+		{"UUID_nil", mockGetVolumeResponseUUIDNil},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.setVolumeCommentByNameAndStyle(ctx, "fakeVolume", "newVolumeComment", models.VolumeStyleFlexvol)
+			assert.Error(t, err, "comment is updated on volume")
+
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_convertUnixPermissions(t *testing.T) {
+	tests := []struct {
+		permission string
+		expected   string
+	}{
+		{"---rwxrwxrwx", "777"},
+		{"---rwxrwxrw", "rwxrwxrw"},
+		{"---xwrxwrxwr", "xwrxwrxwr"},
+		{"---rwrxwrxwr", "rwrxwrxwr"},
+		{"---rrrxwrxwr", "rrrxwrxwr"},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("convertUnixPermissions %d", i), func(t *testing.T) {
+			s := convertUnixPermissions(test.permission)
+			assert.Equal(t, test.expected, s)
+		})
+	}
+}
+
+func TestOntapRestSetVolumeQosPolicyGroupNameByNameAndStyle_failure(t *testing.T) {
+	tests := []struct {
+		name          string
+		mockFunction  func(w http.ResponseWriter, r *http.Request)
+		qosPolicyName string
+		qosPolicyKind QosPolicyGroupKindType
+	}{
+		{"ModifyQoSFailed", mockModifyFailed, "qosPolicy", QosPolicyGroupKind},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil, "qosPolicy", QosPolicyGroupKind},
+		{"qosPolicyNameEmpty", mockModifyFailed, "", QosPolicyGroupKind},
+		{"InvalidQosPolicy", mockModifyFailed, "qosPolicy", InvalidQosPolicyGroupKind},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.setVolumeQosPolicyGroupNameByNameAndStyle(ctx, "fakeVolume", QosPolicyGroup{
+				Name: test.qosPolicyName,
+				Kind: test.qosPolicyKind,
+			}, models.VolumeStyleFlexvol)
+			assert.Error(t, err, "qos policy is updated on volume")
+
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestStartCloneSplitByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"SplitCloneFail", mockModifyFailed},
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.startCloneSplitByNameAndStyle(ctx, "fakeVolume", models.VolumeStyleFlexvol)
+			assert.Error(t, err, "split clone updated on volume")
+
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_RestoreSnapshotByNameAndStyle(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"RestoreSnapshot", mockModifyFailed},
+		{"NumRecordsFieldNilInResponse", mockGetVolumeResponseNumRecordsNil},
+		{"UUIDNilInResponse", mockGetVolumeResponseUUIDNil},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.restoreSnapshotByNameAndStyle(ctx, "fakeSnapshot", "fakeVolume", models.VolumeStyleFlexvol)
+			assert.Error(t, err, "split clone updated on volume")
+
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeDisableSnapshotDirectoryAccess(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTestCase", mockGetVolumeResponseAccepted, false},
+		{"NumRecordsMoreThanTwo", mockGetVolumeResponseNumRecordsMoreThanTwo, true},
+		{"NumRecordsFieldsNil", mockGetVolumeResponseNumRecordsNil, true},
+		{"UUIDNil", mockGetVolumeResponseUUIDNil, true},
+		{"VolumeDisableSnapshotDirectoryAccess_Fail", mockModifyFailed, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeModifySnapshotDirectoryAccess(ctx, "fakeVolume", false)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the volume info")
+			} else {
+				assert.Error(t, err, "get the volume info")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestListAllVolumeNamesBackedBySnapshot(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockFunction func(w http.ResponseWriter, r *http.Request)
+	}{
+		{"GetVolumeNumRecordsNil", mockGetVolumeResponseNumRecordsNil},
+		{"GetVolumeUUIDNil", mockGetVolumeResponseUUIDNil},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			_, err := rs.listAllVolumeNamesBackedBySnapshot(ctx, "fakeVolume", "fakeSnapshot")
+			assert.NoError(t, err, "could not get the volumes")
+
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestCreateVolumeByStyleInvalidUnixPermission(t *testing.T) {
+	encrypt := true
+
+	server := httptest.NewServer(http.HandlerFunc(mockRequestAccepted))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	err := rs.createVolumeByStyle(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
+		"fakeSnapshotPolicy", "invalidUnixPermission", "fake-exportpolicy", "unix", "fake-tier",
+		"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0, models.VolumeStyleFlexvol,
+		false)
+	assert.Error(t, err, "volume created")
+	server.Close()
+}
+
+func TestOntapRESTVolumeList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volume, err := rs.VolumeList(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get a volume")
+				assert.Equal(t, "fakeVolume", *volume.Payload.VolumeResponseInlineRecords[0].Name)
+				assert.Equal(t, "fakeUUID", *volume.Payload.VolumeResponseInlineRecords[0].UUID)
+				assert.Equal(t, int64(1073741824), *volume.Payload.VolumeResponseInlineRecords[0].Size)
+				assert.Equal(t, "rw", *volume.Payload.VolumeResponseInlineRecords[0].Type)
+				assert.Equal(t, int64(777), *volume.Payload.VolumeResponseInlineRecords[0].Nas.UnixPermissions)
+				assert.Equal(t, "fakeAggr", *volume.Payload.VolumeResponseInlineRecords[0].
+					VolumeInlineAggregates[0].Name)
+
+			} else {
+				assert.Error(t, err, "get the volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeExists(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volumePresent, err := rs.VolumeExists(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get a volume")
+				assert.Equal(t, true, volumePresent)
+			} else {
+				assert.Error(t, err, "get the volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeGetByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volume, err := rs.VolumeGetByName(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get a volume")
+				assert.Equal(t, "fakeVolume", *volume.Name)
+				assert.Equal(t, "fakeUUID", *volume.UUID)
+				assert.Equal(t, int64(1073741824), *volume.Size)
+				assert.Equal(t, "rw", *volume.Type)
+				assert.Equal(t, int64(777), *volume.Nas.UnixPermissions)
+				assert.Equal(t, "fakeAggr", *volume.VolumeInlineAggregates[0].Name)
+			} else {
+				assert.Error(t, err, "get the volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeMount(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeMount(ctx, "fakeVolume", "/fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not mount a volume")
+			} else {
+				assert.Error(t, err, "volume mounted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeRename(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeRename(ctx, "fakeVolume", "fake-policy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not rename a volume")
+			} else {
+				assert.Error(t, err, "volume renamed")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeModifyExportPolicy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeModifyExportPolicy(ctx, "fakeVolume", "fake-policy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not update export policy on volume")
+			} else {
+				assert.Error(t, err, "the the volume volume export policy")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			size, err := rs.VolumeSize(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get size on volume")
+				assert.Equal(t, uint64(1073741824), size)
+			} else {
+				assert.Error(t, err, "get the volume size")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRestVolumeUsedSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"GetVolume", mockGetVolumeResponse, false},
+		{"GetVolumeBackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			size, err := rs.VolumeUsedSize(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get used size on volume")
+				assert.Equal(t, 1073741824, size)
+			} else {
+				assert.Error(t, err, "get the volume used size")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeSetSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeSetSize(ctx, "fakeVolume", "1073741824")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify size on volume")
+			} else {
+				assert.Error(t, err, "size updated on volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeModifyUnixPermissions(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeModifyUnixPermissions(ctx, "fakeVolume", "---rwxr-xrwx")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify unix permission on volume")
+			} else {
+				assert.Error(t, err, "unix permission updated on volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeSetComment(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeSetComment(ctx, "fakeVolume", "newVolumeComment")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify comment on volume")
+			} else {
+				assert.Error(t, err, "comment updated on volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeSetQosPolicyGroupName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeSetQosPolicyGroupName(ctx, "fakeVolume", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind})
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify qos policy on volume")
+			} else {
+				assert.Error(t, err, "qos policy updated")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeCloneSplitStart(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeCloneSplitStart(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not clone the volume")
+			} else {
+				assert.Error(t, err, "volume cloned")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeDestroy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.VolumeDestroy(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete the volume")
+			} else {
+				assert.Error(t, err, "volume deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockJobResponseEmpty(w http.ResponseWriter, r *http.Request) {
+	jobResponse := models.JobLinkResponse{}
+	sc := http.StatusAccepted
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(jobResponse)
+}
+
+func TestOntapREST_CreateFlexGroup(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockJobResponseEmpty, true},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			encrypt := true
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volumeParam := &storage.VolumeCollectionGetParams{}
+			volumeParam.Context = ctx
+
+			err := rs.FlexGroupCreate(ctx, "fakeVolume", 1073741824, []string{"aggr1"}, "spaceReserve",
+				"fakeSnapshotPolicy", "---rwxr-xr-x", "fake-exportpolicy", "unix", "fake-tier",
+				"comment", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind}, &encrypt, 0)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create a flexgroup volume")
+			} else {
+				assert.Error(t, err, "flexgroup volume created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexgroupCloneSplitStart(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexgroupCloneSplitStart(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not split clone a flexgroup volume")
+			} else {
+				assert.Error(t, err, "split clone a flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupDestroy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+		{"NumRecordsFieldsNil", mockGetVolumeResponseNumRecordsNil, false},
+		{"Delete_fail", mockModifyFailed, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexGroupDestroy(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete a flexgroup volume")
+			} else {
+				assert.Error(t, err, "delete a flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupExists(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volumePresent, err := rs.FlexGroupExists(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get a flexgroup volume")
+				assert.Equal(t, true, volumePresent)
+			} else {
+				assert.Error(t, err, "get a flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			size, err := rs.FlexGroupSize(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get size on flexgroup volume")
+				assert.Equal(t, uint64(1073741824), size)
+			} else {
+				assert.Error(t, err, "get the size  on the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupUsedSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			size, err := rs.FlexGroupUsedSize(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get used size on flexgroup volume")
+				assert.Equal(t, 1073741824, size)
+			} else {
+				assert.Error(t, err, "get the used size  on the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupSetSize(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexGroupSetSize(ctx, "fakeVolume", "1073741824")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not update size on flexgroup volume")
+			} else {
+				assert.Error(t, err, "update the size on the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupQosPolicyGroupName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexgroupSetQosPolicyGroupName(ctx, "fakeVolume", QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind})
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not update a qos policy on flexgroup volume")
+			} else {
+				assert.Error(t, err, "update a qos policy  on the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupVolumeDisableSnapshotDirectoryAccess(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+		{"NumRecordsFieldNil", mockGetVolumeResponseNumRecordsNil, true},
+		{"UUIDNil", mockGetVolumeResponseUUIDNil, true},
+		{"VolumeDisableSnapshotDirectoryAccess_Fail", mockModifyFailed, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexGroupVolumeModifySnapshotDirectoryAccess(ctx, "fakeVolume", false)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not disable snapshot dir access on flexgroup volume")
+			} else {
+				assert.Error(t, err, "disable the snapshot dir access on the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupModifyUnixPermissions(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexGroupModifyUnixPermissions(ctx, "fakeVolume", "---rwxr-xrwx")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not update the unix permission on flexgroup volume")
+			} else {
+				assert.Error(t, err, "update the unix permission on the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupSetComment(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexGroupSetComment(ctx, "fakeVolume", "newVolumeComment")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not update the comment on flexgroup volume")
+			} else {
+				assert.Error(t, err, "update the comment on the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupGetByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volume, err := rs.FlexGroupGetByName(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the flexgroup volume")
+				assert.Equal(t, "fakeVolume", *volume.Name)
+				assert.Equal(t, "fakeUUID", *volume.UUID)
+				assert.Equal(t, int64(1073741824), *volume.Size)
+				assert.Equal(t, "rw", *volume.Type)
+				assert.Equal(t, int64(777), *volume.Nas.UnixPermissions)
+				assert.Equal(t, "fakeAggr", *volume.VolumeInlineAggregates[0].Name)
+			} else {
+				assert.Error(t, err, "get the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupGetAll(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponse, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			volume, err := rs.FlexGroupGetAll(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the flexgroup volume")
+				assert.Equal(t, "fakeVolume", *volume.Payload.VolumeResponseInlineRecords[0].Name)
+				assert.Equal(t, "fakeUUID", *volume.Payload.VolumeResponseInlineRecords[0].UUID)
+				assert.Equal(t, int64(1073741824), *volume.Payload.VolumeResponseInlineRecords[0].Size)
+				assert.Equal(t, "rw", *volume.Payload.VolumeResponseInlineRecords[0].Type)
+				assert.Equal(t, int64(777), *volume.Payload.VolumeResponseInlineRecords[0].Nas.UnixPermissions)
+				assert.Equal(t, "fakeAggr", *volume.Payload.VolumeResponseInlineRecords[0].
+					VolumeInlineAggregates[0].Name)
+			} else {
+				assert.Error(t, err, "get the flexgroup volume")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupMount(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexGroupMount(ctx, "fakeVolume", "/fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not mount the flexgroup")
+			} else {
+				assert.Error(t, err, "mount the flexgroup")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupUnmount(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexgroupUnmount(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not unmount the flexgroup")
+			} else {
+				assert.Error(t, err, "unmount the flexgroup")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_FlexGroupModifyExportPolicy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockGetVolumeResponseAccepted, false},
+		{"BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.FlexgroupModifyExportPolicy(ctx, "fakeVolume", "fake-policy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify flexgroup")
+			} else {
+				assert.Error(t, err, "modified flexgroup")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_VolumeListByAttrs(t *testing.T) {
+	volumeName := "fakeVolume"
+	volumeUUID := "fakeUUID"
+	volumeType := "rw"
+	aggregates := "fakeAggr"
+	comment := ""
+	path := "/fakeVolume"
+	unixPermission := "---rwxr-xr--"
+	exportPolicy := "fakeExportPolicy"
+	size := "1073741824"
+	snapshotPolicy := "fakeSnapshotPolicy"
+	snapshotDir := false
+	encrypt := false
+
+	server := httptest.NewServer(http.HandlerFunc(mockGetVolumeResponse))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	volume := Volume{
+		AccessType:        volumeType,
+		Aggregates:        []string{aggregates},
+		Comment:           comment,
+		Encrypt:           &encrypt,
+		ExportPolicy:      exportPolicy,
+		JunctionPath:      path,
+		Name:              volumeName,
+		Qos:               QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind},
+		SecurityStyle:     "unix",
+		Size:              size,
+		SnapshotDir:       snapshotDir,
+		SnapshotPolicy:    snapshotPolicy,
+		SnapshotReserve:   0,
+		SnapshotSpaceUsed: 1073741810,
+		SpaceReserve:      "spaceReserve",
+		TieringPolicy:     "fakeTieringPolicy",
+		UnixPermissions:   unixPermission,
+		UUID:              volumeUUID,
+		DPVolume:          true,
+	}
+
+	volumeParam := &storage.VolumeCollectionGetParams{}
+	volumeParam.Context = ctx
+	volumes, err := rs.VolumeListByAttrs(ctx, &volume)
+	assert.NoError(t, err)
+	assert.Equal(t, volumeName, volumes[0].Name)
+
+	volumes, err = rs.VolumeListByAttrs(ctx, &Volume{})
+	assert.NoError(t, err)
+	server.Close()
 }
