@@ -19,6 +19,7 @@ import (
 	nvme "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/snapmirror"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
@@ -91,13 +92,13 @@ func TestEnsureLunMapped(t *testing.T) {
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, errors.New("error"))
 	resultLun, err := oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Errorf(t, err, "problem reading maps for LUN /dev/sda: error")
-	assert.Equal(t, -1, resultLun)
+	assert.Equal(t, -1, resultLun, "lun count does not match")
 
 	// lunMapInfo returning nil lun collection
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(nil, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Errorf(t, err, "problem reading maps for LUN /dev/sda")
-	assert.Equal(t, -1, resultLun)
+	assert.Equal(t, -1, resultLun, "lun count does not match")
 
 	// positive test case where lun == nil, lunGetByName gets called to find the LUN details
 	lun := &models.Lun{LunInlineLunMaps: []*models.LunInlineLunMapsInlineArrayItem{{LogicalUnitNumber: number}}}
@@ -105,14 +106,14 @@ func TestEnsureLunMapped(t *testing.T) {
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
-	assert.Equal(t, int(*number), resultLun)
+	assert.Equal(t, int(*number), resultLun, "lun count does not match")
 
 	// record.LogicalUnitNumber == nil and lunGetByName returns error
 	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(nil, errors.New("error getting LUN by name"))
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Errorf(t, err, "error getting LUN by name")
-	assert.Equal(t, -1, resultLun)
+	assert.Equal(t, -1, resultLun, "lun count does not match")
 
 	// record.LogicalUnitNumber == nil and lunGetByName returns lun == nil
 	lunMapCreated := &s_a_n.LunMapCreateCreated{
@@ -124,14 +125,14 @@ func TestEnsureLunMapped(t *testing.T) {
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.NoError(t, err)
 	// As LogicalUnitNumber == nil currently, -1 is returned
-	assert.Equal(t, -1, resultLun)
+	assert.Equal(t, -1, resultLun, "lun count does not match")
 
 	// positive test case where record.LogicalUnitNumber != nil
 	lunMapCollection.Payload.LunMapResponseInlineRecords[0].LogicalUnitNumber = number
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
-	assert.Equal(t, int(*number), resultLun)
+	assert.Equal(t, int(*number), resultLun, "lun count does not match")
 
 	// If lun not already mapped OR incorrectly mapped
 	lunMapCollection.Payload.LunMapResponseInlineRecords[0].Igroup.Name = utils.Ptr("tmp")
@@ -139,7 +140,7 @@ func TestEnsureLunMapped(t *testing.T) {
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
-	assert.Equal(t, int(*number), resultLun)
+	assert.Equal(t, int(*number), resultLun, "lun count does not match")
 }
 
 func TestOntapAPIREST_LunGetFSType(t *testing.T) {
@@ -154,7 +155,7 @@ func TestOntapAPIREST_LunGetFSType(t *testing.T) {
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
 		"com.netapp.ndvp.fstype").Return("raw", nil)
 	fstype, err := oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
-	assert.Equal(t, "raw", fstype)
+	assert.Equal(t, "raw", fstype, "volume filesystem is not raw")
 
 	// When value is present in LUN comment
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
@@ -169,7 +170,7 @@ func TestOntapAPIREST_LunGetFSType(t *testing.T) {
 	mock.EXPECT().LunGetComment(ctx,
 		"/vol/volumeName/storagePrefix_lunName").Return(commentJSON, nil)
 	fstype, err = oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
-	assert.Equal(t, "ext4", fstype)
+	assert.Equal(t, "ext4", fstype, "volume filesystem is not ext4")
 }
 
 func TestOntapAPIREST_LunGetFSType_Failure(t *testing.T) {
@@ -254,7 +255,7 @@ func TestNVMeNamespaceCreate(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	UUID, err := oapi.NVMeNamespaceCreate(ctx, ns)
 	assert.NoError(t, err)
-	assert.Equal(t, ns.UUID, UUID)
+	assert.Equal(t, ns.UUID, UUID, "namespace uuid does not match")
 
 	// case 2: Error returned while creating namespace
 	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return("", fmt.Errorf("Error while creating namespace"))
@@ -307,8 +308,8 @@ func TestNVMeNamespaceGetByName(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	namespace, err := oapi.NVMeNamespaceGetByName(ctx, Name)
 	assert.NoError(t, err)
-	assert.Equal(t, UUID, namespace.UUID)
-	assert.Equal(t, Name, namespace.Name)
+	assert.Equal(t, UUID, namespace.UUID, "namespace uuid does not match")
+	assert.Equal(t, Name, namespace.Name, "namespace name does not match")
 
 	// case 2: error while getting namespace
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name).Return(nil, fmt.Errorf("Error while getting namespace"))
@@ -373,7 +374,7 @@ func TestNVMeNamespaceList(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	namespaces, err := oapi.NVMeNamespaceList(ctx, Name)
 	assert.NoError(t, err)
-	assert.Equal(t, Name, namespaces[0].Name)
+	assert.Equal(t, Name, namespaces[0].Name, "namespace does not match")
 
 	// case 2: error while getting namespace list
 	mock.EXPECT().NVMeNamespaceList(ctx, Name).Return(nil, fmt.Errorf("Error getting namespace list"))
@@ -463,7 +464,7 @@ func TestNVMeSubsystemGetNamespaceCount(t *testing.T) {
 	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(1), nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	count, err := oapi.NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID)
-	assert.Equal(t, int64(1), count)
+	assert.Equal(t, int64(1), count, "NVMe Subsystem count expected zero. It is non zero")
 	assert.NoError(t, err)
 
 	// case 2: Error returned while adding namespace to subsystem
@@ -471,7 +472,7 @@ func TestNVMeSubsystemGetNamespaceCount(t *testing.T) {
 	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), fmt.Errorf("Error while removing NS to subsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	count, err = oapi.NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID)
-	assert.Equal(t, int64(0), count)
+	assert.Equal(t, int64(0), count, "NVMe Subsystem count expected zero. It is non zero")
 	assert.Error(t, err)
 }
 
@@ -625,9 +626,9 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	subsystem, err := oapi.NVMeSubsystemCreate(ctx, subsystemName)
 	assert.NoError(t, err)
-	assert.Equal(t, subsystem.UUID, subsysUUID)
-	assert.Equal(t, subsystem.Name, subsystemName)
-	assert.Equal(t, subsystem.NQN, targetNQN)
+	assert.Equal(t, subsystem.UUID, subsysUUID, "subsystem UUID does not match")
+	assert.Equal(t, subsystem.Name, subsystemName, "subsystem name does not match")
+	assert.Equal(t, subsystem.NQN, targetNQN, "host does not match")
 
 	// case 2: Error getting susbsystem info from backend
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName).Return(nil, fmt.Errorf("Error getting susbsystem info"))
@@ -641,9 +642,9 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	newsubsys, err := oapi.NVMeSubsystemCreate(ctx, subsystemName)
 	assert.NoError(t, err)
-	assert.Equal(t, newsubsys.UUID, subsysUUID)
-	assert.Equal(t, newsubsys.Name, subsystemName)
-	assert.Equal(t, newsubsys.NQN, targetNQN)
+	assert.Equal(t, newsubsys.UUID, subsysUUID, "subsystem UUID does not match")
+	assert.Equal(t, newsubsys.Name, subsystemName, "subsystem name does not match")
+	assert.Equal(t, newsubsys.NQN, targetNQN, "host does not match")
 
 	// case 4: Subsystem not present, create a new one with failure
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName).Return(nil, nil)
@@ -739,7 +740,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
 	assert.Error(t, err)
 
 	// case 2: Namespace is not mapped
@@ -748,7 +749,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, true, removePublishInfo)
+	assert.Equal(t, true, removePublishInfo, "subsystem is not removedd")
 	assert.NoError(t, err)
 
 	// case 3: Failed to get hosts of the subsystem
@@ -758,7 +759,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
 	assert.Error(t, err)
 
 	// case 4: hosts of the subsystem not returned
@@ -768,7 +769,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
 	assert.Error(t, err)
 
 	// case 5: multiple hosts of the subsystem returned  but error while removing host from subsystem
@@ -779,7 +780,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
 	assert.Error(t, err)
 
 	// case 6: multiple hosts of the subsystem returned  and success while removing host from subsystem
@@ -790,7 +791,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem is not removed")
 	assert.NoError(t, err)
 
 	// case 7: Error removing namespace from subsystem
@@ -801,7 +802,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
 	assert.Error(t, err)
 
 	// case 8: Error getting namespace count from subsystem
@@ -813,7 +814,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
 	assert.Error(t, err)
 
 	// case 9: Error deleting subsystem
@@ -826,7 +827,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, false, removePublishInfo)
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
 	assert.Error(t, err)
 
 	// case 10: Success deleting subsystem
@@ -839,7 +840,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
-	assert.Equal(t, true, removePublishInfo)
+	assert.Equal(t, true, removePublishInfo, "subsystem is not removed")
 	assert.NoError(t, err)
 }
 
@@ -872,7 +873,7 @@ func TestNVMeIsNamespaceMapped(t *testing.T) {
 	isMapped, err := oapi.NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID)
 
 	assert.NoError(t, err)
-	assert.Equal(t, true, isMapped)
+	assert.Equal(t, true, isMapped, "namespace is not mapped")
 
 	// case 2: namespace is not mapped
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
@@ -881,7 +882,7 @@ func TestNVMeIsNamespaceMapped(t *testing.T) {
 	isMapped, err = oapi.NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID)
 
 	assert.NoError(t, err)
-	assert.Equal(t, false, isMapped)
+	assert.Equal(t, false, isMapped, "namespace is mapped")
 }
 
 func TestVolumeWaitForStates(t *testing.T) {
@@ -911,7 +912,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	currentState, err := oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
 	assert.Error(t, err)
-	assert.Equal(t, currentState, "")
+	assert.Equal(t, currentState, "", "volume state does not match")
 
 	ctrl.Finish()
 
@@ -927,7 +928,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
 	assert.Error(t, err)
-	assert.Equal(t, currentState, "")
+	assert.Equal(t, currentState, "", "volume state does not match")
 
 	ctrl.Finish()
 
@@ -942,7 +943,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
 	assert.NoError(t, err)
-	assert.Equal(t, currentState, *volume.State)
+	assert.Equal(t, currentState, *volume.State, "volume state does not match")
 
 	ctrl.Finish()
 
@@ -960,7 +961,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
 	assert.Error(t, err)
-	assert.Equal(t, currentState, *volume.State)
+	assert.Equal(t, currentState, *volume.State, "volume state does not match")
 
 	ctrl.Finish()
 
@@ -978,7 +979,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
 	assert.Error(t, err)
-	assert.Equal(t, currentState, *volume.State)
+	assert.Equal(t, currentState, *volume.State, "volume state does not match")
 
 	ctrl.Finish()
 
@@ -997,7 +998,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, newAbortState, maxElapsedTime)
 
 	assert.Error(t, err)
-	assert.Equal(t, currentState, *volume.State)
+	assert.Equal(t, currentState, *volume.State, "volume state does not match")
 
 	ctrl.Finish()
 
@@ -1015,7 +1016,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, newAbortState, maxElapsedTime)
 
 	assert.NoError(t, err)
-	assert.Equal(t, currentState, *volume.State)
+	assert.Equal(t, currentState, *volume.State, "volume state does not match")
 
 	ctrl.Finish()
 }
@@ -2784,4 +2785,1355 @@ func TestQuotaGetEntry(t *testing.T) {
 		&quotaRule, fmt.Errorf("error getting quota rule"))
 	_, err = oapi.QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType)
 	assert.NoError(t, err, "no error returned while getting a quota")
+}
+
+func getSnapshot() *models.Snapshot {
+	snapshotName := "fake-snapshot"
+	snapshotUUID := "fake-snapshotUUID"
+	createTime1 := strfmt.NewDateTime()
+
+	snapshot := models.Snapshot{Name: &snapshotName, CreateTime: &createTime1, UUID: &snapshotUUID}
+	return &snapshot
+}
+
+func TestVolumeSnapshotCreate(t *testing.T) {
+	volume := getVolumeInfo()
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Create volume snapshot
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().SnapshotCreateAndWait(ctx, *volume.UUID, "fake-snapshot").Return(nil)
+	err := oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
+	assert.NoError(t, err, "error returned while creating a snapshot")
+
+	// case 2: Create volume snapshot, parent volume verification returned error
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(nil, fmt.Errorf("Failed to get flexgroup"))
+	err = oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
+	assert.Error(t, err, "no error returned while creating a snapshot")
+
+	// case 3: Create volume snapshot returned error
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().SnapshotCreateAndWait(ctx, *volume.UUID, "fake-snapshot").Return(fmt.Errorf(
+		"snapshot creation failed"))
+	err = oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
+	assert.Error(t, err, "no error returned while creating a snapshot")
+}
+
+func TestVolumeCloneCreate(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: create volume clone
+	rsi.EXPECT().VolumeCloneCreateAsync(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot").Return(nil)
+	err := oapi.VolumeCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", true)
+	assert.NoError(t, err, "error returned while creating a clone")
+
+	// case 2: create volume clone failed. Backend return an error
+	rsi.EXPECT().VolumeCloneCreateAsync(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot").Return(
+		fmt.Errorf("error creating clone"))
+	err = oapi.VolumeCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", true)
+	assert.Error(t, err, "no error returned while creating a clone")
+}
+
+func TestVolumeSnapshotList(t *testing.T) {
+	snapshotName1 := "snapvol1"
+	snapshotName2 := "snapvol2"
+	createTime1 := strfmt.NewDateTime()
+	createTime2 := strfmt.NewDateTime()
+	volume := getVolumeInfo()
+	volumeUUID := *volume.UUID
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	snap1 := models.Snapshot{Name: &snapshotName1, CreateTime: &createTime1}
+	snap2 := models.Snapshot{Name: &snapshotName2, CreateTime: &createTime2}
+	snapshotResponse := models.SnapshotResponse{SnapshotResponseInlineRecords: []*models.Snapshot{&snap1, &snap2}}
+	snapshotResponseOK := storage.SnapshotCollectionGetOK{Payload: &snapshotResponse}
+
+	// case 1: Get volume snapshot list
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(&snapshotResponseOK, nil)
+	snapshots, err := oapi.VolumeSnapshotList(ctx, "vol1")
+	assert.NoError(t, err, "error returned while getting a snapshot list")
+	assert.NotNil(t, snapshots)
+	assert.Equal(t, "snapvol1", snapshots[0].Name, "snapshot name does not match")
+	assert.Equal(t, createTime1.String(), snapshots[0].CreateTime, "snapshot creation time does not match")
+
+	// case 2: Get volume snapshot parent volume verification returned error
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(nil, fmt.Errorf("failed to get flexgroup"))
+	_, err = oapi.VolumeSnapshotList(ctx, "vol1")
+	assert.Error(t, err, "no error returned while getting a snapshot list")
+
+	// case 3: Get volume snapshot returned nil response
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, nil)
+	snapshots, err = oapi.VolumeSnapshotList(ctx, "vol1")
+	assert.Error(t, err, "no error returned while getting a snapshot list")
+
+	// case 4: Get volume snapshot returned error
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, fmt.Errorf("failed to get snapshot info"))
+	snapshots, err = oapi.VolumeSnapshotList(ctx, "vol1")
+	assert.Error(t, err, "no error returned while getting a snapshot list")
+}
+
+func TestVolumeSetQosPolicyGroupName(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: modify volume Qos policy
+	qosPolicy := api.QosPolicyGroup{Name: "fake-qosPolicy"}
+	rsi.EXPECT().VolumeSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy).Return(nil)
+	err := oapi.VolumeSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy)
+	assert.NoError(t, err, "error returned while modifying a qos policy on volume")
+
+	// case 2: Modify volume QoS policy returned error
+	rsi.EXPECT().VolumeSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy).Return(
+		fmt.Errorf("failed to update comment on volume"))
+	err = oapi.VolumeSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy)
+	assert.Error(t, err, "no error returned while modifying a qos policy on volume")
+}
+
+func TestVolumeCloneSplitStart(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Modify volume split clone.
+	rsi.EXPECT().VolumeCloneSplitStart(ctx, "fake-cloneVolume").Return(nil)
+	err := oapi.VolumeCloneSplitStart(ctx, "fake-cloneVolume")
+	assert.NoError(t, err, "error returned while doing a split clone on volume")
+
+	// case 2: Modify volume split clone. returned error
+	rsi.EXPECT().VolumeCloneSplitStart(ctx, "fake-cloneVolume").Return(
+		fmt.Errorf("volume splits clone failed"))
+	err = oapi.VolumeCloneSplitStart(ctx, "fake-cloneVolume")
+	assert.Error(t, err, "no error returned while doing a split clone on volume")
+}
+
+func TestSnapshotRestoreVolume(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Snapshot restored
+	rsi.EXPECT().SnapshotRestoreVolume(ctx, "fake-snapshot", "fake-volume").Return(nil)
+	err := oapi.SnapshotRestoreVolume(ctx, "fake-snapshot", "fake-volume")
+	assert.NoError(t, err, "error returned while restoring a snapshot")
+
+	// case 2:  Snapshot restore returned error
+	rsi.EXPECT().SnapshotRestoreVolume(ctx, "fake-snapshot", "fake-volume").Return(
+		fmt.Errorf("error restoring snapshot"))
+	err = oapi.SnapshotRestoreVolume(ctx, "fake-snapshot", "fake-volume")
+	assert.Error(t, err, "no error returned while restoring a snapshot")
+}
+
+func TestSnapshotRestoreFlexgroup(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1:  Flexgroup Snapshot restore
+	rsi.EXPECT().SnapshotRestoreFlexgroup(ctx, "fake-snapshot", "fake-volume").Return(nil)
+	err := oapi.SnapshotRestoreFlexgroup(ctx, "fake-snapshot", "fake-volume")
+	assert.NoError(t, err, "error returned while restoring a snapshot for flexgroup")
+
+	// case 2:  Flexgroup Snapshot restore returned error
+	rsi.EXPECT().SnapshotRestoreFlexgroup(ctx, "fake-snapshot", "fake-volume").Return(
+		fmt.Errorf("error restoring snapshot"))
+	err = oapi.SnapshotRestoreFlexgroup(ctx, "fake-snapshot", "fake-volume")
+	assert.Error(t, err, "no error returned while restoring a snapshot for flexgroup")
+}
+
+func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
+	snapshot := getSnapshot()
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+	snapResponse := storage.SnapshotDeleteAccepted{Payload: &jobResponse}
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1:  Snapshot delete by name
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(&snapResponse, nil)
+	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(nil)
+	err := oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.NoError(t, err, "error returned while deleting a snapshot by name")
+
+	// case 2:  Snapshot verification returned error
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(nil, fmt.Errorf("error checking for snapshot"))
+	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+
+	// case 3:  Snapshot verification returned nil
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(nil, nil)
+	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+
+	// case 4:  Response contain Snapshot UUID nil
+	snapshot.UUID = nil
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+
+	// case 5:  Snapshot delete returned nil
+	snapshot = getSnapshot()
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(nil, nil)
+	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+
+	// case 6:  Snapshot delete returned error
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(nil, fmt.Errorf("error while deleting snapshot"))
+	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+
+	// case 7:  Poll job status returned rest error.
+	success := "success"
+	code := int64(1638555)
+	payload := models.Job{State: &success, Code: &code}
+	restErr := api.NewRestErrorFromPayload(&payload)
+
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(&snapResponse, nil)
+	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(restErr)
+	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
+	assert.Error(t, err, "no error returned while deleting a snapshot by name")
+}
+
+func TestFlexgroupSnapshotDelete(t *testing.T) {
+	volume := getVolumeInfo()
+	volumeUUID := "fake-volumeUUID"
+	volume.UUID = &volumeUUID
+	snapshot := getSnapshot()
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+	snapResponse := storage.SnapshotDeleteAccepted{Payload: &jobResponse}
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1:  Flexgroup Snapshot delete
+	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume").Return(volume, nil)
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(&snapResponse, nil)
+	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(nil)
+	err := oapi.FlexgroupSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
+	assert.NoError(t, err, "error returned while deleting a snapshot")
+
+	// case 2:  Flexgroup Snapshot verification returned error
+	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume").Return(nil, fmt.Errorf("failed to get volume"))
+	err = oapi.FlexgroupSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
+	assert.Error(t, err, "no error returned while deleting a snapshot")
+
+	// case 3:  Flexgroup Snapshot verification returned nil
+	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume").Return(nil, nil)
+	err = oapi.FlexgroupSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
+	assert.Error(t, err, "no error returned while deleting a snapshot")
+}
+
+func TestVolumeSnapshotDelete(t *testing.T) {
+	volume := getVolumeInfo()
+	volumeUUID := "fake-volumeUUID"
+	volume.UUID = &volumeUUID
+	snapshot := getSnapshot()
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+	snapResponse := storage.SnapshotDeleteAccepted{Payload: &jobResponse}
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1:  Volume Snapshot delete
+	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume").Return(volume, nil)
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(&snapResponse, nil)
+	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(nil)
+	err := oapi.VolumeSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
+	assert.NoError(t, err, "error returned while deleting a snapshot")
+
+	// case 2:  Volume Snapshot verification returned error
+	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume").Return(nil, fmt.Errorf("failed to get volume"))
+	err = oapi.VolumeSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
+	assert.Error(t, err, "no error returned while deleting a snapshot")
+
+	// case 3:  Volume Snapshot verification returned nil
+	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume").Return(nil, nil)
+	err = oapi.VolumeSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
+	assert.Error(t, err, "no error returned while deleting a snapshot")
+}
+
+func TestVolumeListBySnapshotParent(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1:  Get volume Snapshot list
+	childVolumes := []string{"volum1", "volum2", "volum3"}
+	rsi.EXPECT().VolumeListAllBackedBySnapshot(ctx, "fake-snapshot", "fake-volume").Return(childVolumes, nil)
+	volumeList, err := oapi.VolumeListBySnapshotParent(ctx, "fake-volume", "fake-snapshot")
+	assert.NoError(t, err, "error returned while getting a volume")
+	assert.Equal(t, "volum1", volumeList[0], "volume name does not match")
+
+	// case 2:  Get volume Snapshot list returned nil
+	rsi.EXPECT().VolumeListAllBackedBySnapshot(ctx, "fake-snapshot", "fake-volume").Return([]string{}, nil)
+	volumeList, err = oapi.VolumeListBySnapshotParent(ctx, "fake-volume", "fake-snapshot")
+	assert.NoError(t, err, "error returned while getting a volume")
+
+	// case 3:  Get volume Snapshot list returned error
+	rsi.EXPECT().VolumeListAllBackedBySnapshot(ctx, "fake-snapshot", "fake-volume").
+		Return(nil, fmt.Errorf("child volume not found"))
+	volumeList, err = oapi.VolumeListBySnapshotParent(ctx, "fake-volume", "fake-snapshot")
+	assert.Error(t, err, "no error returned while getting a volume")
+}
+
+func TestSnapmirrorDeleteViaDestination(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: SnapMirror delete via destination
+	rsi.EXPECT().SnapmirrorDeleteViaDestination(ctx, "vol1", "svm").Return(nil)
+	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(nil)
+	err := oapi.SnapmirrorDeleteViaDestination(ctx, "vol1", "svm")
+	assert.NoError(t, err, "error returned while deleting a SnapMirror via destination")
+
+	// case 2: SnapMirror delete via destination returned error
+	rsi.EXPECT().SnapmirrorDeleteViaDestination(ctx, "vol1", "svm").Return(
+		fmt.Errorf("error while deleting snapmirror"))
+	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(fmt.Errorf("error while deleting snapmirror"))
+	err = oapi.SnapmirrorDeleteViaDestination(ctx, "vol1", "svm")
+	assert.Error(t, err, "no error returned while deleting a SnapMirror via destination")
+}
+
+func TestSnapmirrorRelease(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: SnapMirror delete
+	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(nil)
+	err := oapi.SnapmirrorRelease(ctx, "vol1", "svm")
+	assert.NoError(t, err, "error returned while deleting a SnapMirror")
+
+	// case 2: SnapMirror deletereturned error
+	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(fmt.Errorf("error deleting snapmirror"))
+	err = oapi.SnapmirrorRelease(ctx, "vol1", "svm")
+	assert.Error(t, err, "no error returned while deleting a SnapMirror")
+}
+
+func TestIsSVMDRCapable(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	rsi.EXPECT().IsVserverDRCapable(ctx).Return(true, nil)
+	SVMDRCapable, err := oapi.IsSVMDRCapable(ctx)
+	assert.NoError(t, err, "error returned while verifying a svm is VM DR capable")
+	assert.Equal(t, true, SVMDRCapable, "svm is not DR capable")
+}
+
+func TestSnapmirrorCreate(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	rsi.EXPECT().SnapmirrorCreate(ctx, "", "", "", "", "", "").Return(nil)
+	err := oapi.SnapmirrorCreate(ctx, "", "", "", "", "", "")
+	assert.NoError(t, err, "error returned while creating a SnapMirror")
+}
+
+func TestSnapMirrorGet(t *testing.T) {
+	state := "in_sync"
+	lastTransferType := "resync"
+	stateTransfer := "success"
+	endTime := strfmt.NewDateTime()
+	healthy := false
+	snapMirrorErrMsg := "Destination is running out of disk space"
+	policyName := "Asynchronous"
+	transferScheduleName := "weekly"
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Get SnapMirror
+	policy := models.SnapmirrorRelationshipInlinePolicy{Name: &policyName}
+	snapMirrorError := models.SnapmirrorError{Message: &snapMirrorErrMsg}
+	snapMirrorErrorList := []*models.SnapmirrorError{&snapMirrorError}
+	transfer := models.SnapmirrorRelationshipInlineTransfer{State: &stateTransfer, EndTime: &endTime}
+	transferSchedule := models.SnapmirrorRelationshipInlineTransferSchedule{Name: &transferScheduleName}
+	snapmirrorRelationship := models.SnapmirrorRelationship{
+		Healthy:          &healthy,
+		LastTransferType: &lastTransferType,
+		State:            &state,
+		Transfer:         &transfer,
+		SnapmirrorRelationshipInlineUnhealthyReason: snapMirrorErrorList,
+		Policy:           &policy,
+		TransferSchedule: &transferSchedule,
+	}
+	rsi.EXPECT().SnapmirrorGet(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(&snapmirrorRelationship, nil)
+	snapmirror, err := oapi.SnapmirrorGet(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.NoError(t, err, "error returned while getting a SnapMirror")
+	assert.Equal(t, api.SnapmirrorStateInSync, snapmirror.State, "snapmirror state is not sync")
+	assert.Equal(t, lastTransferType, snapmirror.LastTransferType, "lastTransferType does not match")
+	assert.Equal(t, api.SnapmirrorStatusSuccess, snapmirror.RelationshipStatus, "snapmirror status does not match")
+	assert.Equal(t, false, snapmirror.IsHealthy, "snapmirror is not healthy")
+	assert.Equal(t, snapMirrorErrMsg, snapmirror.UnhealthyReason,
+		"snapmirror error response does not match with unhealthy error message")
+	assert.Equal(t, policyName, snapmirror.ReplicationPolicy, "policy name does not match")
+}
+
+func TestSnapmirrorInitialize(t *testing.T) {
+	success := "failure"
+	code := int64(13303812)
+	message := "snapshot busy"
+	payload := models.Job{State: &success, Code: &code, Message: &message}
+
+	restErr := api.NewRestErrorFromPayload(&payload)
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Initialize SnapMirror
+	rsi.EXPECT().SnapmirrorInitialize(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(nil)
+	err := oapi.SnapmirrorInitialize(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.NoError(t, err, "error returned while initialising a SnapMirror")
+
+	// case 2: Initialize SnapMirror returned error
+	rsi.EXPECT().SnapmirrorInitialize(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(restErr)
+	err = oapi.SnapmirrorInitialize(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.Error(t, err, "no error returned while initialising a SnapMirror")
+}
+
+func TestSnapmirrorDelete(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Delete SnapMirror
+	rsi.EXPECT().SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(nil)
+	err := oapi.SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.NoError(t, err, "error returned while deleting a SnapMirror")
+
+	// case 2: Delete SnapMirror returned error
+	rsi.EXPECT().SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(fmt.Errorf("unable to delete snapmirror"))
+	err = oapi.SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.Error(t, err, "no error returned while deleting a SnapMirror")
+}
+
+func TestSnapmirrorResync(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Resync SnapMirror
+	rsi.EXPECT().SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(nil)
+	err := oapi.SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.NoError(t, err, "error returned while resyncing a SnapMirror")
+
+	// case 2: Resync SnapMirror returned error
+	rsi.EXPECT().SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume", "fake-remoteSVM").Return(
+		fmt.Errorf("unable to resync snapmirror"))
+	rsi.EXPECT().SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(nil)
+	err = oapi.SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.Error(t, err, "no error returned while resyncing a SnapMirror")
+
+	// case 3: Delete SnapMirror returned error
+	rsi.EXPECT().SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume", "fake-remoteSVM").Return(
+		fmt.Errorf("unable to resync snapmirror"))
+	rsi.EXPECT().SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(fmt.Errorf("unable to delete snapmirror"))
+	err = oapi.SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.Error(t, err, "no error returned while resyncing a SnapMirror")
+}
+
+func TestSnapmirrorPolicyGet(t *testing.T) {
+	policyName := ""
+	policyType := "sync"
+	policySyncType := "sync_mirror"
+	copyAllSourceSnapshots := false
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Get SnapMirror policy
+	snapMirroePolicy := models.SnapmirrorPolicy{
+		Name: &policyName, CopyAllSourceSnapshots: &copyAllSourceSnapshots,
+		SyncType: &policySyncType, Type: &policyType,
+	}
+	snapmirrorPolicyRecords := []*models.SnapmirrorPolicy{&snapMirroePolicy}
+	snapmirrorPolicyResponse := models.SnapmirrorPolicyResponse{SnapmirrorPolicyResponseInlineRecords: snapmirrorPolicyRecords}
+	snapmirrorPoliciesGetOK := snapmirror.SnapmirrorPoliciesGetOK{Payload: &snapmirrorPolicyResponse}
+
+	rsi.EXPECT().SnapmirrorPolicyGet(ctx, "fake-replicationPolicy").Return(&snapmirrorPoliciesGetOK, nil)
+	snapmirrorPolicy, err := oapi.SnapmirrorPolicyGet(ctx, "fake-replicationPolicy")
+	assert.NoError(t, err, "error returned while getting a SnapMirror policy")
+	assert.Equal(t, api.SnapmirrorPolicyZAPITypeSync, snapmirrorPolicy.Type, "SnapMirror type is not sync")
+	assert.Equal(t, false, snapmirrorPolicy.CopyAllSnapshots, "SnapMirror policy is CopyAllSnapshots")
+
+	// case 2: Get SnapMirror policy type async
+	policyType = "async"
+	rsi.EXPECT().SnapmirrorPolicyGet(ctx, "fake-replicationPolicy").Return(&snapmirrorPoliciesGetOK, nil)
+	snapmirrorPolicy, err = oapi.SnapmirrorPolicyGet(ctx, "fake-replicationPolicy")
+	assert.NoError(t, err, "error returned while getting a SnapMirror policy")
+	assert.Equal(t, api.SnapmirrorPolicyRESTTypeAsync, snapmirrorPolicy.Type, "SnapMirror type is not async")
+	assert.Equal(t, false, snapmirrorPolicy.CopyAllSnapshots, "SnapMirror policy is CopyAllSnapshots")
+
+	// case 3: Get SnapMirror policy type sync
+	policyType = "sync"
+	snapMirroePolicy = models.SnapmirrorPolicy{Name: &policyName, Type: &policyType}
+	snapmirrorPolicyRecords = []*models.SnapmirrorPolicy{&snapMirroePolicy}
+	snapmirrorPolicyResponse = models.SnapmirrorPolicyResponse{SnapmirrorPolicyResponseInlineRecords: snapmirrorPolicyRecords}
+	snapmirrorPoliciesGetOK = snapmirror.SnapmirrorPoliciesGetOK{Payload: &snapmirrorPolicyResponse}
+
+	rsi.EXPECT().SnapmirrorPolicyGet(ctx, "fake-replicationPolicy").Return(&snapmirrorPoliciesGetOK, nil)
+	snapmirrorPolicy, err = oapi.SnapmirrorPolicyGet(ctx, "fake-replicationPolicy")
+	assert.Error(t, err, "no error returned while getting a SnapMirror policy")
+
+	// case 4: Get SnapMirror policy returned error
+	snapMirroePolicy = models.SnapmirrorPolicy{Name: &policyName}
+	snapmirrorPolicyRecords = []*models.SnapmirrorPolicy{&snapMirroePolicy}
+	snapmirrorPolicyResponse = models.SnapmirrorPolicyResponse{SnapmirrorPolicyResponseInlineRecords: snapmirrorPolicyRecords}
+	snapmirrorPoliciesGetOK = snapmirror.SnapmirrorPoliciesGetOK{Payload: &snapmirrorPolicyResponse}
+
+	rsi.EXPECT().SnapmirrorPolicyGet(ctx, "fake-replicationPolicy").Return(&snapmirrorPoliciesGetOK, nil)
+	snapmirrorPolicy, err = oapi.SnapmirrorPolicyGet(ctx, "fake-replicationPolicy")
+	assert.Error(t, err, "no error returned while getting a SnapMirror policy")
+
+	// case 5: Get SnapMirror policy returned nil
+	snapmirrorPolicyRecords = []*models.SnapmirrorPolicy{nil}
+	snapmirrorPolicyResponse = models.SnapmirrorPolicyResponse{SnapmirrorPolicyResponseInlineRecords: snapmirrorPolicyRecords}
+	snapmirrorPoliciesGetOK = snapmirror.SnapmirrorPoliciesGetOK{Payload: &snapmirrorPolicyResponse}
+
+	rsi.EXPECT().SnapmirrorPolicyGet(ctx, "fake-replicationPolicy").Return(&snapmirrorPoliciesGetOK, nil)
+	snapmirrorPolicy, err = oapi.SnapmirrorPolicyGet(ctx, "fake-replicationPolicy")
+	assert.Error(t, err, "no error returned while getting a SnapMirror policy")
+
+	snapmirrorPoliciesGetOK = snapmirror.SnapmirrorPoliciesGetOK{Payload: nil}
+
+	// case 6: Get SnapMirror policy returned error
+	rsi.EXPECT().SnapmirrorPolicyGet(ctx, "fake-replicationPolicy").Return(&snapmirrorPoliciesGetOK, nil)
+	snapmirrorPolicy, err = oapi.SnapmirrorPolicyGet(ctx, "fake-replicationPolicy")
+	assert.Error(t, err, "no error returned while getting a SnapMirror policy")
+}
+
+func TestSnapmirrorQuiesce(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Quiesce a SnapMirror
+	rsi.EXPECT().SnapmirrorQuiesce(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(nil)
+	err := oapi.SnapmirrorQuiesce(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.NoError(t, err, "error returned while quiescing a SnapMirror")
+
+	// case 2: Quiesce a SnapMirror failed.
+	rsi.EXPECT().SnapmirrorQuiesce(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(fmt.Errorf("quiesce a SnapMirror failed"))
+	err = oapi.SnapmirrorQuiesce(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.Error(t, err, "no error returned while quiescing a SnapMirror")
+}
+
+func TestSnapmirrorAbort(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1; Abort the SnapMirror
+	rsi.EXPECT().SnapmirrorAbort(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(nil)
+	err := oapi.SnapmirrorAbort(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.NoError(t, err, "error returned while aborting a SnapMirror")
+
+	// case 2; Abort the SnapMirror failed. Backend return an error
+	rsi.EXPECT().SnapmirrorAbort(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM").Return(fmt.Errorf("quiesce a SnapMirror failed"))
+	err = oapi.SnapmirrorAbort(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM")
+	assert.Error(t, err, "no error returned while aborting a SnapMirror")
+}
+
+func TestSnapmirrorBreak(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Positive test, break the SnapMirror.
+	rsi.EXPECT().SnapmirrorBreak(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM", "fake-snapshot").Return(nil)
+	err := oapi.SnapmirrorBreak(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM", "fake-snapshot")
+	assert.NoError(t, err, "error returned while breaking a SnapMirror")
+
+	// case 2: Negative test, break the SnapMirror. backend return an error.
+	rsi.EXPECT().SnapmirrorBreak(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM", "fake-snapshot").Return(fmt.Errorf("quiesce a SnapMirror failed"))
+	err = oapi.SnapmirrorBreak(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
+		"fake-remoteSVM", "fake-snapshot")
+	assert.Error(t, err, "no error returned while breaking a SnapMirror")
+}
+
+func TestSnapmirrorUpdate(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Positive test update the SnapMirror.
+	rsi.EXPECT().SnapmirrorUpdate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	err := oapi.SnapmirrorUpdate(ctx, "fake-localVolume", "fake-snapshot")
+	assert.NoError(t, err, "error returned while updating a SnapMirror")
+
+	// case 2: Negative test update the SnapMirror. Backend return an error.
+	rsi.EXPECT().SnapmirrorUpdate(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("SnapMirror update failed"))
+	err = oapi.SnapmirrorUpdate(ctx, "fake-localVolume", "fake-snapshot")
+	assert.Error(t, err, "no error returned while updating a SnapMirror")
+}
+
+func TestJobScheduleExists(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Positive test, verify job scheduled
+	rsi.EXPECT().JobScheduleExists(ctx, "fake-replicationSchedule").Return(true, nil)
+	jobScheduleExists, err := oapi.JobScheduleExists(ctx, "fake-replicationSchedule")
+	assert.NoError(t, err, "error returned while verifying a job")
+	assert.Equal(t, true, jobScheduleExists, "job does not exist")
+
+	// case 2: Negative test, verify job scheduled
+	rsi.EXPECT().JobScheduleExists(ctx, "fake-replicationSchedule").Return(
+		false, fmt.Errorf("failed to get job"))
+	_, err = oapi.JobScheduleExists(ctx, "fake-replicationSchedule")
+	assert.Error(t, err, "no error returned while verifying a job")
+}
+
+func TestGetSVMPeers(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Positive test get the peer SVM
+	rsi.EXPECT().GetPeeredVservers(ctx).Return([]string{"svm1"}, nil)
+	svms, err := oapi.GetSVMPeers(ctx)
+	assert.NoError(t, err, "error returned while getting a peer system SVM")
+	assert.Equal(t, "svm1", svms[0], "svm name does not match")
+
+	// case 2: Negative test get the peer SVM
+	rsi.EXPECT().GetPeeredVservers(ctx).Return([]string{}, fmt.Errorf("failed to get SVM"))
+	_, err = oapi.GetSVMPeers(ctx)
+	assert.Error(t, err, "no error returned while getting a peer system SVM")
+}
+
+func getLunInfo() *models.Lun {
+	comment := "lun for flexvol"
+	igroup1 := "igroup1"
+	logicalUnitNumber := int64(12345)
+	size := int64(2147483648)
+	qosPolicyName := "fake-qosPolicy"
+	mapStatus := true
+	volumeName := "fake-volume"
+	createTime1 := strfmt.NewDateTime()
+	enabled := false
+	lunName := "fake-lunName"
+	lunUUID := "fake-lunUUID"
+	lunSerialNumber := "fake-serialNumber"
+	lunState := "online"
+
+	igroup := models.LunInlineLunMapsInlineArrayItemInlineIgroup{Name: &igroup1}
+	lunMap := []*models.LunInlineLunMapsInlineArrayItem{
+		{Igroup: &igroup, LogicalUnitNumber: &logicalUnitNumber},
+	}
+
+	space := models.LunInlineSpace{Size: &size}
+	qosPolicy := models.LunInlineQosPolicy{Name: &qosPolicyName}
+	status := models.LunInlineStatus{Mapped: &mapStatus, State: &lunState}
+	location := &models.LunInlineLocation{
+		Volume: &models.LunInlineLocationInlineVolume{
+			Name: &volumeName,
+		},
+	}
+
+	lun := models.Lun{
+		Name:             &lunName,
+		UUID:             &lunUUID,
+		SerialNumber:     &lunSerialNumber,
+		Status:           &status,
+		Enabled:          &enabled,
+		Comment:          &comment,
+		Space:            &space,
+		CreateTime:       &createTime1,
+		Location:         location,
+		QosPolicy:        &qosPolicy,
+		LunInlineLunMaps: lunMap,
+	}
+	return &lun
+}
+
+func TestLunList(t *testing.T) {
+	lun := getLunInfo()
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	lunResponse := s_a_n.LunCollectionGetOK{
+		Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{lun}},
+	}
+
+	// case 1: Get LUN list
+	rsi.EXPECT().LunList(ctx, "").Return(&lunResponse, nil)
+	luns, err := oapi.LunList(ctx, "")
+	assert.NoError(t, err, "error returned while getting a LUN info")
+	assert.Equal(t, *lun.Name, luns[0].Name, "LUN name does not match")
+
+	// case 2: Get LUN list returned error
+	rsi.EXPECT().LunList(ctx, "").Return(nil, fmt.Errorf("lun not found with given pattern"))
+	luns, err = oapi.LunList(ctx, "")
+	assert.Error(t, err, "no error returned while getting a LUN info")
+
+	// case 3: Get LUN list returned nil
+	lunResponse1 := s_a_n.LunCollectionGetOK{
+		Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{nil}},
+	}
+	rsi.EXPECT().LunList(ctx, "").Return(&lunResponse1, nil)
+	luns, err = oapi.LunList(ctx, "")
+	assert.Error(t, err, "no error returned while getting a LUN info")
+}
+
+func TestLunCreate(t *testing.T) {
+	boolValue := true
+	lun := api.Lun{
+		Comment:        "",
+		Enabled:        true,
+		Name:           "fake-lun",
+		Qos:            api.QosPolicyGroup{},
+		Size:           "2147483648",
+		Mapped:         true,
+		UUID:           "fake-UUID",
+		State:          "online",
+		OsType:         "linux",
+		SpaceReserved:  &boolValue,
+		SpaceAllocated: &boolValue,
+	}
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Create LUN
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, *lun.SpaceReserved,
+		*lun.SpaceAllocated).Return(nil)
+	err := oapi.LunCreate(ctx, lun)
+	assert.NoError(t, err, "error returned while creating a LUN info")
+
+	// case 2: Create LUN returned error
+	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, *lun.SpaceReserved,
+		*lun.SpaceAllocated).
+		Return(fmt.Errorf("Failed to create LUN"))
+	err = oapi.LunCreate(ctx, lun)
+	assert.Error(t, err, "no error returned while creating a LUN info")
+}
+
+func TestLunDestroy(t *testing.T) {
+	lun := getLunInfo()
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Delete LUN
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(lun, nil)
+	rsi.EXPECT().LunDelete(ctx, *lun.UUID).Return(nil)
+	err := oapi.LunDestroy(ctx, "/"+*lun.Name)
+	assert.NoError(t, err, "error returned while deleting a LUN")
+
+	// case 2: Delete LUN returned error
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(lun, nil)
+	rsi.EXPECT().LunDelete(ctx, *lun.UUID).Return(fmt.Errorf("failed to delete lun"))
+	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
+	assert.Error(t, err, "no error returned while deleting a LUN")
+
+	// case 3: Delete LUN, LUN verification returned error
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(nil, fmt.Errorf("failed to get lun"))
+	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
+	assert.Error(t, err, "no error returned while deleting a LUN")
+
+	lun.UUID = nil
+	// case 4: LUN response contain LUN UUID nil
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(lun, nil)
+	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
+	assert.Error(t, err, "no error returned while deleting a LUN")
+}
+
+func TestLunGetGeometry(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Positive test, get the LUN options
+	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, nil)
+	_, err := oapi.LunGetGeometry(ctx, "/")
+	assert.NoError(t, err, "error returned while getting a LUN option")
+
+	// case 2: Positive test, get the LUN options returned error.
+	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, fmt.Errorf("failed to get lun option"))
+	_, err = oapi.LunGetGeometry(ctx, "/")
+	assert.Error(t, err, "no error returned while getting a LUN option")
+
+	// case 1: Positive test, get the LUN options returned nil response.
+	rsi.EXPECT().LunOptions(ctx).Return(nil, nil)
+	_, err = oapi.LunGetGeometry(ctx, "/")
+	assert.Error(t, err, "no error returned while getting a LUN option")
+}
+
+func TestLunSetAttribute(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Positive test, update LUN attribute. context is empty.
+	rsi.EXPECT().LunSetAttribute(ctx, "/", "filesystem", "fake-FStype").Return(nil)
+	err := oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype", "", "")
+	assert.NoError(t, err, "error returned while modifying a LUN attribute")
+
+	// case 2: Positive test, update LUN attribute. pass the value in context..
+	rsi.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	err = oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype", "context", "LUKS")
+	assert.NoError(t, err, "error returned while modifying a LUN attribute")
+
+	// case 3 Negative test, update LUN attribute returned error..
+	err = oapi.LunSetAttribute(ctx, "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b", "filesystem", "fake-FStype", "context", "LUKS")
+	assert.Error(t, err, "no error returned while modifying a LUN attribute")
+}
+
+func TestLunCloneCreate(t *testing.T) {
+	lun := getLunInfo()
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1, Positive test, create clone
+	rsi.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, nil)
+	err := oapi.LunCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", api.QosPolicyGroup{})
+	assert.NoError(t, err, "error returned while cloning a LUN")
+
+	// case 2, Negative test, Unable to get LUN info. Beckend returned error
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
+	err = oapi.LunCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", api.QosPolicyGroup{})
+	assert.Error(t, err, "no error returned while cloning a LUN")
+
+	// case 3, Negative test, Unable to get LUN info. Getting nil response.
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, nil)
+	err = oapi.LunCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", api.QosPolicyGroup{})
+	assert.Error(t, err, "no error returned while cloning a LUN")
+}
+
+func TestLunSetComments(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// Positive test, update the comment on LUN
+	rsi.EXPECT().LunSetComment(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	err := oapi.LunSetComments(ctx, "/", "filesystem", "fake-context", "")
+	assert.NoError(t, err, "error returned while modifying a comment on LUN")
+
+	// Negative test, the length of comment is more than 254 char
+	context := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+		"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI"
+
+	err = oapi.LunSetComments(ctx, "/", "filesystem", context, "")
+	assert.Error(t, err, "no error returned while modifying a comment on LUN")
+}
+
+func TestLunSetQosPolicy(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: positive test, update QoS policy.
+	rsi.EXPECT().LunSetQosPolicyGroup(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	err := oapi.LunSetQosPolicyGroup(ctx, "/vol/lun0", api.QosPolicyGroup{})
+	assert.NoError(t, err, "error returned while modifying a qos policy on LUN")
+}
+
+func TestLunGetByName(t *testing.T) {
+	lun := getLunInfo()
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Positive test, get lun info by name
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, nil)
+	lunResponse, err := oapi.LunGetByName(ctx, "fake-lun")
+	assert.NoError(t, err, "error returned while getting a LUN by name")
+	assert.Equal(t, *lun.Name, lunResponse.Name, "Lun name does not match")
+
+	// case 2: Negative test, backend returned error
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
+	lunResponse, err = oapi.LunGetByName(ctx, "fake-lun")
+	assert.Error(t, err, "no error returned while getting a LUN by name")
+
+	// case 3: Negative test, backend returned nil response
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, nil)
+	lunResponse, err = oapi.LunGetByName(ctx, "fake-lun")
+	assert.Error(t, err, "no error returned while getting a LUN by name")
+}
+
+func TestLunRename(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Positive test, renamed the LUN
+	rsi.EXPECT().LunRename(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	err := oapi.LunRename(ctx, "fake-lun", "fake-newLun")
+	assert.NoError(t, err, "error returned while renaming a LUN")
+
+	// case 2: Negative test, renamed the LUN
+	rsi.EXPECT().LunRename(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("lun rename failed"))
+	err = oapi.LunRename(ctx, "fake-lun", "fake-newLun")
+	assert.Error(t, err, "no error returned while renaming a LUN")
+}
+
+func TestLunMapInfo(t *testing.T) {
+	igroupName := "igroup"
+	logicalUnitNumber := int64(1234)
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	lunMap := models.LunMap{
+		Igroup:            &models.LunMapInlineIgroup{Name: &igroupName},
+		LogicalUnitNumber: &logicalUnitNumber,
+	}
+	lunMapResponse := models.LunMapResponse{LunMapResponseInlineRecords: []*models.LunMap{&lunMap}}
+	lunMapresponseList := s_a_n.LunMapCollectionGetOK{Payload: &lunMapResponse}
+
+	// case 1: Positive test, get lun map info
+	rsi.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(&lunMapresponseList, nil)
+	lunid, err := oapi.LunMapInfo(ctx, igroupName, "/vol/lun0")
+	assert.NoError(t, err, "error returned while getting a LUN map info")
+	assert.Equal(t, logicalUnitNumber, int64(lunid), "logical unit does not match")
+
+	// case 2: Negative test, get lun map info
+	rsi.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	_, err = oapi.LunMapInfo(ctx, igroupName, "/vol/lun0")
+	assert.Error(t, err, "no error returned while getting a LUN map info")
+}
+
+func TestLunUnmap(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Positive test, unmap LUN.
+	rsi.EXPECT().LunUnmap(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	err := oapi.LunUnmap(ctx, "igroup", "/vol/lun0")
+	assert.NoError(t, err, "error returned while unmapping a LUN")
+
+	// case 2: Negative test, unmap LUN.
+	rsi.EXPECT().LunUnmap(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to unmap lun"))
+	err = oapi.LunUnmap(ctx, "igroup", "/vol/lun0")
+	assert.Error(t, err, "no error returned while unmapping a LUN")
+}
+
+func TestLunListIgroupsMapped(t *testing.T) {
+	igroupName := "igroup"
+	lunName := "lun0"
+	logicalUnitNumber := int64(1234)
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	lunMap := models.LunMap{
+		Igroup:            &models.LunMapInlineIgroup{Name: &igroupName},
+		LogicalUnitNumber: &logicalUnitNumber,
+		Lun:               &models.LunMapInlineLun{Name: &lunName},
+	}
+	lunMapResponse := models.LunMapResponse{LunMapResponseInlineRecords: []*models.LunMap{&lunMap}}
+	lunMapResponseList := s_a_n.LunMapCollectionGetOK{Payload: &lunMapResponse}
+
+	// case 1: Positive test, get ia LUN list mapped with igroup
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(&lunMapResponseList, nil)
+	igroupNames, err := oapi.LunListIgroupsMapped(ctx, "/vol/lun0")
+	assert.NoError(t, err, "error returned while getting a LUN list mapped with igroup")
+	assert.Equal(t, igroupName, igroupNames[0])
+
+	// case 2: Negative test, get ia LUN list mapped with igroup
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	_, err = oapi.LunListIgroupsMapped(ctx, "/vol/lun0")
+	assert.Error(t, err, "no error returned while getting a LUN list mapped with igroup")
+}
+
+func TestIgroupListLUNsMapped(t *testing.T) {
+	igroupName := "igroup"
+	lunName := "lun0"
+	logicalUnitNumber := int64(1234)
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	lunMap := models.LunMap{
+		Igroup:            &models.LunMapInlineIgroup{Name: &igroupName},
+		LogicalUnitNumber: &logicalUnitNumber,
+		Lun:               &models.LunMapInlineLun{Name: &lunName},
+	}
+	lunMapResponse := models.LunMapResponse{LunMapResponseInlineRecords: []*models.LunMap{&lunMap}}
+	lunMapResponseList := s_a_n.LunMapCollectionGetOK{Payload: &lunMapResponse}
+
+	// case 1: Positive test, get igroup list mapped with LUN.
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(&lunMapResponseList, nil)
+	lunNames, err := oapi.IgroupListLUNsMapped(ctx, "/vol/lun0")
+	assert.NoError(t, err, "error returned while getting a igroup mapped with lun")
+	assert.Equal(t, lunName, lunNames[0])
+
+	// case 2: Negative test, get igroup list mapped with LUN.
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	_, err = oapi.IgroupListLUNsMapped(ctx, "/vol/lun0")
+	assert.Error(t, err, "no error returned while getting a igroup mapped with lun")
+}
+
+func TestLunMapGetReportingNodes(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Positive test: get the lun reporting node.
+	rsi.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Return([]string{"node1", "node2"}, nil)
+	nodes, err := oapi.LunMapGetReportingNodes(ctx, "igroup", "/vol/lun0")
+	assert.NoError(t, err, "error returned while getting lun map reporting node")
+	assert.Equal(t, "node1", nodes[0], "node name does not match")
+
+	// case 2: Negative test: get the lun reporting node.
+	rsi.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Return(nil,
+		fmt.Errorf("failed to get lun map node"))
+	_, err = oapi.LunMapGetReportingNodes(ctx, "igroup", "/vol/lun0")
+	assert.Error(t, err, "no error returned while getting lun map reporting node")
+}
+
+func TestLunSize(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Positive test, get the lun size.
+	rsi.EXPECT().LunSize(ctx, gomock.Any()).Return(2147483648, nil)
+	size, err := oapi.LunSize(ctx, "/vol/lun0")
+	assert.NoError(t, err, "error returned while getting a lun size")
+	assert.Equal(t, 2147483648, size)
+
+	// case 2: Negative test, get the lun size.
+	rsi.EXPECT().LunSize(ctx, gomock.Any()).Return(0, fmt.Errorf("failed to get size"))
+	_, err = oapi.LunSize(ctx, "/vol/lun0")
+	assert.Error(t, err, "no error returned while getting a lun size")
+}
+
+func TestLunSetSize(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// case 1: Positive test modify the LUN size
+	rsi.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(2147483648), nil)
+	size, err := oapi.LunSetSize(ctx, "/vol/lun0", "2147483648")
+	assert.NoError(t, err, "error returned while modifying a lun size")
+	assert.Equal(t, uint64(2147483648), size, "LUN size does not match")
+
+	// case 2: Negative test modify the LUN size
+	rsi.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(0), fmt.Errorf("failed to set size"))
+	_, err = oapi.LunSetSize(ctx, "/vol/lun0", "2147483648")
+	assert.Error(t, err, "no error returned while modifying a lun size")
+}
+
+func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
+	svmName := "fake-svm"
+	chapUser := "admin"
+	chapPassword := "********"
+	initiator := "iqn.1998-01.com.corp.iscsi:name1"
+	authType := "chap"
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	svm := models.IscsiCredentialsInlineSvm{Name: &svmName}
+	inbound := models.IscsiCredentialsInlineChapInlineInbound{User: &chapUser, Password: &chapPassword}
+	outbound := models.IscsiCredentialsInlineChapInlineOutbound{User: &chapUser, Password: &chapPassword}
+	chap := models.IscsiCredentialsInlineChap{Inbound: &inbound, Outbound: &outbound}
+	iscsiCred := models.IscsiCredentials{Chap: &chap, Initiator: &initiator, AuthenticationType: &authType, Svm: &svm}
+	iscsiCredResponse := s_a_n.IscsiCredentialsCollectionGetOK{
+		Payload: &models.IscsiCredentialsResponse{
+			IscsiCredentialsResponseInlineRecords: []*models.IscsiCredentials{&iscsiCred},
+		},
+	}
+
+	// case 1: Get the iscsi initialor default auth.
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse, nil)
+	iscsiInitiatorAuth, err := oapi.IscsiInitiatorGetDefaultAuth(ctx)
+	assert.NoError(t, err, "error returned while iscsi initiator default auth")
+	assert.Equal(t, iscsiInitiatorAuth.AuthType, authType, "authType does not match")
+
+	// case 2: Failed to get the iscsi initialor default auth.
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(nil, fmt.Errorf("failed to get iscsi initiator auth"))
+	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
+	assert.Error(t, err, "no error returned while iscsi initiator default auth")
+
+	// case 3: iSCSI initiator response has too many records
+	numRecords := int64(2)
+	iscsiCredResponse1 := s_a_n.IscsiCredentialsCollectionGetOK{
+		Payload: &models.IscsiCredentialsResponse{
+			IscsiCredentialsResponseInlineRecords: []*models.IscsiCredentials{&iscsiCred},
+			NumRecords:                            &numRecords,
+		},
+	}
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse1, nil)
+	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
+	assert.Error(t, err, "no error returned while iscsi initiator default auth")
+
+	// case 4: iSCSI initiator response has no records
+	numRecords2 := int64(0)
+	iscsiCredResponse2 := s_a_n.IscsiCredentialsCollectionGetOK{
+		Payload: &models.IscsiCredentialsResponse{
+			IscsiCredentialsResponseInlineRecords: []*models.IscsiCredentials{&iscsiCred},
+			NumRecords:                            &numRecords2,
+		},
+	}
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse2, nil)
+	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
+	assert.Error(t, err, "no error returned while iscsi initiator default auth")
+
+	// case 5: iSCSI initiator response contain nil IscsiCredentialsResponseInlineRecords
+	iscsiCredResponse3 := s_a_n.IscsiCredentialsCollectionGetOK{
+		Payload: &models.IscsiCredentialsResponse{
+			IscsiCredentialsResponseInlineRecords: nil,
+		},
+	}
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse3, nil)
+	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
+	assert.Error(t, err, "no error returned while iscsi initiator default auth")
+
+	// case 6: iSCSI initiator response contain nil payload
+	iscsiCredResponse4 := s_a_n.IscsiCredentialsCollectionGetOK{
+		Payload: nil,
+	}
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse4, nil)
+	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
+	assert.Error(t, err, "no error returned while iscsi initiator default auth")
+
+	// case 7: iSCSI initiator response is nil
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(nil, nil)
+	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
+	assert.Error(t, err, "no error returned while iscsi initiator default auth")
+}
+
+func TestIscsiInitiatorSetDefaultAuth(t *testing.T) {
+	chapUser := "admin"
+	authType := "chap"
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	// case 1: Get the default iscsi initiator auth
+	rsi.EXPECT().IscsiInitiatorSetDefaultAuth(ctx, authType, chapUser, "", chapUser, "").Return(nil)
+	err := oapi.IscsiInitiatorSetDefaultAuth(ctx, authType, chapUser, "", chapUser, "")
+	assert.NoError(t, err, "error returned while setting the iscsi initiator auth")
+
+	// case 2: Failed to get the default iscsi initiator auth
+	rsi.EXPECT().IscsiInitiatorSetDefaultAuth(ctx, authType, chapUser, "", chapUser, "").Return(
+		fmt.Errorf("failed to get iscsi initiator auth"))
+	err = oapi.IscsiInitiatorSetDefaultAuth(ctx, authType, chapUser, "", chapUser, "")
+	assert.Error(t, err, "no error returned while setting the iscsi initiator auth")
+}
+
+func TestIscsiInterfaceGet(t *testing.T) {
+	svmName := "svm1"
+	enabled := true
+	targetName := "iqn.1992-08.com.netapp:sn.574caf71890911e8a6b7005056b4ea79"
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	iscsiService := models.IscsiService{Enabled: &enabled, Target: &models.IscsiServiceInlineTarget{Name: &targetName}}
+	iscsiServiceResponse := s_a_n.IscsiServiceCollectionGetOK{
+		Payload: &models.IscsiServiceResponse{IscsiServiceResponseInlineRecords: []*models.
+			IscsiService{&iscsiService}},
+	}
+
+	// case 1: Positive test, get the iscsi interface test.
+	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(&iscsiServiceResponse, nil)
+	iscsiInterface, err := oapi.IscsiInterfaceGet(ctx, svmName)
+	assert.NoError(t, err, "error returned while getting iscsi interface")
+	assert.Equal(t, iscsiInterface[0], targetName)
+
+	// case 2: Negative test, backend return error in response.
+	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(nil, fmt.Errorf("failed to get iscsi interface service"))
+	_, err = oapi.IscsiInterfaceGet(ctx, svmName)
+	assert.Error(t, err, "no error returned while getting iscsi interface")
+
+	// case 3: Negative test, backend return nil response.
+	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(nil, nil)
+	_, err = oapi.IscsiInterfaceGet(ctx, svmName)
+	assert.NoError(t, err, "error returned while getting iscsi interface")
+
+	// case 4: Negative test, response contain empty payload.
+	iscsiServiceResponse = s_a_n.IscsiServiceCollectionGetOK{
+		Payload: &models.IscsiServiceResponse{},
+	}
+	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(&iscsiServiceResponse, nil)
+	iscsiInterface, err = oapi.IscsiInterfaceGet(ctx, svmName)
+	assert.Error(t, err, "no error returned while getting iscsi interface")
+}
+
+func TestIscsiNodeGetNameRequest(t *testing.T) {
+	enabled := true
+	targetName := "iqn.1992-08.com.netapp:sn.574caf71890911e8a6b7005056b4ea79"
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	iscsiService := models.IscsiService{Enabled: &enabled, Target: &models.IscsiServiceInlineTarget{Name: &targetName}}
+	iscsiServiceResponse := s_a_n.IscsiServiceGetOK{
+		Payload: &iscsiService,
+	}
+
+	// case 1: Get the iscsi node name.
+	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	iscsiInterface, err := oapi.IscsiNodeGetNameRequest(ctx)
+	assert.NoError(t, err, "error returned while getting node name")
+	assert.Equal(t, targetName, iscsiInterface)
+
+	// case 2: iscsi name is nil in backend response.
+	iscsiService = models.IscsiService{Enabled: &enabled, Target: &models.IscsiServiceInlineTarget{Name: nil}}
+	iscsiServiceResponse = s_a_n.IscsiServiceGetOK{
+		Payload: &iscsiService,
+	}
+	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	_, err = oapi.IscsiNodeGetNameRequest(ctx)
+	assert.Error(t, err, "no error returned while getting node name")
+
+	// case 3: Target field is nil in backend response.
+	iscsiService = models.IscsiService{Enabled: &enabled, Target: nil}
+	iscsiServiceResponse = s_a_n.IscsiServiceGetOK{
+		Payload: &iscsiService,
+	}
+	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	_, err = oapi.IscsiNodeGetNameRequest(ctx)
+	assert.Error(t, err, "no error returned while getting node name")
+
+	// case 4: Payload is nil in backend response.
+	iscsiServiceResponse = s_a_n.IscsiServiceGetOK{
+		Payload: nil,
+	}
+	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	_, err = oapi.IscsiNodeGetNameRequest(ctx)
+	assert.Error(t, err, "no error returned while getting node name")
+
+	// case 5: backend returned a nil response.
+	rsi.EXPECT().IscsiNodeGetName(ctx).Return(nil, nil)
+	_, err = oapi.IscsiNodeGetNameRequest(ctx)
+	assert.Error(t, err, "no error returned while getting node name")
+
+	// case 6: Unable to get the node name from backend.
+	rsi.EXPECT().IscsiNodeGetName(ctx).Return(nil, fmt.Errorf("iscsi node name not found"))
+	_, err = oapi.IscsiNodeGetNameRequest(ctx)
+	assert.Error(t, err, "no error returned while getting node name")
+}
+
+func TestIgroupCreate(t *testing.T) {
+	initiator1 := "initiator1"
+	initiator2 := "initiator2"
+	initiatorGroup := "initiatorGroup"
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	igroupName := "igroup1"
+	subsysUUID := "fakeUUID"
+
+	igroupInlineInitiatorsResponse := []*models.IgroupInlineInitiatorsInlineArrayItem{
+		{
+			Name: &initiator1,
+		},
+		{
+			Name: &initiator2,
+		},
+	}
+	igroup := models.Igroup{
+		Name:                   &igroupName,
+		UUID:                   &subsysUUID,
+		IgroupInlineInitiators: igroupInlineInitiatorsResponse,
+	}
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// Positive test, igroup created
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(&igroup, nil)
+	err := oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
+	assert.NoError(t, err, "error while creating igroup")
+
+	// Negative test, Unoble to verify igroup exists
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, fmt.Errorf("failed to verify igroup"))
+	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
+	assert.Error(t, err, "no error while verifying igroup")
+
+	// Negative test, Unoble to verify igroup exists
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, nil)
+	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(nil)
+	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
+	assert.NoError(t, err, "error while verifying igroup")
+
+	// Negative test, igroup creation failed.
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, nil)
+	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(
+		fmt.Errorf("failed to create igroup"))
+	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
+	assert.Error(t, err, "No error while creating igroup")
+
+	// Negative test, igroup creation failed.
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, nil)
+	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(
+		fmt.Errorf("404 failed to create igroup"))
+	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
+	assert.Error(t, err, "No error while creating igroup")
+}
+
+func TestIgroupDestroy(t *testing.T) {
+	initiatorGroup := "initiatorGroup"
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	// common call for all subtests
+	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// Positive test, igroup destroyed
+	rsi.EXPECT().IgroupDestroy(ctx, initiatorGroup).Return(nil)
+	err := oapi.IgroupDestroy(ctx, initiatorGroup)
+	assert.NoError(t, err, "error while deleting igroup")
+
+	// Negative test, Unable to delete igroup
+	rsi.EXPECT().IgroupDestroy(ctx, initiatorGroup).Return(fmt.Errorf("Unable to delete igroup"))
+	err = oapi.IgroupDestroy(ctx, initiatorGroup)
+	assert.Error(t, err, "No error while deleting igroup")
+
+	// Negative test, igroup is not found. No error returned to user
+	rsi.EXPECT().IgroupDestroy(ctx, initiatorGroup).Return(api.NotFoundError("failed to get igroup"))
+	err = oapi.IgroupDestroy(ctx, initiatorGroup)
+	assert.NoError(t, err, "error while deleting igroup")
+}
+
+func TestTerminalStateError(t *testing.T) {
+	terminalStateError := api.TerminalState(fmt.Errorf("error in getting terminal state"))
+
+	assert.Error(t, terminalStateError)
+	assert.Equal(t, "error in getting terminal state", terminalStateError.Error())
 }
