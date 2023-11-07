@@ -15,6 +15,7 @@ import (
 
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/s_a_n"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
@@ -5891,4 +5892,1952 @@ func TestOntapREST_VolumeListByAttrs(t *testing.T) {
 	volumes, err = rs.VolumeListByAttrs(ctx, &Volume{})
 	assert.NoError(t, err)
 	server.Close()
+}
+
+func getQtree() models.Qtree {
+	id := int64(1)
+	name := "qtree_vol1"
+	securityStyle := models.SecurityStyleUnix
+	unixPermission := int64(777)
+	exportPolicy := "fake-export-policy"
+	volumeName := "vol1"
+	volumeUUID := "vol1UUID"
+	svm := "svm1"
+
+	qtreeExportPolicy := models.QtreeInlineExportPolicy{Name: &exportPolicy}
+	qtreeSVM := models.QtreeInlineSvm{Name: &svm}
+	qtreeVolume := models.QtreeInlineVolume{Name: &volumeName, UUID: &volumeUUID}
+
+	return models.Qtree{
+		ID:              &id,
+		Name:            &name,
+		SecurityStyle:   &securityStyle,
+		UnixPermissions: &unixPermission,
+		ExportPolicy:    &qtreeExportPolicy,
+		Svm:             &qtreeSVM,
+		Volume:          &qtreeVolume,
+	}
+}
+
+func mockQtreeJobResponse(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobStatus := models.JobStateSuccess
+	jobLink := models.Job{UUID: &jobId, State: &jobStatus}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(jobLink)
+}
+
+func mockQtreeResourceNotFound(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
+func mockQtreeResponse(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST", "DELETE", "PATCH":
+		jobId := strfmt.UUID("1234")
+		jobLink := models.JobLink{UUID: &jobId}
+		jobResponse := models.JobLinkResponse{Job: &jobLink}
+		setHTTPResponseHeader(w, http.StatusAccepted)
+		json.NewEncoder(w).Encode(jobResponse)
+	case "GET":
+		if r.URL.Path == "/api/cluster/jobs/1234" {
+			mockQtreeJobResponse(w, r)
+		} else {
+			qtree := getQtree()
+			numRecords := int64(1)
+			qtreeResponse := &models.QtreeResponse{
+				QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+				NumRecords:                 &numRecords,
+			}
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(qtreeResponse)
+		}
+	}
+}
+
+func mockJobResponseFailure(w http.ResponseWriter, r *http.Request) {
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+	setHTTPResponseHeader(w, http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(jobResponse)
+}
+
+func mockQtreeResponseFailure(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "PATCH", "POST", "DELETE":
+		mockJobResponseFailure(w, r)
+	case "GET":
+		qtree := getQtree()
+		numRecords := int64(1)
+		qtreeResponse := &models.QtreeResponse{
+			QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+			NumRecords:                 &numRecords,
+		}
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(qtreeResponse)
+	}
+}
+
+func mockQtreeResponseNumRecordsMoreThanOne(w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree, nil},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func mockQtreeResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	qtreeResponse := &models.QtreeResponse{}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func mockQtreeResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	qtree.ID = nil
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func mockQtreeResponseVolumeUUIdNil(w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	qtree.Volume.UUID = nil
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func getQuotaRule() *models.QuotaRuleResponse {
+	hardLimit := int64(1073741810)
+	quotaVolume := models.QuotaRuleInlineVolume{Name: utils.Ptr("quotaVolumeName")}
+	quotaQtree := models.QuotaRuleInlineQtree{Name: utils.Ptr("quotaQtree")}
+	quotaSpace := models.QuotaRuleInlineSpace{HardLimit: &hardLimit}
+	quotaRule := models.QuotaRule{
+		Volume: &quotaVolume, Qtree: &quotaQtree, Space: &quotaSpace,
+		UUID: utils.Ptr("QuotaUUID"),
+	}
+	quotaRuleResponseInlineRecords := []*models.QuotaRule{&quotaRule}
+	numRecords := int64(1)
+	return &models.QuotaRuleResponse{
+		QuotaRuleResponseInlineRecords: quotaRuleResponseInlineRecords,
+		NumRecords:                     &numRecords,
+	}
+}
+
+func mockQuotaRuleResponse(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockQtreeJobResponse(w, r)
+	} else if r.Method == "PATCH" || r.Method == "POST" {
+		jobId := strfmt.UUID("1234")
+		jobLink := models.JobLink{UUID: &jobId}
+		jobResponse := models.JobLinkResponse{Job: &jobLink}
+		setHTTPResponseHeader(w, http.StatusAccepted)
+		json.NewEncoder(w).Encode(jobResponse)
+	} else {
+		quotaRuleResponse := getQuotaRule()
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(quotaRuleResponse)
+	}
+}
+
+func mockQuotaRuleResponseFailure(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockQtreeJobResponse(w, r)
+	} else {
+		switch r.Method {
+		case "PATCH", "POST":
+			mockJobResponseFailure(w, r)
+		default:
+			quotaRuleResponse := getQuotaRule()
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(quotaRuleResponse)
+		}
+	}
+}
+
+func mockQuotaRuleResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	quotaRuleResponse := getQuotaRule()
+	quotaRuleResponse.NumRecords = nil
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(quotaRuleResponse)
+}
+
+func mockQuotaRuleResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
+	quotaRuleResponse := getQuotaRule()
+	// Backend return UUID Nil in response.
+	quotaRuleResponse.QuotaRuleResponseInlineRecords[0].UUID = nil
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(quotaRuleResponse)
+}
+
+func mockQtreeListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	numRecords := int64(1)
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.QtreeResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.QtreeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+		NumRecords:                 &numRecords,
+		Links:                      hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func mockQtreeListResponseQtreeExists(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	numRecords := int64(1)
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.QtreeResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.QtreeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+		NumRecords:                 &numRecords,
+		Links:                      hrefLink,
+	}
+
+	if !hasNextLink {
+		qtreeResponse.NumRecords = utils.Ptr(int64(0))
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func mockQtreeListResponseVolumeNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	qtree.Volume = nil
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.QtreeResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.QtreeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+		NumRecords:                 utils.Ptr(int64(1)),
+		Links:                      hrefLink,
+	}
+
+	if !hasNextLink {
+		qtreeResponse.NumRecords = utils.Ptr(int64(0))
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func mockQtreeListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	numRecords := int64(1)
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.QtreeResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.QtreeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+		NumRecords:                 &numRecords,
+		Links:                      hrefLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func mockQtreeListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	qtree := getQtree()
+	url := "/api/storage/qtrees"
+
+	var hrefLink *models.QtreeResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.QtreeResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	qtreeResponse := &models.QtreeResponse{
+		QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+		Links:                      hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(qtreeResponse)
+}
+
+func TestOntapREST_QtreeCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		unixPermission  string
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeResponse, "---rwxr--rwx", false},
+		{"UnixPermissionValueInvalid", mockQtreeResponse, "invalidValue", true},
+		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, "---rwxr--rwx", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QtreeCreate(ctx, "qtree_vol1", "vol1", test.unixPermission, "fake-export-policy", "unix",
+				"qosPolicy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create qtree by name")
+			} else {
+				assert.Error(t, err, "Qtree created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeGetByPath(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeResponse, false},
+		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
+		{"ResponseContainMoreThanOneRecord", mockQtreeResponseNumRecordsMoreThanOne, true},
+		{"NumRecordsFieldNilInResponse", mockQtreeResponseNumRecordsNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qtree, err := rs.QtreeGetByPath(ctx, "/vol1/qtree_vol1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get qtree by name")
+				assert.Equal(t, "qtree_vol1", *qtree.Name)
+			} else {
+				assert.Error(t, err, "Get qtree by name")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeRename(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeResponse, false},
+		{"ResposeContainUUIDNil", mockQtreeResponseUUIDNil, true},
+		{"ResposeContainVolumeIdNil", mockQtreeResponseVolumeUUIdNil, true},
+		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QtreeRename(ctx, "/vol1/qtree_vol1", "/vol2/qtree_vol2")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete the rename")
+			} else {
+				assert.Error(t, err, "qtree renamed")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapQtree_DestroyAsync(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeResponse, false},
+		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
+		{"ResposeContainUUIDNil", mockQtreeResponseUUIDNil, true},
+		{"ResposeContainVolumeIdNil", mockQtreeResponseVolumeUUIdNil, true},
+		{"DeleteFail", mockQtreeResponseFailure, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QtreeDestroyAsync(ctx, "/vol1/qtree_vol1", false)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete the qtree")
+			} else {
+				assert.Error(t, err, "qtree deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeListResponse, false, false},
+		{"NumRecordsFieldNil", mockQtreeListResponseNumRecordsNil, false, false},
+		{"HrefSecondGetCallFail", mockQtreeListResponseInternalError, false, true},
+		{"NegativeTest_BackendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qtree, err := rs.QtreeList(ctx, "qtree_", "volume_")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the qtree list")
+				assert.Equal(t, "qtree_vol1", *qtree.Payload.QtreeResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get the qtree list")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeGetByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeResponse, false},
+		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
+		{"NumRecordsFieldNil", mockQtreeResponseNumRecordsNil, true},
+		{"NumRecordsMoreThanOne", mockQtreeResponseNumRecordsMoreThanOne, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qtree, err := rs.QtreeGetByName(ctx, "qtree_", "volume_")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the qtree by name")
+				assert.Equal(t, "qtree_vol1", *qtree.Name)
+			} else {
+				assert.Error(t, err, "get the qtree by name")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeCount(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+		expectedCount   int
+	}{
+		{"PositiveTest", mockQtreeListResponse, false, false, 1},
+		{"CheckQtreeExists", mockQtreeListResponseQtreeExists, false, false, 0},
+		{"NumRecordsFieldNilInResponse", mockQtreeListResponseNumRecordsNil, false, false, 0},
+		{"HrefSecondGetCallFail", mockQtreeListResponseInternalError, false, true, 0},
+		{"NegativeTest_BackendReturnError", mockInternalServerError, true, true, 0},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qtreeCount, err := rs.QtreeCount(ctx, "qtree_")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the count of qtree")
+				assert.Equal(t, test.expectedCount, qtreeCount)
+			} else {
+				assert.Error(t, err, "get the count of qtree")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeExists(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		qtreeExists     bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeListResponseQtreeExists, false, true, false},
+		{"NumRecordsFieldNilInResponse", mockQtreeListResponseNumRecordsNil, false, false, false},
+		{"HrefSecondGetCallFail", mockQtreeListResponseInternalError, false, false, true},
+		{"ParentVolumeNil", mockQtreeListResponseVolumeNil, false, false, false},
+		{"NegativeTest_BackendReturnError", mockInternalServerError, true, false, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qtreeExist, _, err := rs.QtreeExists(ctx, "qtree_", "vol1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "qtree does not exists")
+				assert.Equal(t, test.qtreeExists, qtreeExist)
+			} else {
+				assert.Error(t, err, "qtree exists")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeGet(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeResponse, false},
+		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
+		{"NumRecordsFieldNilInResponse", mockQtreeResponseNumRecordsNil, true},
+		{"NumRecordsMoreThanOne", mockQtreeResponseNumRecordsMoreThanOne, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qtree, err := rs.QtreeGet(ctx, "qtree_", "vol1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the qtree")
+				assert.Equal(t, "qtree_vol1", *qtree.Name)
+			} else {
+				assert.Error(t, err, "get the qtree")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeGetAll(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeListResponse, false, false},
+		{"NumRecordsFieldNilInResponse", mockQtreeListResponseNumRecordsNil, false, false},
+		{"HrefSecondGetCallFail", mockQtreeListResponseInternalError, false, true},
+		{"NegativeTest_BackendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qtree, err := rs.QtreeGetAll(ctx, "volume_")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get all qtree")
+				assert.Equal(t, "qtree_vol1", *qtree.Payload.QtreeResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get all the qtree")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QtreeModifyExportPolicy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQtreeResponse, false},
+		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
+		{"UUIDNilInResponse", mockQtreeResponseUUIDNil, true},
+		{"ParentVolumeIdNil", mockQtreeResponseVolumeUUIdNil, true},
+		{"ModifyOperationFail", mockQtreeResponseFailure, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QtreeModifyExportPolicy(ctx, "qtree_vol1", "volume_", "fake-exportpolicy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify export policy")
+			} else {
+				assert.Error(t, err, "modified export policy")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockQuotaResourceNotFound(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
+func TestOntapRest_QuotaOn(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQuotaRuleResponse, false},
+		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QuotaOn(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not enable quota")
+			} else {
+				assert.Error(t, err, "quota enabled")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_QuotaOff(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQuotaRuleResponse, false},
+		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QuotaOff(ctx, "fakeVolume")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not disable quota")
+			} else {
+				assert.Error(t, err, "quota enabled")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_QuotaModify(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQuotaRuleResponse, false},
+		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, true},
+		{"QuotaModifyFailed", mockQuotaRuleResponseFailure, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.quotaModify(ctx, "qtree_vol1", true)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not modify Quota")
+			} else {
+				assert.Error(t, err, "modified Quota")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_QuotaSetEntry(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		diskLimit       string
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQuotaRuleResponse, "1073741810", false},
+		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, "1073741810", true},
+		{"NumRecordsFieldNilInResponse", mockQuotaRuleResponseNumRecordsNil, "1073741810", true},
+		{"UUIDNilInResponse", mockQuotaRuleResponseUUIDNil, "1073741810", true},
+		{"ModifyQuotaRuleFail_DiskLimitNotEmpty", mockQuotaRuleResponseFailure, "1073741810", true},
+		{"ModifyQuotaRuleFail_DiskLimitEmpty", mockQuotaRuleResponseFailure, "", true},
+		{"ModifyQuotaRuleFail_InvalidDiskLimit", mockQuotaRuleResponseFailure, "invalid_disk_limit", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QuotaSetEntry(ctx, "qtree_vol1", "fakeVolume", "user", test.diskLimit)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not set the quota entry list")
+			} else {
+				assert.Error(t, err, "set the quota entry list")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_QuotaAddEntry(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		diskLimit       string
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQuotaRuleResponse, "1073741810", false},
+		{"InvalidDiskLimit", mockQuotaRuleResponse, "invalidValue", true},
+		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, "1073741810", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.QuotaAddEntry(ctx, "qtree_vol1", "fakeVolume", "user", test.diskLimit)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not add the quota entry list")
+			} else {
+				assert.Error(t, err, "add the quota entry list")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockQuotaRuleListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/storage/quota/rules"
+
+	var hrefLink *models.QuotaRuleResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.QuotaRuleResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	quotaRuleResponse := getQuotaRule()
+	quotaRuleResponse.Links = hrefLink
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(quotaRuleResponse)
+}
+
+func mockQuotaRuleListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/storage/quota/rules"
+
+	var hrefLink *models.QuotaRuleResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.QuotaRuleResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+
+	quotaRuleResponse := getQuotaRule()
+	quotaRuleResponse.Links = hrefLink
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(quotaRuleResponse)
+}
+
+func mockQuotaRuleListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	url := "/api/storage/quota/rules"
+
+	var hrefLink *models.QuotaRuleResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.QuotaRuleResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	quotaRuleResponse := getQuotaRule()
+	quotaRuleResponse.NumRecords = nil
+	quotaRuleResponse.Links = hrefLink
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(quotaRuleResponse)
+}
+
+func TestOntapRest_QuotaEntryList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQuotaRuleListResponse, false, false},
+		{"NumRecordsFieldNilInResponse", mockQuotaRuleListResponseNumRecordsNil, false, false},
+		{"HrefSecondGetCallFail", mockQuotaRuleListResponseInternalError, false, true},
+		{"NegativeTest_BackendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			quotaRule, err := rs.QuotaEntryList(ctx, "qtree_vol1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the quota entry list")
+				assert.Equal(t, "quotaVolumeName", *quotaRule.Payload.QuotaRuleResponseInlineRecords[0].Volume.Name)
+			} else {
+				assert.Error(t, err, "get the quota entry list")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_QuotaGetEntry(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockQuotaRuleListResponse, false, true},
+		{"NumRecordsFieldNilInResponse", mockQuotaRuleListResponseNumRecordsNil, false, false},
+		{"HrefSecondCallFail", mockQuotaRuleListResponseInternalError, false, true},
+		{"NegativeTest_BackendReturnError", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			quotaRule, err := rs.QuotaGetEntry(ctx, "quotaVolumeName", "qtree_vol1", "user")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the quota entry list")
+				assert.Equal(t, "quotaVolumeName", *quotaRule.Volume.Name)
+			} else {
+				assert.Error(t, err, "get the quota entry list")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSnapMirrorRelationshipResponse(w http.ResponseWriter, r *http.Request) {
+	snapMirrorRelationshipResponse := &models.SnapmirrorRelationshipResponse{
+		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
+			{
+				Destination: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm0:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				Source: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm1:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				UUID: utils.Ptr(strfmt.UUID("1")),
+			},
+			{},
+			{
+				Destination: &models.SnapmirrorEndpoint{},
+				Source:      &models.SnapmirrorEndpoint{},
+			},
+			{
+				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
+				Source:      &models.SnapmirrorEndpoint{Path: utils.Ptr("svm1:vol1")},
+			},
+		},
+	}
+
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockQtreeJobResponse(w, r)
+	} else {
+		switch r.Method {
+		case "PATCH", "DELETE":
+			jobId := strfmt.UUID("1234")
+			jobLink := models.JobLink{UUID: &jobId}
+			jobResponse := models.JobLinkResponse{Job: &jobLink}
+			setHTTPResponseHeader(w, http.StatusAccepted)
+			json.NewEncoder(w).Encode(jobResponse)
+		case "POST":
+			if r.URL.Path == "/api/snapmirror/relationships" {
+				jobId := strfmt.UUID("1234")
+				jobLink := models.JobLink{UUID: &jobId}
+				jobResponse := models.JobLinkResponse{Job: &jobLink}
+				setHTTPResponseHeader(w, http.StatusAccepted)
+				json.NewEncoder(w).Encode(jobResponse)
+			} else {
+				setHTTPResponseHeader(w, http.StatusCreated)
+				json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+			}
+		default:
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+		}
+	}
+}
+
+func mockSnapMirrorRelationshipResponseFailure(w http.ResponseWriter, r *http.Request) {
+	snapMirrorRelationshipResponse := &models.SnapmirrorRelationshipResponse{
+		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
+			{
+				Destination: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm0:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				Source: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm1:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				UUID: utils.Ptr(strfmt.UUID("1")),
+			},
+			{},
+			{
+				Destination: &models.SnapmirrorEndpoint{},
+				Source:      &models.SnapmirrorEndpoint{},
+			},
+			{
+				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
+				Source:      &models.SnapmirrorEndpoint{Path: utils.Ptr("svm1:vol1")},
+			},
+		},
+	}
+
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockQtreeJobResponse(w, r)
+	} else {
+		switch r.Method {
+		case "PATCH", "DELETE":
+			jobId := strfmt.UUID("1234")
+			jobLink := models.JobLink{UUID: &jobId}
+			jobResponse := models.JobLinkResponse{Job: &jobLink}
+			setHTTPResponseHeader(w, http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(jobResponse)
+		case "POST":
+			if r.URL.Path == "/api/snapmirror/relationships" {
+				jobId := strfmt.UUID("1234")
+				jobLink := models.JobLink{UUID: &jobId}
+				jobResponse := models.JobLinkResponse{Job: &jobLink}
+				setHTTPResponseHeader(w, http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(jobResponse)
+			} else {
+				setHTTPResponseHeader(w, http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+			}
+		default:
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+		}
+	}
+}
+
+func mockSnapMirrorRelationshipResponseEmptyValue(w http.ResponseWriter, r *http.Request) {
+	snapMirrorRelationshipResponse := &models.SnapmirrorRelationshipResponse{
+		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
+			{},
+			{
+				Destination: &models.SnapmirrorEndpoint{},
+				Source:      &models.SnapmirrorEndpoint{},
+			},
+			{
+				Destination: &models.SnapmirrorEndpoint{Path: utils.Ptr("svm0")},
+				Source:      &models.SnapmirrorEndpoint{Path: utils.Ptr("svm1")},
+			},
+		},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+}
+
+func mockSnapMirrorRelationshipResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
+	snapMirrorRelationshipResponse := &models.SnapmirrorRelationshipResponse{
+		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
+			{
+				Destination: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm0:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				Source: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm1:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				UUID: nil, // Test the use case where backend return UUID nil.
+			},
+		},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+}
+
+func mockSnapMirrorRelationshipResponseSync(w http.ResponseWriter, r *http.Request) {
+	snapMirrorRelationshipResponse := &models.SnapmirrorRelationshipResponse{
+		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
+			{
+				Destination: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm0:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				Source: &models.SnapmirrorEndpoint{
+					Path: utils.Ptr("svm1:vol1"),
+					Svm: &models.SnapmirrorEndpointInlineSvm{
+						Name: utils.Ptr("svm0"),
+					},
+				},
+				Policy: &models.SnapmirrorRelationshipInlinePolicy{Type: utils.Ptr("sync")},
+				UUID:   utils.Ptr(strfmt.UUID("1")),
+			},
+		},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapMirrorRelationshipResponse)
+}
+
+func TestOntapRestSnapmirrorCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorCreate(ctx, "vol1", "svm0", "vol1", "svm1", "fake-repPolicy", "fake-repSchedule")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorInitialize(t *testing.T) {
+	tests := []struct {
+		name             string
+		mockFunction     func(w http.ResponseWriter, r *http.Request)
+		localFlexVolName string
+		isErrorExpected  bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, "vol1", false},
+		{"EmptyResponse_volumeNamePassInInput", mockSnapMirrorRelationshipResponseEmptyValue, "vol1", true},
+		{"EmptyResponse_volumeNameEmptyInInput", mockSnapMirrorRelationshipResponseEmptyValue, "", true},
+		{"SnapmirrorInitializeFailed", mockSnapMirrorRelationshipResponseFailure, "vol1", true},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, "vol1", true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, "vol1", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorInitialize(ctx, test.localFlexVolName, "svm0", "vol1", "svm1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not initialize snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror initialized")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorResync(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"SnapMirrorRelationshipSyncFailed", mockSnapMirrorRelationshipResponseSync, true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorResync(ctx, "vol1", "svm0", "vol1", "svm1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not resync snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror resynced")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorBreak(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorBreak(ctx, "vol1", "svm0", "vol1", "svm1", "snapshot0")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not break snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror broke successfully")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorQuiesce(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorQuiesce(ctx, "vol1", "svm0", "vol1", "svm1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not quiesce snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror quiesced")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorAbort(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorAbort(ctx, "vol1", "svm0", "vol1", "svm1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not abort snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror aborted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorRelease(t *testing.T) {
+	tests := []struct {
+		name              string
+		mockFunction      func(w http.ResponseWriter, r *http.Request)
+		sourceFlexVolName string
+		isErrorExpected   bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, "vol1", false},
+		{"ResponseIsEmpty_VolumeNameisNotEmpty", mockSnapMirrorRelationshipResponseEmptyValue, "vol1", true},
+		{"ResponseIsEmpty_VolumeNameisEmpty", mockSnapMirrorRelationshipResponseEmptyValue, "", true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, "vol1", true},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, "vol1", true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, "vol1", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorRelease(ctx, test.sourceFlexVolName, "svm1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not release snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror released")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorDeleteViaDestination(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorDeleteViaDestination(ctx, "vol1", "svm1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete snap mirror via destination")
+			} else {
+				assert.Error(t, err, "snap mirror deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorDelete(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorDelete(ctx, "vol1", "svm0", "vol1", "svm1")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSnapMirrorPolicyResponse(w http.ResponseWriter, r *http.Request) {
+	copyAllSourceSnapshots := false
+	snapMirroePolicy := models.SnapmirrorPolicy{
+		Name:                   utils.Ptr("snapPolicy"),
+		CopyAllSourceSnapshots: &copyAllSourceSnapshots,
+		SyncType:               utils.Ptr("sync_mirror"), Type: utils.Ptr("sync"),
+	}
+	snapmirrorPolicyRecords := []*models.SnapmirrorPolicy{&snapMirroePolicy}
+	snapmirrorPolicyResponse := models.SnapmirrorPolicyResponse{SnapmirrorPolicyResponseInlineRecords: snapmirrorPolicyRecords}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(snapmirrorPolicyResponse)
+}
+
+func TestOntapRest_SnapmirrorPolicyExists(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorPolicyResponse, false},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			policyExists, err := rs.SnapmirrorPolicyExists(ctx, "snapPolicy")
+			if !test.isErrorExpected {
+				assert.Equal(t, true, policyExists)
+				assert.NoError(t, err, "snapmirror policy does not exists")
+			} else {
+				assert.Error(t, err, "snapmirror policy exists")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SnapmirrorUpdate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
+		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
+		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SnapmirrorUpdate(ctx, "vol1", "svm0")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete snap mirror")
+			} else {
+				assert.Error(t, err, "snap mirror deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockSMBShareResponse(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	switch r.Method {
+	case "POST":
+		smShareCreateResponse := n_a_s.CifsShareCreateCreated{Location: "/"}
+		setHTTPResponseHeader(w, http.StatusCreated)
+		json.NewEncoder(w).Encode(smShareCreateResponse)
+	case "DELETE":
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(nil)
+	default:
+		smbShareResponse := models.CifsShareResponse{
+			CifsShareResponseInlineRecords: []*models.CifsShare{
+				{
+					Name: utils.Ptr("share"), Path: utils.Ptr("/"),
+				},
+			},
+			NumRecords: &numRecords,
+		}
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(smbShareResponse)
+	}
+}
+
+func mockSMBShareResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	smbShareResponse := models.CifsShareResponse{
+		CifsShareResponseInlineRecords: []*models.CifsShare{
+			{
+				Name: utils.Ptr("share"), Path: utils.Ptr("/"),
+			},
+		},
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(smbShareResponse)
+}
+
+func mockSMBShareResourceNotFound(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
+func TestOntapRest_SMBShareCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"SmbShareCreate_success", mockSMBShareResponse, false},
+		{"SmbShareCreate_failed", mockSMBShareResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SMBShareCreate(ctx, "share", "/")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create an SMB share")
+			} else {
+				assert.Error(t, err, "SMB share created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SMBShareExists(t *testing.T) {
+	tests := []struct {
+		name             string
+		mockFunction     func(w http.ResponseWriter, r *http.Request)
+		isSmbShareExists bool
+		isErrorExpected  bool
+	}{
+		{"GetSMBShare_success", mockSMBShareResponse, true, false},
+		{"NumRecordsFeildsNil", mockSMBShareResponseNumRecordsNil, false, false},
+		{"GetSMBShare_failed", mockSMBShareResourceNotFound, false, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			smbShareExists, err := rs.SMBShareExists(ctx, "share")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not found an SMB share")
+				assert.Equal(t, test.isSmbShareExists, smbShareExists)
+			} else {
+				assert.Error(t, err, "SMB share exists")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SMBShareDestroy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"DeleteSMBShare_success", mockSMBShareResponse, false},
+		{"DeleteSMBShare_failed", mockSMBShareResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.SMBShareDestroy(ctx, "share")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete an SMB share")
+			} else {
+				assert.Error(t, err, "SMB share deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockExportPolicyListResponse(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	exportPolicyName := "fake-exportPolicy"
+	exportPolicyID := int64(1)
+	exportPolicy := models.ExportPolicy{
+		Name: &exportPolicyName, ID: &exportPolicyID,
+	}
+
+	url := "/api/protocols/nfs/export-policies"
+	var hrefLink *models.ExportPolicyResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.ExportPolicyResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		hasNextLink = false
+	}
+
+	exportPolicyResponse := models.ExportPolicyResponse{
+		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
+		NumRecords:                        utils.Ptr(int64(1)),
+		Links:                             hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(exportPolicyResponse)
+}
+
+func mockExportPolicyListResponseInternalError(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	exportPolicyName := "fake-exportPolicy"
+	exportPolicyID := int64(1)
+	exportPolicy := models.ExportPolicy{
+		Name: &exportPolicyName, ID: &exportPolicyID,
+	}
+
+	url := "/api/protocols/nfs/export-policies"
+	var hrefLink *models.ExportPolicyResponseInlineLinks
+	sc := http.StatusInternalServerError
+	if hasNextLink {
+		hrefLink = &models.ExportPolicyResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+		sc = http.StatusOK
+	}
+
+	exportPolicyResponse := models.ExportPolicyResponse{
+		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
+		NumRecords:                        utils.Ptr(int64(1)),
+		Links:                             hrefLink,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(sc)
+	json.NewEncoder(w).Encode(exportPolicyResponse)
+}
+
+func mockExportPolicyListResponseNumRecordsNil(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
+	exportPolicyName := "fake-exportPolicy"
+	exportPolicyID := int64(1)
+	exportPolicy := models.ExportPolicy{
+		Name: &exportPolicyName, ID: &exportPolicyID,
+	}
+
+	url := "/api/protocols/nfs/export-policies"
+	var hrefLink *models.ExportPolicyResponseInlineLinks
+	if hasNextLink {
+		hrefLink = &models.ExportPolicyResponseInlineLinks{
+			Next: &models.Href{Href: &url},
+		}
+	}
+
+	exportPolicyResponse := models.ExportPolicyResponse{
+		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
+		Links:                             hrefLink,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(exportPolicyResponse)
+}
+
+func mockExportPolicyResponse(w http.ResponseWriter, r *http.Request) {
+	exportPolicyName := "fake-exportPolicy"
+	exportPolicyID := int64(1)
+	exportPolicy := models.ExportPolicy{
+		Name: &exportPolicyName, ID: &exportPolicyID,
+	}
+	exportPolicyResponse := models.ExportPolicyResponse{
+		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
+		NumRecords:                        utils.Ptr(int64(1)),
+	}
+
+	switch r.Method {
+	case "POST":
+		switch r.URL.Path {
+		case "/api/protocols/nfs/export-policies/1/rules":
+			mockExportPolicyRule(w, r)
+		default:
+			setHTTPResponseHeader(w, http.StatusCreated)
+			json.NewEncoder(w).Encode(exportPolicyResponse)
+		}
+	case "GET":
+		switch r.URL.Path {
+		case "/api/protocols/nfs/export-policies":
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(exportPolicyResponse)
+		case "/api/protocols/nfs/export-policies/1/rules":
+			mockExportPolicyRule(w, r)
+		default:
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(exportPolicy)
+		}
+	case "DELETE":
+		switch r.URL.Path {
+		case "/api/protocols/nfs/export-policies/1/rules":
+			mockExportPolicyRule(w, r)
+		default:
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(exportPolicy)
+		}
+	}
+}
+
+func mockExportPolicyResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
+	exportPolicyName := "fake-exportPolicy"
+	exportPolicyID := int64(1)
+	exportPolicy := models.ExportPolicy{
+		Name: &exportPolicyName, ID: &exportPolicyID,
+	}
+	exportPolicyResponse := models.ExportPolicyResponse{
+		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(exportPolicyResponse)
+}
+
+func mockExportPolicyResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
+	exportPolicyName := "fake-exportPolicy"
+	exportPolicy := models.ExportPolicy{
+		Name: &exportPolicyName,
+	}
+	exportPolicyResponse := models.ExportPolicyResponse{
+		ExportPolicyResponseInlineRecords: []*models.ExportPolicy{&exportPolicy},
+		NumRecords:                        utils.Ptr(int64(1)),
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(exportPolicyResponse)
+}
+
+func mockExportPolicyRule(w http.ResponseWriter, r *http.Request) {
+	exportClient := ".example.com"
+	ruleIndex := int64(1)
+	numRecords := int64(1)
+	exportRule := models.ExportRuleResponse{
+		ExportRuleResponseInlineRecords: []*models.ExportRule{
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: &exportClient}},
+				Index:                   &ruleIndex,
+			},
+		},
+		NumRecords: &numRecords,
+	}
+
+	switch r.Method {
+	case "POST":
+		setHTTPResponseHeader(w, http.StatusCreated)
+		json.NewEncoder(w).Encode(exportRule)
+	case "GET":
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(exportRule)
+	case "DELETE":
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode("")
+	}
+}
+
+func mockExportPolicyResourceNotFound(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
+func TestOntapREST_CreateExportPolicy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyResponse, false},
+		{"ExportPolicy_failed", mockExportPolicyResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicy, err := rs.ExportPolicyCreate(ctx, "fake-exportPolicy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create the export policy")
+				assert.Equal(t, "fake-exportPolicy", *exportPolicy.Payload.ExportPolicyResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "export policy created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_GetExportPolicy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyResponse, false},
+		{"ExportPolicy_failed", mockExportPolicyResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicy, err := rs.ExportPolicyGet(ctx, 0)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the export policy")
+				assert.Equal(t, "fake-exportPolicy", *exportPolicy.Payload.Name)
+			} else {
+				assert.Error(t, err, "get the export policy")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_ExportPolicyList(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(hasNextLink bool, w http.ResponseWriter, r *http.Request)
+		isNegativeTest  bool
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyListResponse, false, false},
+		{"NumRecordsFieldNilInResponse", mockExportPolicyListResponseNumRecordsNil, false, false},
+		{"HrefLinkSecondGetCallFailed", mockExportPolicyListResponseInternalError, false, true},
+		{"ExportPolicy_failed", mockInternalServerError, true, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := getHttpServer(test.isNegativeTest, test.mockFunction)
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicy, err := rs.ExportPolicyList(ctx, "fake-exportPolicy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the export policy")
+				assert.Equal(t, "fake-exportPolicy", *exportPolicy.Payload.ExportPolicyResponseInlineRecords[0].Name)
+			} else {
+				assert.Error(t, err, "get the export policy")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_ExportPolicyGetByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyResponse, false},
+		{"ExportPolicy_failed", mockExportPolicyResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicy, err := rs.ExportPolicyGetByName(ctx, "fake-exportPolicy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the export policy")
+				assert.Equal(t, "fake-exportPolicy", *exportPolicy.Name)
+			} else {
+				assert.Error(t, err, "get the export policy")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_DestroyExportPolicy(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyResponse, false},
+		{"ExportPolicy_Failure", mockExportPolicyResourceNotFound, true},
+		{"ExportPolicy_NumRecordsNil", mockExportPolicyResponseNumRecordsNil, true},
+		{"ExportPolicy_UUIDNilInResponse", mockExportPolicyResponseUUIDNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicy, err := rs.ExportPolicyDestroy(ctx, "fake-exportPolicy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete the export policy")
+				assert.Equal(t, true, exportPolicy.IsSuccess())
+			} else {
+				assert.Error(t, err, "delete the export policy")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_GetExportRules(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyResponse, false},
+		{"ExportPolicy_failed", mockExportPolicyResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicyRule, err := rs.ExportRuleList(ctx, "fake-exportPolicy")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not get the export rule")
+				assert.Equal(t, ".example.com",
+					*exportPolicyRule.Payload.ExportRuleResponseInlineRecords[0].ExportRuleInlineClients[0].Match)
+			} else {
+				assert.Error(t, err, "get the export rule")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_CreateExportRule(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyResponse, false},
+		{"ExportPolicy_failure", mockExportPolicyResourceNotFound, true},
+		{"ExportPolicy_NumRecordsNil", mockExportPolicyResponseNumRecordsNil, true},
+		{"ExportPolicy_UUIDNilInResponse", mockExportPolicyResponseUUIDNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicyRule, err := rs.ExportRuleCreate(ctx, "fake-exportPolicy", ".example.com", []string{"any"},
+				[]string{"krb5"}, []string{"krb5p"}, []string{"krb5i"})
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create export rule")
+				assert.Equal(t, ".example.com",
+					*exportPolicyRule.Payload.ExportRuleResponseInlineRecords[0].ExportRuleInlineClients[0].Match)
+			} else {
+				assert.Error(t, err, "export rule created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_ToExportAuthenticationFlavorSlice(t *testing.T) {
+	tests := []struct {
+		authFlavor                 string
+		exportAuthenticationFlavor models.ExportAuthenticationFlavor
+	}{
+		{"any", models.ExportAuthenticationFlavorAny},
+		{"none", models.ExportAuthenticationFlavorNone},
+		{"never", models.ExportAuthenticationFlavorNever},
+		{"krb5", models.ExportAuthenticationFlavorKrb5},
+		{"krb5i", models.ExportAuthenticationFlavorKrb5i},
+		{"krb5p", models.ExportAuthenticationFlavorKrb5p},
+		{"ntlm", models.ExportAuthenticationFlavorNtlm},
+		{"sys", models.ExportAuthenticationFlavorSys},
+	}
+	for _, test := range tests {
+		t.Run(fmt.Sprintf(test.authFlavor), func(t *testing.T) {
+			exportAuthenticationFlavor := []string{test.authFlavor}
+			result := ToExportAuthenticationFlavorSlice(exportAuthenticationFlavor)
+			assert.Equal(t, test.exportAuthenticationFlavor, *result[0])
+		})
+	}
+}
+
+func TestOntapREST_DeleteExportRule(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"ExportPolicy_success", mockExportPolicyResponse, false},
+		{"ExportPolicy_Failure", mockExportPolicyResourceNotFound, true},
+		{"ExportPolicy_NumRecordsNil", mockExportPolicyResponseNumRecordsNil, true},
+		{"ExportPolicy_UUIDNilInResponse", mockExportPolicyResponseUUIDNil, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			exportPolicyRule, err := rs.ExportRuleDestroy(ctx, "fake-exportPolicy", 1)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not destroyed export rule")
+				assert.Equal(t, true, exportPolicyRule.IsSuccess())
+			} else {
+				assert.Error(t, err, "export rule destroyed")
+			}
+			server.Close()
+		})
+	}
 }

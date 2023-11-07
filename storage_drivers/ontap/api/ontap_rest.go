@@ -5591,7 +5591,7 @@ func (c RestClient) getSMBShareByName(ctx context.Context, shareName string) (*m
 	if err != nil {
 		return nil, err
 	}
-	if result == nil || result.Payload == nil || *result.Payload.NumRecords == 0 {
+	if result == nil || result.Payload == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 {
 		return nil, nil
 	}
 	// The specified SMB share already exists
