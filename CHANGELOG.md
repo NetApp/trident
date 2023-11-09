@@ -14,9 +14,9 @@
 **Enhancements:**
 
 - **Kubernetes:** Added support for Kubernetes 1.28.
-- Added support for using Azure Managed Identities(AMI) with azure-netapp-files storage driver.
+- Added support for using Azure Managed Identities (AMI) with azure-netapp-files storage driver.
 - Added support for NVMe over TCP for the ONTAP-SAN driver.
-- Added ability to pause the provisioning of a volume when backend is set to suspended state by user.
+- Added ability to pause the provisioning of a volume when backend is set to suspended state by user (Issue [#558](https://github.com/NetApp/trident/issues/558)).
 
 **Other advanced storage management/provisioning/access features available in Astra Control include:**
 
@@ -26,6 +26,10 @@
 - Volume Replication
 
 Please refer to [Astra Control Documentation](https://docs.netapp.com/us-en/astra-control-center/use/enable-acp.html) for details on these features.
+
+**Deprecations:**
+
+- **Kubernetes:** Updated minimum supported Kubernetes to 1.23.
 
 ## v23.07.0
 
