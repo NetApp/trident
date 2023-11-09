@@ -21,6 +21,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -45,11 +46,25 @@ func getVolumeConfig() *storage.VolumeConfig {
 	}
 }
 
+func newMockAWSOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.MockAWSAPI, *SANStorageDriver) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+
+	fsxId := FSX_ID
+	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, &fsxId, mockAPI)
+	driver.API = mockAPI
+	driver.ips = []string{"127.0.0.1"}
+
+	driver.AWSAPI = mockAWSAPI
+	return mockAPI, mockAWSAPI, driver
+}
+
 func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriver) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	driver.API = mockAPI
 	driver.ips = []string{"127.0.0.1"}
 
@@ -67,8 +82,8 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	ontapSanDrivers := []SANStorageDriver{
-		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true, mockAPI),
-		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, mockAPI),
+		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true, nil, mockAPI),
+		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, mockAPI),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -104,7 +119,7 @@ func TestOntapSanStorageDriverConfigString(t *testing.T) {
 }
 
 func newTestOntapSANDriver(
-	vserverAdminHost, vserverAdminPort, vserverAggrName string, useREST bool, apiOverride api.OntapAPI,
+	vserverAdminHost, vserverAdminPort, vserverAggrName string, useREST bool, fsxId *string, apiOverride api.OntapAPI,
 ) *SANStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
@@ -122,6 +137,11 @@ func newTestOntapSANDriver(
 	config.StorageDriverName = "ontap-san"
 	config.StoragePrefix = sp("test_")
 	config.UseREST = useREST
+
+	if fsxId != nil {
+		config.AWSConfig = &drivers.AWSConfig{}
+		config.AWSConfig.FSxFilesystemID = *fsxId
+	}
 
 	sanDriver := &SANStorageDriver{}
 	sanDriver.Config = *config
@@ -211,7 +231,7 @@ func TestOntapSanTerminate(t *testing.T) {
 
 			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false, nil)
+			sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, port, vserverAggrName, false, nil, nil)
 			sanStorageDriver.Config.IgroupName = driverInfo.igroupName
 			sanStorageDriver.telemetry = nil
 			ontapSanDrivers = append(ontapSanDrivers, *sanStorageDriver)
@@ -554,7 +574,7 @@ func TestOntapSanUnpublish(t *testing.T) {
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-			d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+			d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 			d.API = mockAPI
 
 			tr.mocks(mockAPI, igroupName, lunPath)
@@ -575,7 +595,7 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
@@ -617,7 +637,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
@@ -659,7 +679,7 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
@@ -701,7 +721,7 @@ func TestSANStorageDriverGetBackendState(t *testing.T) {
 
 	mockApi.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	mockDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockApi)
+	mockDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockApi)
 	mockDriver.API = mockApi
 
 	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
@@ -1729,6 +1749,49 @@ func TestOntapSanVolumeRename_fail(t *testing.T) {
 	assert.Error(t, err, "Renamed the volume, expected to fail")
 }
 
+func TestOntapSanVolumeDestroy_FSx(t *testing.T) {
+	svmName := "SVM1"
+	mockAPI, mockAWSAPI, driver := newMockAWSOntapSANDriver(t)
+
+	volConfig := getVolumeConfig()
+
+	tests := []struct {
+		message  string
+		nasType  string
+		smbShare string
+		state    string
+	}{
+		{"Test volume in FSx in available state", "nfs", "", "AVAILABLE"},
+		{"Test volume in FSx in deleting state", "nfs", "", "DELETING"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			vol := awsapi.Volume{
+				State: test.state,
+			}
+			isVolumeExists := vol.State != ""
+			mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+			mockAWSAPI.EXPECT().VolumeExists(ctx, volConfig).Return(isVolumeExists, &vol, nil)
+			if isVolumeExists {
+				mockAWSAPI.EXPECT().WaitForVolumeStates(
+					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+				if vol.State == awsapi.StateAvailable {
+					mockAWSAPI.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+				}
+			} else {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volConfig.InternalName, svmName).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
+			}
+			result := driver.Destroy(ctx, volConfig)
+
+			assert.NoError(t, result)
+		})
+	}
+}
+
 func TestOntapSanVolumeDestroy(t *testing.T) {
 	ctx := context.Background()
 
@@ -2367,7 +2430,7 @@ func TestOntapSANStorageDriverGetUpdateType(t *testing.T) {
 	}
 	oldDriver.Config.DataLIF = "1.2.3.1"
 
-	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 
 	newDriver.API = mockAPI
 	prefix2 := "storage_"
@@ -2399,13 +2462,13 @@ func TestOntapSANStorageDriverGetUpdateType_Failure(t *testing.T) {
 	mockAPI, _ := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, mockAPI)
+	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
 	prefix1 := "test_"
 	oldDriver.Config.StoragePrefix = &prefix1
 
 	// Created a SAN driver
-	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 
 	newDriver.API = mockAPI
 	prefix2 := "storage_"
@@ -2770,7 +2833,7 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethods(t *testing.T) {
 		"clientcertificate": "dummy-certificate",
 		"clientprivatekey":  "dummy-client-private-key"
 	}`
-	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil)
+	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
 
 	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig,
 		map[string]string{}, BackendUUID)
@@ -2800,7 +2863,7 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(t *testin
 		"clientprivatekey":  "dummy-client-private-key",
 		"clientcertificate": "dummy-certificate",
 	}
-	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil)
+	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
 
 	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -2830,7 +2893,7 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethodsWithConfigAndSecrets(
 		"clientprivatekey":  "dummy-client-private-key",
 		"clientcertificate": "dummy-certificate",
 	}
-	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil)
+	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, nil)
 
 	result := sanStorageDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -3651,7 +3714,7 @@ func TestOntapSanVolumeValidate_ValidateSANDriver(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	driver.API = mockAPI
 
 	storagePrefix := "trident&#"

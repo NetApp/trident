@@ -21,11 +21,12 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 )
 
 func newTestOntapNASFlexgroupDriver(
-	vserverAdminHost, vserverAdminPort, vserverAggrName string, driverContext tridentconfig.DriverContext, useREST bool,
+	vserverAdminHost, vserverAdminPort, vserverAggrName string, driverContext tridentconfig.DriverContext, useREST bool, fsxId *string,
 ) *NASFlexGroupStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
@@ -43,6 +44,11 @@ func newTestOntapNASFlexgroupDriver(
 	config.DriverContext = driverContext
 	config.UseREST = useREST
 	config.FlexGroupAggregateList = []string{"aggr1", "aggr2"}
+
+	if fsxId != nil {
+		config.AWSConfig = &drivers.AWSConfig{}
+		config.AWSConfig.FSxFilesystemID = *fsxId
+	}
 
 	nasDriver := &NASFlexGroupStorageDriver{}
 	nasDriver.Config = *config
@@ -71,6 +77,14 @@ func newTestOntapNASFlexgroupDriver(
 	return nasDriver
 }
 
+func newMockAWSOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.MockAWSAPI, *NASFlexGroupStorageDriver) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
+	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+	driver.AWSAPI = mockAWSAPI
+	return mockAPI, mockAWSAPI, driver
+}
+
 func newMockOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASFlexGroupStorageDriver) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
@@ -78,8 +92,9 @@ func newMockOntapNASFlexgroupDriver(t *testing.T) (*mockapi.MockOntapAPI, *NASFl
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	fsxId := FSX_ID
 
-	driver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, "CSI", false)
+	driver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, "CSI", false, &fsxId)
 	driver.API = mockAPI
 	return mockAPI, driver
 }
@@ -182,7 +197,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethods(t *testing.
 		"clientprivatekey":  "dummy-client-private-key"
 	}`
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false)
+		"CSI", false, nil)
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig,
 		map[string]string{}, BackendUUID)
@@ -219,7 +234,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(
 		"clientcertificate": "dummy-certificate",
 	}
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false)
+		"CSI", false, nil)
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -256,7 +271,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_WithTwoAuthMethodsWithConfigAn
 		"clientcertificate": "dummy-certificate",
 	}
 	ontapNasDriver := newTestOntapNASFlexgroupDriver(vserverAdminHost, vserverAdminPort, vserverAggrName,
-		"CSI", false)
+		"CSI", false, nil)
 
 	result := ontapNasDriver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets,
 		BackendUUID)
@@ -1221,6 +1236,67 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupSize(t *testing.T) 
 
 			result := driver.Create(ctx, volConfig, pool1, volAttrs)
 			assert.Error(t, result, "Volume size validation succeeded with invalid volume size")
+		})
+	}
+}
+
+func TestOntapNasFlexgroupStorageDriverVolumeDestroy_FSx(t *testing.T) {
+	svmName := "SVM1"
+	volName := "testVol"
+	volNameInternal := volName + "Internal"
+	mockAPI, mockAWSAPI, driver := newMockAWSOntapNASFlexgroupDriver(t)
+
+	volConfig := &storage.VolumeConfig{
+		Size:         "400g",
+		Name:         volName,
+		InternalName: volNameInternal,
+		Encryption:   "false",
+		FileSystem:   "xfs",
+	}
+
+	assert.NotNil(t, mockAPI)
+
+	tests := []struct {
+		message  string
+		nasType  string
+		smbShare string
+		state    string
+	}{
+		{"Test NFS volume in FSx in available state", "nfs", "", "AVAILABLE"},
+		{"Test NFS volume in FSx in deleting state", "nfs", "", "DELETING"},
+		{"Test NFS volume does not exist in FSx", "nfs", "", ""},
+		{"Test SMB volume does not exist in FSx", "smb", volConfig.InternalName, ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			vol := awsapi.Volume{
+				State: test.state,
+			}
+			isVolumeExists := vol.State != ""
+			mockAWSAPI.EXPECT().VolumeExists(ctx, volConfig).Return(isVolumeExists, &vol, nil)
+			if isVolumeExists {
+				mockAWSAPI.EXPECT().WaitForVolumeStates(
+					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+				if vol.State == awsapi.StateAvailable {
+					mockAWSAPI.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+				}
+			} else {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true).Return(nil)
+				if test.nasType == sa.SMB {
+					if test.smbShare == "" {
+						mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(true, nil)
+						mockAPI.EXPECT().SMBShareDestroy(ctx, volConfig.InternalName).Return(nil)
+					}
+					driver.Config.NASType = sa.SMB
+					driver.Config.SMBShare = test.smbShare
+				}
+			}
+
+			result := driver.Destroy(ctx, volConfig)
+
+			assert.NoError(t, result)
 		})
 	}
 }
@@ -3020,7 +3096,7 @@ func TestOntapNasFlexgroupStorageDriverGetUpdateType(t *testing.T) {
 	}
 
 	newDriver := newTestOntapNASFlexgroupDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME,
-		"CSI", false)
+		"CSI", false, nil)
 	newDriver.API = mockAPI
 	prefix2 := "storage_"
 	newDriver.Config.StoragePrefix = &prefix2
@@ -3049,14 +3125,14 @@ func TestOntapNasFlexgroupStorageDriverGetUpdateType_Failure(t *testing.T) {
 	mockAPI, _ := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, mockAPI)
+	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
 	prefix1 := "test_"
 	oldDriver.Config.StoragePrefix = &prefix1
 
 	// Created a SAN driver
 	newDriver := newTestOntapNASFlexgroupDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME,
-		"CSI", false)
+		"CSI", false, nil)
 	newDriver.API = mockAPI
 	prefix2 := "storage_"
 	newDriver.Config.StoragePrefix = &prefix2

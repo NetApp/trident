@@ -20,6 +20,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -34,6 +35,7 @@ type NVMeStorageDriver struct {
 	Config      drivers.OntapStorageDriverConfig
 	ips         []string
 	API         api.OntapAPI
+	AWSAPI      awsapi.AWSAPI
 	telemetry   *Telemetry
 
 	physicalPools map[string]storage.Pool
@@ -110,6 +112,16 @@ func (d *NVMeStorageDriver) Initialize(
 		return fmt.Errorf("error initializing %s driver: %v", d.Name(), err)
 	}
 
+	// Initialize AWS API if applicable.
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.AWSAPI == nil {
+		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
+		}
+	}
+
+	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
 		if d.API, err = InitializeOntapDriver(ctx, config); err != nil {
@@ -679,6 +691,16 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// TODO(sphadnis): Check if we need to do anything for docker.
 		Logc(ctx).Debug("No actions for Destroy for Docker.")
+	}
+
+	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
+	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
+	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
+	if d.AWSAPI != nil {
+		err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		if err == nil || !errors.IsNotFoundError(err) {
+			return err
+		}
 	}
 
 	// If flexVol has been a snapmirror destination.
@@ -1471,7 +1493,7 @@ func (d *NVMeStorageDriver) createNVMeNamespaceCommentString(ctx context.Context
 }
 
 // ParseNVMeNamespaceCommentString returns the map of attributes that were stored in namespace comment field.
-func (d *NVMeStorageDriver) ParseNVMeNamespaceCommentString(ctx context.Context, comment string) (map[string]string, error) {
+func (d *NVMeStorageDriver) ParseNVMeNamespaceCommentString(_ context.Context, comment string) (map[string]string, error) {
 	// Parse the comment
 	nsComment := map[string]map[string]string{}
 
@@ -1530,7 +1552,7 @@ func (d *NVMeStorageDriver) namespaceSize(ctx context.Context, name string) (int
 }
 
 // EnablePublishEnforcement sets the publishEnforcement on older NVMe volumes.
-func (d *NVMeStorageDriver) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
+func (d *NVMeStorageDriver) EnablePublishEnforcement(_ context.Context, volume *storage.Volume) error {
 	volume.Config.AccessInfo.PublishEnforcement = true
 	return nil
 }

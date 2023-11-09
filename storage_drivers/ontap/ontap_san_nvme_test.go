@@ -16,13 +16,14 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
 var mockIPs = []string{"0.0.0.0", "1.1.1.1"}
 
-func newNVMeDriver(apiOverride api.OntapAPI) *NVMeStorageDriver {
+func newNVMeDriver(apiOverride api.OntapAPI, awsApiOverride awsapi.AWSAPI, fsxId *string) *NVMeStorageDriver {
 	sPrefix := "test_"
 
 	config := &drivers.OntapStorageDriverConfig{}
@@ -38,7 +39,12 @@ func newNVMeDriver(apiOverride api.OntapAPI) *NVMeStorageDriver {
 		StorageDriverName: "ontap-san",
 	}
 
-	driver := &NVMeStorageDriver{Config: *config, API: apiOverride}
+	if fsxId != nil {
+		config.AWSConfig = &drivers.AWSConfig{}
+		config.AWSConfig.FSxFilesystemID = *fsxId
+	}
+
+	driver := &NVMeStorageDriver{Config: *config, API: apiOverride, AWSAPI: awsApiOverride}
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           config.SVM,
@@ -54,15 +60,24 @@ func newNVMeDriver(apiOverride api.OntapAPI) *NVMeStorageDriver {
 	return driver
 }
 
+func newNVMeDriverAndMockApiAndAwsApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOntapAPI, *mockapi.MockAWSAPI) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+	fsxId := FSX_ID
+
+	return newNVMeDriver(mockAPI, mockAWSAPI, &fsxId), mockAPI, mockAWSAPI
+}
+
 func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOntapAPI) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	return newNVMeDriver(mockAPI), mockAPI
+	return newNVMeDriver(mockAPI, nil, nil), mockAPI
 }
 
 func TestNVMeBackendName(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 
 	// Backend name non-empty.
 	d.Config.BackendName = "san-nvme-backend"
@@ -82,7 +97,7 @@ func TestNVMeBackendName(t *testing.T) {
 }
 
 func TestNVMeInitialize_ConfigUnmarshalError(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		// Version:           1,
 		StorageDriverName: "ontap-san",
@@ -203,7 +218,7 @@ func TestNVMeInitialize_Success(t *testing.T) {
 }
 
 func TestNVMeTerminate_Success(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	d.telemetry = NewOntapTelemetry(ctx, d)
 
 	d.Terminate(ctx, "")
@@ -222,7 +237,7 @@ func TestNVMeValidate_ReplicationValidationError(t *testing.T) {
 }
 
 func TestNVMeValidate_StoragePoolError(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.InternalAttributes()[SnapshotPolicy] = ""
 	d.virtualPools = map[string]storage.Pool{"pool1": pool1}
@@ -233,7 +248,7 @@ func TestNVMeValidate_StoragePoolError(t *testing.T) {
 }
 
 func TestNVMeGetStorageBackendSpecs(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	backend := storage.StorageBackend{}
 
 	backend.SetStorage(map[string]storage.Pool{})
@@ -242,7 +257,7 @@ func TestNVMeGetStorageBackendSpecs(t *testing.T) {
 }
 
 func TestNVMeGetStorageBackendPhysicalPoolNames(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	assert.Equal(t, d.GetStorageBackendPhysicalPoolNames(ctx), []string{"pool1"}, "Physical pools are different.")
 }
 
@@ -272,23 +287,23 @@ func TestNVMeGetStorageBackendPools(t *testing.T) {
 }
 
 func TestNVMeGetVolumeOpts(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	volConfig := storage.VolumeConfig{}
 	assert.NotNil(t, d.GetVolumeOpts(ctx, &volConfig, nil), "Couldn't get VolumeOpts.")
 }
 
 func TestNVMeGetInternalVolumeName(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	assert.Equal(t, d.GetInternalVolumeName(ctx, "vol1"), "test_vol1", "Got different volume.")
 }
 
 func TestNVMeGetProtocol(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	assert.Equal(t, d.GetProtocol(ctx), tridentconfig.Block, "Incorrect protocol.")
 }
 
 func TestNVMeStoreConfig(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	persistentConfig := &storage.PersistentStorageBackendConfig{}
 
 	d.StoreConfig(ctx, persistentConfig)
@@ -299,7 +314,7 @@ func TestNVMeStoreConfig(t *testing.T) {
 }
 
 func TestNVMeGetUpdateType_InvalidUpdate(t *testing.T) {
-	d1 := newNVMeDriver(nil)
+	d1 := newNVMeDriver(nil, nil, nil)
 	_, d2 := newMockOntapNASDriver(t)
 
 	bMap := d1.GetUpdateType(ctx, d2)
@@ -308,8 +323,8 @@ func TestNVMeGetUpdateType_InvalidUpdate(t *testing.T) {
 }
 
 func TestNVMeGetUpdateType_OtherUpdates(t *testing.T) {
-	d1 := newNVMeDriver(nil)
-	d2 := newNVMeDriver(nil)
+	d1 := newNVMeDriver(nil, nil, nil)
+	d2 := newNVMeDriver(nil, nil, nil)
 
 	sPrefix := "diff"
 	d2.Config.DataLIF = "1.1.1.1"
@@ -328,7 +343,7 @@ func TestNVMeGetUpdateType_OtherUpdates(t *testing.T) {
 }
 
 func TestNVMeGetCommonConfig(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	assert.Equal(t, d.GetCommonConfig(ctx), d.Config.CommonStorageDriverConfig, "Driver configuration not found.")
 }
 
@@ -418,7 +433,7 @@ func TestNVMeReestablishMirror_Errors(t *testing.T) {
 }
 
 func TestNVMePromoteMirror_Error(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 
 	promote, err := d.PromoteMirror(ctx, "", "remoteHandle", "")
 
@@ -427,7 +442,7 @@ func TestNVMePromoteMirror_Error(t *testing.T) {
 }
 
 func TestNVMeGetMirrorStatus_Error(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 
 	status, err := d.GetMirrorStatus(ctx, "", "remoteHandle")
 
@@ -436,7 +451,7 @@ func TestNVMeGetMirrorStatus_Error(t *testing.T) {
 }
 
 func TestNVMeReleaseMirror_Error(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 
 	err := d.ReleaseMirror(ctx, "")
 
@@ -722,6 +737,49 @@ func TestNVMeDestroy_SnapMirrorAPIError(t *testing.T) {
 	assert.ErrorContains(t, err, "snap mirror api call failed")
 }
 
+func TestNVMeDestroy_VolumeDestroy_FSx(t *testing.T) {
+	svmName := "SVM1"
+	d, mAPI, mAWSAPI := newNVMeDriverAndMockApiAndAwsApi(t)
+	d.Config.DriverContext = tridentconfig.ContextDocker
+	_, volConfig, _ := getNVMeCreateArgs(d)
+
+	tests := []struct {
+		message  string
+		nasType  string
+		smbShare string
+		state    string
+	}{
+		{"Test volume in FSx in available state", "nfs", "", "AVAILABLE"},
+		{"Test volume in FSx in deleting state", "nfs", "", "DELETING"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.message, func(t *testing.T) {
+			vol := awsapi.Volume{
+				State: test.state,
+			}
+			isVolumeExists := vol.State != ""
+			mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+			mAWSAPI.EXPECT().VolumeExists(ctx, volConfig).Return(isVolumeExists, &vol, nil)
+			if isVolumeExists {
+				mAWSAPI.EXPECT().WaitForVolumeStates(
+					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+				if vol.State == awsapi.StateAvailable {
+					mAWSAPI.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+				}
+			} else {
+				mAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
+				// mockAPI.EXPECT().SnapmirrorRelease(ctx, volConfig.InternalName, svmName).Return(nil)
+				mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
+			}
+			result := d.Destroy(ctx, volConfig)
+
+			assert.NoError(t, result)
+		})
+	}
+}
+
 func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	d.Config.DriverContext = tridentconfig.ContextDocker
@@ -835,7 +893,7 @@ func TestNVMeGetVolumeExternalWrappers_Success(t *testing.T) {
 }
 
 func TestNVMeCreateNVMeNamespaceCommentString(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	nsAttr := map[string]string{
 		nsAttributeFSType:    "ext4",
 		nsAttributeLUKS:      "luks",
@@ -859,7 +917,7 @@ func TestNVMeCreateNVMeNamespaceCommentString(t *testing.T) {
 }
 
 func TestNVMeParseNVMeNamespaceCommentString(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 
 	nsCommentString := `{"nsAttribute":{"LUKS":"luks","com.netapp.ndvp.fstype":"ext4","driverContext":"docker"}}`
 
@@ -902,7 +960,7 @@ func TestGetNodeSpecificSubsystemName(t *testing.T) {
 func TestPublish(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mock := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newNVMeDriver(mock)
+	d := newNVMeDriver(mock, nil, nil)
 
 	volConfig := &storage.VolumeConfig{
 		Name:         "fakeVolName",
@@ -1027,7 +1085,7 @@ func TestPublish(t *testing.T) {
 func TestUnpublish(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mock := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newNVMeDriver(mock)
+	d := newNVMeDriver(mock, nil, nil)
 
 	volConfig := &storage.VolumeConfig{
 		Name:         "fakeVolName",
@@ -1062,7 +1120,7 @@ func TestUnpublish(t *testing.T) {
 func TestCreatePrepare(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mock := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newNVMeDriver(mock)
+	d := newNVMeDriver(mock, nil, nil)
 	volConfig := &storage.VolumeConfig{
 		Name:         "fakeVolName",
 		InternalName: "fakeInternalName",
@@ -1319,10 +1377,6 @@ func TestImport(t *testing.T) {
 	_, volConfig, _ := getNVMeCreateArgs(d)
 	originalName := "fakeOriginalName"
 	vol := &api.Volume{Aggregates: []string{"data"}}
-	type error struct {
-		err     string
-		message string
-	}
 	ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100", UUID: "fakeUUID"}
 
 	// Test1: Error - Error getting volume info
@@ -1475,7 +1529,7 @@ func TestGetBackendState(t *testing.T) {
 }
 
 func TestEnablePublishEnforcement(t *testing.T) {
-	d := newNVMeDriver(nil)
+	d := newNVMeDriver(nil, nil, nil)
 	vol := storage.Volume{Config: getVolumeConfig()}
 
 	assert.True(t, d.CanEnablePublishEnforcement(), "Cannot enable publish enforcement.")

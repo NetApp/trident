@@ -18,7 +18,9 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func lunPath(name string) string {
@@ -31,6 +33,7 @@ type SANStorageDriver struct {
 	Config      drivers.OntapStorageDriverConfig
 	ips         []string
 	API         api.OntapAPI
+	AWSAPI      awsapi.AWSAPI
 	telemetry   *Telemetry
 
 	physicalPools map[string]storage.Pool
@@ -89,6 +92,16 @@ func (d *SANStorageDriver) Initialize(
 	}
 	d.Config = *config
 
+	// Initialize AWS API if applicable.
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.AWSAPI == nil {
+		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
+		}
+	}
+
+	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
 		d.API, err = InitializeOntapDriver(ctx, config)
@@ -733,6 +746,16 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 			if _, err := utils.PrepareDeviceForRemoval(ctx, &publishInfo, nil, true, false); err != nil {
 				Logc(ctx).Error(err)
 			}
+		}
+	}
+
+	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
+	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
+	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
+	if d.AWSAPI != nil {
+		err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		if err == nil || !errors.IsNotFoundError(err) {
+			return err
 		}
 	}
 

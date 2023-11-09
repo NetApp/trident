@@ -18,6 +18,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
@@ -195,6 +196,7 @@ type SANEconomyStorageDriver struct {
 	Config            drivers.OntapStorageDriverConfig
 	ips               []string
 	API               api.OntapAPI
+	AWSAPI            awsapi.AWSAPI
 	telemetry         *Telemetry
 	flexvolNamePrefix string
 	helper            *LUNHelper
@@ -260,6 +262,16 @@ func (d *SANEconomyStorageDriver) Initialize(
 	}
 	d.Config = *config
 
+	// Initialize AWS API if applicable.
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.AWSAPI == nil {
+		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
+		}
+	}
+
+	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
 		d.API, err = InitializeOntapDriver(ctx, config)
@@ -956,6 +968,19 @@ func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucke
 
 	count := len(luns)
 	if count == 0 {
+		// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
+		// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
+		// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
+		if d.AWSAPI != nil {
+			volConfig := &storage.VolumeConfig{
+				InternalName: bucketVol,
+			}
+			err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+			if err == nil || !errors.IsNotFoundError(err) {
+				return err
+			}
+		}
+
 		// Delete the bucketVol
 		err := d.API.VolumeDestroy(ctx, bucketVol, true)
 		if err != nil {

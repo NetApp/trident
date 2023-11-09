@@ -35,7 +35,7 @@ import (
 // }
 
 func NewAPIResponse(
-	client, version, status, reason, errno string,
+	_, _, status, reason, errno string,
 ) *api.APIResponse {
 	return api.NewAPIResponse(status, reason, errno)
 }
@@ -1183,7 +1183,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	storageDriverSAN := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, mockAPI)
+	storageDriverSAN := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1200,7 +1200,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, mockAPI)
+	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1217,7 +1217,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, mockAPI)
+	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1233,7 +1233,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, mockAPI)
+	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
 	storageDriver.virtualPools = virtualPools
@@ -1255,7 +1255,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, mockAPI)
+	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool := getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
 	physicalPools := map[string]storage.Pool{}
@@ -1271,7 +1271,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, "443", vserverAggrName, false, mockAPI)
+	sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool = getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
 	physicalPools = map[string]storage.Pool{}
@@ -1300,7 +1300,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	sanStorageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, mockAPI)
+	sanStorageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool = getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "invalid-not-a-bool"
 	physicalPools = map[string]storage.Pool{}
@@ -2657,11 +2657,11 @@ func TestIsDefaultAuthTypeDeny(t *testing.T) {
 	assert.False(t, actual)
 }
 
-func mockValidate(ctx context.Context) error {
+func mockValidate(_ context.Context) error {
 	return nil
 }
 
-func mockValidate_Error(ctx context.Context) error {
+func mockValidate_Error(_ context.Context) error {
 	return fmt.Errorf("Error while validating")
 }
 
@@ -3539,27 +3539,27 @@ func TestGoString(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func mockVolumeExists(ctx context.Context, name string) (bool, error) {
+func mockVolumeExists(_ context.Context, _ string) (bool, error) {
 	return true, nil
 }
 
-func mockVolumeSize(ctx context.Context, name string) (uint64, error) {
+func mockVolumeSize(_ context.Context, _ string) (uint64, error) {
 	return 1024, nil
 }
 
-func mockVolumeExistsError(ctx context.Context, name string) (bool, error) {
+func mockVolumeExistsError(_ context.Context, _ string) (bool, error) {
 	return true, fmt.Errorf("VolumeExistsError")
 }
 
-func mockVolumeSizeError(ctx context.Context, name string) (uint64, error) {
+func mockVolumeSizeError(_ context.Context, _ string) (uint64, error) {
 	return 1024, fmt.Errorf("VolumeSizeError")
 }
 
-func mockVolumeSizeLarger(ctx context.Context, name string) (uint64, error) {
+func mockVolumeSizeLarger(_ context.Context, _ string) (uint64, error) {
 	return 10000, nil
 }
 
-func mockVolumeInfo(ctx context.Context, name string) (*api.Volume, error) {
+func mockVolumeInfo(_ context.Context, name string) (*api.Volume, error) {
 	return &api.Volume{
 		Name:            name,
 		SnapshotPolicy:  "fakePolicy",
@@ -4643,7 +4643,7 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	storageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
-		false, mockAPI)
+		false, nil, mockAPI)
 
 	aggr, err := discoverBackendAggrNamesCommon(ctx, storageDriver)
 
@@ -4656,7 +4656,7 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 		nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	storageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
-		false, mockAPI)
+		false, nil, mockAPI)
 	expected := ONTAPTEST_VSERVER_AGGR_NAME
 
 	aggr, err = discoverBackendAggrNamesCommon(ctx, storageDriver)
@@ -4669,7 +4669,7 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil).Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	storageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
-		false, mockAPI)
+		false, nil, mockAPI)
 
 	aggr, err = discoverBackendAggrNamesCommon(ctx, storageDriver)
 
@@ -4677,11 +4677,11 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func mockCloneSplitStart(ctx context.Context, cloneName string) error {
+func mockCloneSplitStart(_ context.Context, _ string) error {
 	return nil
 }
 
-func mockCloneSplitStart_error(ctx context.Context, cloneName string) error {
+func mockCloneSplitStart_error(_ context.Context, _ string) error {
 	return fmt.Errorf("CloneSplitStart returned error")
 }
 
@@ -4776,7 +4776,7 @@ func TestGetVserverAggrAttributes(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	storageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
-		false, mockAPI)
+		false, nil, mockAPI)
 
 	pool1 := storage.NewStoragePool(nil, "dummyPool1")
 	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
@@ -4835,7 +4835,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	storageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
-		false, mockAPI)
+		false, nil, mockAPI)
 	storageDriver.Config.Aggregate = ""
 	pool1 := storage.NewStoragePool(nil, "dummyPool1")
 	pool1.Attributes()[sa.Media] = sa.NewStringOffer("hdd")
@@ -5147,7 +5147,7 @@ func TestNewOntapTelemetry(t *testing.T) {
 	assert.Equal(t, storageDriver.Name(), telemetry.Plugin)
 }
 
-func MockGetVolumeInfo(ctx context.Context, volName string) (volume *api.Volume, err error) {
+func MockGetVolumeInfo(_ context.Context, volName string) (volume *api.Volume, err error) {
 	volume = &api.Volume{
 		Name:            volName,
 		SnapshotPolicy:  "fakePolicy",

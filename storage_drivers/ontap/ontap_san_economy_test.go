@@ -23,6 +23,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 )
 
@@ -169,7 +170,7 @@ func TestGetComponentsNoSnapshot(t *testing.T) {
 }
 
 func newTestOntapSanEcoDriver(
-	vserverAdminHost, vserverAdminPort, vserverAggrName string, useREST bool, apiOverride api.OntapAPI,
+	vserverAdminHost, vserverAdminPort, vserverAggrName string, useREST bool, fsxId *string, apiOverride api.OntapAPI,
 ) *SANEconomyStorageDriver {
 	config := &drivers.OntapStorageDriverConfig{}
 	sp := func(s string) *string { return &s }
@@ -187,6 +188,11 @@ func newTestOntapSanEcoDriver(
 	config.StorageDriverName = "ontap-san-economy"
 	config.StoragePrefix = sp("test_")
 	config.UseREST = useREST
+
+	if fsxId != nil {
+		config.AWSConfig = &drivers.AWSConfig{}
+		config.AWSConfig.FSxFilesystemID = *fsxId
+	}
 
 	sanEcoDriver := &SANEconomyStorageDriver{}
 	sanEcoDriver.Config = *config
@@ -219,6 +225,21 @@ func newTestOntapSanEcoDriver(
 	return sanEcoDriver
 }
 
+func newMockAWSOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *mockapi.MockAWSAPI, *SANEconomyStorageDriver) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAdminPort := "0"
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	fsxId := FSX_ID
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+
+	driver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, &fsxId, mockAPI)
+	driver.AWSAPI = mockAWSAPI
+	return mockAPI, mockAWSAPI, driver
+}
+
 func newMockOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANEconomyStorageDriver) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
@@ -227,7 +248,7 @@ func newMockOntapSanEcoDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANEconomyS
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	driver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, mockAPI)
+	driver := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, mockAPI)
 	return mockAPI, driver
 }
 
@@ -240,7 +261,7 @@ func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	sanEcoDrivers := []SANEconomyStorageDriver{
-		*newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, mockAPI),
+		*newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, mockAPI),
 	}
 
 	sensitiveIncludeList := map[string]string{
@@ -335,7 +356,7 @@ func TestOntapSanEconomyTerminate(t *testing.T) {
 
 			api.FakeIgroups[driverInfo.igroupName] = igroupsIQNMap
 
-			sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, port, vserverAggrName, false, nil)
+			sanEcoStorageDriver := newTestOntapSanEcoDriver(vserverAdminHost, port, vserverAggrName, false, nil, nil)
 			sanEcoStorageDriver.Config.IgroupName = driverInfo.igroupName
 			sanEcoStorageDriver.telemetry = nil
 			ontapSanDrivers = append(ontapSanDrivers, *sanEcoStorageDriver)
@@ -1526,6 +1547,25 @@ func TestOntapSanEconomyVolumeDestroy_DockerContext_LunMapInfoError(t *testing.T
 	assert.Error(t, result)
 }
 
+func TestOntapSanEconomyVolumeDeleteBucketIfEmpty_Fsx(t *testing.T) {
+	var bucketVol string = "volumeName"
+	mockAPI, mockAWSAPI, d := newMockAWSOntapSanEcoDriver(t)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
+
+	vol := awsapi.Volume{
+		State: "AVAILABLE",
+	}
+	volConfig := &storage.VolumeConfig{
+		InternalName: bucketVol,
+	}
+	mockAWSAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, &vol, nil)
+	mockAWSAPI.EXPECT().WaitForVolumeStates(ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+	mockAWSAPI.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+	result := d.DeleteBucketIfEmpty(ctx, bucketVol)
+
+	assert.NoError(t, result)
+}
+
 func TestOntapSanEconomyVolumeDeleteBucketIfEmpty(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
@@ -1725,7 +1765,7 @@ func TestOntapSanEconomyVolumeUnpublish_LegacyVolume(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 
 	volConfig := &storage.VolumeConfig{
 		InternalName: "lun0",
@@ -1749,7 +1789,7 @@ func TestOntapSanEconomyVolumeUnpublish_LunListFails(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
 	apiError := fmt.Errorf("api error")
@@ -1779,7 +1819,7 @@ func TestOntapSanEconomyVolumeUnpublish_LUNDoesNotExist(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 	volumeName := "lun0"
 	volConfig := &storage.VolumeConfig{
@@ -1807,7 +1847,7 @@ func TestOntapSanEconomyVolumeUnpublish_LUNMapInfoFails(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
 	apiError := fmt.Errorf("api error")
@@ -1848,7 +1888,7 @@ func TestOntapSanEconomyVolumeUnpublish_IgroupListLUNsMappedFails(t *testing.T) 
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
 	apiError := fmt.Errorf("api error")
@@ -1891,7 +1931,7 @@ func TestOntapSanEconomyVolumeUnpublish_IgroupDestroyFails(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
 	apiError := fmt.Errorf("api error")
@@ -1935,7 +1975,7 @@ func TestOntapSanEconomyVolumeUnpublishX(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
 	volumeName := "lun0"
@@ -2077,7 +2117,7 @@ func TestOntapSanEconomyVolumeUnpublish(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-			d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+			d := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 			d.API = mockAPI
 			d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
@@ -2101,7 +2141,7 @@ func TestDriverCanSnapshot(t *testing.T) {
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	d := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, mockAPI)
+	d := newTestOntapSanEcoDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, false, nil, mockAPI)
 
 	result := d.CanSnapshot(ctx, nil, nil)
 
@@ -3307,7 +3347,7 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	oldDriver.API = mockAPI
 	prefix1 := "storagePrefix_"
 	oldDriver.Config.StoragePrefix = &prefix1
@@ -3319,7 +3359,7 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 	oldDriver.Config.Username = "oldUser"
 	oldDriver.Config.Password = "oldPassword"
 
-	newDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	newDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	oldDriver.API = mockAPI
 	prefix2 := "storagePREFIX_"
 
@@ -3348,7 +3388,7 @@ func TestGetUpdateType_Failure(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	oldDriver := newTestOntapNASDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, "CSI", false, nil)
-	newDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, mockAPI)
+	newDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	expectedBitmap := &roaring.Bitmap{}
 	expectedBitmap.Add(storage.InvalidUpdate)
 

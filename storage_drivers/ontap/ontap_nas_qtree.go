@@ -22,6 +22,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
@@ -47,6 +48,7 @@ type NASQtreeStorageDriver struct {
 	initialized                      bool
 	Config                           drivers.OntapStorageDriverConfig
 	API                              api.OntapAPI
+	AWSAPI                           awsapi.AWSAPI
 	telemetry                        *Telemetry
 	quotaResizeMap                   map[string]bool
 	flexvolNamePrefix                string
@@ -114,6 +116,16 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 	d.Config = *config
 
+	// Initialize AWS API if applicable.
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.AWSAPI == nil {
+		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
+		}
+	}
+
+	// Initialize the ONTAP API.
 	// Initialize ONTAP driver. Unit test uses mock driver, so initialize only if driver not already set
 	if d.API == nil {
 		d.API, err = InitializeOntapDriver(ctx, config)

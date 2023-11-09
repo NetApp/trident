@@ -21,6 +21,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -32,6 +33,7 @@ type NASFlexGroupStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
 	API         api.OntapAPI
+	AWSAPI      awsapi.AWSAPI
 	telemetry   *Telemetry
 
 	physicalPool storage.Pool
@@ -87,6 +89,16 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	}
 	d.Config = *config
 
+	// Initialize AWS API if applicable.
+	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
+	if d.AWSAPI == nil {
+		d.AWSAPI, err = initializeAWSDriver(ctx, config)
+		if err != nil {
+			return fmt.Errorf("error initializing %s AWS driver; %v", d.Name(), err)
+		}
+	}
+
+	// Initialize the ONTAP API.
 	// Unit tests mock the API layer, so we only use the real API interface if it doesn't already exist.
 	if d.API == nil {
 		d.API, err = InitializeOntapDriver(ctx, config)
@@ -975,6 +987,16 @@ func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, volConfig *stor
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
+
+	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
+	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
+	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
+	if d.AWSAPI != nil {
+		err := destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		if err == nil || !errors.IsNotFoundError(err) {
+			return err
+		}
+	}
 
 	// This call is async, but we will receive an immediate error back for anything but very rare volume deletion
 	// failures. Failures in this category are almost certainly likely to be beyond our capability to fix or even
