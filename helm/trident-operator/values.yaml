@@ -129,3 +129,9 @@ excludePodSecurityPolicy: false
 
 # cloudProvider indicates which cloud platform Trident is running on.
 cloudProvider: ""
+
+# enableACP allows enabling the Trident-ACP container to run.
+enableACP: false
+
+# acpImage indicates the image the Trident-ACP container should pull.
+acpImage: ""

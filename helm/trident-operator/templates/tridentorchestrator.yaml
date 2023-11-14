@@ -63,3 +63,5 @@ spec:
   imagePullPolicy: {{ include "imagePullPolicy" $ }}
   windows: {{ .Values.windows }}
   cloudProvider: {{ .Values.cloudProvider }}
+  enableACP: {{ .Values.enableACP }}
+  acpImage: {{ .Values.acpImage }}
