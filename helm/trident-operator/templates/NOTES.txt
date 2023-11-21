@@ -11,5 +11,5 @@ online at {{ .Chart.Home }}.
 
 To learn more about the release, try:
 
-  $ helm status {{ .Release.Name }}
-  $ helm get all {{ .Release.Name }}
+  $ helm status -n {{ .Release.Namespace }} {{ .Release.Name }}
+  $ helm get all -n {{ .Release.Namespace }} {{ .Release.Name }}
