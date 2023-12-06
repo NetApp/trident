@@ -1,6 +1,6 @@
 apiVersion: v2
 name: trident-operator
-version: 1.0.0
+version: 1.24.1 # Demote CalVer fields and prepend 1
 kubeVersion: ">= 1.21.0-0"
 description: "A Helm chart for deploying NetApp's Trident CSI storage provisioner using the Trident Operator."
 type: application

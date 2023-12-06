@@ -281,14 +281,12 @@ build_operator_images_for_platforms = $(foreach platform,$1,\
 
 # manifest_files_linux writes the attestation and image manifests to dir for platform and tag
 # usage: $(call manifest_files_linux,$(output_dir),$(platform),$(tag))
-manifest_files_linux = $(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $(call image_tag,$3,$2) | jq '.manifests[0]' > $1/image_$(call slugify,$2) &&\
-	$(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $(call image_tag,$3,$2) | jq '.manifests[1]' > $1/attestation_$(call slugify,$2)
+manifest_files_linux = $(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $(call image_tag,$3,$2) | jq '.manifests[0]' > $1/image_$(call slugify,$2)
 
 # manifest_files_windows writes the attestation and image manifests to dir for platform and tag, adding windows os version
 # usage: $(call manifest_files_windows,$(output_dir),$(platform),$(tag),$(windows_image_repo))
 manifest_files_windows = export os_version=$$($(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $4:$(call os_version,$2) | jq -r '.manifests[0].platform."os.version"') &&\
-	$(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $(call image_tag,$3,$2) | jq '.manifests[0] | .platform."os.version"=env.os_version' > $1/image_$(call slugify,$2) &&\
-	$(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $(call image_tag,$3,$2) | jq '.manifests[1]' > $1/attestation_$(call slugify,$2)
+	$(DOCKER_BUILDX_BUILD_CLI) imagetools inspect --raw $(call image_tag,$3,$2) | jq '.manifests[0] | .platform."os.version"=env.os_version' > $1/image_$(call slugify,$2)
 
 # manifest_files_for_platforms writes the attestation and image manifests for all platforms
 # usage: $(call manifest_files_for_platforms,$(platforms),$(output_dir),$(tag),$(windows_image_repo))
@@ -301,7 +299,7 @@ manifest_files_for_platforms = $(foreach platform,$1,\
 # create_manifest_for_platforms creates manifest from platform manifests in dir
 # usage: $(call create_manifest_for_platforms,$(platforms),$(dir),$(tag))
 create_manifest_for_platforms = $(DOCKER_BUILDX_BUILD_CLI) imagetools create -t $3 $(foreach platform,$1,\
-	-f $2/image_$(call slugify,$(platform)) -f $2/attestation_$(call slugify,$(platform)))
+	-f $2/image_$(call slugify,$(platform)))
 
 # image_digests returns a json list of image digests and other info for platforms, in the form {image: "$image_tag",
 # digest: "$digest", os: "$os", architecture: "$arch"}
@@ -365,8 +363,7 @@ operator_manifest: operator_images
 # packages helm chart
 chart:
 	@cp README.md ./helm/trident-operator/
-	@$(HELM_CMD) package --app-version $(TRIDENT_VERSION) --version $(TRIDENT_VERSION) ./helm/trident-operator \
-		$(if $(HELM_PGP_KEY),--sign --key "$(HELM_PGP_KEY)" --keyring "$(HELM_PGP_KEYRING)")
+	@$(HELM_CMD) package ./helm/trident-operator $(if $(HELM_PGP_KEY),--sign --key "$(HELM_PGP_KEY)" --keyring "$(HELM_PGP_KEYRING)")
 	@rm -f ./helm/trident-operator/README.md
 
 # builds installer bundle. Skips binaries that have not been built.
