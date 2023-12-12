@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v23.07.0
+## Changes since v23.10.0
+
+**Fixes:**
+
+- Fixed ACP warning messages when ACP is not enabled. (Issue [#866](https://github.com/NetApp/trident/issues/866)).
+
+## v23.07.0
 
 **Fixes:**
 

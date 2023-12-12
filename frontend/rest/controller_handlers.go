@@ -273,7 +273,9 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 func GetACPVersion(ctx context.Context) string {
 	version, err := acp.API().GetVersion(ctx)
 	if err != nil {
-		Logc(ctx).WithError(err).Error("Could not get Trident-ACP version.")
+		if !errors.IsUnsupportedError(err) {
+			Logc(ctx).WithError(err).Error("Could not get Trident-ACP version.")
+		}
 		return ""
 	}
 

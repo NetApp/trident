@@ -59,8 +59,8 @@ func (c *client) GetVersion(ctx context.Context) (*version.Version, error) {
 	Logc(ctx).Debug("Getting Trident-ACP version.")
 
 	if !c.acpEnabled {
-		Logc(ctx).Warning("ACP is not enabled.")
-		return nil, nil
+		Logc(ctx).Debug("ACP is not enabled.")
+		return nil, errors.UnsupportedError("ACP is not enabled")
 	}
 
 	acpVersion, err := c.restClient.GetVersion(ctx)
@@ -84,8 +84,8 @@ func (c *client) GetVersionWithBackoff(ctx context.Context) (*version.Version, e
 	var err error
 
 	if !c.acpEnabled {
-		Logc(ctx).Warning("ACP is not enabled.")
-		return nil, nil
+		Logc(ctx).Debug("ACP is not enabled.")
+		return nil, errors.UnsupportedError("ACP is not enabled")
 	}
 
 	getVersion := func() error {

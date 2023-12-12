@@ -51,7 +51,7 @@ func TestTridentACP_GetVersionWithBackoff(t *testing.T) {
 
 		client := newClient(nil, false)
 		v, err := client.GetVersionWithBackoff(ctx)
-		assert.Nil(t, err, "unexpected error")
+		assert.True(t, errors.IsUnsupportedError(err), "unexpected error")
 		assert.Nil(t, v, "expected nil version")
 	})
 

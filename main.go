@@ -517,15 +517,19 @@ func main() {
 	acp.Initialize(*acpAddress, *enableACP, config.HTTPTimeout)
 	Log().Info("Created Trident-ACP REST API Client.")
 
-	// Asynchronously check if the Trident-ACP API is available.
-	go func() {
-		version, err := acp.API().GetVersionWithBackoff(ctx)
-		if err != nil || version == nil {
-			Log().Warning("Failed to get version from Trident-ACP REST API; premium workflows may fail.")
-		} else {
-			Log().WithField("version", version.String()).Info("Discovered Trident-ACP Version.")
-		}
-	}()
+	if *enableACP {
+		// Asynchronously check if the Trident-ACP API is available.
+		go func() {
+			version, err := acp.API().GetVersionWithBackoff(ctx)
+			if err != nil || version == nil {
+				if !errors.IsUnsupportedError(err) {
+					Log().Warning("Failed to get version from Trident-ACP REST API; premium workflows may fail.")
+				}
+			} else {
+				Log().WithField("version", version.String()).Info("Discovered Trident-ACP Version.")
+			}
+		}()
+	}
 
 	// Bootstrap the orchestrator and start its frontends.  Some frontends, notably REST and Docker, must
 	// start before the core so that the external interfaces are minimally responding while the core is
