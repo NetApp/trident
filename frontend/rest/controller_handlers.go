@@ -271,6 +271,10 @@ func GetVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetACPVersion(ctx context.Context) string {
+	if !acp.API().Enabled() {
+		return ""
+	}
+
 	version, err := acp.API().GetVersion(ctx)
 	if err != nil {
 		if !errors.IsUnsupportedError(err) {

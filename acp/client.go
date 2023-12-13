@@ -55,10 +55,14 @@ func newClient(restAPI REST, acpEnabled bool) TridentACP {
 	return &client{restAPI, acpEnabled}
 }
 
+func (c *client) Enabled() bool {
+	return c.acpEnabled
+}
+
 func (c *client) GetVersion(ctx context.Context) (*version.Version, error) {
 	Logc(ctx).Debug("Getting Trident-ACP version.")
 
-	if !c.acpEnabled {
+	if !c.Enabled() {
 		Logc(ctx).Debug("ACP is not enabled.")
 		return nil, errors.UnsupportedError("ACP is not enabled")
 	}
@@ -83,7 +87,7 @@ func (c *client) GetVersionWithBackoff(ctx context.Context) (*version.Version, e
 	var v *version.Version
 	var err error
 
-	if !c.acpEnabled {
+	if !c.Enabled() {
 		Logc(ctx).Debug("ACP is not enabled.")
 		return nil, errors.UnsupportedError("ACP is not enabled")
 	}
@@ -123,7 +127,7 @@ func (c *client) IsFeatureEnabled(ctx context.Context, feature string) error {
 	fields := LogFields{"feature": feature}
 	Logc(ctx).WithFields(fields).Debug("Checking if feature is enabled.")
 
-	if !c.acpEnabled {
+	if !c.Enabled() {
 		Logc(ctx).WithFields(fields).Warning("Feature requires Trident-ACP to be enabled.")
 		return errors.UnsupportedConfigError("acp is not enabled")
 	}
