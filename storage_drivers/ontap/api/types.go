@@ -122,6 +122,7 @@ const (
 	SnapmirrorStatusBreaking     = SnapmirrorStatus("breaking")
 	SnapmirrorStatusQuiescing    = SnapmirrorStatus("quiescing")
 	SnapmirrorStatusTransferring = SnapmirrorStatus("transferring")
+	SnapmirrorStatusFinalizing   = SnapmirrorStatus("finalizing")
 	// Snapmirror transfer status for REST
 	SnapmirrorStatusAborted     = SnapmirrorStatus("aborted")
 	SnapmirrorStatusFailed      = SnapmirrorStatus("failed")
