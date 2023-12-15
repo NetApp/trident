@@ -124,11 +124,26 @@ type StorageBackend struct {
 	nodeAccessUpToDate bool
 }
 
-func (b *StorageBackend) UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo) (map[string]*Volume, error) {
+func (b *StorageBackend) UpdateVolume(
+	ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo,
+) (map[string]*Volume, error) {
+	Logc(ctx).WithFields(LogFields{
+		"backend":        b.name,
+		"volume":         volConfig.Name,
+		"volumeInternal": volConfig.InternalName,
+		"updateInfo":     updateInfo,
+	}).Debug("Attempting volume update.")
+
+	// Ensure driver supports volume update operation
 	volUpdateDriver, ok := b.driver.(VolumeUpdater)
 	if !ok {
 		return nil, errors.UnsupportedError(
 			fmt.Sprintf("volume update is not supported for backend of type %v", b.driver.Name()))
+	}
+
+	// Ensure volume is managed
+	if volConfig.ImportNotManaged {
+		return nil, errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
 	return volUpdateDriver.Update(ctx, volConfig, updateInfo, b.volumes)

@@ -1077,7 +1077,7 @@ func (c Client) ModifyVolume(
 	}
 
 	// Modify the export-rule to restrict the kerberos protocol type
-	if len(anfVolume.Properties.ExportPolicy.Rules) > 0 && &exportRule != nil {
+	if len(anfVolume.Properties.ExportPolicy.Rules) > 0 && exportRule != nil {
 		anfVolume.Properties.ExportPolicy.Rules[0].Nfsv41 = &exportRule.Nfsv41
 		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadWrite = &exportRule.Kerberos5ReadWrite
 		anfVolume.Properties.ExportPolicy.Rules[0].Kerberos5ReadOnly = &exportRule.Kerberos5ReadOnly

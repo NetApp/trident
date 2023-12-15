@@ -1534,6 +1534,7 @@ func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
 	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
 	createRequest.ExportPolicy.Rules[0].UnixReadWrite = false
 	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
+	createRequest.SnapshotDirectory = true
 	createRequest.UnixPermissions = "0777"
 	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
 
@@ -1560,7 +1561,7 @@ func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
 	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
-	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
@@ -2330,6 +2331,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
 	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
 	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
+	createRequest.SnapshotDirectory = true
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
@@ -2345,6 +2347,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, "true", volConfig.SnapshotDir)
 }
 
 func TestCreate_NFSVolume_CreateFailed(t *testing.T) {
@@ -6590,4 +6593,321 @@ func TestConstructVolumeAccessPath(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUpdate_Success(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	// Create mocks
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	// Set up driver and populate defaults
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, _, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	// Set right expects
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
+
+	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
+	allVolumes := map[string]*storage.Volume{volConfig.Name: {
+		Config:      volConfig,
+		BackendUUID: BackendUUID,
+		Pool:        "anf_pool",
+		Orphaned:    false,
+		State:       "Online",
+	}}
+
+	result, err := driver.Update(ctx, volConfig, updateInfo, allVolumes)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 1, len(result))
+	for _, v := range result {
+		assert.Equal(t, "true", v.Config.SnapshotDir)
+	}
+}
+
+func TestUpdate_NilVolumeUpdateInfo(t *testing.T) {
+	_, driver := newMockANFDriver(t)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
+		Config:      volConfig,
+		BackendUUID: BackendUUID,
+		Pool:        "anf_pool",
+		Orphaned:    false,
+		State:       "Online",
+	}}
+
+	result, err := driver.Update(ctx, volConfig, nil, allVolumes)
+
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsInvalidInputError(err))
+}
+
+func TestUpdate_ErrorInAPIOperation(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	mockError := errors.New("mock error")
+
+	// CASE 1: Error in refreshing volume
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(mockError).AnyTimes()
+
+	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
+	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
+		Config:      volConfig,
+		BackendUUID: BackendUUID,
+		Pool:        "anf_pool",
+		Orphaned:    false,
+		State:       "Online",
+	}}
+
+	result, err := driver.Update(ctx, volConfig, updateInfo, allVolumes)
+
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+
+	// CASE 2: Error in getting volume
+	mockAPI, driver = newMockANFDriver(t)
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(nil, errors.New("error in getting volume")).AnyTimes()
+
+	result, err = driver.Update(ctx, volConfig, updateInfo, allVolumes)
+
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+
+func TestUpdate_VolumeStateNotAvailable(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, _, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	filesystem.ProvisioningState = api.StateError
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
+
+	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
+	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
+		Config:      volConfig,
+		BackendUUID: BackendUUID,
+		Pool:        "anf_pool",
+		Orphaned:    false,
+		State:       "Online",
+	}}
+
+	result, err := driver.Update(ctx, volConfig, updateInfo, allVolumes)
+
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+}
+
+func TestUpdateSnapshotDirectory_DifferentSnapshotDir(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	tests := []struct {
+		name          string
+		inputSnapDir  string
+		outputSnapDir string
+		expectErr     bool
+	}{
+		{
+			name:          "SnapshotDir to true",
+			inputSnapDir:  "TRUE",
+			outputSnapDir: "true",
+		},
+		{
+			name:          "SnapshotDir to false",
+			inputSnapDir:  "False",
+			outputSnapDir: "false",
+		},
+		{
+			name:         "Invalid SnapshotDir",
+			inputSnapDir: "tRUe",
+			expectErr:    true,
+		},
+	}
+
+	// Create mocks
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	// Set up driver and populate defaults
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, _, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	// Set right expects
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
+
+	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
+		Config:      volConfig,
+		BackendUUID: BackendUUID,
+		Pool:        "anf_pool",
+		Orphaned:    false,
+		State:       "Online",
+	}}
+
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			result, err := driver.updateSnapshotDirectory(
+				ctx, volConfig.InternalName, filesystem, test.inputSnapDir, allVolumes)
+
+			if test.expectErr {
+				assert.Nil(tt, result)
+				assert.NotNil(tt, err)
+				assert.True(tt, errors.IsInvalidInputError(err))
+			} else {
+				assert.Nil(t, err)
+				assert.NotNil(tt, result)
+				assert.Equal(t, 1, len(result))
+				for _, v := range result {
+					assert.Equal(t, test.outputSnapDir, v.Config.SnapshotDir)
+				}
+			}
+		})
+	}
+}
+
+func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	// Create mocks
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	// Set up driver and populate defaults
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, _, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	// CASE: ACP is not enabled
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(errors.New("mock error"))
+	result, err := driver.updateSnapshotDirectory(
+		ctx, volConfig.InternalName, filesystem, "TRUE", map[string]*storage.Volume{})
+
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+
+	// CASE: Error while modifying volume
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
+	mockAPI.EXPECT().ModifyVolume(
+		ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(
+		errors.New("mock error")).AnyTimes()
+
+	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
+		Config:      volConfig,
+		BackendUUID: BackendUUID,
+		Pool:        "anf_pool",
+		Orphaned:    false,
+		State:       "Online",
+	}}
+
+	result, err = driver.updateSnapshotDirectory(
+		ctx, volConfig.InternalName, filesystem, "TRUE", allVolumes)
+
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
+
+	// CASE: Volume not found in backend cache
+	mockAPI, driver = newMockANFDriver(t)
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
+	mockAPI.EXPECT().ModifyVolume(
+		ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
+
+	allVolumes = map[string]*storage.Volume{}
+
+	filesystem.SnapshotDirectory = false
+	result, err = driver.updateSnapshotDirectory(
+		ctx, volConfig.InternalName, filesystem, "TRUE", allVolumes)
+
+	assert.Nil(t, result)
+	assert.NotNil(t, err)
 }

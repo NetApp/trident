@@ -2299,11 +2299,6 @@ func (d *NASQtreeStorageDriver) Update(
 	Logc(ctx).WithFields(fields).Debug(">>>> Update")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< Update")
 
-	if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureReadOnlyClone); err != nil {
-		Logc(ctx).WithFields(fields).WithError(err).Error("Could not update volume.")
-		return nil, err
-	}
-
 	updateGenericError := fmt.Sprintf("failed to update volume %v", volConfig.Name)
 
 	if updateInfo == nil {
@@ -2335,7 +2330,7 @@ func (d *NASQtreeStorageDriver) Update(
 
 	// Update snapshot directory
 	if updateInfo.SnapshotDirectory != "" {
-		updatedVols, updateErr = d.setSnapshotDirectory(ctx, volConfig, updateInfo.SnapshotDirectory, updateInfo.PoolLevel, flexvol, allVolumes)
+		updatedVols, updateErr = d.updateSnapshotDirectory(ctx, volConfig, updateInfo.SnapshotDirectory, updateInfo.PoolLevel, flexvol, allVolumes)
 		if updateErr != nil {
 			Logc(ctx).WithError(updateErr).Error(updateGenericError)
 			return nil, updateErr
@@ -2352,23 +2347,29 @@ func (d *NASQtreeStorageDriver) Update(
 	return updatedVols, updateErr
 }
 
-func (d *NASQtreeStorageDriver) setSnapshotDirectory(
+func (d *NASQtreeStorageDriver) updateSnapshotDirectory(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 	snapshotDir string, poolLevel bool,
 	poolName string, allVolumes map[string]*storage.Volume,
 ) (map[string]*storage.Volume, error) {
 	fields := LogFields{
-		"Method":      "setSnapshotDirectory",
+		"Method":      "updateSnapshotDirectory",
 		"Type":        "NASQtreeStorageDriver",
 		"name":        volConfig.Name,
 		"snapshotDir": snapshotDir,
 		"poolLevel":   poolLevel,
 		"poolName":    poolName,
 	}
-	Logc(ctx).WithFields(fields).Debug(">>>> setSnapshotDirectory")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< setSnapshotDirectory")
+	Logc(ctx).WithFields(fields).Debug(">>>> updateSnapshotDirectory")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< updateSnapshotDirectory")
 
-	genericErrMsg := fmt.Sprintf("failed to set snapshot directory for %v.", volConfig.Name)
+	genericErrMsg := fmt.Sprintf("Failed to update snapshot directory for %v.", volConfig.Name)
+
+	// Ensure ACP is enabled
+	if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureReadOnlyClone); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error(genericErrMsg)
+		return nil, err
+	}
 
 	// Validate request
 	snapDirRequested, err := strconv.ParseBool(snapshotDir)

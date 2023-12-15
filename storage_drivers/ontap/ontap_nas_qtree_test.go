@@ -4430,39 +4430,6 @@ func TestNASQtreeStorageDriver_UpdateVolume_Success(t *testing.T) {
 	}
 }
 
-func TestNASQtreeStorageDriver_UpdateVolume_Disabled(t *testing.T) {
-	// Reset the package-level state after the test completes.
-	defer acp.SetAPI(acp.API())
-
-	mockCtrl := gomock.NewController(t)
-	mockACP := mockacp.NewMockTridentACP(mockCtrl)
-	acp.SetAPI(mockACP)
-
-	_, driver := newMockOntapNasQtreeDriver(t)
-
-	internalID := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
-	mockVol := getMockVolume("pvc-99138d85-6259-4830-ada0-30e45e21f854", internalID)
-	mockVol.Config.SnapshotDir = "true"
-
-	allVolumes := map[string]*storage.Volume{
-		"pvc-99138d85-6259-4830-ada0-30e45e21f854": mockVol,
-	}
-
-	updateInfo := &utils.VolumeUpdateInfo{
-		SnapshotDirectory: "false",
-		PoolLevel:         true,
-	}
-
-	// Mock out any expected calls on the ACP API.
-	err := errors.UnsupportedError("unsupported")
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(err)
-
-	result, resultErr := driver.Update(ctx, mockVol.Config, updateInfo, allVolumes)
-
-	assert.Error(t, resultErr)
-	assert.Nil(t, result)
-}
-
 func TestNASQtreeStorageDriver_UpdateVolume_Failure(t *testing.T) {
 	// Reset the package-level state after the test completes.
 	defer acp.SetAPI(acp.API())
@@ -4547,8 +4514,14 @@ func TestNASQtreeStorageDriver_UpdateVolume_Failure(t *testing.T) {
 	assert.Nil(t, result)
 }
 
-func TestNASQtreeStorageDriver_SetSnapshotDirectory_Success(t *testing.T) {
+func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Success(t *testing.T) {
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
+
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
 
 	internalID1 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
 	internalID2 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f877"
@@ -4568,9 +4541,10 @@ func TestNASQtreeStorageDriver_SetSnapshotDirectory_Success(t *testing.T) {
 		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
 	}
 
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(nil)
 
-	result, resultErr := driver.setSnapshotDirectory(ctx, mockVol1.Config, "false", true, "trident_qtree_pool_trident_XHPULXSCYE", allVolumes)
+	result, resultErr := driver.updateSnapshotDirectory(ctx, mockVol1.Config, "false", true, "trident_qtree_pool_trident_XHPULXSCYE", allVolumes)
 
 	assert.NoError(t, resultErr)
 	assert.NotNil(t, result)
@@ -4580,8 +4554,15 @@ func TestNASQtreeStorageDriver_SetSnapshotDirectory_Success(t *testing.T) {
 	}
 }
 
-func TestNASQtreeStorageDriver_SetSnapshotDirectory_Failure(t *testing.T) {
+func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
+	// Reset the package-level state after the test completes.
+	defer acp.SetAPI(acp.API())
+
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	mockCtrl := gomock.NewController(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
 	fakeErr := errors.New("fake error")
 
 	internalID1 := "/svm/iscsi0/flexvol/trident_qtree_pool_trident_XHPULXSCYE/qtree/trident_pvc_99138d85_6259_4830_ada0_30e45e21f854"
@@ -4602,26 +4583,36 @@ func TestNASQtreeStorageDriver_SetSnapshotDirectory_Failure(t *testing.T) {
 		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
 	}
 
-	// CASE 1: Invalid snapshot dir value
-	result, resultErr := driver.setSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
+	// CASE 1: ACP is not enabled for this feature
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(errors.UnsupportedError("unsupported"))
+
+	result, resultErr := driver.updateSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
+
+	assert.Error(t, resultErr)
+	assert.Nil(t, result)
+
+	// CASE 2: Invalid snapshot dir value
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
+
+	result, resultErr = driver.updateSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
 
 	assert.Error(t, resultErr)
 	assert.True(t, errors.IsInvalidInputError(resultErr))
 	assert.Nil(t, result)
 
-	// CASE 2: Pool level value is false
-	result, resultErr = driver.setSnapshotDirectory(ctx, mockVol1.Config, "false", false, "", allVolumes)
+	// CASE 3: Pool level value is false
+	result, resultErr = driver.updateSnapshotDirectory(ctx, mockVol1.Config, "false", false, "", allVolumes)
 
 	assert.Error(t, resultErr)
 	assert.True(t, errors.IsInvalidInputError(resultErr))
 	assert.Equal(t, fmt.Sprintf("pool level must be set to true for updating snapshot directory of %v volume", driver.Config.StorageDriverName), resultErr.Error())
 	assert.Nil(t, result)
 
-	// CASE 3: Error while modifying snapshot directory
+	// CASE 4: Error while modifying snapshot directory
 	mockVol1.Config.InternalID = internalID1
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(fakeErr)
 
-	result, resultErr = driver.setSnapshotDirectory(
+	result, resultErr = driver.updateSnapshotDirectory(
 		ctx, mockVol1.Config, "false", true,
 		"trident_qtree_pool_trident_XHPULXSCYE", allVolumes)
 

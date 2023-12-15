@@ -862,6 +862,7 @@ func (d *NASStorageDriver) Create(
 		case nfsVersion41:
 			nfsV41Access = true
 			protocolTypes = []string{api.ProtocolTypeNFSv41}
+			snapshotDirBool = true
 		}
 
 		apiExportRule = api.ExportRule{
@@ -910,7 +911,7 @@ func (d *NASStorageDriver) Create(
 	// Update config to reflect values used to create volume
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	volConfig.ServiceLevel = serviceLevel
-	volConfig.SnapshotDir = snapshotDir
+	volConfig.SnapshotDir = strconv.FormatBool(snapshotDirBool)
 	volConfig.UnixPermissions = unixPermissions
 
 	// Find a subnet
@@ -2251,4 +2252,118 @@ func constructVolumeAccessPath(
 		return "\\" + volume.CreationToken
 	}
 	return ""
+}
+
+func (d *NASStorageDriver) Update(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+	updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*storage.Volume,
+) (map[string]*storage.Volume, error) {
+	name := volConfig.Name
+	fields := LogFields{
+		"Method":       "Update",
+		"Type":         "AzureNASStorageDriver",
+		"name":         name,
+		"internalName": volConfig.InternalName,
+		"updateInfo":   updateInfo,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Update")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Update")
+
+	updateErrorMsg := fmt.Sprintf("Failed to update volume %v.", name)
+
+	// Ensure there is something to update
+	if updateInfo == nil {
+		msg := fmt.Sprintf("nothing to update for volume %v", name)
+		err := errors.InvalidInputError(msg)
+		Logc(ctx).WithError(err).Error(updateErrorMsg)
+		return nil, err
+	}
+
+	// Update resource cache as needed
+	if err := d.SDK.RefreshAzureResources(ctx); err != nil {
+		updateErr := fmt.Errorf("could not update ANF resource cache; %v", err)
+		Logc(ctx).WithError(updateErr).Error(updateErrorMsg)
+		return nil, updateErr
+	}
+
+	// Get the volume
+	volume, err := d.SDK.Volume(ctx, volConfig)
+	if err != nil {
+		updateErr := fmt.Errorf("could not find volume %s; %v", name, err)
+		Logc(ctx).WithError(updateErr).Error(updateErrorMsg)
+		return nil, updateErr
+	}
+
+	// Heal the ID on legacy volumes
+	if volConfig.InternalID == "" {
+		volConfig.InternalID = volume.ID
+	}
+
+	// If the volume state isn't Available, return an error
+	if volume.ProvisioningState != api.StateAvailable {
+		updateErr := fmt.Errorf("volume %s state is %s, not %s", name, volume.ProvisioningState, api.StateAvailable)
+		Logc(ctx).WithError(updateErr).Error(updateErrorMsg)
+		return nil, updateErr
+	}
+
+	var updatedVols map[string]*storage.Volume
+	var updateError error
+
+	// Update snapshotDirectory for volume
+	if updateInfo.SnapshotDirectory != "" {
+		updatedVols, updateError = d.updateSnapshotDirectory(ctx, name, volume, updateInfo.SnapshotDirectory, allVolumes)
+	}
+
+	return updatedVols, updateError
+}
+
+func (d *NASStorageDriver) updateSnapshotDirectory(
+	ctx context.Context, name string, volume *api.FileSystem,
+	snapshotDir string, allVolumes map[string]*storage.Volume,
+) (map[string]*storage.Volume, error) {
+	fields := LogFields{
+		"Method":      "updateSnapshotDirectory",
+		"Type":        "AzureNASStorageDriver",
+		"name":        name,
+		"snapshotDir": snapshotDir,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> updateSnapshotDirectory")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< updateSnapshotDirectory")
+
+	genericLogError := fmt.Sprintf("Failed to update snapshot directory for volume %v.", name)
+
+	// Ensure ACP is enabled
+	if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureReadOnlyClone); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error(genericLogError)
+		return nil, err
+	}
+
+	// Validate request
+	snapDirBool, err := strconv.ParseBool(snapshotDir)
+	if err != nil {
+		failureErr := errors.InvalidInputError(fmt.Sprintf("invalid value for snapshot directory %v; %v", snapshotDir, err))
+		Logc(ctx).WithError(failureErr).Error(genericLogError)
+		return nil, failureErr
+	}
+
+	// Modify volume snapshotDirectory if the current value is different from requested
+	if volume.SnapshotDirectory != snapDirBool {
+		if err = d.SDK.ModifyVolume(ctx, volume, nil, nil, &snapDirBool, nil); err != nil {
+			Logc(ctx).WithError(err).Error(genericLogError)
+			return nil, err
+		}
+	}
+
+	// Update volConfig for the volume to ensure cache is appropriately updated
+	// Always do this, to ensure cache is always in consistent state with the requested value
+	// There could be a case where snapshotDirectory is modified directly in the backend and trident cache is not updated
+	var vol *storage.Volume
+	if vol = allVolumes[name]; vol == nil {
+		failureErr := fmt.Errorf("volume %v not found", name)
+		Logc(ctx).WithError(failureErr).Error(genericLogError)
+		return nil, failureErr
+	}
+	vol.Config.SnapshotDir = strconv.FormatBool(snapDirBool)
+
+	return map[string]*storage.Volume{name: vol}, nil
 }
