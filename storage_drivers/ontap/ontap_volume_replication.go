@@ -314,7 +314,7 @@ func getMirrorStatus(
 		return v1.MirrorStatePromoting, nil
 	case api.SnapmirrorStatusAborting:
 		return v1.MirrorStatePromoting, nil
-	case api.SnapmirrorStatusFinalizing:
+	case api.SnapmirrorStatusFinalizing, api.SnapmirrorStatusTransferring:
 		return v1.MirrorStateEstablishing, nil
 	default:
 		Logc(ctx).WithField("snapmirror.State", snapmirror.State).Debug("Checking snapmirror state.")
