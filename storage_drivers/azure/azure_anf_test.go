@@ -771,16 +771,28 @@ func TestPopulateConfigurationDefaults_SnapshotDir(t *testing.T) {
 
 	tests := []struct {
 		name                string
+		nfsMountOption      string
 		inputSnapshotDir    string
 		expectedSnapshotDir string
 	}{
-		{"Default snapshotDir", "", "false"},
-		{"Uppercase snapshotDir", "TRUE", "true"},
-		{"Invalid snapshotDir", "TrUE", "TrUE"},
+		{"Default snapshotDir with no nfsMountOption", "", "", "false"},
+
+		{"Default snapshotDir with nfsMountOption as NFSv3", "nfsvers=3", "", "false"},
+		{"Explicit snapshotDir with nfsMountOption as NFSv3", "nfsvers=3", "TRUE", "true"},
+		{"Invalid snapshotDir with nfsMountOption as NFSv3", "nfsvers=3", "TrUe", "TrUe"},
+
+		{"Default snapshotDir with nfsMountOption as NFSv4", "nfsvers=4", "", "true"},
+		{"Explicit snapshotDir with nfsMountOption as NFSv4", "nfsvers=4", "FALSE", "false"},
+		{"Invalid snapshotDir with nfsMountOption as NFSv4", "nfsvers=4", "TrUe", "TrUe"},
+
+		{"Default snapshotDir with nfsMountOption as NFSv4.1", "nfsvers=4.1", "", "true"},
+		{"Explicit snapshotDir with nfsMountOption as NFSv4.1", "nfsvers=4.1", "FALSE", "false"},
+		{"Invalid snapshotDir with nfsMountOption as NFSv4", "nfsvers=4.1", "TrUe", "TrUe"},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			driver.Config.NfsMountOptions = test.nfsMountOption
 			driver.Config.SnapshotDir = test.inputSnapshotDir
 			driver.populateConfigurationDefaults(ctx, &driver.Config)
 			assert.Equal(t, test.expectedSnapshotDir, driver.Config.SnapshotDir)
@@ -2331,7 +2343,12 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
 	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
 	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
-	createRequest.SnapshotDirectory = true
+	// Note: snapshotDir should ideally be true by default for NFSv4 volume
+	// if no specific value is provided in backed config or volume config. But, in this case backend config assumes mountOption
+	// is NFSv3 (default mount options) and sets default snapshotDir to false;
+	// which subsequently gets set in createRequest as no value for snapshotDir is provided in volConfig
+	// However, this case won't occur in real world use case as currently there is no way to provide MountOption at volConfig level.
+	createRequest.SnapshotDirectory = false
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
@@ -2347,7 +2364,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
-	assert.Equal(t, "true", volConfig.SnapshotDir)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
 }
 
 func TestCreate_NFSVolume_CreateFailed(t *testing.T) {

@@ -4583,7 +4583,7 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
 		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
 	}
 
-	// CASE 1: ACP is not enabled for this feature
+	// CASE: ACP is not enabled for this feature
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(errors.UnsupportedError("unsupported"))
 
 	result, resultErr := driver.updateSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
@@ -4591,7 +4591,7 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
 	assert.Error(t, resultErr)
 	assert.Nil(t, result)
 
-	// CASE 2: Invalid snapshot dir value
+	// CASE: Invalid snapshot dir value
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 
 	result, resultErr = driver.updateSnapshotDirectory(ctx, mockVol1.Config, "invalid", true, "", allVolumes)
@@ -4600,7 +4600,7 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
 	assert.True(t, errors.IsInvalidInputError(resultErr))
 	assert.Nil(t, result)
 
-	// CASE 3: Pool level value is false
+	// CASE: Pool level value is false
 	result, resultErr = driver.updateSnapshotDirectory(ctx, mockVol1.Config, "false", false, "", allVolumes)
 
 	assert.Error(t, resultErr)
@@ -4608,7 +4608,7 @@ func TestNASQtreeStorageDriver_UpdateSnapshotDirectory_Failure(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("pool level must be set to true for updating snapshot directory of %v volume", driver.Config.StorageDriverName), resultErr.Error())
 	assert.Nil(t, result)
 
-	// CASE 4: Error while modifying snapshot directory
+	// CASE: Error while modifying snapshot directory
 	mockVol1.Config.InternalID = internalID1
 	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(gomock.Any(), "trident_qtree_pool_trident_XHPULXSCYE", false).Return(fakeErr)
 

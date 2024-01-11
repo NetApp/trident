@@ -19,7 +19,7 @@ import (
 
 var (
 	snapshotDirectory string
-	poolLevel         string
+	poolLevel         bool
 )
 
 func init() {
@@ -29,8 +29,8 @@ func init() {
 	updateCmd.AddCommand(updateVolumeCmd)
 	updateVolumeCmd.Flags().StringVarP(&snapshotDirectory, snapshotDirFlag, "", "",
 		"Value of snapshot directory. Allowed values: true|false")
-	updateVolumeCmd.Flags().StringVarP(&poolLevel, poolLevelFlag, "", "false",
-		"Whether update is to be done at pool level. Allowed values: true|false")
+	updateVolumeCmd.Flags().BoolVarP(&poolLevel, poolLevelFlag, "", false,
+		"Whether update is to be done at pool level. Default: false")
 }
 
 var updateVolumeCmd = &cobra.Command{
@@ -38,32 +38,34 @@ var updateVolumeCmd = &cobra.Command{
 	Short:   "Update a volume in Trident",
 	Aliases: []string{"v"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		snapDir, poolLevelVal := snapshotDirectory, poolLevel
-
 		// Validate command
-		err := validateCmd(args, snapDir, poolLevelVal)
+		err := validateCmd(args, snapshotDirectory)
 		if err != nil {
 			return err
 		}
 
 		if OperatingMode == ModeTunnel {
-			snapDirBool, _ := strconv.ParseBool(snapDir)
+			snapDirBool, _ := strconv.ParseBool(snapshotDirectory)
 
 			command := []string{
 				"update", "volume",
 				"--snapshot-dir", strconv.FormatBool(snapDirBool),
-				"--pool-level", poolLevelVal,
 			}
+
+			if poolLevel {
+				command = append(command, "--pool-level")
+			}
+
 			out, err := TunnelCommand(append(command, args...))
 			printOutput(cmd, out, err)
 			return err
 		} else {
-			return updateVolume(args[0], snapDir, poolLevelVal)
+			return updateVolume(args[0], snapshotDirectory, poolLevel)
 		}
 	},
 }
 
-func validateCmd(args []string, snapshotDir, poolLevel string) error {
+func validateCmd(args []string, snapshotDir string) error {
 	// Ensure one and only one volume name is passed
 	switch len(args) {
 	case 0:
@@ -85,23 +87,17 @@ func validateCmd(args []string, snapshotDir, poolLevel string) error {
 		return err
 	}
 
-	_, err = strconv.ParseBool(poolLevel)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func updateVolume(volumeName, snapDirValue, poolLevelVal string) error {
+func updateVolume(volumeName, snapDirValue string, poolLevelVal bool) error {
 	url := BaseURL() + "/volume/" + volumeName
 
 	snapDirBool, _ := strconv.ParseBool(snapDirValue)
-	poolLevelBool, _ := strconv.ParseBool(poolLevelVal)
 
 	request := utils.VolumeUpdateInfo{
 		SnapshotDirectory: strconv.FormatBool(snapDirBool),
-		PoolLevel:         poolLevelBool,
+		PoolLevel:         poolLevelVal,
 	}
 
 	requestBytes, err := json.Marshal(request)

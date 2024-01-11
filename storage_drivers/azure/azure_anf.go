@@ -272,15 +272,29 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		}
 	}
 
-	// If snapshotDir is provided, ensure it is lower case
 	snapDir := defaultSnapshotDir
-	if config.SnapshotDir != "" {
+	if config.SnapshotDir == "" {
+		// If no snapshotDir is provided, ensure it is set to true by default for NFSv4 version
+		nfsVersion, err := utils.GetNFSVersionFromMountOptions(config.NfsMountOptions, nfsVersion3, supportedNFSVersions)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid value for NfsMountOptions: %v.", config.NfsMountOptions)
+		}
+
+		switch nfsVersion {
+		case nfsVersion4:
+			fallthrough
+		case nfsVersion41:
+			snapDir = "true"
+		}
+	} else {
+		// Set the snapshotDir provided in the config
 		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 		}
 		snapDir = snapDirFormatted
 	}
+
 	config.SnapshotDir = snapDir
 
 	if config.LimitVolumeSize == "" {
@@ -862,7 +876,6 @@ func (d *NASStorageDriver) Create(
 		case nfsVersion41:
 			nfsV41Access = true
 			protocolTypes = []string{api.ProtocolTypeNFSv41}
-			snapshotDirBool = true
 		}
 
 		apiExportRule = api.ExportRule{
