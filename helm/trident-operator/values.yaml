@@ -130,6 +130,9 @@ excludePodSecurityPolicy: false
 # cloudProvider indicates which cloud platform Trident is running on.
 cloudProvider: ""
 
+# cloudIdentity indicates the identity that needs to be set on service account.
+cloudIdentity: ""
+
 # enableACP allows enabling the Trident-ACP container to run.
 enableACP: false
 

@@ -582,22 +582,36 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 		MaxCacheAge:       maxCacheAge,
 	}
 
-	if config.ClientSecret == "" && config.ClientID == "" {
-		credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
-		if credFilePath == "" {
-			credFilePath = DefaultConfigurationFilePath
-		}
-		Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credential config file.")
-		credFile, err := os.ReadFile(credFilePath)
-		if err != nil {
-			return errors.New("error reading from azure config file: " + err.Error())
-		}
-		if err = json.Unmarshal(credFile, &clientConfig); err != nil {
-			return errors.New("error parsing azureAuthConfig: " + err.Error())
-		}
+	// Try ANF Subvolume driver initialization with Azure workload identity followed by Azure managed identity,
+	// when both are not present , default to credentials present in the backend configuration file.
 
-		// Set SubscriptionID
-		d.Config.SubscriptionID = clientConfig.SubscriptionID
+	// Azure workload identity
+	// If cloud identity is provided and cloud provider is set to 'Azure' during the installation,
+	// we can use AZURE_CLIENT_ID,AZURE_TENANT_ID,AZURE_FEDERATED_TOKEN_FILE and AZURE_AUTHORITY_HOST environment variables
+	// injected by workload identity webhook for initialization of ANF Subvolume driver.
+	if os.Getenv("AZURE_CLIENT_ID") != "" && os.Getenv("AZURE_TENANT_ID") != "" && os.Getenv("AZURE_FEDERATED_TOKEN_FILE") != "" && os.Getenv("AZURE_AUTHORITY_HOST") != "" {
+		Logc(ctx).Info("Using Azure workload identity.")
+	} else {
+		// Azure managed identity
+		// If cloud provider is set to 'Azure' and cloud identity is not provided during the installation,
+		// we read the contents of AZURE_CREDENTIAL_FILE to initialize the ANF Subvolume driver.
+		if config.ClientSecret == "" && config.ClientID == "" {
+			credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
+			if credFilePath == "" {
+				credFilePath = DefaultConfigurationFilePath
+			}
+			Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credential config file.")
+			credFile, err := os.ReadFile(credFilePath)
+			if err != nil {
+				return errors.New("error reading from azure config file: " + err.Error())
+			}
+			if err = json.Unmarshal(credFile, &clientConfig); err != nil {
+				return errors.New("error parsing azureAuthConfig: " + err.Error())
+			}
+
+			// Set SubscriptionID
+			d.Config.SubscriptionID = clientConfig.SubscriptionID
+		}
 	}
 
 	client, err := api.NewDriver(clientConfig)

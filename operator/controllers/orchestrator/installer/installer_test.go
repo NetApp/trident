@@ -191,3 +191,71 @@ func Test_getAppLabelForResource(t *testing.T) {
 	assert.True(t, cmp.Equal(labelMap, map[string]string{TridentAppLabelKey: TridentNodeLabelValue}))
 	assert.Equal(t, labelValue, TridentNodeLabel)
 }
+
+func TestCloudProviderPrechecks(t *testing.T) {
+	mockK8sClient := newMockKubeClient(t)
+	installer := newTestInstaller(mockK8sClient)
+
+	tests := []struct {
+		cloudProvider string
+		Valid         bool
+	}{
+		// Valid values
+		{"", true},
+		{k8sclient.CloudProviderAzure, true},
+		{k8sclient.CloudProviderAWS, true},
+		{"azure", true},
+		{"aws", true},
+
+		// Invalid values
+		{"test", false},
+		{"AZ", false},
+		{"GCP", false},
+		{"Oracle", false},
+	}
+
+	for _, test := range tests {
+		cloudProvider = test.cloudProvider
+		err := installer.cloudProviderPrechecks()
+		if test.Valid {
+			assert.NoError(t, err, "should be valid")
+		} else {
+			assert.Error(t, err, "should be invalid")
+		}
+	}
+}
+
+func TestCloudIdentityPrechecks(t *testing.T) {
+	mockK8sClient := newMockKubeClient(t)
+	installer := newTestInstaller(mockK8sClient)
+
+	tests := []struct {
+		cloudProvider string
+		cloudIdentity string
+		Valid         bool
+	}{
+		// Valid values
+		{"", "", true},
+		{k8sclient.CloudProviderAzure, "", true},
+		{k8sclient.CloudProviderAzure, k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", true},
+		{k8sclient.CloudProviderAWS, k8sclient.AWSCloudIdentityKey + "arn:aws:iam::123456789:role/test", true},
+		{"azure", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", true},
+		{"aws", k8sclient.AWSCloudIdentityKey + "arn:aws:iam::123456789:role/test", true},
+
+		// Invalid values
+		{"", "123456789", false},
+		{k8sclient.CloudProviderAzure, " rruuunu89-9933-49bd-134423", false},
+		{k8sclient.CloudProviderAWS, "", false},
+	}
+
+	for _, test := range tests {
+		cloudProvider = test.cloudProvider
+		cloudIdentity = test.cloudIdentity
+		err := installer.cloudIdentityPrechecks()
+		if test.Valid {
+			assert.NoError(t, err, "should be valid")
+		} else {
+			assert.Error(t, err, "should be invalid")
+		}
+	}
+}

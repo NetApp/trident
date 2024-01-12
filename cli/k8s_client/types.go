@@ -169,6 +169,7 @@ type DeploymentYAMLArguments struct {
 	ACPImage                string                `json:"acpImage"`
 	EnableACP               bool                  `json:"enableACP"`
 	CloudProvider           string                `json:"cloudProvider"`
+	IdentityLabel           bool                  `json:"identityLabel"`
 }
 
 type DaemonsetYAMLArguments struct {

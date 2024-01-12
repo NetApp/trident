@@ -68,6 +68,7 @@ var (
 	kubeletDir      string
 	imagePullPolicy string
 	cloudProvider   string
+	cloudIdentity   string
 
 	acpImage  string
 	enableACP bool
@@ -86,6 +87,7 @@ var (
 	appLabel      string
 	appLabelKey   string
 	appLabelValue string
+	identityLabel bool
 
 	controllerPluginNodeSelector map[string]string
 	controllerPluginTolerations  []netappv1.Toleration
@@ -164,6 +166,40 @@ func (i *Installer) imagePullPolicyPrechecks() error {
 	default:
 		return fmt.Errorf("'%s' is not a valid trident image pull policy format", imagePullPolicy)
 	}
+	return nil
+}
+
+func (i *Installer) cloudProviderPrechecks() error {
+	// Validate the cloud provider
+	if !(cloudProvider == "" || strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) || strings.EqualFold(cloudProvider, k8sclient.CloudProviderAWS)) {
+		return fmt.Errorf("'%s' is not a valid cloud provider ", cloudProvider)
+	}
+	return nil
+}
+
+func (i *Installer) cloudIdentityPrechecks() error {
+	// Validate the flags to set the Workload Identity/IAM Role as annotation.
+	// cloud provider cannot be empty.
+	if cloudProvider == "" && cloudIdentity != "" {
+		return fmt.Errorf("cloud provider must be specified for the cloud identity '%s'", cloudIdentity)
+	}
+
+	// validate the cloud provider and cloud identity for Azure.
+	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) && strings.Contains(cloudIdentity, k8sclient.AzureCloudIdentityKey) {
+		// Add identity label.
+		identityLabel = true
+
+		// Set the value of cloud provider as empty to avoid updating deployment yaml.
+		cloudProvider = ""
+	} else if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) && cloudIdentity != "" && !strings.Contains(cloudIdentity, k8sclient.AzureCloudIdentityKey) {
+		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAzure)
+	}
+
+	// validate the cloud provider and cloud identity for AWS.
+	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAWS) && !strings.Contains(cloudIdentity, k8sclient.AWSCloudIdentityKey) {
+		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAWS)
+	}
+
 	return nil
 }
 
@@ -402,6 +438,7 @@ func (i *Installer) setInstallationParams(
 		imagePullPolicy = cr.Spec.ImagePullPolicy
 	}
 	cloudProvider = cr.Spec.CloudProvider
+	cloudIdentity = cr.Spec.CloudIdentity
 
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
@@ -455,6 +492,16 @@ func (i *Installer) setInstallationParams(
 
 	// Preform image pull policy prechecks
 	if returnError = i.imagePullPolicyPrechecks(); returnError != nil {
+		return nil, nil, false, returnError
+	}
+
+	// Perform cloud provider prechecks
+	if returnError = i.cloudProviderPrechecks(); returnError != nil {
+		return nil, nil, false, returnError
+	}
+
+	// Perform cloud identity prechecks
+	if returnError = i.cloudIdentityPrechecks(); returnError != nil {
 		return nil, nil, false, returnError
 	}
 
@@ -887,7 +934,7 @@ func (i *Installer) createOrPatchTridentServiceAccounts(
 	for _, accountName := range serviceAccountNames {
 		labelMap, labelString := getAppLabelForResource(accountName)
 		newServiceAccountYAML := k8sclient.GetServiceAccountYAML(accountName, serviceAccountSecretMap[accountName],
-			labelMap, controllingCRDetails)
+			labelMap, controllingCRDetails, cloudIdentity)
 
 		_, err = i.client.PutServiceAccount(currentServiceAccountMap[accountName], reuseServiceAccountMap[accountName],
 			newServiceAccountYAML, labelString)
@@ -1427,6 +1474,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		CloudProvider:           cloudProvider,
 		ACPImage:                acpImage,
 		EnableACP:               enableACP,
+		IdentityLabel:           identityLabel,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

@@ -403,6 +403,233 @@ func TestInitialize_NoLocation(t *testing.T) {
 	assert.False(t, driver.Initialized(), "initialized")
 }
 
+func TestInitialize_NoTenantID_NOClientID(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	envVariables := map[string]string{
+		"AZURE_CLIENT_ID":            "deadbeef-784c-4b35-8329-460f52a3ad50",
+		"AZURE_TENANT_ID":            "deadbeef-4746-4444-a919-3b34af5f0a3c",
+		"AZURE_FEDERATED_TOKEN_FILE": "/test/file/path",
+		"AZURE_AUTHORITY_HOST":       "https://msft.com/",
+	}
+
+	// Set required environment variables for testing
+	for key, value := range envVariables {
+		_ = os.Setenv(key, value)
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1",
+        "location": "fake-location"
+    }`
+
+	// Have to at least one CapacityPool for ANF backends.
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "fake-location",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
+	}
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config, "config is nil")
+	assert.True(t, driver.Initialized(), "not initialized")
+
+	// Unset all the environment variables
+	for key := range envVariables {
+		_ = os.Unsetenv(key)
+	}
+}
+
+func TestInitialize_NOClientID_NOClientSecret(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configFile, _ := os.Getwd()
+
+	envVariable := map[string]string{
+		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+	}
+
+	// Set required environment variable for testing
+	for key, value := range envVariable {
+		_ = os.Setenv(key, value)
+	}
+
+	configFileContent := `
+	{
+	  "cloud": "AzurePublicCloud",
+	  "tenantId": "deadbeef-784c-4b35-8329-460f52a3ad50",
+	  "subscriptionId": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+	  "aadClientId": "test-msi",
+	  "aadClientSecret": "test-msi",
+	  "resourceGroup": "RG1",
+	  "location": "fake-location",
+	  "useManagedIdentityExtension": true,
+	  "userAssignedIdentityID": "deadbeef-173f-4bf4-b5b8-7cba6f53a227"
+	}`
+
+	_ = os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm)
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1"
+    }`
+
+	// Have to at least one CapacityPool for ANF backends.
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "fake-location",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
+	}
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config, "config is nil")
+	assert.True(t, driver.Initialized(), "not initialized")
+
+	// Remove the file
+	_ = os.Remove(envVariable["AZURE_CREDENTIAL_FILE"])
+
+	// Unset environment variable
+	for key := range envVariable {
+		_ = os.Unsetenv(key)
+	}
+}
+
+func TestInitialize_NOClientID_NOClientSecret_Error_ReadingFile(t *testing.T) {
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1"
+    }`
+
+	_, driver := newMockANFDriver(t)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialize did not fail")
+	assert.False(t, driver.Initialized(), "initialized")
+}
+
+func TestInitialize_NOClientID_NOClientSecret_Error_JSONUnmarshal(t *testing.T) {
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configFile, _ := os.Getwd()
+
+	envVariable := map[string]string{
+		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+	}
+
+	// Set required environment variable for testing
+	for key, value := range envVariable {
+		_ = os.Setenv(key, value)
+	}
+
+	configFileContent := `
+	{
+	  "cloud": "AzurePublicCloud",
+	  "tenantId": "deadbeef-784c-4b35-8329-460f52a3ad50",
+	  "subscriptionId": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+	  "aadClientId": "test-msi",
+	  "aadClientSecret": "test-msi",
+	  "resourceGroup": "RG1",
+	  "location": "fake-location",
+	  "useManagedIdentityExtension": true,
+	  "userAssignedIdentityID" = "deadbeef-173f-4bf4-b5b8-7cba6f53a227"
+	}`
+
+	_ = os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm)
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1"
+    }`
+
+	_, driver := newMockANFDriver(t)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialize did not fail")
+	assert.False(t, driver.Initialized(), "initialized")
+
+	// Remove the file
+	_ = os.Remove(envVariable["AZURE_CREDENTIAL_FILE"])
+
+	// Unset environment variable
+	for key := range envVariable {
+		_ = os.Unsetenv(key)
+	}
+}
+
 func TestInitialize_SDKInitError(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -2896,6 +3123,39 @@ func TestCreateClone_ROCloneFailed(t *testing.T) {
 	assert.Error(t, result, "expected error")
 }
 
+func TestCreateClone_Kerberos_Enabled_ACP_Disabled(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NASType = "nfs"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, _, _ := getStructsForCreateClone(ctx,
+		driver, storagePool)
+	sourceVolConfig.SnapshotDir = "false"
+	sourceFilesystem.KerberosEnabled = true
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(errFailed).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.Error(t, result, "expected error")
+	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
+}
+
 func TestCreateClone_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
@@ -3442,6 +3702,41 @@ func TestImport_ManagedWithKerberos5(t *testing.T) {
 	assert.Equal(t, originalName, volConfig.InternalName, "internal name mismatch")
 	assert.Equal(t, originalFilesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.True(t, originalFilesystem.ExportPolicy.Rules[0].Kerberos5ReadWrite, "kerberos protocol type mismatch")
+}
+
+func TestImport_ManagedWithKerberos5_ACP_Disabled(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.UnixPermissions = "0770"
+	driver.Config.NASType = "nfs"
+	driver.Config.Kerberos = "sec=krb5"
+
+	originalName := "importMe"
+
+	volConfig, originalFilesystem := getStructsForImport(ctx, driver)
+	originalFilesystem.KerberosEnabled = true
+	originalFilesystem.ExportPolicy.Rules[0].Nfsv41 = true
+	originalFilesystem.ExportPolicy.Rules[0].Kerberos5ReadWrite = true
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeByCreationToken(ctx, originalName).Return(originalFilesystem, nil).Times(1)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalFilesystem).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(errFailed).Times(1)
+
+	result := driver.Import(ctx, volConfig, originalName)
+
+	assert.Error(t, result, "import succeeded")
 }
 
 func TestImport_ManagedWithKerberos5I(t *testing.T) {
@@ -6642,13 +6937,15 @@ func TestUpdate_Success(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
 
 	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
-	allVolumes := map[string]*storage.Volume{volConfig.Name: {
-		Config:      volConfig,
-		BackendUUID: BackendUUID,
-		Pool:        "anf_pool",
-		Orphaned:    false,
-		State:       "Online",
-	}}
+	allVolumes := map[string]*storage.Volume{
+		volConfig.Name: {
+			Config:      volConfig,
+			BackendUUID: BackendUUID,
+			Pool:        "anf_pool",
+			Orphaned:    false,
+			State:       "Online",
+		},
+	}
 
 	result, err := driver.Update(ctx, volConfig, updateInfo, allVolumes)
 
@@ -6676,13 +6973,15 @@ func TestUpdate_NilVolumeUpdateInfo(t *testing.T) {
 
 	volConfig, _, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 
-	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
-		Config:      volConfig,
-		BackendUUID: BackendUUID,
-		Pool:        "anf_pool",
-		Orphaned:    false,
-		State:       "Online",
-	}}
+	allVolumes := map[string]*storage.Volume{
+		volConfig.InternalName: {
+			Config:      volConfig,
+			BackendUUID: BackendUUID,
+			Pool:        "anf_pool",
+			Orphaned:    false,
+			State:       "Online",
+		},
+	}
 
 	result, err := driver.Update(ctx, volConfig, nil, allVolumes)
 
@@ -6719,13 +7018,15 @@ func TestUpdate_ErrorInAPIOperation(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(mockError).AnyTimes()
 
 	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
-	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
-		Config:      volConfig,
-		BackendUUID: BackendUUID,
-		Pool:        "anf_pool",
-		Orphaned:    false,
-		State:       "Online",
-	}}
+	allVolumes := map[string]*storage.Volume{
+		volConfig.InternalName: {
+			Config:      volConfig,
+			BackendUUID: BackendUUID,
+			Pool:        "anf_pool",
+			Orphaned:    false,
+			State:       "Online",
+		},
+	}
 
 	result, err := driver.Update(ctx, volConfig, updateInfo, allVolumes)
 
@@ -6764,13 +7065,15 @@ func TestUpdate_VolumeStateNotAvailable(t *testing.T) {
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
 
 	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
-	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
-		Config:      volConfig,
-		BackendUUID: BackendUUID,
-		Pool:        "anf_pool",
-		Orphaned:    false,
-		State:       "Online",
-	}}
+	allVolumes := map[string]*storage.Volume{
+		volConfig.InternalName: {
+			Config:      volConfig,
+			BackendUUID: BackendUUID,
+			Pool:        "anf_pool",
+			Orphaned:    false,
+			State:       "Online",
+		},
+	}
 
 	result, err := driver.Update(ctx, volConfig, updateInfo, allVolumes)
 
@@ -6830,13 +7133,15 @@ func TestUpdateSnapshotDirectory_DifferentSnapshotDir(t *testing.T) {
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
 	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
 
-	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
-		Config:      volConfig,
-		BackendUUID: BackendUUID,
-		Pool:        "anf_pool",
-		Orphaned:    false,
-		State:       "Online",
-	}}
+	allVolumes := map[string]*storage.Volume{
+		volConfig.InternalName: {
+			Config:      volConfig,
+			BackendUUID: BackendUUID,
+			Pool:        "anf_pool",
+			Orphaned:    false,
+			State:       "Online",
+		},
+	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -6898,13 +7203,15 @@ func TestUpdateSnapshotDirectory_Failure(t *testing.T) {
 		ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(
 		errors.New("mock error")).AnyTimes()
 
-	allVolumes := map[string]*storage.Volume{volConfig.InternalName: {
-		Config:      volConfig,
-		BackendUUID: BackendUUID,
-		Pool:        "anf_pool",
-		Orphaned:    false,
-		State:       "Online",
-	}}
+	allVolumes := map[string]*storage.Volume{
+		volConfig.InternalName: {
+			Config:      volConfig,
+			BackendUUID: BackendUUID,
+			Pool:        "anf_pool",
+			Orphaned:    false,
+			State:       "Online",
+		},
+	}
 
 	result, err = driver.updateSnapshotDirectory(
 		ctx, volConfig.InternalName, filesystem, "TRUE", allVolumes)

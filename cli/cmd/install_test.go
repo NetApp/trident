@@ -227,3 +227,46 @@ metadata:
   name: %v
 spec:
   group: trident.netapp.io`
+
+func TestValidateInstallationArguments(t *testing.T) {
+	tests := []struct {
+		TridentPodNamespace string
+		logFormat           string
+		imagePullPolicy     string
+		cloudProvider       string
+		cloudIdentity       string
+		Valid               bool
+	}{
+		// Valid arguments
+		{"default", "text", "IfNotPresent", "", "", true},
+		{"test-namespace", "text", "IfNotPresent", "", "", true},
+		{"test-namespace", "json", "Never", "", "", true},
+		{"test-namespace", "json", "Never", k8sclient.CloudProviderAzure, "", true},
+		{"test", "text", "Always", k8sclient.CloudProviderAzure, k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", true},
+		{"test", "text", "Always", k8sclient.CloudProviderAzure, "", true},
+
+		// Invalid arguments
+		{"", "", "", "", "", false},
+		{"test", "html", "", "", "", false},
+		{"test", "text", "Anyways", "", "", false},
+		{"test", "json", "Never", "Docker", "", false},
+		{"test", "json", "Never", "Docker", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", false},
+		{"test", "text", "IfNotPresent", k8sclient.CloudProviderAWS, "", false},
+		{"test", "text", "IfNotPresent", "", k8sclient.AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582", false},
+		{"test", "text", "Always", k8sclient.CloudProviderAzure, "a8rry78r8-7733-49bd-6656582", false},
+	}
+
+	for _, test := range tests {
+		TridentPodNamespace = test.TridentPodNamespace
+		logFormat = test.logFormat
+		imagePullPolicy = test.imagePullPolicy
+		cloudProvider = test.cloudProvider
+		cloudIdentity = test.cloudIdentity
+		err := validateInstallationArguments()
+		if test.Valid {
+			assert.NoError(t, err, "should be valid")
+		} else {
+			assert.Error(t, err, "should be invalid")
+		}
+	}
+}

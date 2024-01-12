@@ -64,6 +64,7 @@ type TridentOrchestratorSpec struct {
 	Windows                      bool              `json:"windows,omitempty"`
 	ImagePullPolicy              string            `json:"imagePullPolicy,omitempty"`
 	CloudProvider                string            `json:"cloudProvider,omitempty"`
+	CloudIdentity                string            `json:"cloudIdentity,omitempty"`
 	EnableACP                    bool              `json:"enableACP,omitempty"`
 	ACPImage                     string            `json:"acpImage,omitempty"`
 }

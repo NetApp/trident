@@ -2,6 +2,7 @@ package azure
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"testing"
@@ -670,6 +671,195 @@ func TestSubvolumeInitialize_InvalidMaxCacheAge(t *testing.T) {
 
 	assert.Error(t, result, "initialized")
 	assert.False(t, driver.Initialized(), "initialized")
+}
+
+func TestSubvolumeInitialize_NoTenantID_NOClientID(t *testing.T) {
+	commonConfig, filesystems := getStructsForSubvolumeInitialize()
+
+	envVariables := map[string]string{
+		"AZURE_CLIENT_ID":            "deadbeef-784c-4b35-8329-460f52a3ad50",
+		"AZURE_TENANT_ID":            "deadbeef-4746-4444-a919-3b34af5f0a3c",
+		"AZURE_FEDERATED_TOKEN_FILE": "/test/file/path",
+		"AZURE_AUTHORITY_HOST":       "https://msft.com/",
+	}
+
+	// Set required environment variables for testing
+	for key, value := range envVariables {
+		_ = os.Setenv(key, value)
+	}
+
+	configJSON := `
+	{
+		"version": 1,
+		"storageDriverName": "azure-netapp-files-subvolume",
+		"subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+		"debugTraceFlags": {"method": true, "api": true, "discovery": true},
+		"filePoolVolumes": ["RG1/NA1/CP1/VOL-1"],
+		"volumeCreateTimeout": "600",
+		"sdkTimeout": "60",
+		"maxCacheAge": "300",
+        "location": "fake-location"
+    }`
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	mockAPI.EXPECT().ValidateFilePoolVolumes(ctx, gomock.Any()).Return(filesystems, nil).Times(1)
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config, "config is nil")
+	assert.True(t, driver.Initialized(), "not initialized")
+
+	// Unset all the environment variables
+	for key := range envVariables {
+		_ = os.Unsetenv(key)
+	}
+}
+
+func TestSubvolumeInitialize_NOClientID_NOClientSecret(t *testing.T) {
+	commonConfig, filesystems := getStructsForSubvolumeInitialize()
+
+	configFile, _ := os.Getwd()
+
+	envVariable := map[string]string{
+		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+	}
+
+	// Set required environment variable for testing
+	for key, value := range envVariable {
+		_ = os.Setenv(key, value)
+	}
+
+	configFileContent := `
+	{
+	  "cloud": "AzurePublicCloud",
+	  "tenantId": "deadbeef-784c-4b35-8329-460f52a3ad50",
+	  "subscriptionId": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+	  "aadClientId": "test-msi",
+	  "aadClientSecret": "test-msi",
+	  "resourceGroup": "RG1",
+	  "location": "fake-location",
+	  "useManagedIdentityExtension": true,
+	  "userAssignedIdentityID": "deadbeef-173f-4bf4-b5b8-7cba6f53a227"
+	}`
+
+	_ = os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm)
+
+	configJSON := `
+	{
+		"version": 1,
+		"storageDriverName": "azure-netapp-files-subvolume",
+		"subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+		"debugTraceFlags": {"method": true, "api": true, "discovery": true},
+		"filePoolVolumes": ["RG1/NA1/CP1/VOL-1"],
+		"volumeCreateTimeout": "600",
+		"sdkTimeout": "60",
+		"maxCacheAge": "300",
+        "location": "fake-location"
+    }`
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	mockAPI.EXPECT().ValidateFilePoolVolumes(ctx, gomock.Any()).Return(filesystems, nil).Times(1)
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config, "config is nil")
+	assert.True(t, driver.Initialized(), "not initialized")
+
+	// Remove the file
+	_ = os.Remove(envVariable["AZURE_CREDENTIAL_FILE"])
+
+	// Unset environment variable
+	for key := range envVariable {
+		_ = os.Unsetenv(key)
+	}
+}
+
+func TestSubvolumeInitialize_NOClientID_NOClientSecret_Error_ReadingFile(t *testing.T) {
+	commonConfig, _ := getStructsForSubvolumeInitialize()
+
+	configJSON := `
+	{
+		"version": 1,
+		"storageDriverName": "azure-netapp-files-subvolume",
+		"subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+		"debugTraceFlags": {"method": true, "api": true, "discovery": true},
+		"filePoolVolumes": ["RG1/NA1/CP1/VOL-1"],
+		"volumeCreateTimeout": "600",
+		"sdkTimeout": "60",
+		"maxCacheAge": "300",
+        "location": "fake-location"
+    }`
+
+	_, driver := newMockANFSubvolumeDriver(t)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
+
+	assert.Error(t, result, "initialized")
+	assert.False(t, driver.Initialized(), "initialized")
+}
+
+func TestSubvolumeInitialize_NOClientID_NOClientSecret_Error_JSONUnmarshal(t *testing.T) {
+	commonConfig, _ := getStructsForSubvolumeInitialize()
+
+	configFile, _ := os.Getwd()
+
+	envVariable := map[string]string{
+		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+	}
+
+	// Set required environment variable for testing
+	for key, value := range envVariable {
+		_ = os.Setenv(key, value)
+	}
+
+	configFileContent := `
+	{
+	  "cloud": "AzurePublicCloud",
+	  "tenantId": "deadbeef-784c-4b35-8329-460f52a3ad50",
+	  "subscriptionId": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+	  "aadClientId": "test-msi",
+	  "aadClientSecret": "test-msi",
+	  "resourceGroup": "RG1",
+	  "location": "fake-location",
+	  "useManagedIdentityExtension": true,
+	  "userAssignedIdentityID" = "deadbeef-173f-4bf4-b5b8-7cba6f53a227"
+	}`
+
+	_ = os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm)
+
+	configJSON := `
+	{
+		"version": 1,
+		"storageDriverName": "azure-netapp-files-subvolume",
+		"subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+		"debugTraceFlags": {"method": true, "api": true, "discovery": true},
+		"filePoolVolumes": ["RG1/NA1/CP1/VOL-1"],
+		"volumeCreateTimeout": "600",
+		"sdkTimeout": "60",
+		"maxCacheAge": "300",
+        "location": "fake-location"
+    }`
+
+	_, driver := newMockANFSubvolumeDriver(t)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
+
+	assert.Error(t, result, "initialized")
+	assert.False(t, driver.Initialized(), "initialized")
+
+	// Remove the file
+	_ = os.Remove(envVariable["AZURE_CREDENTIAL_FILE"])
+
+	// Unset environment variable
+	for key := range envVariable {
+		_ = os.Unsetenv(key)
+	}
 }
 
 func TestSubvolumeTerminate(t *testing.T) {
@@ -3009,7 +3199,7 @@ func TestSubvolumeRestoreSnapshot_ErrorWaitingForTempSubvolume(t *testing.T) {
 	assert.Error(t, result, "snapshot restore should fail")
 }
 
-func TestSubvolumeRestoreSnapshot_ErrorCreatingTempSubvolume(t *testing.T) {
+func TestSubvolumeRestoreSnapshot_ErrorCreatingTempSubvolume1(t *testing.T) {
 	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 	tempInternalID := volConfig.InternalID + tempCopySuffix
 
@@ -3030,6 +3220,33 @@ func TestSubvolumeRestoreSnapshot_ErrorCreatingTempSubvolume(t *testing.T) {
 	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, tempSubVolume, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateCreating, fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorCreatingTempSubvolume2(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, tempSubVolume, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateError, fmt.Errorf("some error")).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(nil, fmt.Errorf("some error")).Times(1)
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
 	assert.Error(t, result, "snapshot restore should fail")
@@ -3092,7 +3309,7 @@ func TestSubvolumeRestoreSnapshot_ErrorCreatingNewSnapshot(t *testing.T) {
 	assert.Error(t, result, "snapshot restore should fail")
 }
 
-func TestSubvolumeRestoreSnapshot_ErrorWaitingForNewSubvolume(t *testing.T) {
+func TestSubvolumeRestoreSnapshot_ErrorWaitingForNewSubvolume1(t *testing.T) {
 	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
 	tempInternalID := volConfig.InternalID + tempCopySuffix
 
@@ -3118,6 +3335,37 @@ func TestSubvolumeRestoreSnapshot_ErrorWaitingForNewSubvolume(t *testing.T) {
 		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout).Return(api.StateAvailable, fmt.Errorf("some error")).Times(1)
+
+	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
+	assert.Error(t, result, "snapshot restore should fail")
+}
+
+func TestSubvolumeRestoreSnapshot_ErrorWaitingForNewSubvolume2(t *testing.T) {
+	config, volConfig, _, _, snapConfig := getStructsForSubvolumeCreateSnapshot()
+	tempInternalID := volConfig.InternalID + tempCopySuffix
+
+	tempSubVolume := &api.Subvolume{
+		ID:   tempInternalID,
+		Name: volConfig.Name + tempCopySuffix,
+	}
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	driver.Config = *config
+	prefix := "trident"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.helper = newMockANFSubvolumeHelper()
+	driver.helper.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SubvolumeExistsByID(ctx, tempInternalID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSubvolume(ctx, gomock.Any()).Return(tempSubVolume, nil, nil).Times(2)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+	mockAPI.EXPECT().DeleteSubvolume(ctx, gomock.Any()).Return(&api.PollerSVDeleteResponse{}, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().WaitForSubvolumeState(ctx, gomock.Any(), api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateCreating, fmt.Errorf("some error")).Times(1)
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
 	assert.Error(t, result, "snapshot restore should fail")

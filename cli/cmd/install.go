@@ -119,6 +119,7 @@ var (
 	acpImage                string
 	enableACP               bool
 	cloudProvider           string
+	cloudIdentity           string
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -152,6 +153,7 @@ var (
 	appLabel      string
 	appLabelKey   string
 	appLabelValue string
+	identityLabel bool
 
 	persistentObjectLabelKey   string
 	persistentObjectLabelValue string
@@ -231,6 +233,7 @@ func init() {
 		"Override the default trident-acp container image.")
 
 	installCmd.Flags().StringVar(&cloudProvider, "cloud-provider", "", "Name of the cloud provider")
+	installCmd.Flags().StringVar(&cloudIdentity, "cloud-identity", "", "Cloud identity to be set on service account")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -433,6 +436,33 @@ func validateInstallationArguments() error {
 		return fmt.Errorf("'%s' is not a valid trident image pull policy", imagePullPolicy)
 	}
 
+	// Validate the cloud provider
+	if !(cloudProvider == "" || strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) || strings.EqualFold(cloudProvider, k8sclient.CloudProviderAWS)) {
+		return fmt.Errorf("'%s' is not a valid cloud provider ", cloudProvider)
+	}
+
+	// Validate the flags to set the Workload Identity/IAM Role as annotation.
+	// cloud provider cannot be empty.
+	if cloudProvider == "" && cloudIdentity != "" {
+		return fmt.Errorf("cloud provider must be specified for the cloud identity '%s'", cloudIdentity)
+	}
+
+	// validate the cloud provider and cloud identity for Azure.
+	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) && strings.Contains(cloudIdentity, k8sclient.AzureCloudIdentityKey) {
+		// Add identity label.
+		identityLabel = true
+
+		// Set the value of cloud provider as empty to avoid updating deployment yaml.
+		cloudProvider = ""
+	} else if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) && cloudIdentity != "" && !strings.Contains(cloudIdentity, k8sclient.AzureCloudIdentityKey) {
+		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAzure)
+	}
+
+	// validate the cloud provider and cloud identity for AWS.
+	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAWS) && !strings.Contains(cloudIdentity, k8sclient.AWSCloudIdentityKey) {
+		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAWS)
+	}
+
 	return nil
 }
 
@@ -533,7 +563,7 @@ func prepareYAMLFiles() error {
 	// Creating Controller RBAC objects
 	// Creating service account for controller
 	controllerServiceAccountYAML := k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels,
-		nil)
+		nil, cloudIdentity)
 	if err = writeFile(controllerServiceAccountPath, controllerServiceAccountYAML); err != nil {
 		return fmt.Errorf("could not write controller service account YAML file; %v", err)
 	}
@@ -566,7 +596,7 @@ func prepareYAMLFiles() error {
 	// Creating Linux Node RBAC objects
 	// Creating service account for node linux
 	nodeServiceAccountYAML := k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false),
-		nil, daemonSetlabels, nil)
+		nil, daemonSetlabels, nil, "")
 	if err = writeFile(nodeLinuxServiceAccountPath, nodeServiceAccountYAML); err != nil {
 		return fmt.Errorf("could not write node linux service account YAML file; %v", err)
 	}
@@ -618,6 +648,7 @@ func prepareYAMLFiles() error {
 		ACPImage:                acpImage,
 		EnableACP:               enableACP,
 		CloudProvider:           cloudProvider,
+		IdentityLabel:           identityLabel,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -710,7 +741,7 @@ func prepareYAMLFiles() error {
 		// Creating node windows RBAC objects
 		// Creating service account for node windows
 		nodeWindowsServiceAccountYAML := k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(true), nil,
-			daemonSetlabels, nil)
+			daemonSetlabels, nil, "")
 		if err = writeFile(nodeWindowsServiceAccountPath, nodeWindowsServiceAccountYAML); err != nil {
 			return fmt.Errorf("could not write node windows service account YAML file; %v", err)
 		}
@@ -1042,6 +1073,7 @@ func installTrident() (returnError error) {
 			ACPImage:                acpImage,
 			EnableACP:               enableACP,
 			CloudProvider:           cloudProvider,
+			IdentityLabel:           identityLabel,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
@@ -1474,7 +1506,7 @@ func createRBACObjects() (returnError error) {
 	// Creating controller RBAC Objects
 	// Create service account for controller
 	if createObjectFunc(controllerServiceAccountPath,
-		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels, nil)) != nil {
+		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels, nil, cloudIdentity)) != nil {
 		returnError = fmt.Errorf("could not create controller service account; %v", returnError)
 		return
 	}
@@ -1517,7 +1549,7 @@ func createRBACObjects() (returnError error) {
 	// Creating node linux RBAC Objects
 	// Create service account for node linux
 	if createObjectFunc(nodeLinuxServiceAccountPath,
-		k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false), nil, daemonSetlabels, nil)) != nil {
+		k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false), nil, daemonSetlabels, nil, "")) != nil {
 		returnError = fmt.Errorf("could not create node linux service account; %v", returnError)
 		return
 	}
@@ -1548,7 +1580,7 @@ func createRBACObjects() (returnError error) {
 	// Creating node windows RBAC Objects
 	if windows {
 		if createObjectFunc(nodeWindowsServiceAccountPath,
-			k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(true), nil, daemonSetlabels, nil)) != nil {
+			k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(true), nil, daemonSetlabels, nil, "")) != nil {
 			returnError = fmt.Errorf("could not create node windows service account; %v", returnError)
 			return
 		}
@@ -1629,7 +1661,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	// Remove RBAC objects of name 'trident-csi' from previous installations if found
 	// Delete service account
 	deleteObjectFunc(
-		k8sclient.GetServiceAccountYAML(getServiceAccountName(), nil, nil, nil),
+		k8sclient.GetServiceAccountYAML(getServiceAccountName(), nil, nil, nil, cloudIdentity),
 		"Could not delete trident-csi service account.",
 		"Deleted trident-csi service account.",
 	)
@@ -1655,7 +1687,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	// DELETING Controller RBAC objects
 	// Delete controller service account
 	deleteObjectFunc(
-		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels, nil),
+		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels, nil, cloudIdentity),
 		"Could not delete controller service account.",
 		"Deleted controller service account.",
 	)
@@ -1692,7 +1724,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	// DELETING node linux RBAC objects
 	// Delete node linux service account
 	deleteObjectFunc(
-		k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false), nil, daemonSetlabels, nil),
+		k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false), nil, daemonSetlabels, nil, ""),
 		"Could not delete node linux service account.",
 		"Deleted node linux service account.",
 	)
@@ -1728,7 +1760,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 	// DELETING node windows RBAC objects
 	// Delete node windows service account
 	deleteObjectFunc(
-		k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(true), nil, daemonSetlabels, nil),
+		k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(true), nil, daemonSetlabels, nil, ""),
 		"Could not delete node windows service account.",
 		"Deleted node windows service account.",
 	)

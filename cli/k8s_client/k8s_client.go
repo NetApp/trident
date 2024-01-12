@@ -60,7 +60,11 @@ const (
 	// CRD Finalizer name
 	TridentFinalizer = "trident.netapp.io"
 
-	CloudProviderAzure = "Azure"
+	CloudProviderAzure         = "Azure"
+	CloudProviderAWS           = "AWS"
+	AzureCloudIdentityKey      = "azure.workload.identity/client-id:"
+	AzureWorkloadIdentityLabel = "azure.workload.identity/use: 'true'"
+	AWSCloudIdentityKey        = "eks.amazonaws.com/role-arn:"
 )
 
 type LogLineCallback func(string)

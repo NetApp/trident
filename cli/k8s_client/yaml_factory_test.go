@@ -72,6 +72,7 @@ func TestYAMLFactory(t *testing.T) {
 	imagePullSecrets := []string{"thisisasecret"}
 
 	version := versionutils.MustParseSemantic("1.21.0")
+	cloudIdentity := AzureCloudIdentityKey + " a8rry78r8-7733-49bd-6656582"
 
 	deploymentArgs := &DeploymentYAMLArguments{
 		DeploymentName:          Name,
@@ -93,11 +94,12 @@ func TestYAMLFactory(t *testing.T) {
 		TopologyEnabled:         false,
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
 		EnableACP:               true,
+		IdentityLabel:           true,
 	}
 
 	yamlsOutputs := []string{
-		GetServiceAccountYAML(Name, nil, nil, nil),
-		GetServiceAccountYAML(Name, Secrets, labels, ownerRef),
+		GetServiceAccountYAML(Name, nil, nil, nil, ""),
+		GetServiceAccountYAML(Name, Secrets, labels, ownerRef, cloudIdentity),
 		GetRoleYAML(Namespace, Name, labels, ownerRef),
 		GetRoleBindingYAML(Namespace, Name, labels, ownerRef),
 		GetClusterRoleYAML(Name, nil, nil),
@@ -159,7 +161,9 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		AutosupportCustomURL:    "http://172.16.150.125:8888/",
 		ImageRegistry:           "registry.k8s.io",
 		LogFormat:               "text",
-		LogLevel:                "debug",
+		LogLevel:                "",
+		Debug:                   true,
+		AutosupportInsecure:     true,
 		ImagePullSecrets:        imagePullSecrets,
 		Labels:                  labels,
 		ControllingCRDetails:    map[string]string{},
@@ -475,7 +479,7 @@ func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {
 
 	for _, versionString := range versions {
 		version := versionutils.MustParseSemantic(versionString)
-		daemonsetArgs := &DaemonsetYAMLArguments{Version: version}
+		daemonsetArgs := &DaemonsetYAMLArguments{Version: version, LogLevel: "", Debug: true}
 
 		yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 		_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -824,7 +828,7 @@ func TestGetCSIDaemonSetYAMLWindowsImagePullPolicy(t *testing.T) {
 	for _, args := range testArgs {
 		for _, versionString := range versions {
 			version := versionutils.MustParseSemantic(versionString)
-			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy}
+			daemonsetArgs := &DaemonsetYAMLArguments{Version: version, ImagePullPolicy: args.imagePullPolicy, LogLevel: "", Debug: true}
 
 			yamlData := GetCSIDaemonSetYAMLWindows(daemonsetArgs)
 			_, err := yaml.YAMLToJSON([]byte(yamlData))

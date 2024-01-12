@@ -35,7 +35,7 @@ metadata:
 `
 
 func GetServiceAccountYAML(
-	serviceAccountName string, secrets []string, labels, controllingCRDetails map[string]string,
+	serviceAccountName string, secrets []string, labels, controllingCRDetails map[string]string, cloudIdentity string,
 ) string {
 	var saYAML string
 	Log().WithFields(LogFields{
@@ -51,11 +51,17 @@ func GetServiceAccountYAML(
 		saYAML = serviceAccountYAML
 	}
 
+	if cloudIdentity != "" {
+		saYAML = strings.ReplaceAll(saYAML, "{CLOUD_IDENTITY}", constructServiceAccountAnnotation(cloudIdentity))
+	} else {
+		saYAML = strings.ReplaceAll(saYAML, "{CLOUD_IDENTITY}", "")
+	}
+
 	saYAML = strings.ReplaceAll(saYAML, "{NAME}", serviceAccountName)
 	saYAML = replaceMultilineYAMLTag(saYAML, "LABELS", constructLabels(labels))
 	saYAML = replaceMultilineYAMLTag(saYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
-	// Log().ervice account YAML before the secrets are added.
+	// Log().service account YAML before the secrets are added.
 	Log().WithField("yaml", saYAML).Trace("Service account YAML.")
 	saYAML = strings.Replace(saYAML, "{SECRETS}", constructServiceAccountSecrets(secrets), 1)
 	return saYAML
@@ -66,6 +72,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {NAME}
+  {CLOUD_IDENTITY}
   {LABELS}
   {OWNER_REF}
 `
@@ -75,6 +82,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {NAME}
+  {CLOUD_IDENTITY}
   {LABELS}
   {OWNER_REF}
 {SECRETS}
@@ -456,6 +464,12 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		autosupportInsecureLine = "- -insecure"
 	}
 
+	if args.IdentityLabel {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_IDENTITY}", AzureWorkloadIdentityLabel)
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_IDENTITY}", "")
+	}
+
 	if args.EnableACP {
 		enableACP = "- \"-enable_acp\""
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ACP_YAML}", acpContainerYAMLTemplate)
@@ -466,7 +480,8 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	if strings.EqualFold(args.CloudProvider, CloudProviderAzure) {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_ENV}", "- name: AZURE_CREDENTIAL_FILE\n          value: /etc/kubernetes/azure.json")
-		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME}", "- name: azure-cred\n        hostPath:\n          path: /etc/kubernetes\n          type: DirectoryOrCreate")
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME}",
+			"- name: azure-cred\n        hostPath:\n          path: /etc/kubernetes\n          type: DirectoryOrCreate")
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}", "- name: azure-cred\n          mountPath: /etc/kubernetes")
 	} else {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_ENV}", "")
@@ -532,6 +547,7 @@ spec:
     metadata:
       labels:
         app: {LABEL_APP}
+        {LABEL_IDENTITY}
     spec:
       serviceAccount: {SERVICE_ACCOUNT}
       containers:
@@ -2647,4 +2663,11 @@ func constructServiceAccountSecrets(serviceAccountSecrets []string) string {
 	}
 
 	return serviceAccountSecretsData
+}
+
+func constructServiceAccountAnnotation(cloudIdentity string) string {
+	serviceAccountAnnotationData := "annotations:\n"
+	serviceAccountAnnotationData += fmt.Sprintf("    %s", cloudIdentity)
+
+	return serviceAccountAnnotationData
 }
