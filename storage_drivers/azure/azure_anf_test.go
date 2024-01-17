@@ -547,6 +547,17 @@ func TestInitialize_NOClientID_NOClientSecret_Error_ReadingFile(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 	}
 
+	configFile, _ := os.Getwd()
+
+	envVariable := map[string]string{
+		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+	}
+
+	// Set required environment variable for testing
+	for key, value := range envVariable {
+		_ = os.Setenv(key, value)
+	}
+
 	configJSON := `
     {
 		"version": 1,
@@ -565,6 +576,11 @@ func TestInitialize_NOClientID_NOClientSecret_Error_ReadingFile(t *testing.T) {
 
 	assert.Error(t, result, "initialize did not fail")
 	assert.False(t, driver.Initialized(), "initialized")
+
+	// Unset environment variable
+	for key := range envVariable {
+		_ = os.Unsetenv(key)
+	}
 }
 
 func TestInitialize_NOClientID_NOClientSecret_Error_JSONUnmarshal(t *testing.T) {
@@ -603,15 +619,15 @@ func TestInitialize_NOClientID_NOClientSecret_Error_JSONUnmarshal(t *testing.T) 
 	_ = os.WriteFile(envVariable["AZURE_CREDENTIAL_FILE"], []byte(configFileContent), os.ModePerm)
 
 	configJSON := `
-    {
+   {
 		"version": 1,
-        "storageDriverName": "azure-netapp-files",
-        "serviceLevel": "Premium",
-        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+       "storageDriverName": "azure-netapp-files",
+       "serviceLevel": "Premium",
+       "debugTraceFlags": {"method": true, "api": true, "discovery": true},
 	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
 	    "virtualNetwork": "VN1",
 	    "subnet": "RG1/VN1/SN1"
-    }`
+   }`
 
 	_, driver := newMockANFDriver(t)
 

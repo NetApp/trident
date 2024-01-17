@@ -62,8 +62,6 @@ const (
 	nfsVersion3  = "3"
 	nfsVersion4  = "4"
 	nfsVersion41 = "4.1"
-
-	DefaultConfigurationFilePath = "/etc/kubernetes/azure.json"
 )
 
 var (
@@ -609,12 +607,10 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 		// Azure managed identity
 		// If cloud provider is set to 'Azure' and cloud identity is not provided during the installation,
 		// we read the contents of AZURE_CREDENTIAL_FILE to initialize the ANF driver.
-		if config.ClientSecret == "" && config.ClientID == "" {
+		if config.ClientSecret == "" && config.ClientID == "" && os.Getenv("AZURE_CREDENTIAL_FILE") != "" {
 			credFilePath := os.Getenv("AZURE_CREDENTIAL_FILE")
-			if credFilePath == "" {
-				credFilePath = DefaultConfigurationFilePath
-			}
 			Logc(ctx).WithField("credFilePath", credFilePath).Info("Using Azure credential config file.")
+
 			credFile, err := os.ReadFile(credFilePath)
 			if err != nil {
 				return errors.New("error reading from azure config file: " + err.Error())

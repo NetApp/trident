@@ -783,6 +783,17 @@ func TestSubvolumeInitialize_NOClientID_NOClientSecret(t *testing.T) {
 func TestSubvolumeInitialize_NOClientID_NOClientSecret_Error_ReadingFile(t *testing.T) {
 	commonConfig, _ := getStructsForSubvolumeInitialize()
 
+	configFile, _ := os.Getwd()
+
+	envVariable := map[string]string{
+		"AZURE_CREDENTIAL_FILE": configFile + "azure.json",
+	}
+
+	// Set required environment variable for testing
+	for key, value := range envVariable {
+		_ = os.Setenv(key, value)
+	}
+
 	configJSON := `
 	{
 		"version": 1,
@@ -802,6 +813,11 @@ func TestSubvolumeInitialize_NOClientID_NOClientSecret_Error_ReadingFile(t *test
 
 	assert.Error(t, result, "initialized")
 	assert.False(t, driver.Initialized(), "initialized")
+
+	// Unset environment variable
+	for key := range envVariable {
+		_ = os.Unsetenv(key)
+	}
 }
 
 func TestSubvolumeInitialize_NOClientID_NOClientSecret_Error_JSONUnmarshal(t *testing.T) {
