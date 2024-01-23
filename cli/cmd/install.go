@@ -90,36 +90,38 @@ const (
 
 var (
 	// CLI flags
-	generateYAML            bool
-	useYAML                 bool
-	silent                  bool
-	useIPv6                 bool
-	silenceAutosupport      bool
-	enableNodePrep          bool
-	skipK8sVersionCheck     bool
-	windows                 bool
-	enableForceDetach       bool
-	disableAuditLog         bool
-	tridentImage            string
-	autosupportImage        string
-	autosupportProxy        string
-	autosupportInsecure     bool
-	autosupportCustomURL    string
-	autosupportSerialNumber string
-	autosupportHostname     string
-	kubeletDir              string
-	imageRegistry           string
-	logFormat               string
-	imagePullPolicy         string
-	logWorkflows            string
-	logLayers               string
-	probePort               int64
-	k8sTimeout              time.Duration
-	httpRequestTimeout      time.Duration
-	acpImage                string
-	enableACP               bool
-	cloudProvider           string
-	cloudIdentity           string
+	generateYAML             bool
+	useYAML                  bool
+	silent                   bool
+	useIPv6                  bool
+	silenceAutosupport       bool
+	enableNodePrep           bool
+	skipK8sVersionCheck      bool
+	windows                  bool
+	enableForceDetach        bool
+	disableAuditLog          bool
+	tridentImage             string
+	autosupportImage         string
+	autosupportProxy         string
+	autosupportInsecure      bool
+	autosupportCustomURL     string
+	autosupportSerialNumber  string
+	autosupportHostname      string
+	kubeletDir               string
+	imageRegistry            string
+	logFormat                string
+	imagePullPolicy          string
+	logWorkflows             string
+	logLayers                string
+	probePort                int64
+	k8sTimeout               time.Duration
+	httpRequestTimeout       time.Duration
+	acpImage                 string
+	enableACP                bool
+	cloudProvider            string
+	cloudIdentity            string
+	iscsiSelfHealingInterval time.Duration
+	iscsiSelfHealingWaitTime time.Duration
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -227,6 +229,10 @@ func init() {
 		"The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout,
 		"Override the HTTP request timeout for Trident controller’s REST API")
+	installCmd.Flags().DurationVar(&iscsiSelfHealingInterval, "iscsi-self-healing-interval", tridentconfig.IscsiSelfHealingInterval,
+		"Override the default iSCSI self-healing interval.")
+	installCmd.Flags().DurationVar(&iscsiSelfHealingWaitTime, "iscsi-self-healing-wait-time", tridentconfig.ISCSISelfHealingWaitTime,
+		"Override the default iSCSI self-healing wait time after which unhealthy sessions are logged out.")
 
 	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the Trident-ACP premium features.")
 	installCmd.Flags().StringVar(&acpImage, "acp-image", tridentconfig.DefaultACPImage,
@@ -656,25 +662,27 @@ func prepareYAMLFiles() error {
 	}
 
 	daemonArgs := &k8sclient.DaemonsetYAMLArguments{
-		DaemonsetName:        getDaemonSetName(false),
-		TridentImage:         tridentImage,
-		ImageRegistry:        imageRegistry,
-		KubeletDir:           kubeletDir,
-		LogFormat:            logFormat,
-		DisableAuditLog:      disableAuditLog,
-		Debug:                useDebug,
-		LogLevel:             LogLevel,
-		LogWorkflows:         logWorkflows,
-		LogLayers:            logLayers,
-		ProbePort:            strconv.FormatInt(probePort, 10),
-		ImagePullSecrets:     []string{},
-		Labels:               daemonSetlabels,
-		ControllingCRDetails: nil,
-		EnableForceDetach:    enableForceDetach,
-		Version:              client.ServerVersion(),
-		HTTPRequestTimeout:   httpRequestTimeout.String(),
-		ServiceAccountName:   getNodeRBACResourceName(false),
-		ImagePullPolicy:      imagePullPolicy,
+		DaemonsetName:            getDaemonSetName(false),
+		TridentImage:             tridentImage,
+		ImageRegistry:            imageRegistry,
+		KubeletDir:               kubeletDir,
+		LogFormat:                logFormat,
+		DisableAuditLog:          disableAuditLog,
+		Debug:                    useDebug,
+		LogLevel:                 LogLevel,
+		LogWorkflows:             logWorkflows,
+		LogLayers:                logLayers,
+		ProbePort:                strconv.FormatInt(probePort, 10),
+		ImagePullSecrets:         []string{},
+		Labels:                   daemonSetlabels,
+		ControllingCRDetails:     nil,
+		EnableForceDetach:        enableForceDetach,
+		Version:                  client.ServerVersion(),
+		HTTPRequestTimeout:       httpRequestTimeout.String(),
+		ServiceAccountName:       getNodeRBACResourceName(false),
+		ImagePullPolicy:          imagePullPolicy,
+		ISCSISelfHealingInterval: iscsiSelfHealingInterval.String(),
+		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime.String(),
 	}
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAMLLinux(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
@@ -1155,25 +1163,27 @@ func installTrident() (returnError error) {
 		daemonSetlabels := make(map[string]string)
 		daemonSetlabels[appLabelKey] = TridentNodeLabelValue
 		daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
-			DaemonsetName:        getDaemonSetName(false),
-			TridentImage:         tridentImage,
-			ImageRegistry:        imageRegistry,
-			KubeletDir:           kubeletDir,
-			LogFormat:            logFormat,
-			DisableAuditLog:      disableAuditLog,
-			Debug:                useDebug,
-			LogLevel:             LogLevel,
-			LogWorkflows:         logWorkflows,
-			LogLayers:            logLayers,
-			ProbePort:            strconv.FormatInt(probePort, 10),
-			ImagePullSecrets:     []string{},
-			Labels:               daemonSetlabels,
-			ControllingCRDetails: nil,
-			EnableForceDetach:    enableForceDetach,
-			Version:              client.ServerVersion(),
-			HTTPRequestTimeout:   httpRequestTimeout.String(),
-			ServiceAccountName:   getNodeRBACResourceName(false),
-			ImagePullPolicy:      imagePullPolicy,
+			DaemonsetName:            getDaemonSetName(false),
+			TridentImage:             tridentImage,
+			ImageRegistry:            imageRegistry,
+			KubeletDir:               kubeletDir,
+			LogFormat:                logFormat,
+			DisableAuditLog:          disableAuditLog,
+			Debug:                    useDebug,
+			LogLevel:                 LogLevel,
+			LogWorkflows:             logWorkflows,
+			LogLayers:                logLayers,
+			ProbePort:                strconv.FormatInt(probePort, 10),
+			ImagePullSecrets:         []string{},
+			Labels:                   daemonSetlabels,
+			ControllingCRDetails:     nil,
+			EnableForceDetach:        enableForceDetach,
+			Version:                  client.ServerVersion(),
+			HTTPRequestTimeout:       httpRequestTimeout.String(),
+			ServiceAccountName:       getNodeRBACResourceName(false),
+			ImagePullPolicy:          imagePullPolicy,
+			ISCSISelfHealingInterval: iscsiSelfHealingInterval.String(),
+			ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime.String(),
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs))

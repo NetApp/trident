@@ -883,6 +883,8 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{ISCSI_SELF_HEALING_INTERVAL}", args.ISCSISelfHealingInterval)
+	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{ISCSI_SELF_HEALING_WAIT_TIME}", args.ISCSISelfHealingWaitTime)
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
@@ -948,6 +950,8 @@ spec:
         - "--https_rest"
         - "--https_port={PROBE_PORT}"
         - "--enable_force_detach={FORCE_DETACH_BOOL}"
+        - "--iscsi_self_healing_interval={ISCSI_SELF_HEALING_INTERVAL}"
+        - "--iscsi_self_healing_wait_time={ISCSI_SELF_HEALING_WAIT_TIME}"
         {DEBUG}
         startupProbe:
           httpGet:

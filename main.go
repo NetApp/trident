@@ -111,7 +111,7 @@ var (
 
 	// iSCSI
 	iSCSISelfHealingInterval = flag.Duration("iscsi_self_healing_interval", config.IscsiSelfHealingInterval,
-		"Interval at which the iSCSI self-healing thread is invoked")
+		"Interval at which the iSCSI self-healing job is invoked")
 	iSCSISelfHealingWaitTime = flag.Duration("iscsi_self_healing_wait_time",
 		config.ISCSISelfHealingWaitTime,
 		"Wait time after which iSCSI self-healing attempts to fix stale sessions")

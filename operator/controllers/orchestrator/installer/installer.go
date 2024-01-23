@@ -84,6 +84,9 @@ var (
 	k8sTimeout  time.Duration
 	httpTimeout string
 
+	iscsiSelfHealingInterval string
+	iscsiSelfHealingWaitTime string
+
 	appLabel      string
 	appLabelKey   string
 	appLabelValue string
@@ -323,6 +326,8 @@ func (i *Installer) setInstallationParams(
 	kubeletDir = DefaultKubeletDir
 	autosupportImage = commonconfig.DefaultAutosupportImage
 	httpTimeout = commonconfig.HTTPTimeoutString
+	iscsiSelfHealingInterval = commonconfig.IscsiSelfHealingIntervalString
+	iscsiSelfHealingWaitTime = commonconfig.ISCSISelfHealingWaitTimeString
 	imagePullPolicy = DefaultImagePullPolicy
 	acpImage = commonconfig.DefaultACPImage
 
@@ -408,12 +413,36 @@ func (i *Installer) setInstallationParams(
 
 	if cr.Spec.HTTPRequestTimeout != "" {
 		httpTimeout = cr.Spec.HTTPRequestTimeout
-		httpTimeoutValue, err := time.ParseDuration(cr.Spec.HTTPRequestTimeout)
+		httpTimeoutValue, err := time.ParseDuration(httpTimeout)
 		if err != nil {
 			return nil, nil, false, fmt.Errorf("could not parse the http request timeout as a duration: %v", err)
 		}
 		if httpTimeoutValue < 0 {
 			return nil, nil, false, fmt.Errorf("a negative value was used for the http request timeout, which is" +
+				" not supported")
+		}
+	}
+
+	if cr.Spec.ISCSISelfHealingInterval != "" {
+		iscsiSelfHealingInterval = cr.Spec.ISCSISelfHealingInterval
+		iscsiSelfHealingIntervalValue, err := time.ParseDuration(iscsiSelfHealingInterval)
+		if err != nil {
+			return nil, nil, false, fmt.Errorf("could not parse the iSCSI self-healing interval as a duration: %v", err)
+		}
+		if iscsiSelfHealingIntervalValue < 0 {
+			return nil, nil, false, fmt.Errorf("a negative value was used for the iSCSI self-healing interval, which is" +
+				" not supported")
+		}
+	}
+
+	if cr.Spec.ISCSISelfHealingWaitTime != "" {
+		iscsiSelfHealingWaitTime = cr.Spec.ISCSISelfHealingWaitTime
+		iscsiSelfHealingWaitTimeValue, err := time.ParseDuration(iscsiSelfHealingWaitTime)
+		if err != nil {
+			return nil, nil, false, fmt.Errorf("could not parse the iSCSI self-healing wait time as a duration: %v", err)
+		}
+		if iscsiSelfHealingWaitTimeValue < 0 {
+			return nil, nil, false, fmt.Errorf("a negative value was used for the iSCSI self-healing wait time, which is" +
 				" not supported")
 		}
 	}
@@ -650,32 +679,34 @@ func (i *Installer) InstallOrPatchTrident(
 	acpVersion := i.GetACPVersion()
 
 	identifiedSpecValues := netappv1.TridentOrchestratorSpecValues{
-		EnableForceDetach:       strconv.FormatBool(enableForceDetach),
-		DisableAuditLog:         strconv.FormatBool(disableAuditLog),
-		LogFormat:               logFormat,
-		Debug:                   strconv.FormatBool(debug),
-		LogLevel:                determineLogLevel(),
-		LogWorkflows:            logWorkflows,
-		LogLayers:               logLayers,
-		TridentImage:            tridentImage,
-		ImageRegistry:           imageRegistry,
-		IPv6:                    strconv.FormatBool(useIPv6),
-		SilenceAutosupport:      strconv.FormatBool(silenceAutosupport),
-		ProbePort:               probePort,
-		AutosupportImage:        autosupportImage,
-		AutosupportProxy:        autosupportProxy,
-		AutosupportInsecure:     autosupportInsecure,
-		AutosupportSerialNumber: autosupportSerialNumber,
-		AutosupportHostname:     autosupportHostname,
-		KubeletDir:              kubeletDir,
-		K8sTimeout:              strconv.Itoa(int(k8sTimeout.Seconds())),
-		HTTPRequestTimeout:      httpTimeout,
-		ImagePullSecrets:        imagePullSecrets,
-		NodePluginNodeSelector:  nodePluginNodeSelector,
-		NodePluginTolerations:   nodePluginTolerations,
-		ImagePullPolicy:         imagePullPolicy,
-		EnableACP:               strconv.FormatBool(enableACP),
-		ACPImage:                acpImage,
+		EnableForceDetach:        strconv.FormatBool(enableForceDetach),
+		DisableAuditLog:          strconv.FormatBool(disableAuditLog),
+		LogFormat:                logFormat,
+		Debug:                    strconv.FormatBool(debug),
+		LogLevel:                 determineLogLevel(),
+		LogWorkflows:             logWorkflows,
+		LogLayers:                logLayers,
+		TridentImage:             tridentImage,
+		ImageRegistry:            imageRegistry,
+		IPv6:                     strconv.FormatBool(useIPv6),
+		SilenceAutosupport:       strconv.FormatBool(silenceAutosupport),
+		ProbePort:                probePort,
+		AutosupportImage:         autosupportImage,
+		AutosupportProxy:         autosupportProxy,
+		AutosupportInsecure:      autosupportInsecure,
+		AutosupportSerialNumber:  autosupportSerialNumber,
+		AutosupportHostname:      autosupportHostname,
+		KubeletDir:               kubeletDir,
+		K8sTimeout:               strconv.Itoa(int(k8sTimeout.Seconds())),
+		HTTPRequestTimeout:       httpTimeout,
+		ImagePullSecrets:         imagePullSecrets,
+		NodePluginNodeSelector:   nodePluginNodeSelector,
+		NodePluginTolerations:    nodePluginTolerations,
+		ImagePullPolicy:          imagePullPolicy,
+		EnableACP:                strconv.FormatBool(enableACP),
+		ACPImage:                 acpImage,
+		ISCSISelfHealingInterval: iscsiSelfHealingInterval,
+		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime,
 	}
 
 	Log().WithFields(LogFields{
@@ -1531,27 +1562,29 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 	}
 
 	daemonSetArgs := &k8sclient.DaemonsetYAMLArguments{
-		DaemonsetName:        getDaemonSetName(isWindows),
-		TridentImage:         tridentImage,
-		ImageRegistry:        imageRegistry,
-		KubeletDir:           kubeletDir,
-		LogFormat:            logFormat,
-		DisableAuditLog:      disableAuditLog,
-		Debug:                debug,
-		LogLevel:             determineLogLevel(),
-		LogWorkflows:         logWorkflows,
-		LogLayers:            logLayers,
-		ProbePort:            probePort,
-		ImagePullSecrets:     imagePullSecrets,
-		Labels:               labels,
-		ControllingCRDetails: controllingCRDetails,
-		EnableForceDetach:    enableForceDetach,
-		Version:              i.client.ServerVersion(),
-		HTTPRequestTimeout:   httpTimeout,
-		NodeSelector:         nodePluginNodeSelector,
-		Tolerations:          tolerations,
-		ServiceAccountName:   serviceAccountName,
-		ImagePullPolicy:      imagePullPolicy,
+		DaemonsetName:            getDaemonSetName(isWindows),
+		TridentImage:             tridentImage,
+		ImageRegistry:            imageRegistry,
+		KubeletDir:               kubeletDir,
+		LogFormat:                logFormat,
+		DisableAuditLog:          disableAuditLog,
+		Debug:                    debug,
+		LogLevel:                 determineLogLevel(),
+		LogWorkflows:             logWorkflows,
+		LogLayers:                logLayers,
+		ProbePort:                probePort,
+		ImagePullSecrets:         imagePullSecrets,
+		Labels:                   labels,
+		ControllingCRDetails:     controllingCRDetails,
+		EnableForceDetach:        enableForceDetach,
+		Version:                  i.client.ServerVersion(),
+		HTTPRequestTimeout:       httpTimeout,
+		NodeSelector:             nodePluginNodeSelector,
+		Tolerations:              tolerations,
+		ServiceAccountName:       serviceAccountName,
+		ImagePullPolicy:          imagePullPolicy,
+		ISCSISelfHealingInterval: iscsiSelfHealingInterval,
+		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime,
 	}
 
 	var newDaemonSetYAML string

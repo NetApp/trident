@@ -138,3 +138,9 @@ enableACP: false
 
 # acpImage indicates the image the Trident-ACP container should pull.
 acpImage: ""
+
+# iscsiSelfHealingInterval is the interval at which the iSCSI self-healing job is invoked
+iscsiSelfHealingInterval: "5m0s"
+
+# iscsiSelfHealingWaitTime is the wait time after which iSCSI self-healing attempts to fix stale sessions
+iscsiSelfHealingWaitTime: "7m0s"

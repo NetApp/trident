@@ -177,11 +177,13 @@ const (
 	/* Kubernetes operator constants */
 	OperatorContainerName = "trident-operator"
 
-	// IscsiSelfHealingInterval is an interval with which the iSCSI self-healing thread is called periodically
-	IscsiSelfHealingInterval = 300 * time.Second
+	// IscsiSelfHealingInterval is an interval with which the iSCSI self-healing thread is called periodically.
+	IscsiSelfHealingInterval       = 300 * time.Second
+	IscsiSelfHealingIntervalString = "5m0s"
 
 	// ISCSISelfHealingWaitTime is an interval after which iSCSI self-healing attempts to fix stale sessions.
-	ISCSISelfHealingWaitTime = 420 * time.Second
+	ISCSISelfHealingWaitTime       = 420 * time.Second
+	ISCSISelfHealingWaitTimeString = "7m0s"
 
 	// BackendStoragePollInterval is an interval  that core layer attempts to poll storage backend periodically
 	BackendStoragePollInterval = 300 * time.Second

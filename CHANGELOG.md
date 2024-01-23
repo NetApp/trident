@@ -8,6 +8,10 @@
 
 - Fixed ACP warning messages when ACP is not enabled. (Issue [#866](https://github.com/NetApp/trident/issues/866)).
 
+**Enhancements:**
+
+- Added ability to configure and disable iSCSI self-healing (Issue [#864](https://github.com/NetApp/trident/issues/864)).
+
 ## v23.07.0
 
 **Fixes:**
