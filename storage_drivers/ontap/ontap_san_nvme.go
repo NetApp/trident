@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/RoaringBitmap/roaring"
 
@@ -40,6 +41,8 @@ type NVMeStorageDriver struct {
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
+
+	cloneSplitTimers map[string]time.Time
 }
 
 const (
@@ -169,6 +172,9 @@ func (d *NVMeStorageDriver) Initialize(
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
+
+	// Set up the clone split timers
+	d.cloneSplitTimers = make(map[string]time.Time)
 
 	d.initialized = true
 	return nil
@@ -938,11 +944,16 @@ func (d *NVMeStorageDriver) DeleteSnapshot(
 	if err != nil {
 		if api.IsSnapshotBusyError(err) {
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
+			SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, &d.Config, d.API,
+				d.API.VolumeCloneSplitStart, d.cloneSplitTimers)
 		}
-		// we must return the err, even if we started a split, so the snapshot delete is retried
+
+		// we must return the error, even if we started a split, so the snapshot delete is retried.
 		return err
 	}
+
+	// Clean up any split timer.
+	delete(d.cloneSplitTimers, snapConfig.ID())
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil

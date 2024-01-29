@@ -1223,6 +1223,7 @@ const (
 	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
 	DefaultNfsMountOptionsKubernetes = ""
 	DefaultSplitOnClone              = "false"
+	DefaultCloneSplitDelay           = 10
 	DefaultLuksEncryption            = "false"
 	DefaultMirroring                 = "false"
 	DefaultLimitAggregateUsage       = ""
@@ -1313,6 +1314,12 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 
+	if config.CloneSplitDelay == "" {
+		config.CloneSplitDelay = strconv.FormatInt(DefaultCloneSplitDelay, 10)
+	} else if v, err := strconv.ParseInt(config.CloneSplitDelay, 10, 0); err != nil || v <= 0 {
+		return fmt.Errorf("invalid value for cloneSplitDelay: %v", config.CloneSplitDelay)
+	}
+
 	if config.FileSystemType == "" {
 		config.FileSystemType = drivers.DefaultFileSystemType
 	}
@@ -1389,6 +1396,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"SecurityStyle":          config.SecurityStyle,
 		"NfsMountOptions":        config.NfsMountOptions,
 		"SplitOnClone":           config.SplitOnClone,
+		"CloneSplitDelay":        config.CloneSplitDelay,
 		"FileSystemType":         config.FileSystemType,
 		"Encryption":             config.Encryption,
 		"LUKSEncryption":         config.LUKSEncryption,
@@ -1634,6 +1642,76 @@ func SplitVolumeFromBusySnapshot(
 	}).Info("Began splitting clone from snapshot.")
 
 	return nil
+}
+
+func SplitVolumeFromBusySnapshotWithDelay(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
+	cloneSplitTimers map[string]time.Time,
+) {
+	snapshotID := snapConfig.ID()
+
+	// Find the configured value for cloneSplitDelay
+	delay, err := strconv.ParseInt(config.CloneSplitDelay, 10, 0)
+	if err != nil || delay < 0 {
+		// Should not come here, but just in case.
+		delay = DefaultCloneSplitDelay
+	}
+	cloneSplitDelay := time.Duration(delay) * time.Second
+
+	// If this is the first delete, just log the time and return.
+	firstDeleteTime, ok := cloneSplitTimers[snapshotID]
+	if !ok {
+		cloneSplitTimers[snapshotID] = time.Now()
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":           snapshotID,
+			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
+		}).Warning("Initial locked snapshot delete, starting clone split timer.")
+
+		return
+	}
+
+	// This isn't the first delete, and the split is still running, so there is nothing to do.
+	if time.Now().Sub(firstDeleteTime) < 0 {
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": snapshotID,
+		}).Warning("Retried locked snapshot delete, clone split still running.")
+
+		return
+	}
+
+	// This isn't the first delete, and the delay has not expired, so there is nothing to do.
+	if time.Now().Sub(firstDeleteTime) < cloneSplitDelay {
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":           snapshotID,
+			"secondsBeforeSplit": fmt.Sprintf("%3.2f", time.Now().Sub(firstDeleteTime).Seconds()),
+		}).Warning("Retried locked snapshot delete, clone split timer not yet expired.")
+
+		return
+	}
+
+	// The delay has expired, so start the split
+	splitErr := SplitVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart)
+	if splitErr != nil {
+
+		// The split start failed, so reset the timer so we start again after another brief delay.
+		cloneSplitTimers[snapshotID] = time.Now()
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":           snapshotID,
+			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
+		}).Warning("Retried locked snapshot delete, clone split failed, restarted timer.")
+
+	} else {
+
+		// The split start succeeded, so add enough time to the timer that we don't try to start it again.
+		cloneSplitTimers[snapshotID] = time.Now().Add(1 * time.Hour)
+
+		Logc(ctx).WithField("snapshot", snapshotID).Warning("Retried locked snapshot delete, clone split started.")
+	}
 }
 
 // getVolumeExternal is a method that accepts info about a volume

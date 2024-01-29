@@ -1561,6 +1561,9 @@ func TestOntapNasStorageDriverVolumeDeleteSnapshot_Failure(t *testing.T) {
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", "vol1").Return(childVols, nil)
 	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, "vol1").Return(nil)
 
+	driver.cloneSplitTimers = make(map[string]time.Time)
+	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
+	driver.cloneSplitTimers[snapConfig.ID()] = time.Now().Add(-10 * time.Second)
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Error(t, result)

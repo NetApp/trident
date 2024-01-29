@@ -4293,6 +4293,9 @@ func TestDeleteSnapshot_FailureSnapshotBusy(t *testing.T) {
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", flexvol).Return(childVols, nil)
 	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, flexvol).Return(nil)
 
+	driver.cloneSplitTimers = make(map[string]time.Time)
+	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
+	driver.cloneSplitTimers[snapConfig.ID()] = time.Now().Add(-10 * time.Second)
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.NotNil(t, result, "result is nil")

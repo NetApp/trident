@@ -62,6 +62,8 @@ type NASQtreeStorageDriver struct {
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
+
+	cloneSplitTimers map[string]time.Time
 }
 
 func (d *NASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
@@ -219,6 +221,9 @@ func (d *NASQtreeStorageDriver) Initialize(
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
+
+	// Set up the clone split timers.
+	d.cloneSplitTimers = make(map[string]time.Time)
 
 	d.initialized = true
 	return nil
@@ -969,11 +974,16 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(
 	if err = d.API.VolumeSnapshotDelete(ctx, snapConfig.InternalName, flexvol); err != nil {
 		if api.IsSnapshotBusyError(err) {
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
-			_ = SplitVolumeFromBusySnapshot(ctx, snapConfig, &d.Config, d.API, d.API.VolumeCloneSplitStart)
+			SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, &d.Config, d.API,
+				d.API.VolumeCloneSplitStart, d.cloneSplitTimers)
 		}
-		// We must return the err, even if we started a split, so the snapshot delete is retried
+
+		// We must return the error, even if we started a split, so the snapshot delete is retried.
 		return err
 	}
+
+	// Clean up any split timer.
+	delete(d.cloneSplitTimers, snapConfig.ID())
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil

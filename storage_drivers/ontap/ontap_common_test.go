@@ -4734,6 +4734,42 @@ func TestSplitVolumeFromBusySnapshot(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestSplitVolumeFromBusySnapshotWithDelay(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+	}
+	snapConfig := &storage.SnapshotConfig{
+		VolumeInternalName: "fakeVolInternalName",
+		InternalName:       "fakeInternalName",
+	}
+
+	// Test 1: No snap found
+	cloneSplitTimers := make(map[string]time.Time)
+	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
+
+	// Test 2: time difference is < 0
+	cloneSplitTimers[snapConfig.ID()] = time.Now().Add(10 * time.Millisecond)
+	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
+
+	time.Sleep(50 * time.Millisecond)
+	// Test 3: time difference < config.CloneSplitDelay, which is defaulted to 10 seconds.
+	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
+
+	// Test 4: SplitVolumeFromBusySnapshot returning error
+	// Add the time for first delete in past so that SplitVolume is called.
+	cloneSplitTimers[snapConfig.ID()] = time.Now().Add(-10 * time.Second)
+	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
+		snapConfig.VolumeInternalName).Return(api.VolumeNameList{},
+		fmt.Errorf("error returned by VolumeListBySnapshotParent"))
+	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
+}
+
 func TestGetVolumeExternalCommon(t *testing.T) {
 	volume := api.Volume{
 		Name:            "fakeVolume",
@@ -5121,6 +5157,12 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 
 	err = PopulateConfigurationDefaults(ctx, config)
 
+	assert.Error(t, err)
+
+	// Test 8 - Invalid value for cloneSplitDelay
+	config.SplitOnClone = "true"
+	config.CloneSplitDelay = "-123"
+	err = PopulateConfigurationDefaults(ctx, config)
 	assert.Error(t, err)
 }
 
