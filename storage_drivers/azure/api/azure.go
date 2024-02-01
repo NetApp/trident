@@ -16,7 +16,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v4"
+	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v5"
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
@@ -57,6 +57,7 @@ type ClientConfig struct {
 	SubscriptionID    string `json:"subscriptionId"`
 	Location          string `json:"location"`
 	StorageDriverName string
+	TenantID          string `json:"tenantId"`
 
 	// Options
 	DebugTraceFlags map[string]bool
@@ -198,15 +199,16 @@ func NewDriver(config ClientConfig) (Azure, error) {
 }
 
 func GetAzureCredential(config ClientConfig) (credential azcore.TokenCredential, err error) {
-	clientOptions, err := azclient.GetDefaultAuthClientOption(nil)
-	if err != nil {
-		return nil, errors.New("error getting default auth client option: " + err.Error())
+	armConfig := azclient.ARMClientConfig{
+		TenantID: config.TenantID,
 	}
-	authProvider, err := azclient.NewAuthProvider(config.AzureAuthConfig, clientOptions)
+
+	authProvider, err := azclient.NewAuthProvider(&armConfig, &config.AzureAuthConfig)
 	if err != nil {
 		return nil, errors.New("error creating azure auth provider: " + err.Error())
 	}
-	return authProvider.GetAzIdentity()
+
+	return authProvider.GetAzIdentity(), nil
 }
 
 // Init runs startup logic after allocating the driver resources.

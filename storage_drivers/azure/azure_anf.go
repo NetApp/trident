@@ -582,10 +582,10 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 	clientConfig := api.ClientConfig{
 		SubscriptionID: config.SubscriptionID,
 		AzureAuthConfig: azclient.AzureAuthConfig{
-			TenantID:        config.TenantID,
 			AADClientID:     config.ClientID,
 			AADClientSecret: config.ClientSecret,
 		},
+		TenantID:          config.TenantID,
 		Location:          config.Location,
 		StorageDriverName: config.StorageDriverName,
 		DebugTraceFlags:   config.DebugTraceFlags,
