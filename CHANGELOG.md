@@ -6,13 +6,24 @@
 
 **Fixes:**
 
-- Fixed ACP warning messages when ACP is not enabled. (Issue [#866](https://github.com/NetApp/trident/issues/866)).
+- Fixed ACP warning messages when ACP is not enabled (Issue [#866](https://github.com/NetApp/trident/issues/866)).
+- Added a 10-second delay before performing a clone split during snapshot delete for ONTAP drivers, when a clone is associated with the snapshot.
 
 **Enhancements:**
 
+- **Kubernetes:** Added support for Kubernetes 1.29.
 - Added ability to configure and disable iSCSI self-healing (Issue [#864](https://github.com/NetApp/trident/issues/864)).
+- Added support for Cloud Identity.
+  - AKS with ANF - Azure Workload Identity will be used as Cloud Identity
+  - EKS with FSxN - AWS IAM role will be used as Cloud Identity
+- Added FSx personality to ONTAP drivers to enable integration with IAM and SecretsManager, and to enable Trident to delete FSx volumes with backups (Issue [#453](https://github.com/NetApp/trident/issues/453)).
+- Trident can be installed as an EKS add-on via the EKS console.
 
-## v23.07.0
+**Deprecations:**
+
+- Removed in-toto attestations framework from multi-platform image manifests.
+
+## v23.10.0
 
 **Fixes:**
 
