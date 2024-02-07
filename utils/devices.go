@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
 	. "github.com/netapp/trident/logging"
@@ -321,11 +320,6 @@ func GetDeviceNameFromMount(ctx context.Context, mountpath string) (string, int,
 
 // In the case of a iscsi trace debug, log info about session and what devices are present
 func listAllISCSIDevices(ctx context.Context) {
-	if !IsLevelEnabled(log.TraceLevel) {
-		// Don't even run the commands if trace logging is not enabled
-		return
-	}
-
 	Logc(ctx).Trace(">>>> devices.listAllISCSIDevices")
 	defer Logc(ctx).Trace("<<<< devices.listAllISCSIDevices")
 	// Log information about all the devices
@@ -346,14 +340,16 @@ func listAllISCSIDevices(ctx context.Context) {
 	for _, entry := range entries {
 		sysLog = append(sysLog, entry.Name())
 	}
-	out1, _ := command.ExecuteWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-ll")
-	out2, _ := execIscsiadmCommand(ctx, "-m", "session")
+
+	// TODO: Call this only when verbose logging requires beyond debug level.
+	// out1, _ := command.ExecuteWithTimeout(ctx, "multipath", deviceOperationsTimeout, true, "-ll")
+	// out2, _ := execIscsiadmCommand(ctx, "-m", "session")
 	Logc(ctx).WithFields(LogFields{
-		"/dev/dm-*":                  dmLog,
-		"/dev/sd*":                   sdLog,
-		"/sys/block/*":               sysLog,
-		"multipath -ll output":       string(out1),
-		"iscsiadm -m session output": string(out2),
+		"/dev/dm-*":    dmLog,
+		"/dev/sd*":     sdLog,
+		"/sys/block/*": sysLog,
+		//	"multipath -ll output":       string(out1),
+		//	"iscsiadm -m session output": string(out2),
 	}).Trace("Listing all iSCSI Devices.")
 }
 
