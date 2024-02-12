@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -1210,11 +1212,21 @@ func (d *LUKSDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase 
 func ensureLUKSDevice(ctx context.Context, luksDevice LUKSDeviceInterface, luksPassphrase string) (formatted bool, err error) {
 	formatted = false
 	// Check if LUKS device is already opened
+	// if device is closed; err status will be 4
 	isOpen, err := luksDevice.IsOpen(ctx)
 	if err != nil {
-		return formatted, err
+		exitCode := 1
+		if exitError, ok := err.(*exec.ExitError); ok {
+			status := exitError.Sys().(syscall.WaitStatus)
+			exitCode = status.ExitStatus()
+		}
+		if exitCode != 0 && exitCode != 4 {
+			return formatted, err
+		}
 	}
+
 	if isOpen {
+		formatted = true
 		return formatted, nil
 	}
 
@@ -1238,9 +1250,10 @@ func ensureLUKSDevice(ctx context.Context, luksDevice LUKSDeviceInterface, luksP
 		if err != nil {
 			return formatted, err
 		}
-		formatted = true
 	}
 
+	// The device should have either already had been LUKS formated or just have had LUKS installed. Hence, formatted will always be true
+	formatted = true
 	// Open the device, creating a new LUKS encrypted device with the name chosen by us
 	err = luksDevice.Open(ctx, luksPassphrase)
 	if nil != err {
