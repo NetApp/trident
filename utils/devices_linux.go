@@ -183,10 +183,7 @@ func IsLUKSDeviceOpen(ctx context.Context, luksDevicePath string) (bool, error) 
 
 	_, err := execCommandWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true, "", "status", luksDevicePath)
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); !ok {
-			return false, err
-		}
-		return false, nil
+		return false, err
 	}
 	return true, nil
 }
