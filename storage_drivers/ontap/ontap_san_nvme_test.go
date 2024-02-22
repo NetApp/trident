@@ -930,16 +930,35 @@ func TestNVMeParseNVMeNamespaceCommentString(t *testing.T) {
 }
 
 func TestGetNamespaceSpecificSubsystemName(t *testing.T) {
-	name := "fakeName"
-	expected_name := "s_fakeName"
+	// case 1: subsystem name is shorter than 64 char
+	name := "fakeName_pvc_b0d71710-8bb3-4334-8621-fe3c211c5f02"
+	volName := "pvc-b0d71710-8bb3-4334-8621-fe3c211c5f02"
+	expected_name := "s_fakeName_pvc_b0d71710-8bb3-4334-8621-fe3c211c5f02"
 
-	got_name := getNamespaceSpecificSubsystemName(name)
+	got_name := getNamespaceSpecificSubsystemName(name, volName)
+
+	assert.Equal(t, got_name, expected_name)
+
+	// case 2: subsystem name is longer than 64 char
+	name = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeName_pvc_b0d71710-8bb3-4334-8621-fe3c211c5f02"
+	volName = "pvc-b0d71710-8bb3-4334-8621-fe3c211c5f02"
+	expected_name = "s_fakeNodeNamefakeNodeN_pvc-b0d71710-8bb3-4334-8621-fe3c211c5f02"
+	got_name = getNamespaceSpecificSubsystemName(name, volName)
+
+	assert.Equal(t, got_name, expected_name)
+
+	// case 3: subsystem name is exactly 64 char
+	name = "fakeNodeNamefakeNodeN_pvc_b0d71710-8bb3-4334-8621-fe3c211c5f02"
+	volName = "pvc-b0d71710-8bb3-4334-8621-fe3c211c5f02"
+	expected_name = "s_fakeNodeNamefakeNodeN_pvc_b0d71710-8bb3-4334-8621-fe3c211c5f02"
+
+	got_name = getNamespaceSpecificSubsystemName(name, volName)
 
 	assert.Equal(t, got_name, expected_name)
 }
 
 func TestGetNodeSpecificSubsystemName(t *testing.T) {
-	// case 1: subsystem, name is shorter than 96 char
+	// case 1: subsystem, name is shorter than 64 char
 	nodeName := "fakeNodeName"
 	tridentUUID := "fakeUUID"
 	expected := "fakeNodeName-fakeUUID"
@@ -948,12 +967,12 @@ func TestGetNodeSpecificSubsystemName(t *testing.T) {
 
 	assert.Equal(t, got, expected)
 
-	// case 2: subsystem name is longer than 96 char
+	// case 2: subsystem name is longer than 64 char
 	nodeName = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeName"
-
-	expected = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefak-fakeUUID"
+	expected = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNod-fakeUUID"
 
 	got = getNodeSpecificSubsystemName(nodeName, tridentUUID)
+
 	assert.Equal(t, got, expected)
 }
 

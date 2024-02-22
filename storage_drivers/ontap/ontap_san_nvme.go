@@ -49,7 +49,7 @@ const (
 	// defaultNamespaceBlockSize represents the default block size used to create a namespace.
 	defaultNamespaceBlockSize = 4096
 	// maximumSubsystemNameLength represent the max length of subsystem name
-	maximumSubsystemNameLength = 96
+	maximumSubsystemNameLength = 64
 )
 
 // Namespace attributes stored in its comment field. These fields are useful for docker context.
@@ -729,7 +729,10 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 func (d *NVMeStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
 ) error {
+	// InternalName is of the format <storagePrefix><pvc_UUID>
 	name := volConfig.InternalName
+	// volConfig.Name is same as <pvc-UUID>
+	pvName := volConfig.Name
 
 	fields := LogFields{
 		"method": "Publish",
@@ -789,7 +792,7 @@ func (d *NVMeStorageDriver) Publish(
 	// else we use the subsystem created for that particular node
 	var ssName string
 	if volConfig.FileSystem == tridentconfig.FsRaw {
-		ssName = getNamespaceSpecificSubsystemName(name)
+		ssName = getNamespaceSpecificSubsystemName(name, pvName)
 	} else {
 		ssName = getNodeSpecificSubsystemName(publishInfo.HostName, publishInfo.TridentUUID)
 	}
@@ -1531,8 +1534,20 @@ func getNodeSpecificSubsystemName(nodeName, tridentUUID string) string {
 }
 
 // getNamespaceSpecificSubsystemName constructs the subsystem name using the name passed.
-func getNamespaceSpecificSubsystemName(name string) string {
-	return fmt.Sprintf("s_%v", name)
+func getNamespaceSpecificSubsystemName(name, pvName string) string {
+	subSystemPrefix := "s"
+	// Check if the subsystem name length is greater than 64 chars.
+	// 2 is added to the length to account for "s_" in the subsystem name
+	if (len(name) + 2) > maximumSubsystemNameLength {
+		// Truncate the storagePrefix so that the entire subsystem doesn't exceed 64 chars
+		// The -2 at the end is done to account for two additional "_" in the subsystem name
+		truncatedStoragePrefixIndex := maximumSubsystemNameLength - len(subSystemPrefix) - len(pvName) - 2
+
+		storagePrefix := name[:truncatedStoragePrefixIndex]
+
+		return (fmt.Sprintf("%s_%s_%s", subSystemPrefix, storagePrefix, pvName))
+	}
+	return (fmt.Sprintf("%s_%s", subSystemPrefix, name))
 }
 
 // extractNamespaceName extracts the namespace name from the given string if nsStr is set
