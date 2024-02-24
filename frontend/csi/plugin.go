@@ -309,12 +309,20 @@ func (p *Plugin) Activate() error {
 
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
+
+			// Cleanup any stale volume publication state immediately so self-healing works with current data.
+			if err := p.performNodeCleanup(ctx); err != nil {
+				Logc(ctx).WithError(err).Warn("Failed to clean node; self-healing features may be unreliable.")
+			}
+
 			// Populate the published sessions IFF iSCSI/NVMe self-healing is enabled.
 			if p.iSCSISelfHealingInterval > 0 || p.nvmeSelfHealingInterval > 0 {
 				p.populatePublishedSessions(ctx)
 			}
+
 			p.startISCSISelfHealingThread(ctx)
 			p.startNVMeSelfHealingThread(ctx)
+
 			if p.enableForceDetach {
 				p.startReconcilingNodePublications(ctx)
 			}

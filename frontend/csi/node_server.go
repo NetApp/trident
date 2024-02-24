@@ -1729,30 +1729,46 @@ func (p *Plugin) stopReconcilingNodePublications(ctx context.Context) {
 	if p.stopNodePublicationLoop != nil {
 		close(p.stopNodePublicationLoop)
 	}
-	Logc(ctx).Info("Stopped the node publication reconciliation service.")
 }
 
 // reconcileNodePublicationState cleans any stale published path for volumes on the node by rectifying the actual state
 // of publications (published paths on the node) against the desired state of publications from the CSI controller.
 // If all published paths are cleaned successfully and the node is cleanable, it updates the Trident node CR via
 // the CSI controller REST API.
-// If a node is not in a cleanable state, it will not mark the node as clean / reconciled.
+// If a node is not in a cleanable state, it will not mark the node as clean.
 func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 	defer func() {
 		// Reset the Timer only after the cleanup process is complete, regardless of if it fails or not.
 		p.nodePublicationTimer.Reset(p.refreshTimerPeriod(ctx))
 	}()
 
+	// For force detach purposes, always get the node and check if it needs to be updated.
 	node, err := p.restClient.GetNode(ctx, p.nodeName)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to get node state from the CSI controller server.")
 		return err
 	}
 
+	// For now, only cleanup the node iff the node is not clean.
 	if node.PublicationState == utils.NodeClean {
 		Logc(ctx).Debug("Node is clean, nothing to do.")
 		return nil
 	}
+
+	if err := p.performNodeCleanup(ctx); err != nil {
+		Logc(ctx).WithError(err).Error("Failed to clean stale node publications.")
+		return err
+	}
+
+	return p.updateNodePublicationState(ctx, node.PublicationState)
+}
+
+// performNodeCleanup will discover the difference between the volume tracking information stored on the node, and the
+// publication records stored in the controller's persistence. It will then force unstage any stale volume attachments
+// and remove their relevant tracking files. This is only intended to be called after the node has registered with
+// the controller.
+func (p *Plugin) performNodeCleanup(ctx context.Context) error {
+	Logc(ctx).Debug("Performing node cleanup.")
 
 	// Discover the desired publication state.
 	desiredPublicationState, err := p.discoverDesiredPublicationState(ctx)
@@ -1766,32 +1782,24 @@ func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 		return errors.WrapWithReconcileFailedError(err, "reconcile failed")
 	}
 
-	// Discover and clean stale publications iff there are entries in the actual publication state.
-	if len(actualPublicationState) != 0 {
-		// Get the delta between the actual and desired states and attempt to clean up stale publications.
-		stalePublications := p.discoverStalePublications(ctx, actualPublicationState, desiredPublicationState)
-		err = p.cleanStalePublications(ctx, stalePublications)
-		if err != nil {
-			Logc(ctx).WithError(err).Error("Failed to clean node publication state.")
+	// Check for stale publication records. If any exist, clean them.
+	stalePublications := p.discoverStalePublications(ctx, actualPublicationState, desiredPublicationState)
+	if len(stalePublications) != 0 {
+		if err = p.cleanStalePublications(ctx, stalePublications); err != nil {
 			return errors.WrapWithReconcileFailedError(err, "reconcile failed")
 		}
-	} else {
-		Logc(ctx).Debug("No publication state found on this node.")
 	}
 
-	// Nodes are only ready to move to a clean state if they are in a cleanable state.
-	return p.updateNodePublicationState(ctx, node.PublicationState)
+	return nil
 }
 
 // discoverDesiredPublicationState discovers the desired state of published volumes on the CSI controller and returns
 // a mapping of volumeID -> publications.
 func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (map[string]*utils.VolumePublicationExternal, error) {
-	Logc(ctx).Debug("Retrieving desired publication state.")
-	defer Logc(ctx).Debug("Retrieved desired publication state.")
+	Logc(ctx).Debug("Discovering desired publication state.")
 
 	publications, err := p.restClient.ListVolumePublicationsForNode(ctx, p.nodeName)
 	if err != nil {
-		Logc(ctx).Debug("Failed to get desired publication state.")
 		return nil, fmt.Errorf("failed to get desired publication state")
 	}
 
@@ -1806,12 +1814,10 @@ func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (map[strin
 // discoverActualPublicationState discovers the actual state of published volumes on the node and returns
 // a mapping of volumeID -> tracking information.
 func (p *Plugin) discoverActualPublicationState(ctx context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
-	Logc(ctx).Debug("Retrieving actual publication state.")
-	defer Logc(ctx).Debug("Retrieved actual publication state.")
+	Logc(ctx).Debug("Discovering actual publication state.")
 
 	actualPublicationState, err := p.nodeHelper.ListVolumeTrackingInfo(ctx)
 	if err != nil && !errors.IsNotFoundError(err) {
-		Logc(ctx).Debug("Failed to get actual publication state.")
 		return nil, fmt.Errorf("failed to get actual publication state")
 	}
 
@@ -1826,9 +1832,8 @@ func (p *Plugin) discoverStalePublications(
 	desiredPublicationState map[string]*utils.VolumePublicationExternal,
 ) map[string]*utils.VolumeTrackingInfo {
 	Logc(ctx).Debug("Discovering stale volume publications.")
-	defer Logc(ctx).Debug("Discovered stale volume publications.")
 
-	// Track the deltas between actual and desired publication state.
+	// Track the delta between actual (node-side) and desired (controller-side) publication state.
 	stalePublications := make(map[string]*utils.VolumeTrackingInfo, 0)
 
 	// Reconcile the actual state of publications to the desired state of publications.
@@ -1838,8 +1843,7 @@ func (p *Plugin) discoverStalePublications(
 		// If we find the publication in the desired state, then we don't want to do anything.
 		// Otherwise, remove the published paths and tracking info on the node.
 		if _, ok := desiredPublicationState[volumeID]; !ok {
-			Logc(ctx).WithFields(fields).Debug("Volume found with no matching CSI controller publication record; " +
-				"unstaging the volume.")
+			Logc(ctx).WithFields(fields).Debug("Volume has no matching volume publication record.")
 			stalePublications[volumeID] = trackingInfo
 		}
 	}
@@ -1851,28 +1855,37 @@ func (p *Plugin) discoverStalePublications(
 // object in the CSI controller. It should never publish volumes to the node.
 func (p *Plugin) cleanStalePublications(ctx context.Context, stalePublications map[string]*utils.VolumeTrackingInfo) error {
 	Logc(ctx).Debug("Cleaning stale node publication state.")
-	defer Logc(ctx).Debug("Cleaned stale node publication state.")
 
 	// Clean stale volume publication state.
 	var err error
 	for volumeID, trackingInfo := range stalePublications {
+		var fields LogFields
 
 		// If no published paths exist for a still staged volume, then it means CO / kubelet
 		// died before it could finish CSI unpublish and unstage for this given volume.
 		// These unpublish calls act as a best-effort to abide by and act within the CSI workflow.
 		for targetPath := range trackingInfo.PublishedPaths {
+			fields = LogFields{
+				"volumeID":   volumeID,
+				"targetPath": targetPath,
+			}
+
 			// Both VolumeID and TargetPath are required for NodeUnpublishVolume.
 			unpublishReq := &csi.NodeUnpublishVolumeRequest{
 				VolumeId:   volumeID,
 				TargetPath: targetPath,
 			}
-			if _, err := p.NodeUnpublishVolume(ctx, unpublishReq); err != nil {
-				Logc(ctx).WithFields(LogFields{
-					"volumeID":   volumeID,
-					"targetPath": targetPath,
-				}).Debug("Failed to unpublish the volume.")
-				err = multierr.Combine(err, fmt.Errorf("failed to unpublish the volume; %v", err))
+			if _, unpublishErr := p.NodeUnpublishVolume(ctx, unpublishReq); unpublishErr != nil {
+				Logc(ctx).WithFields(fields).WithError(unpublishErr).Debug("Failed to unpublish volume.")
+				err = multierr.Combine(unpublishErr, fmt.Errorf("failed to unpublish volume; %v", unpublishErr))
+			} else {
+				Logc(ctx).WithFields(fields).Debug("Unpublished stale volume.")
 			}
+		}
+
+		fields = LogFields{
+			"volumeID":          volumeID,
+			"stagingTargetPath": trackingInfo.StagingTargetPath,
 		}
 
 		// Both VolumeID and StagingTargetPath are required for nodeUnstageVolume.
@@ -1880,12 +1893,11 @@ func (p *Plugin) cleanStalePublications(ctx context.Context, stalePublications m
 			VolumeId:          volumeID,
 			StagingTargetPath: trackingInfo.StagingTargetPath,
 		}
-		if _, err := p.nodeUnstageVolume(ctx, unstageReq, true); err != nil {
-			Logc(ctx).WithFields(LogFields{
-				"volumeID":          volumeID,
-				"stagingTargetPath": trackingInfo.StagingTargetPath,
-			}).Debug("Failed to force unstage the volume.")
-			err = multierr.Combine(err, fmt.Errorf("failed to force unstage the volume; %v", err))
+		if _, unstageErr := p.nodeUnstageVolume(ctx, unstageReq, true); unstageErr != nil {
+			Logc(ctx).WithFields(fields).WithError(unstageErr).Debug("Failed to force unstage volume.")
+			err = multierr.Combine(unstageErr, fmt.Errorf("failed to force unstage volume; %v", unstageErr))
+		} else {
+			Logc(ctx).WithFields(fields).Debug("Force detached stale volume attachment.")
 		}
 	}
 

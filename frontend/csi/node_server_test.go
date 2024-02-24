@@ -767,6 +767,114 @@ func TestDiscoverStalePublications_DiscoversStalePublicationsCorrectly(t *testin
 	assert.NotContains(t, stalePublications, volumeThree, fmt.Sprintf("expected %s to not exist in stale publications", volumeThree))
 }
 
+func TestPerformNodeCleanup_ShouldNotDiscoverAnyStalePublications(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "bar"
+	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
+	desiredPublicationState := []*utils.VolumePublicationExternal{
+		{
+			Name:       utils.GenerateVolumePublishName(volume, nodeName),
+			NodeName:   nodeName,
+			VolumeName: volume,
+		},
+	}
+	actualPublicationState := map[string]*utils.VolumeTrackingInfo{
+		volume: {
+			VolumePublishInfo: utils.VolumePublishInfo{},
+			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+			PublishedPaths: map[string]struct{}{
+				"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
+					volume + "/mount": {},
+			},
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockRestClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
+	mockRestClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(desiredPublicationState, nil)
+	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(actualPublicationState, nil)
+
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeName:          nodeName,
+		restClient:        mockRestClient,
+		nodeHelper:        mockNodeHelper,
+		enableForceDetach: true,
+	}
+	err := nodeServer.performNodeCleanup(ctx)
+	assert.NoError(t, err, "expected no error")
+}
+
+func TestPerformNodeCleanup_ShouldFailToDiscoverDesiredPublicationsFromControllerAPI(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "bar"
+	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
+	desiredPublicationState := []*utils.VolumePublicationExternal{
+		{
+			Name:       utils.GenerateVolumePublishName(volume, nodeName),
+			NodeName:   nodeName,
+			VolumeName: volume,
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockRestClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockRestClient.EXPECT().ListVolumePublicationsForNode(
+		ctx, nodeName,
+	).Return(desiredPublicationState, errors.New("api error"))
+
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeName:          nodeName,
+		restClient:        mockRestClient,
+		enableForceDetach: true,
+	}
+	err := nodeServer.performNodeCleanup(ctx)
+	assert.Error(t, err, "expected an error")
+}
+
+func TestPerformNodeCleanup_ShouldFailToDiscoverActualPublicationsFromHost(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "bar"
+	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
+	desiredPublicationState := []*utils.VolumePublicationExternal{
+		{
+			Name:       utils.GenerateVolumePublishName(volume, nodeName),
+			NodeName:   nodeName,
+			VolumeName: volume,
+		},
+	}
+	actualPublicationState := map[string]*utils.VolumeTrackingInfo{
+		volume: {
+			VolumePublishInfo: utils.VolumePublishInfo{},
+			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
+				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
+			PublishedPaths: map[string]struct{}{
+				"/var/lib/kubelet/pods/b9f476af-47f4-42d8-8cfa-70d49394d9e3/volumes/kubernetes.io~csi/" +
+					volume + "/mount": {},
+			},
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	mockRestClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
+	mockRestClient.EXPECT().ListVolumePublicationsForNode(ctx, nodeName).Return(desiredPublicationState, nil)
+	mockNodeHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(actualPublicationState, errors.New("file I/O error"))
+
+	nodeServer := &Plugin{
+		role:              CSINode,
+		nodeName:          nodeName,
+		restClient:        mockRestClient,
+		nodeHelper:        mockNodeHelper,
+		enableForceDetach: true,
+	}
+	err := nodeServer.performNodeCleanup(ctx)
+	assert.Error(t, err, "expected an error")
+}
+
 func TestUpdateNodePublicationState_NodeNotCleanable(t *testing.T) {
 	ctx := context.Background()
 	nodeState := utils.NodeDirty
