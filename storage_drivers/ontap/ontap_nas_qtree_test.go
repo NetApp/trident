@@ -2586,8 +2586,7 @@ func TestNewPruneTask_WithDefaultValues(t *testing.T) {
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)
 
-	expectedEmptyFlexvolDeferredDeletePeriod := time.Duration(defaultEmptyFlexvolDeferredDeletePeriodSecs) * time.Second
-	assert.Equal(t, expectedEmptyFlexvolDeferredDeletePeriod, driver.emptyFlexvolDeferredDeletePeriod,
+	assert.Equal(t, defaultEmptyFlexvolDeferredDeletePeriod, driver.emptyFlexvolDeferredDeletePeriod,
 		"emptyFlexvolDeferredDeletePeriod does not match")
 }
 
@@ -2626,8 +2625,7 @@ func TestNewPruneTask_WithInValidConfigValues(t *testing.T) {
 	assert.Equal(t, tasks, result.Tasks)
 	assert.Equal(t, driver, result.Driver)
 
-	expectedFlexvolDeferredDeletePeriod := time.Duration(defaultEmptyFlexvolDeferredDeletePeriodSecs) * time.Second
-	assert.Equal(t, expectedFlexvolDeferredDeletePeriod, driver.emptyFlexvolDeferredDeletePeriod,
+	assert.Equal(t, defaultEmptyFlexvolDeferredDeletePeriod, driver.emptyFlexvolDeferredDeletePeriod,
 		"emptyFlexvolDeferredDeletePeriod does not match")
 }
 

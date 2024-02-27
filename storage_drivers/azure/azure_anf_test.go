@@ -757,6 +757,52 @@ func TestInitialize_InvalidStoragePrefix(t *testing.T) {
 	assert.False(t, driver.Initialized(), "initialized")
 }
 
+func TestInitialize_NegativeVolumeCreateTimeout(t *testing.T) {
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "fake-location",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1",
+        "volumeCreateTimeout": "-600"
+    }`
+
+	// Have to at least one CapacityPool for ANF backends.
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "fake-location",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
+	}
+
+	mockAPI, driver := newMockANFDriver(t)
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
+
+	assert.Error(t, result, "initialize did not fail")
+	assert.False(t, driver.Initialized(), "initialized")
+}
+
 func TestInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -780,7 +826,7 @@ func TestInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
 	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
 	    "virtualNetwork": "VN1",
 	    "subnet": "RG1/VN1/SN1",
-        "volumeCreateTimeout": "10m"
+        "volumeCreateTimeout": "600m"
     }`
 
 	// Have to at least one CapacityPool for ANF backends.

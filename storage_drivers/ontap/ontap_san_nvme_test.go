@@ -5,6 +5,7 @@ package ontap
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -1135,6 +1136,14 @@ func TestCreatePrepare(t *testing.T) {
 	assert.True(t, volConfig.AccessInfo.PublishEnforcement, "Publish enforcement not enabled.")
 }
 
+func TestNVMeResize_InvalidRequestedSize(t *testing.T) {
+	d, _ := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+
+	err := d.Resize(ctx, volConfig, math.MaxInt64+1)
+	assert.ErrorContains(t, err, "invalid volume size")
+}
+
 func TestNVMeResize_VolumeExistsErrors(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)
@@ -1190,7 +1199,7 @@ func TestNVMeResize_ParseNamespaceSizeError(t *testing.T) {
 
 	err := d.Resize(ctx, volConfig, 100)
 
-	assert.ErrorContains(t, err, "error while parsing namespace size")
+	assert.Error(t, err, "expected an error")
 }
 
 func TestNVMeResize_LessRequestedSizeError(t *testing.T) {

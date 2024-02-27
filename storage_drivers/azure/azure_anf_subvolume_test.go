@@ -556,6 +556,37 @@ func TestSubvolumeInitialize_InvalidSDKTimeout(t *testing.T) {
 	assert.False(t, driver.Initialized(), "initialized")
 }
 
+func TestSubvolumeInitialize_NegativeVolumeCreateTimeout(t *testing.T) {
+	commonConfig, filesystems := getStructsForSubvolumeInitialize()
+
+	configJSON := `
+   {
+		"version": 1,
+		"storageDriverName": "azure-netapp-files-subvolume",
+		"location": "fake-location",
+		"subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+		"tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+		"clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+		"clientSecret": "myClientSecret",
+		"serviceLevel": "Premium",
+		"debugTraceFlags": {"method": true, "api": true, "discovery": true},
+		"capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+		"filePoolVolumes": ["RG1/NA1/CP1/VOL-1"],
+		"virtualNetwork": "VN1",
+		"subnet": "RG1/VN1/SN1",
+		"volumeCreateTimeout": "-600"
+   }`
+
+	mockAPI, driver := newMockANFSubvolumeDriver(t)
+	mockAPI.EXPECT().ValidateFilePoolVolumes(ctx, gomock.Any()).Return(filesystems, nil).Times(1)
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{},
+		BackendUUID)
+
+	assert.Error(t, result, "initialized")
+	assert.False(t, driver.Initialized(), "initialized")
+}
+
 func TestSubvolumeInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
 	commonConfig, filesystems := getStructsForSubvolumeInitialize()
 

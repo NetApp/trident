@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -813,20 +814,20 @@ func (d *SANStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
-	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
+	sizeBytes, err := strconv.ParseInt(requestedSize, 10, 64)
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
 		defaultSize, _ := utils.ConvertSizeToBytes(pool.InternalAttributes()[Size])
-		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
+		sizeBytes, _ = strconv.ParseInt(defaultSize, 10, 64)
 	}
-	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(sizeBytes,
+	if checkMinVolumeSizeError := drivers.CheckMinVolumeSize(uint64(sizeBytes),
 		MinimumVolumeSizeBytes); checkMinVolumeSizeError != nil {
 		return checkMinVolumeSizeError
 	}
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+		ctx, uint64(sizeBytes), d.Config.CommonStorageDriverConfig,
 	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
@@ -899,12 +900,12 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Update config to reflect values used to create volume
-	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.Size = strconv.FormatInt(sizeBytes, 10)
 	volConfig.FileSystem = fstype
 	volConfig.QosType = opts["type"]
 
 	req.Qos = qos
-	req.TotalSize = int64(sizeBytes)
+	req.TotalSize = sizeBytes
 	req.AccountID = d.AccountID
 	req.Name = MakeSolidFireName(name)
 	req.Attributes = meta
@@ -1934,6 +1935,11 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
+
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size")
+		return errors.New("invalid volume size")
+	}
 
 	volume, err := d.GetVolume(ctx, name)
 	if err != nil {

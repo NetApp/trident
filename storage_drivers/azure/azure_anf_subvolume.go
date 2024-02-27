@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"reflect"
 	"regexp"
@@ -290,10 +291,15 @@ func (d *NASBlockStorageDriver) Initialize(
 
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64); parseErr != nil {
+		i, parseErr := strconv.ParseInt(d.Config.VolumeCreateTimeout, 10, 64)
+		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).WithError(parseErr).Error(
 				"Invalid volume create timeout period.")
 			return parseErr
+		} else if i < 0 {
+			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).WithError(parseErr).Error(
+				"Unsupported volume create timeout period.")
+			return errors.UnsupportedError("unsupported volume create timeout period")
 		} else {
 			volumeCreateTimeout = time.Duration(i) * time.Second
 		}
@@ -548,10 +554,15 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 
 	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.SDKTimeout, 10, 64); parseErr != nil {
+		i, parseErr := strconv.ParseInt(d.Config.SDKTimeout, 10, 64)
+		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
 				"Invalid value for SDK timeout.")
 			return parseErr
+		} else if i < 0 {
+			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
+				"Unsupported value for SDK timeout.")
+			return errors.UnsupportedError("unsupported SDK timeout")
 		} else {
 			sdkTimeout = time.Duration(i) * time.Second
 		}
@@ -559,10 +570,15 @@ func (d *NASBlockStorageDriver) initializeAzureSDKClient(
 
 	maxCacheAge := api.DefaultMaxCacheAge
 	if config.MaxCacheAge != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
+		i, parseErr := strconv.ParseInt(d.Config.MaxCacheAge, 10, 64)
+		if parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
 				"Invalid value for max cache age.")
 			return parseErr
+		} else if i < 0 {
+			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
+				"Unsupported value for max cache age.")
+			return errors.UnsupportedError("unsupported max cache age")
 		} else {
 			maxCacheAge = time.Duration(i) * time.Second
 		}
@@ -1685,6 +1701,11 @@ func (d *NASBlockStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
+
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size")
+		return errors.New("invalid volume size")
+	}
 
 	// Get the subvolume
 	subvolumeWithMetadata, err := d.SDK.Subvolume(ctx, volConfig, true)
