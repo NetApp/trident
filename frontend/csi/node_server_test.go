@@ -545,6 +545,23 @@ func snooze(val uint32) {
 	time.Sleep(time.Duration(val) * time.Millisecond)
 }
 
+func TestRefreshTimerPeriod(t *testing.T) {
+	ctx := context.Background()
+	nodeServer := &Plugin{
+		role:              CSINode,
+		enableForceDetach: true,
+	}
+
+	maxPeriod := defaultNodeReconciliationPeriod + maximumNodeReconciliationJitter
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			newPeriod := nodeServer.refreshTimerPeriod(ctx)
+			assert.GreaterOrEqual(t, newPeriod.Milliseconds(), defaultNodeReconciliationPeriod.Milliseconds())
+			assert.LessOrEqual(t, newPeriod.Milliseconds(), maxPeriod.Milliseconds())
+		})
+	}
+}
+
 func TestDiscoverDesiredPublicationState_GetsNoPublicationsWithoutError(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "bar"

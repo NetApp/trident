@@ -35,7 +35,7 @@ const (
 	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
 	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
-	maxJitterValue                  = 5000
+	maximumNodeReconciliationJitter = 5000 * time.Millisecond
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
 )
 
@@ -1666,23 +1666,16 @@ func (p *Plugin) getVolumeIdAndStagingPath(req RequestHandler) (string, string, 
 	return volumeId, stagingTargetPath, nil
 }
 
-// refreshTimerPeriod is responsible for refreshing the timer period of the node publication reconciliation. It
-// introduces a bit of randomness for jitter between reconciliation periods to avoid thundering herd.
+// refreshTimerPeriod resets the time period between node cleanup executions.
+// It introduces randomness (jitter) between reconciliation periods to avoid a thundering herd on the controller API.
 func (p *Plugin) refreshTimerPeriod(ctx context.Context) time.Duration {
 	Logc(ctx).Debug("Refreshing node publication reconcile timer")
 
-	period, jitter := defaultNodeReconciliationPeriod, time.Duration(0)
-	randBigInt, err := rand.Int(rand.Reader, big.NewInt(maxJitterValue))
-	if err != nil || randBigInt == nil {
-		Logc(ctx).Warnf("Failed to generate random number for jitter; defaulting to: %s", jitter.Milliseconds())
-	} else {
-		jitter = time.Duration(randBigInt.Int64()) * time.Millisecond
-		Logc(ctx).Debugf("Generated jitter: %s", jitter.String())
+	jitter := maximumNodeReconciliationJitter
+	if n, err := rand.Int(rand.Reader, big.NewInt(int64(maximumNodeReconciliationJitter))); err == nil {
+		jitter = time.Duration(n.Int64())
 	}
-
-	period += jitter
-	Logc(ctx).Debugf("Refreshed node publication reconcile timer; %v", period.String())
-	return period
+	return defaultNodeReconciliationPeriod + jitter
 }
 
 // startReconcilingNodePublications starts an infinite background task to
