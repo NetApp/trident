@@ -1970,19 +1970,25 @@ func NewPruneTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(co
 	pruneFlexvolsPeriod := defaultPruneFlexvolsPeriod
 	if d.Config.QtreePruneFlexvolsPeriod != "" {
 		i, err := strconv.ParseInt(d.Config.QtreePruneFlexvolsPeriod, 10, 64)
+		if i < 0 {
+			err = fmt.Errorf("negative interval")
+		}
 		if err != nil {
-			Logc(ctx).WithField("interval", d.Config.QtreePruneFlexvolsPeriod).Warnf(
-				"Invalid Flexvol pruning interval. %v", err)
+			Logc(ctx).WithField("defaultInterval", pruneFlexvolsPeriod).WithError(err).Warnf(
+				"Invalid Flexvol pruning interval, using default interval.")
 		} else {
 			pruneFlexvolsPeriod = time.Duration(i) * time.Second
 		}
 	}
 	emptyFlexvolDeferredDeletePeriod := defaultEmptyFlexvolDeferredDeletePeriod
 	if d.Config.EmptyFlexvolDeferredDeletePeriod != "" {
-		i, err := strconv.ParseUint(d.Config.EmptyFlexvolDeferredDeletePeriod, 10, 64)
+		i, err := strconv.ParseInt(d.Config.EmptyFlexvolDeferredDeletePeriod, 10, 64)
+		if i < 0 {
+			err = fmt.Errorf("negative interval")
+		}
 		if err != nil {
-			Logc(ctx).WithField("interval", d.Config.EmptyFlexvolDeferredDeletePeriod).Warnf(
-				"Invalid Flexvol deferred delete period. %v", err)
+			Logc(ctx).WithField("defaultInterval", emptyFlexvolDeferredDeletePeriod).WithError(err).Warnf(
+				"Invalid Flexvol deferred delete period, using default interval.")
 		} else {
 			emptyFlexvolDeferredDeletePeriod = time.Duration(i) * time.Second
 		}
