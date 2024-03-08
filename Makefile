@@ -216,7 +216,7 @@ remove_version = $(sort $(foreach platform,$1,$(call os,$(platform))/$(call arch
 sep=,
 empty=
 sp=$(empty) $(empty)
-buildx_create_instance = $(DOCKER_BUILDX_BUILD_CLI) create --name $(DOCKER_BUILDX_INSTANCE_NAME) --use --append \
+buildx_create_instance = $(DOCKER_BUILDX_BUILD_CLI) create --name $(DOCKER_BUILDX_INSTANCE_NAME) --use \
 	$(if $1,--config $1) \
 	--platform $(subst $(sp),$(sep),$(call remove_version,$(call all_image_platforms,$(ALL_PLATFORMS))))
 
