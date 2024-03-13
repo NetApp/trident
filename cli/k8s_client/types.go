@@ -7,6 +7,7 @@ package k8sclient
 import (
 	"time"
 
+	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
@@ -135,6 +136,11 @@ type KubernetesClient interface {
 	AddFinalizerToCRDs(CRDnames []string) error
 	RemoveFinalizerFromCRD(crdName string) error
 	IsTopologyInUse() (bool, error)
+	GetPersistentVolumes() ([]v1.PersistentVolume, error)
+	GetPersistentVolumeClaims(allNamespaces bool) ([]v1.PersistentVolumeClaim, error)
+	GetVolumeSnapshotClasses() ([]snapshotv1.VolumeSnapshotClass, error)
+	GetVolumeSnapshotContents() ([]snapshotv1.VolumeSnapshotContent, error)
+	GetVolumeSnapshots(allNamespaces bool) ([]snapshotv1.VolumeSnapshot, error)
 }
 
 type DeploymentYAMLArguments struct {

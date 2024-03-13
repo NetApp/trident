@@ -9,15 +9,16 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
+	v1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	v1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
+	v10 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
 	version "github.com/netapp/trident/utils/version"
-	v10 "k8s.io/api/apps/v1"
-	v11 "k8s.io/api/core/v1"
+	v11 "k8s.io/api/apps/v1"
+	v12 "k8s.io/api/core/v1"
 	v1beta1 "k8s.io/api/policy/v1beta1"
-	v12 "k8s.io/api/rbac/v1"
-	v13 "k8s.io/api/storage/v1"
-	v14 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	v13 "k8s.io/api/rbac/v1"
+	v14 "k8s.io/api/storage/v1"
+	v15 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	version0 "k8s.io/apimachinery/pkg/version"
 )
@@ -74,10 +75,10 @@ func (mr *MockTridentInstallerMockRecorder) GetACPVersion() *gomock.Call {
 }
 
 // InstallOrPatchTrident mocks base method.
-func (m *MockTridentInstaller) InstallOrPatchTrident(arg0 v1.TridentOrchestrator, arg1 string, arg2, arg3 bool) (*v1.TridentOrchestratorSpecValues, string, string, error) {
+func (m *MockTridentInstaller) InstallOrPatchTrident(arg0 v10.TridentOrchestrator, arg1 string, arg2, arg3 bool) (*v10.TridentOrchestratorSpecValues, string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InstallOrPatchTrident", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(*v1.TridentOrchestratorSpecValues)
+	ret0, _ := ret[0].(*v10.TridentOrchestratorSpecValues)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(string)
 	ret3, _ := ret[3].(error)
@@ -105,11 +106,11 @@ func (mr *MockTridentInstallerMockRecorder) ObliviateCRDs() *gomock.Call {
 }
 
 // TridentDaemonSetInformation mocks base method.
-func (m *MockTridentInstaller) TridentDaemonSetInformation() (*v10.DaemonSet, []v10.DaemonSet, bool, error) {
+func (m *MockTridentInstaller) TridentDaemonSetInformation() (*v11.DaemonSet, []v11.DaemonSet, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TridentDaemonSetInformation")
-	ret0, _ := ret[0].(*v10.DaemonSet)
-	ret1, _ := ret[1].([]v10.DaemonSet)
+	ret0, _ := ret[0].(*v11.DaemonSet)
+	ret1, _ := ret[1].([]v11.DaemonSet)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -122,11 +123,11 @@ func (mr *MockTridentInstallerMockRecorder) TridentDaemonSetInformation() *gomoc
 }
 
 // TridentDeploymentInformation mocks base method.
-func (m *MockTridentInstaller) TridentDeploymentInformation(arg0 string) (*v10.Deployment, []v10.Deployment, bool, error) {
+func (m *MockTridentInstaller) TridentDeploymentInformation(arg0 string) (*v11.Deployment, []v11.Deployment, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TridentDeploymentInformation", arg0)
-	ret0, _ := ret[0].(*v10.Deployment)
-	ret1, _ := ret[1].([]v10.Deployment)
+	ret0, _ := ret[0].(*v11.Deployment)
+	ret1, _ := ret[1].([]v11.Deployment)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -479,10 +480,10 @@ func (mr *MockExtendedK8sClientMockRecorder) CreateObjectByYAML(arg0 interface{}
 }
 
 // CreateSecret mocks base method.
-func (m *MockExtendedK8sClient) CreateSecret(arg0 *v11.Secret) (*v11.Secret, error) {
+func (m *MockExtendedK8sClient) CreateSecret(arg0 *v12.Secret) (*v12.Secret, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSecret", arg0)
-	ret0, _ := ret[0].(*v11.Secret)
+	ret0, _ := ret[0].(*v12.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1154,10 +1155,10 @@ func (mr *MockExtendedK8sClientMockRecorder) Flavor() *gomock.Call {
 }
 
 // GetCRD mocks base method.
-func (m *MockExtendedK8sClient) GetCRD(arg0 string) (*v14.CustomResourceDefinition, error) {
+func (m *MockExtendedK8sClient) GetCRD(arg0 string) (*v15.CustomResourceDefinition, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCRD", arg0)
-	ret0, _ := ret[0].(*v14.CustomResourceDefinition)
+	ret0, _ := ret[0].(*v15.CustomResourceDefinition)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1169,10 +1170,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetCRD(arg0 interface{}) *gomock.Ca
 }
 
 // GetCSIDriverByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetCSIDriverByLabel(arg0 string) (*v13.CSIDriver, error) {
+func (m *MockExtendedK8sClient) GetCSIDriverByLabel(arg0 string) (*v14.CSIDriver, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCSIDriverByLabel", arg0)
-	ret0, _ := ret[0].(*v13.CSIDriver)
+	ret0, _ := ret[0].(*v14.CSIDriver)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1184,11 +1185,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetCSIDriverByLabel(arg0 interface{
 }
 
 // GetCSIDriverInformation mocks base method.
-func (m *MockExtendedK8sClient) GetCSIDriverInformation(arg0, arg1 string, arg2 bool) (*v13.CSIDriver, []v13.CSIDriver, bool, error) {
+func (m *MockExtendedK8sClient) GetCSIDriverInformation(arg0, arg1 string, arg2 bool) (*v14.CSIDriver, []v14.CSIDriver, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCSIDriverInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v13.CSIDriver)
-	ret1, _ := ret[1].([]v13.CSIDriver)
+	ret0, _ := ret[0].(*v14.CSIDriver)
+	ret1, _ := ret[1].([]v14.CSIDriver)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1201,10 +1202,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetCSIDriverInformation(arg0, arg1,
 }
 
 // GetCSIDriversByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetCSIDriversByLabel(arg0 string) ([]v13.CSIDriver, error) {
+func (m *MockExtendedK8sClient) GetCSIDriversByLabel(arg0 string) ([]v14.CSIDriver, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCSIDriversByLabel", arg0)
-	ret0, _ := ret[0].([]v13.CSIDriver)
+	ret0, _ := ret[0].([]v14.CSIDriver)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1216,10 +1217,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetCSIDriversByLabel(arg0 interface
 }
 
 // GetClusterRoleBindingByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleBindingByLabel(arg0 string) (*v12.ClusterRoleBinding, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleBindingByLabel(arg0 string) (*v13.ClusterRoleBinding, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleBindingByLabel", arg0)
-	ret0, _ := ret[0].(*v12.ClusterRoleBinding)
+	ret0, _ := ret[0].(*v13.ClusterRoleBinding)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1231,10 +1232,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingByLabel(arg0 i
 }
 
 // GetClusterRoleBindingByLabelAndName mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleBindingByLabelAndName(arg0, arg1 string) (*v12.ClusterRoleBinding, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleBindingByLabelAndName(arg0, arg1 string) (*v13.ClusterRoleBinding, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleBindingByLabelAndName", arg0, arg1)
-	ret0, _ := ret[0].(*v12.ClusterRoleBinding)
+	ret0, _ := ret[0].(*v13.ClusterRoleBinding)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1246,11 +1247,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingByLabelAndName
 }
 
 // GetClusterRoleBindingInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(arg0, arg1 string, arg2 bool) (*v12.ClusterRoleBinding, []v12.ClusterRoleBinding, bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(arg0, arg1 string, arg2 bool) (*v13.ClusterRoleBinding, []v13.ClusterRoleBinding, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleBindingInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v12.ClusterRoleBinding)
-	ret1, _ := ret[1].([]v12.ClusterRoleBinding)
+	ret0, _ := ret[0].(*v13.ClusterRoleBinding)
+	ret1, _ := ret[1].([]v13.ClusterRoleBinding)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1263,10 +1264,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingInformation(ar
 }
 
 // GetClusterRoleBindingsByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleBindingsByLabel(arg0 string) ([]v12.ClusterRoleBinding, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleBindingsByLabel(arg0 string) ([]v13.ClusterRoleBinding, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleBindingsByLabel", arg0)
-	ret0, _ := ret[0].([]v12.ClusterRoleBinding)
+	ret0, _ := ret[0].([]v13.ClusterRoleBinding)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1278,10 +1279,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingsByLabel(arg0 
 }
 
 // GetClusterRoleByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleByLabel(arg0 string) (*v12.ClusterRole, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleByLabel(arg0 string) (*v13.ClusterRole, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleByLabel", arg0)
-	ret0, _ := ret[0].(*v12.ClusterRole)
+	ret0, _ := ret[0].(*v13.ClusterRole)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1293,10 +1294,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleByLabel(arg0 interfac
 }
 
 // GetClusterRoleByLabelAndName mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleByLabelAndName(arg0, arg1 string) (*v12.ClusterRole, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleByLabelAndName(arg0, arg1 string) (*v13.ClusterRole, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleByLabelAndName", arg0, arg1)
-	ret0, _ := ret[0].(*v12.ClusterRole)
+	ret0, _ := ret[0].(*v13.ClusterRole)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1308,11 +1309,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleByLabelAndName(arg0, 
 }
 
 // GetClusterRoleInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleInformation(arg0, arg1 string, arg2 bool) (*v12.ClusterRole, []v12.ClusterRole, bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleInformation(arg0, arg1 string, arg2 bool) (*v13.ClusterRole, []v13.ClusterRole, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRoleInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v12.ClusterRole)
-	ret1, _ := ret[1].([]v12.ClusterRole)
+	ret0, _ := ret[0].(*v13.ClusterRole)
+	ret1, _ := ret[1].([]v13.ClusterRole)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1325,10 +1326,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleInformation(arg0, arg
 }
 
 // GetClusterRolesByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRolesByLabel(arg0 string) ([]v12.ClusterRole, error) {
+func (m *MockExtendedK8sClient) GetClusterRolesByLabel(arg0 string) ([]v13.ClusterRole, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetClusterRolesByLabel", arg0)
-	ret0, _ := ret[0].([]v12.ClusterRole)
+	ret0, _ := ret[0].([]v13.ClusterRole)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1340,10 +1341,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRolesByLabel(arg0 interfa
 }
 
 // GetDaemonSetByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetDaemonSetByLabel(arg0 string, arg1 bool) (*v10.DaemonSet, error) {
+func (m *MockExtendedK8sClient) GetDaemonSetByLabel(arg0 string, arg1 bool) (*v11.DaemonSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDaemonSetByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v10.DaemonSet)
+	ret0, _ := ret[0].(*v11.DaemonSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1355,10 +1356,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDaemonSetByLabel(arg0, arg1 inte
 }
 
 // GetDaemonSetByLabelAndName mocks base method.
-func (m *MockExtendedK8sClient) GetDaemonSetByLabelAndName(arg0, arg1 string, arg2 bool) (*v10.DaemonSet, error) {
+func (m *MockExtendedK8sClient) GetDaemonSetByLabelAndName(arg0, arg1 string, arg2 bool) (*v11.DaemonSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDaemonSetByLabelAndName", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v10.DaemonSet)
+	ret0, _ := ret[0].(*v11.DaemonSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1370,11 +1371,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDaemonSetByLabelAndName(arg0, ar
 }
 
 // GetDaemonSetInformation mocks base method.
-func (m *MockExtendedK8sClient) GetDaemonSetInformation(arg0, arg1 string, arg2 bool) (*v10.DaemonSet, []v10.DaemonSet, bool, error) {
+func (m *MockExtendedK8sClient) GetDaemonSetInformation(arg0, arg1 string, arg2 bool) (*v11.DaemonSet, []v11.DaemonSet, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDaemonSetInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v10.DaemonSet)
-	ret1, _ := ret[1].([]v10.DaemonSet)
+	ret0, _ := ret[0].(*v11.DaemonSet)
+	ret1, _ := ret[1].([]v11.DaemonSet)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1387,10 +1388,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDaemonSetInformation(arg0, arg1,
 }
 
 // GetDaemonSetsByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetDaemonSetsByLabel(arg0 string, arg1 bool) ([]v10.DaemonSet, error) {
+func (m *MockExtendedK8sClient) GetDaemonSetsByLabel(arg0 string, arg1 bool) ([]v11.DaemonSet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDaemonSetsByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v10.DaemonSet)
+	ret0, _ := ret[0].([]v11.DaemonSet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1402,10 +1403,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDaemonSetsByLabel(arg0, arg1 int
 }
 
 // GetDeploymentByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetDeploymentByLabel(arg0 string, arg1 bool) (*v10.Deployment, error) {
+func (m *MockExtendedK8sClient) GetDeploymentByLabel(arg0 string, arg1 bool) (*v11.Deployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v10.Deployment)
+	ret0, _ := ret[0].(*v11.Deployment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1417,11 +1418,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDeploymentByLabel(arg0, arg1 int
 }
 
 // GetDeploymentInformation mocks base method.
-func (m *MockExtendedK8sClient) GetDeploymentInformation(arg0, arg1, arg2 string) (*v10.Deployment, []v10.Deployment, bool, error) {
+func (m *MockExtendedK8sClient) GetDeploymentInformation(arg0, arg1, arg2 string) (*v11.Deployment, []v11.Deployment, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v10.Deployment)
-	ret1, _ := ret[1].([]v10.Deployment)
+	ret0, _ := ret[0].(*v11.Deployment)
+	ret1, _ := ret[1].([]v11.Deployment)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1434,10 +1435,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetDeploymentInformation(arg0, arg1
 }
 
 // GetDeploymentsByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetDeploymentsByLabel(arg0 string, arg1 bool) ([]v10.Deployment, error) {
+func (m *MockExtendedK8sClient) GetDeploymentsByLabel(arg0 string, arg1 bool) ([]v11.Deployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v10.Deployment)
+	ret0, _ := ret[0].([]v11.Deployment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1466,11 +1467,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetMultiplePodSecurityPolicyInforma
 }
 
 // GetMultipleRoleBindingInformation mocks base method.
-func (m *MockExtendedK8sClient) GetMultipleRoleBindingInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.RoleBinding, []v12.RoleBinding, map[string]bool, error) {
+func (m *MockExtendedK8sClient) GetMultipleRoleBindingInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v13.RoleBinding, []v13.RoleBinding, map[string]bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMultipleRoleBindingInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(map[string]*v12.RoleBinding)
-	ret1, _ := ret[1].([]v12.RoleBinding)
+	ret0, _ := ret[0].(map[string]*v13.RoleBinding)
+	ret1, _ := ret[1].([]v13.RoleBinding)
 	ret2, _ := ret[2].(map[string]bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1483,11 +1484,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetMultipleRoleBindingInformation(a
 }
 
 // GetMultipleRoleInformation mocks base method.
-func (m *MockExtendedK8sClient) GetMultipleRoleInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v12.Role, []v12.Role, map[string]bool, error) {
+func (m *MockExtendedK8sClient) GetMultipleRoleInformation(arg0 []string, arg1 string, arg2 bool) (map[string]*v13.Role, []v13.Role, map[string]bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMultipleRoleInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(map[string]*v12.Role)
-	ret1, _ := ret[1].([]v12.Role)
+	ret0, _ := ret[0].(map[string]*v13.Role)
+	ret1, _ := ret[1].([]v13.Role)
 	ret2, _ := ret[2].(map[string]bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1500,11 +1501,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetMultipleRoleInformation(arg0, ar
 }
 
 // GetMultipleServiceAccountInformation mocks base method.
-func (m *MockExtendedK8sClient) GetMultipleServiceAccountInformation(arg0 []string, arg1, arg2 string, arg3 bool) (map[string]*v11.ServiceAccount, []v11.ServiceAccount, map[string][]string, map[string]bool, error) {
+func (m *MockExtendedK8sClient) GetMultipleServiceAccountInformation(arg0 []string, arg1, arg2 string, arg3 bool) (map[string]*v12.ServiceAccount, []v12.ServiceAccount, map[string][]string, map[string]bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMultipleServiceAccountInformation", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(map[string]*v11.ServiceAccount)
-	ret1, _ := ret[1].([]v11.ServiceAccount)
+	ret0, _ := ret[0].(map[string]*v12.ServiceAccount)
+	ret1, _ := ret[1].([]v12.ServiceAccount)
 	ret2, _ := ret[2].(map[string][]string)
 	ret3, _ := ret[3].(map[string]bool)
 	ret4, _ := ret[4].(error)
@@ -1535,10 +1536,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetMultipleTridentOpenShiftSCCInfor
 }
 
 // GetNamespace mocks base method.
-func (m *MockExtendedK8sClient) GetNamespace(arg0 string) (*v11.Namespace, error) {
+func (m *MockExtendedK8sClient) GetNamespace(arg0 string) (*v12.Namespace, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNamespace", arg0)
-	ret0, _ := ret[0].(*v11.Namespace)
+	ret0, _ := ret[0].(*v12.Namespace)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1566,11 +1567,41 @@ func (mr *MockExtendedK8sClientMockRecorder) GetOpenShiftSCCByName(arg0, arg1 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOpenShiftSCCByName", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetOpenShiftSCCByName), arg0, arg1)
 }
 
+// GetPersistentVolumeClaims mocks base method.
+func (m *MockExtendedK8sClient) GetPersistentVolumeClaims(arg0 bool) ([]v12.PersistentVolumeClaim, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersistentVolumeClaims", arg0)
+	ret0, _ := ret[0].([]v12.PersistentVolumeClaim)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPersistentVolumeClaims indicates an expected call of GetPersistentVolumeClaims.
+func (mr *MockExtendedK8sClientMockRecorder) GetPersistentVolumeClaims(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersistentVolumeClaims", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPersistentVolumeClaims), arg0)
+}
+
+// GetPersistentVolumes mocks base method.
+func (m *MockExtendedK8sClient) GetPersistentVolumes() ([]v12.PersistentVolume, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPersistentVolumes")
+	ret0, _ := ret[0].([]v12.PersistentVolume)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPersistentVolumes indicates an expected call of GetPersistentVolumes.
+func (mr *MockExtendedK8sClientMockRecorder) GetPersistentVolumes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPersistentVolumes", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetPersistentVolumes))
+}
+
 // GetPodByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetPodByLabel(arg0 string, arg1 bool) (*v11.Pod, error) {
+func (m *MockExtendedK8sClient) GetPodByLabel(arg0 string, arg1 bool) (*v12.Pod, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPodByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v11.Pod)
+	ret0, _ := ret[0].(*v12.Pod)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1612,10 +1643,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetPodSecurityPolicyByLabel(arg0 in
 }
 
 // GetPodsByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetPodsByLabel(arg0 string, arg1 bool) ([]v11.Pod, error) {
+func (m *MockExtendedK8sClient) GetPodsByLabel(arg0 string, arg1 bool) ([]v12.Pod, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPodsByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v11.Pod)
+	ret0, _ := ret[0].([]v12.Pod)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1627,10 +1658,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetPodsByLabel(arg0, arg1 interface
 }
 
 // GetResourceQuota mocks base method.
-func (m *MockExtendedK8sClient) GetResourceQuota(arg0 string) (*v11.ResourceQuota, error) {
+func (m *MockExtendedK8sClient) GetResourceQuota(arg0 string) (*v12.ResourceQuota, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetResourceQuota", arg0)
-	ret0, _ := ret[0].(*v11.ResourceQuota)
+	ret0, _ := ret[0].(*v12.ResourceQuota)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1642,10 +1673,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuota(arg0 interface{}) 
 }
 
 // GetResourceQuotaByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetResourceQuotaByLabel(arg0 string) (*v11.ResourceQuota, error) {
+func (m *MockExtendedK8sClient) GetResourceQuotaByLabel(arg0 string) (*v12.ResourceQuota, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetResourceQuotaByLabel", arg0)
-	ret0, _ := ret[0].(*v11.ResourceQuota)
+	ret0, _ := ret[0].(*v12.ResourceQuota)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1657,11 +1688,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuotaByLabel(arg0 interf
 }
 
 // GetResourceQuotaInformation mocks base method.
-func (m *MockExtendedK8sClient) GetResourceQuotaInformation(arg0, arg1, arg2 string) (*v11.ResourceQuota, []v11.ResourceQuota, bool, error) {
+func (m *MockExtendedK8sClient) GetResourceQuotaInformation(arg0, arg1, arg2 string) (*v12.ResourceQuota, []v12.ResourceQuota, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetResourceQuotaInformation", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v11.ResourceQuota)
-	ret1, _ := ret[1].([]v11.ResourceQuota)
+	ret0, _ := ret[0].(*v12.ResourceQuota)
+	ret1, _ := ret[1].([]v12.ResourceQuota)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1674,10 +1705,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuotaInformation(arg0, a
 }
 
 // GetResourceQuotasByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetResourceQuotasByLabel(arg0 string) ([]v11.ResourceQuota, error) {
+func (m *MockExtendedK8sClient) GetResourceQuotasByLabel(arg0 string) ([]v12.ResourceQuota, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetResourceQuotasByLabel", arg0)
-	ret0, _ := ret[0].([]v11.ResourceQuota)
+	ret0, _ := ret[0].([]v12.ResourceQuota)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1689,10 +1720,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetResourceQuotasByLabel(arg0 inter
 }
 
 // GetRoleBindingByLabelAndName mocks base method.
-func (m *MockExtendedK8sClient) GetRoleBindingByLabelAndName(arg0, arg1 string) (*v12.RoleBinding, error) {
+func (m *MockExtendedK8sClient) GetRoleBindingByLabelAndName(arg0, arg1 string) (*v13.RoleBinding, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRoleBindingByLabelAndName", arg0, arg1)
-	ret0, _ := ret[0].(*v12.RoleBinding)
+	ret0, _ := ret[0].(*v13.RoleBinding)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1704,10 +1735,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetRoleBindingByLabelAndName(arg0, 
 }
 
 // GetRoleBindingsByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetRoleBindingsByLabel(arg0 string) ([]v12.RoleBinding, error) {
+func (m *MockExtendedK8sClient) GetRoleBindingsByLabel(arg0 string) ([]v13.RoleBinding, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRoleBindingsByLabel", arg0)
-	ret0, _ := ret[0].([]v12.RoleBinding)
+	ret0, _ := ret[0].([]v13.RoleBinding)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1719,10 +1750,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetRoleBindingsByLabel(arg0 interfa
 }
 
 // GetRolesByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetRolesByLabel(arg0 string) ([]v12.Role, error) {
+func (m *MockExtendedK8sClient) GetRolesByLabel(arg0 string) ([]v13.Role, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRolesByLabel", arg0)
-	ret0, _ := ret[0].([]v12.Role)
+	ret0, _ := ret[0].([]v13.Role)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1734,10 +1765,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetRolesByLabel(arg0 interface{}) *
 }
 
 // GetSecret mocks base method.
-func (m *MockExtendedK8sClient) GetSecret(arg0 string) (*v11.Secret, error) {
+func (m *MockExtendedK8sClient) GetSecret(arg0 string) (*v12.Secret, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSecret", arg0)
-	ret0, _ := ret[0].(*v11.Secret)
+	ret0, _ := ret[0].(*v12.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1749,10 +1780,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetSecret(arg0 interface{}) *gomock
 }
 
 // GetSecretByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetSecretByLabel(arg0 string, arg1 bool) (*v11.Secret, error) {
+func (m *MockExtendedK8sClient) GetSecretByLabel(arg0 string, arg1 bool) (*v12.Secret, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSecretByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v11.Secret)
+	ret0, _ := ret[0].(*v12.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1764,11 +1795,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetSecretByLabel(arg0, arg1 interfa
 }
 
 // GetSecretInformation mocks base method.
-func (m *MockExtendedK8sClient) GetSecretInformation(arg0, arg1, arg2 string, arg3 bool) (*v11.Secret, []v11.Secret, bool, error) {
+func (m *MockExtendedK8sClient) GetSecretInformation(arg0, arg1, arg2 string, arg3 bool) (*v12.Secret, []v12.Secret, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSecretInformation", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(*v11.Secret)
-	ret1, _ := ret[1].([]v11.Secret)
+	ret0, _ := ret[0].(*v12.Secret)
+	ret1, _ := ret[1].([]v12.Secret)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1781,10 +1812,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetSecretInformation(arg0, arg1, ar
 }
 
 // GetSecretsByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetSecretsByLabel(arg0 string, arg1 bool) ([]v11.Secret, error) {
+func (m *MockExtendedK8sClient) GetSecretsByLabel(arg0 string, arg1 bool) ([]v12.Secret, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSecretsByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v11.Secret)
+	ret0, _ := ret[0].([]v12.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1796,10 +1827,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetSecretsByLabel(arg0, arg1 interf
 }
 
 // GetServiceAccountByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetServiceAccountByLabel(arg0 string, arg1 bool) (*v11.ServiceAccount, error) {
+func (m *MockExtendedK8sClient) GetServiceAccountByLabel(arg0 string, arg1 bool) (*v12.ServiceAccount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceAccountByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v11.ServiceAccount)
+	ret0, _ := ret[0].(*v12.ServiceAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1811,10 +1842,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetServiceAccountByLabel(arg0, arg1
 }
 
 // GetServiceAccountByLabelAndName mocks base method.
-func (m *MockExtendedK8sClient) GetServiceAccountByLabelAndName(arg0, arg1 string, arg2 bool) (*v11.ServiceAccount, error) {
+func (m *MockExtendedK8sClient) GetServiceAccountByLabelAndName(arg0, arg1 string, arg2 bool) (*v12.ServiceAccount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceAccountByLabelAndName", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*v11.ServiceAccount)
+	ret0, _ := ret[0].(*v12.ServiceAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1826,10 +1857,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetServiceAccountByLabelAndName(arg
 }
 
 // GetServiceAccountsByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetServiceAccountsByLabel(arg0 string, arg1 bool) ([]v11.ServiceAccount, error) {
+func (m *MockExtendedK8sClient) GetServiceAccountsByLabel(arg0 string, arg1 bool) ([]v12.ServiceAccount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceAccountsByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v11.ServiceAccount)
+	ret0, _ := ret[0].([]v12.ServiceAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1841,10 +1872,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetServiceAccountsByLabel(arg0, arg
 }
 
 // GetServiceByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetServiceByLabel(arg0 string, arg1 bool) (*v11.Service, error) {
+func (m *MockExtendedK8sClient) GetServiceByLabel(arg0 string, arg1 bool) (*v12.Service, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceByLabel", arg0, arg1)
-	ret0, _ := ret[0].(*v11.Service)
+	ret0, _ := ret[0].(*v12.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1856,11 +1887,11 @@ func (mr *MockExtendedK8sClientMockRecorder) GetServiceByLabel(arg0, arg1 interf
 }
 
 // GetServiceInformation mocks base method.
-func (m *MockExtendedK8sClient) GetServiceInformation(arg0, arg1, arg2 string, arg3 bool) (*v11.Service, []v11.Service, bool, error) {
+func (m *MockExtendedK8sClient) GetServiceInformation(arg0, arg1, arg2 string, arg3 bool) (*v12.Service, []v12.Service, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceInformation", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(*v11.Service)
-	ret1, _ := ret[1].([]v11.Service)
+	ret0, _ := ret[0].(*v12.Service)
+	ret1, _ := ret[1].([]v12.Service)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
@@ -1873,10 +1904,10 @@ func (mr *MockExtendedK8sClientMockRecorder) GetServiceInformation(arg0, arg1, a
 }
 
 // GetServicesByLabel mocks base method.
-func (m *MockExtendedK8sClient) GetServicesByLabel(arg0 string, arg1 bool) ([]v11.Service, error) {
+func (m *MockExtendedK8sClient) GetServicesByLabel(arg0 string, arg1 bool) ([]v12.Service, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServicesByLabel", arg0, arg1)
-	ret0, _ := ret[0].([]v11.Service)
+	ret0, _ := ret[0].([]v12.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1885,6 +1916,51 @@ func (m *MockExtendedK8sClient) GetServicesByLabel(arg0 string, arg1 bool) ([]v1
 func (mr *MockExtendedK8sClientMockRecorder) GetServicesByLabel(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServicesByLabel", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetServicesByLabel), arg0, arg1)
+}
+
+// GetVolumeSnapshotClasses mocks base method.
+func (m *MockExtendedK8sClient) GetVolumeSnapshotClasses() ([]v1.VolumeSnapshotClass, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeSnapshotClasses")
+	ret0, _ := ret[0].([]v1.VolumeSnapshotClass)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeSnapshotClasses indicates an expected call of GetVolumeSnapshotClasses.
+func (mr *MockExtendedK8sClientMockRecorder) GetVolumeSnapshotClasses() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshotClasses", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetVolumeSnapshotClasses))
+}
+
+// GetVolumeSnapshotContents mocks base method.
+func (m *MockExtendedK8sClient) GetVolumeSnapshotContents() ([]v1.VolumeSnapshotContent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeSnapshotContents")
+	ret0, _ := ret[0].([]v1.VolumeSnapshotContent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeSnapshotContents indicates an expected call of GetVolumeSnapshotContents.
+func (mr *MockExtendedK8sClientMockRecorder) GetVolumeSnapshotContents() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshotContents", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetVolumeSnapshotContents))
+}
+
+// GetVolumeSnapshots mocks base method.
+func (m *MockExtendedK8sClient) GetVolumeSnapshots(arg0 bool) ([]v1.VolumeSnapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeSnapshots", arg0)
+	ret0, _ := ret[0].([]v1.VolumeSnapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeSnapshots indicates an expected call of GetVolumeSnapshots.
+func (mr *MockExtendedK8sClientMockRecorder) GetVolumeSnapshots(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshots", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetVolumeSnapshots), arg0)
 }
 
 // IsTopologyInUse mocks base method.
@@ -2211,7 +2287,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PatchServiceByLabel(arg0, arg1, arg
 }
 
 // PutCSIDriver mocks base method.
-func (m *MockExtendedK8sClient) PutCSIDriver(arg0 *v13.CSIDriver, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutCSIDriver(arg0 *v14.CSIDriver, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutCSIDriver", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2225,7 +2301,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutCSIDriver(arg0, arg1, arg2, arg3
 }
 
 // PutClusterRole mocks base method.
-func (m *MockExtendedK8sClient) PutClusterRole(arg0 *v12.ClusterRole, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutClusterRole(arg0 *v13.ClusterRole, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutClusterRole", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2239,7 +2315,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutClusterRole(arg0, arg1, arg2, ar
 }
 
 // PutClusterRoleBinding mocks base method.
-func (m *MockExtendedK8sClient) PutClusterRoleBinding(arg0 *v12.ClusterRoleBinding, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutClusterRoleBinding(arg0 *v13.ClusterRoleBinding, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutClusterRoleBinding", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2253,7 +2329,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutClusterRoleBinding(arg0, arg1, a
 }
 
 // PutCustomResourceDefinition mocks base method.
-func (m *MockExtendedK8sClient) PutCustomResourceDefinition(arg0 *v14.CustomResourceDefinition, arg1 string, arg2 bool, arg3 string) error {
+func (m *MockExtendedK8sClient) PutCustomResourceDefinition(arg0 *v15.CustomResourceDefinition, arg1 string, arg2 bool, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutCustomResourceDefinition", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2267,7 +2343,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutCustomResourceDefinition(arg0, a
 }
 
 // PutDaemonSet mocks base method.
-func (m *MockExtendedK8sClient) PutDaemonSet(arg0 *v10.DaemonSet, arg1 bool, arg2, arg3, arg4 string) error {
+func (m *MockExtendedK8sClient) PutDaemonSet(arg0 *v11.DaemonSet, arg1 bool, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutDaemonSet", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
@@ -2281,7 +2357,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutDaemonSet(arg0, arg1, arg2, arg3
 }
 
 // PutDeployment mocks base method.
-func (m *MockExtendedK8sClient) PutDeployment(arg0 *v10.Deployment, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutDeployment(arg0 *v11.Deployment, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutDeployment", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2323,7 +2399,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutPodSecurityPolicy(arg0, arg1, ar
 }
 
 // PutResourceQuota mocks base method.
-func (m *MockExtendedK8sClient) PutResourceQuota(arg0 *v11.ResourceQuota, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutResourceQuota(arg0 *v12.ResourceQuota, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutResourceQuota", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2337,7 +2413,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutResourceQuota(arg0, arg1, arg2, 
 }
 
 // PutRole mocks base method.
-func (m *MockExtendedK8sClient) PutRole(arg0 *v12.Role, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutRole(arg0 *v13.Role, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutRole", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2351,7 +2427,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutRole(arg0, arg1, arg2, arg3 inte
 }
 
 // PutRoleBinding mocks base method.
-func (m *MockExtendedK8sClient) PutRoleBinding(arg0 *v12.RoleBinding, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutRoleBinding(arg0 *v13.RoleBinding, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutRoleBinding", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2379,7 +2455,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutSecret(arg0, arg1, arg2 interfac
 }
 
 // PutService mocks base method.
-func (m *MockExtendedK8sClient) PutService(arg0 *v11.Service, arg1 bool, arg2, arg3 string) error {
+func (m *MockExtendedK8sClient) PutService(arg0 *v12.Service, arg1 bool, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutService", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -2393,7 +2469,7 @@ func (mr *MockExtendedK8sClientMockRecorder) PutService(arg0, arg1, arg2, arg3 i
 }
 
 // PutServiceAccount mocks base method.
-func (m *MockExtendedK8sClient) PutServiceAccount(arg0 *v11.ServiceAccount, arg1 bool, arg2, arg3 string) (bool, error) {
+func (m *MockExtendedK8sClient) PutServiceAccount(arg0 *v12.ServiceAccount, arg1 bool, arg2, arg3 string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutServiceAccount", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(bool)
@@ -2422,7 +2498,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveFinalizerFromCRD(arg0 interfa
 }
 
 // RemoveMultipleCSIDriverCRs mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleCSIDriverCRs(arg0 []v13.CSIDriver) error {
+func (m *MockExtendedK8sClient) RemoveMultipleCSIDriverCRs(arg0 []v14.CSIDriver) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleCSIDriverCRs", arg0)
 	ret0, _ := ret[0].(error)
@@ -2436,7 +2512,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleCSIDriverCRs(arg0 int
 }
 
 // RemoveMultipleClusterRoleBindings mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleClusterRoleBindings(arg0 []v12.ClusterRoleBinding) error {
+func (m *MockExtendedK8sClient) RemoveMultipleClusterRoleBindings(arg0 []v13.ClusterRoleBinding) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleClusterRoleBindings", arg0)
 	ret0, _ := ret[0].(error)
@@ -2450,7 +2526,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleClusterRoleBindings(a
 }
 
 // RemoveMultipleClusterRoles mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleClusterRoles(arg0 []v12.ClusterRole) error {
+func (m *MockExtendedK8sClient) RemoveMultipleClusterRoles(arg0 []v13.ClusterRole) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleClusterRoles", arg0)
 	ret0, _ := ret[0].(error)
@@ -2464,7 +2540,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleClusterRoles(arg0 int
 }
 
 // RemoveMultipleDaemonSets mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleDaemonSets(arg0 []v10.DaemonSet) error {
+func (m *MockExtendedK8sClient) RemoveMultipleDaemonSets(arg0 []v11.DaemonSet) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleDaemonSets", arg0)
 	ret0, _ := ret[0].(error)
@@ -2478,7 +2554,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleDaemonSets(arg0 inter
 }
 
 // RemoveMultipleDeployments mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleDeployments(arg0 []v10.Deployment) error {
+func (m *MockExtendedK8sClient) RemoveMultipleDeployments(arg0 []v11.Deployment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleDeployments", arg0)
 	ret0, _ := ret[0].(error)
@@ -2506,7 +2582,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultiplePodSecurityPolicies(a
 }
 
 // RemoveMultiplePods mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultiplePods(arg0 []v11.Pod) error {
+func (m *MockExtendedK8sClient) RemoveMultiplePods(arg0 []v12.Pod) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultiplePods", arg0)
 	ret0, _ := ret[0].(error)
@@ -2520,7 +2596,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultiplePods(arg0 interface{}
 }
 
 // RemoveMultipleResourceQuotas mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleResourceQuotas(arg0 []v11.ResourceQuota) error {
+func (m *MockExtendedK8sClient) RemoveMultipleResourceQuotas(arg0 []v12.ResourceQuota) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleResourceQuotas", arg0)
 	ret0, _ := ret[0].(error)
@@ -2534,7 +2610,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleResourceQuotas(arg0 i
 }
 
 // RemoveMultipleRoleBindings mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleRoleBindings(arg0 []v12.RoleBinding) error {
+func (m *MockExtendedK8sClient) RemoveMultipleRoleBindings(arg0 []v13.RoleBinding) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleRoleBindings", arg0)
 	ret0, _ := ret[0].(error)
@@ -2548,7 +2624,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleRoleBindings(arg0 int
 }
 
 // RemoveMultipleRoles mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleRoles(arg0 []v12.Role) error {
+func (m *MockExtendedK8sClient) RemoveMultipleRoles(arg0 []v13.Role) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleRoles", arg0)
 	ret0, _ := ret[0].(error)
@@ -2562,7 +2638,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleRoles(arg0 interface{
 }
 
 // RemoveMultipleSecrets mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleSecrets(arg0 []v11.Secret) error {
+func (m *MockExtendedK8sClient) RemoveMultipleSecrets(arg0 []v12.Secret) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleSecrets", arg0)
 	ret0, _ := ret[0].(error)
@@ -2576,7 +2652,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleSecrets(arg0 interfac
 }
 
 // RemoveMultipleServiceAccounts mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleServiceAccounts(arg0 []v11.ServiceAccount) error {
+func (m *MockExtendedK8sClient) RemoveMultipleServiceAccounts(arg0 []v12.ServiceAccount) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleServiceAccounts", arg0)
 	ret0, _ := ret[0].(error)
@@ -2590,7 +2666,7 @@ func (mr *MockExtendedK8sClientMockRecorder) RemoveMultipleServiceAccounts(arg0 
 }
 
 // RemoveMultipleServices mocks base method.
-func (m *MockExtendedK8sClient) RemoveMultipleServices(arg0 []v11.Service) error {
+func (m *MockExtendedK8sClient) RemoveMultipleServices(arg0 []v12.Service) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveMultipleServices", arg0)
 	ret0, _ := ret[0].(error)
@@ -2656,10 +2732,10 @@ func (mr *MockExtendedK8sClientMockRecorder) SetTimeout(arg0 interface{}) *gomoc
 }
 
 // UpdateSecret mocks base method.
-func (m *MockExtendedK8sClient) UpdateSecret(arg0 *v11.Secret) (*v11.Secret, error) {
+func (m *MockExtendedK8sClient) UpdateSecret(arg0 *v12.Secret) (*v12.Secret, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateSecret", arg0)
-	ret0, _ := ret[0].(*v11.Secret)
+	ret0, _ := ret[0].(*v12.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -16,6 +16,8 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/ghodss/yaml"
+	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
@@ -2995,6 +2997,84 @@ func (k *KubeClient) RemoveFinalizerFromCRD(crdName string) error {
 	Logc(ctx).Debugf("Removed finalizers from Kubernetes CRD object %v", crdName)
 
 	return nil
+}
+
+// GetPersistentVolumes returns all PersistentVolumes.
+func (k *KubeClient) GetPersistentVolumes() ([]v1.PersistentVolume, error) {
+	persistentVolumeList, err := k.clientset.CoreV1().PersistentVolumes().List(reqCtx(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return persistentVolumeList.Items, nil
+}
+
+// GetPersistentVolumeClaims returns all PersistentVolumeClaims.
+func (k *KubeClient) GetPersistentVolumeClaims(allNamespaces bool) ([]v1.PersistentVolumeClaim, error) {
+	namespace := k.namespace
+	if allNamespaces {
+		namespace = ""
+	}
+
+	persistentVolumeClaimsList, err := k.clientset.CoreV1().PersistentVolumeClaims(namespace).List(reqCtx(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return persistentVolumeClaimsList.Items, nil
+}
+
+// GetVolumeSnapshotClasses returns all VolumeSnapshotClasses.
+func (k *KubeClient) GetVolumeSnapshotClasses() ([]snapshotv1.VolumeSnapshotClass, error) {
+	// Get a snapshot client
+	snapshotClient, err := k8ssnapshots.NewForConfig(k.restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	volumeSnapshotClassesList, err := snapshotClient.SnapshotV1().VolumeSnapshotClasses().List(reqCtx(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return volumeSnapshotClassesList.Items, nil
+}
+
+// GetVolumeSnapshotContents returns all VolumeSnapshotContents.
+func (k *KubeClient) GetVolumeSnapshotContents() ([]snapshotv1.VolumeSnapshotContent, error) {
+	// Get a snapshot client
+	snapshotClient, err := k8ssnapshots.NewForConfig(k.restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	volumeSnapshotContentsList, err := snapshotClient.SnapshotV1().VolumeSnapshotContents().List(reqCtx(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return volumeSnapshotContentsList.Items, nil
+}
+
+// GetVolumeSnapshots returns all VolumeSnapshots.
+func (k *KubeClient) GetVolumeSnapshots(allNamespaces bool) ([]snapshotv1.VolumeSnapshot, error) {
+	// Get a snapshot client
+	snapshotClient, err := k8ssnapshots.NewForConfig(k.restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	namespace := k.namespace
+	if allNamespaces {
+		namespace = ""
+	}
+
+	volumeSnapshotsList, err := snapshotClient.SnapshotV1().VolumeSnapshots(namespace).List(reqCtx(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return volumeSnapshotsList.Items, nil
 }
 
 // GenericPatch merges an object with a new YAML definition.
