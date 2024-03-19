@@ -257,6 +257,7 @@ func (p *Plugin) CreateVolume(
 	if volConfig.CloneSourceVolume != "" {
 		newVolume, err = p.orchestrator.CloneVolume(ctx, volConfig)
 	} else if volConfig.ImportOriginalName != "" {
+		overrideRequestedValues(req, volConfig)
 		newVolume, err = p.orchestrator.ImportVolume(ctx, volConfig)
 	} else {
 		newVolume, err = p.orchestrator.AddVolume(ctx, volConfig)
