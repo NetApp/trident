@@ -3216,7 +3216,7 @@ func TestListVolumePublicationsError(t *testing.T) {
 	orchestrator.bootstrapError = fmt.Errorf("some error")
 
 	actualPubs, err := orchestrator.ListVolumePublications(context.Background())
-	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
+	assert.NotNil(t, err, "unexpected success listing volume publications")
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
 
@@ -3322,7 +3322,7 @@ func TestListVolumePublicationsForVolumeError(t *testing.T) {
 	orchestrator.bootstrapError = fmt.Errorf("some error")
 
 	actualPubs, err := orchestrator.ListVolumePublicationsForVolume(context.Background(), fakePub.VolumeName)
-	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
+	assert.NotNil(t, err, "unexpected success listing volume publications")
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
 
@@ -3428,7 +3428,7 @@ func TestListVolumePublicationsForNodeError(t *testing.T) {
 	orchestrator.bootstrapError = fmt.Errorf("some error")
 
 	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub.NodeName)
-	assert.NotNil(t, err, fmt.Sprintf("unexpected success listing volume publications"))
+	assert.NotNil(t, err, "unexpected success listing volume publications")
 	assert.Empty(t, actualPubs, "non-empty publication list returned")
 }
 
@@ -3556,7 +3556,7 @@ func TestDeleteVolumePublicationNotFound(t *testing.T) {
 	mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx, fakePub).Return(nil).Times(1)
 	err := orchestrator.DeleteVolumePublication(ctx(), fakePub.VolumeName, fakePub.NodeName)
 	cachedPubs := orchestrator.volumePublications.Map()
-	assert.NoError(t, err, fmt.Sprintf("unexpected error deleting volume publication"))
+	assert.NoError(t, err, "unexpected error deleting volume publication")
 	assert.Nil(t, cachedPubs[fakePub.VolumeName][fakePub.NodeName], "expected no cache entry")
 }
 
@@ -3620,7 +3620,7 @@ func TestDeleteVolumePublicationError(t *testing.T) {
 	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), fakePub).Return(fmt.Errorf("some error"))
 
 	err := orchestrator.DeleteVolumePublication(ctx(), fakePub.VolumeName, fakePub.NodeName)
-	assert.NotNil(t, err, fmt.Sprintf("unexpected success deleting volume publication"))
+	assert.NotNil(t, err, "unexpected success deleting volume publication")
 	assert.False(t, errors.IsNotFoundError(err), "incorrect error type returned")
 	assert.Equal(t, fakePub, orchestrator.volumePublications.Get(fakePub.VolumeName, fakePub.NodeName),
 		"publication improperly removed/updated in cache")
