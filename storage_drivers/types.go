@@ -715,7 +715,8 @@ type FakeStorageDriverConfig struct {
 	Username     string                  `json:"username"`
 	Password     string                  `json:"password"`
 	// Dummy field for unit tests
-	VolumeAccess string `json:"volumeAccess"`
+	VolumeAccess     string `json:"volumeAccess"`
+	UserBackendState string `json:"userBackendState"`
 	FakeStorageDriverPool
 }
 

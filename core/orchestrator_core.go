@@ -1264,9 +1264,6 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		return nil, err
 	}
 
-	// Preserving user-state.
-	backend.SetUserState(originalBackend.UserState())
-
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
 		return nil, err
 	}

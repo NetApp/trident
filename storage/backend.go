@@ -520,11 +520,6 @@ func (b *StorageBackend) CloneVolume(
 		return nil, err
 	}
 
-	// Ensure provisioning is allowed
-	if !b.isProvisioningAllowed() {
-		return nil, fmt.Errorf("volume is not cloned because the backend %s is suspended", b.name)
-	}
-
 	// Ensure the internal names exist
 	if cloneVolConfig.InternalName == "" {
 		return nil, errors.New("internal name not set")
@@ -729,11 +724,6 @@ func (b *StorageBackend) ResizeVolume(ctx context.Context, volConfig *VolumeConf
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return err
-	}
-
-	// Ensure provisioning is allowed
-	if !b.isProvisioningAllowed() {
-		return fmt.Errorf("volume is not resized because the backend %s is suspended", b.name)
 	}
 
 	// Determine volume size in bytes
