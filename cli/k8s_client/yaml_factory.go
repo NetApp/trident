@@ -548,6 +548,8 @@ spec:
       labels:
         app: {LABEL_APP}
         {LABEL_IDENTITY}
+      annotations:
+        openshift.io/required-scc: {SERVICE_ACCOUNT}
     spec:
       serviceAccount: {SERVICE_ACCOUNT}
       containers:
@@ -913,6 +915,8 @@ spec:
     metadata:
       labels:
         app: {LABEL_APP}
+      annotations:
+        openshift.io/required-scc: {SERVICE_ACCOUNT}
     spec:
       serviceAccount: {SERVICE_ACCOUNT}
       hostNetwork: true
@@ -1115,6 +1119,8 @@ spec:
     metadata:
       labels:
         app: {LABEL_APP}
+      annotations:
+        openshift.io/required-scc: {SERVICE_ACCOUNT}
     spec:
       securityContext:
         windowsOptions:
@@ -1482,7 +1488,7 @@ defaultAddCapabilities: null
 fsGroup:
   type: RunAsAny
 groups: []
-priority: 10
+priority: null
 readOnlyRootFilesystem: false
 requiredDropCapabilities:
 - MKNOD

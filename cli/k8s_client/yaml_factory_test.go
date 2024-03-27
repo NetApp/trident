@@ -1135,7 +1135,6 @@ func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
 	namespace := "trident"
 	labels := map[string]string{"app": "controller.trident.netapp.io"}
 	crdDetails := map[string]string{"kind": "ReplicaSet"}
-	priority := int32(10)
 
 	expected := scc.SecurityContextConstraints{
 		TypeMeta: metav1.TypeMeta{
@@ -1168,7 +1167,7 @@ func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
 			Type: "RunAsAny",
 		},
 		Groups:                   []string{},
-		Priority:                 &priority,
+		Priority:                 nil,
 		ReadOnlyRootFilesystem:   false,
 		RequiredDropCapabilities: []v1.Capability{"MKNOD"},
 		RunAsUser: scc.RunAsUserStrategyOptions{

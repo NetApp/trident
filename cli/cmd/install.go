@@ -56,16 +56,19 @@ const (
 	ControllerServiceAccountFilename     = "trident-controller-serviceaccount.yaml"
 	ControllerPodSecurityPolicyFilename  = "trident-controller-podsecuritypolicy.yaml"
 	ControllerClusterRoleBindingFilename = "trident-controller-clusterrolebinding.yaml"
+	ControllerSCCFilename                = "trident-controller-scc.yaml"
 
 	NodeLinuxRoleFilename              = "trident-node-linux-role.yaml"
 	NodeLinuxRoleBindingFilename       = "trident-node-linux-rolebinding.yaml"
 	NodeLinuxServiceAccountFilename    = "trident-node-linux-serviceaccount.yaml"
 	NodeLinuxPodSecurityPolicyFilename = "trident-node-linux-podsecuritypolicy.yaml"
+	NodeLinuxSCCFilename               = "trident-node-linux-scc.yaml"
 
 	NodeWindowsRoleFilename              = "trident-node-windows-role.yaml"
 	NodeWindowsRoleBindingFilename       = "trident-node-windows-rolebinding.yaml"
 	NodeWindowsServiceAccountFilename    = "trident-node-windows-serviceaccount.yaml"
 	NodeWindowsPodSecurityPolicyFilename = "trident-node-windows-podsecuritypolicy.yaml"
+	NodeWindowsSCCFilename               = "trident-node-windows-scc.yaml"
 
 	CRDsFilename             = "trident-crds.yaml"
 	DaemonSetFilename        = "trident-daemonset.yaml"
@@ -150,6 +153,9 @@ var (
 	nodeLinuxPodSecurityPolicyPath   string
 	nodeWindowsPodSecurityPolicyPath string
 	resourceQuotaPath                string
+	controllerSCCPath                string
+	nodeLinuxSCCPath                 string
+	nodeWindowsSCCPath               string
 	setupYAMLPaths                   []string
 
 	appLabel      string
@@ -536,6 +542,13 @@ func prepareYAMLFilePaths() error {
 			nodeWindowsPodSecurityPolicyPath)
 	}
 
+	if client.Flavor() == k8sclient.FlavorOpenShift {
+		controllerSCCPath = path.Join(setupPath, ControllerSCCFilename)
+		nodeLinuxSCCPath = path.Join(setupPath, NodeLinuxSCCFilename)
+		nodeWindowsSCCPath = path.Join(setupPath, NodeWindowsSCCFilename)
+		setupYAMLPaths = append(setupYAMLPaths, controllerSCCPath, nodeLinuxSCCPath, nodeWindowsSCCPath)
+	}
+
 	return nil
 }
 
@@ -721,6 +734,23 @@ func prepareYAMLFiles() error {
 		}
 	}
 
+	// If OpenShift, generate corresponding SCCs
+	if client.Flavor() == k8sclient.FlavorOpenShift {
+		// Creating trident controller security context constraint (SCC)
+		controllerSCCYAML := k8sclient.GetOpenShiftSCCYAML(getControllerRBACResourceName(), getControllerRBACResourceName(), TridentPodNamespace, labels, nil,
+			isLinuxNodeSCCUser(getControllerRBACResourceName()))
+		if err = writeFile(controllerSCCPath, controllerSCCYAML); err != nil {
+			return fmt.Errorf("could not write controller SCC YAML file; %v", err)
+		}
+
+		// Creating trident node security context constraint (SCC)
+		nodeLinuxSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(false), getNodeRBACResourceName(false), TridentPodNamespace, daemonSetlabels, nil,
+			isLinuxNodeSCCUser(getNodeRBACResourceName(false)))
+		if err = writeFile(nodeLinuxSCCPath, nodeLinuxSCCYAML); err != nil {
+			return fmt.Errorf("could not write node linux SCC YAML file; %v", err)
+		}
+	}
+
 	if windows {
 		daemonArgs = &k8sclient.DaemonsetYAMLArguments{
 			DaemonsetName:        getDaemonSetName(true),
@@ -773,6 +803,14 @@ func prepareYAMLFiles() error {
 				daemonSetlabels, nil)
 			if err = writeFile(nodeWindowsPodSecurityPolicyPath, nodeWindowsPodSecurityPolicyYAML); err != nil {
 				return fmt.Errorf("could not write node windows pod security policy YAML file; %v", err)
+			}
+		}
+
+		if client.Flavor() == k8sclient.FlavorOpenShift {
+			nodeWindowsSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(true), getNodeRBACResourceName(true), TridentPodNamespace, daemonSetlabels, nil,
+				isLinuxNodeSCCUser(getNodeRBACResourceName(true)))
+			if err = writeFile(nodeWindowsSCCPath, nodeWindowsSCCYAML); err != nil {
+				return fmt.Errorf("could not write node windows SCC YAML file; %v", err)
 			}
 		}
 	}
