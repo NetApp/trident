@@ -263,7 +263,6 @@ func (p *Plugin) CreateVolume(
 	}
 
 	if err != nil {
-		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)
 	} else {
 		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, v1.EventTypeNormal, "ProvisioningSuccess", "provisioned a volume")

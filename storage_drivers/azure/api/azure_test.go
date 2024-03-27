@@ -3,14 +3,145 @@
 package api
 
 import (
+	"context"
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/utils/errors"
 )
+
+func TestAzureError_WithoutDetails(t *testing.T) {
+	err := &AzureError{
+		AzError: struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+			Details []struct {
+				Code    string `json:"code"`
+				Message string `json:"message"`
+			} `json:"details"`
+		}{
+			Code:    "BadRequest",
+			Message: "Failed to create volume as capacity pool is too small",
+		},
+	}
+
+	result := err.Error()
+
+	assert.Equal(t, "BadRequest: Failed to create volume as capacity pool is too small", result)
+}
+
+func TestAzureError_WithDetails(t *testing.T) {
+	err := &AzureError{
+		AzError: struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+			Details []struct {
+				Code    string `json:"code"`
+				Message string `json:"message"`
+			} `json:"details"`
+		}{
+			Code:    "BadRequest",
+			Message: "Failed to create volume as capacity pool is too small",
+			Details: []struct {
+				Code    string `json:"code"`
+				Message string `json:"message"`
+			}([]struct {
+				Code    string
+				Message string
+			}{
+				{"PoolSizeTooSmall", "Failed to create volume as capacity pool is too small"},
+				{"FakeMockError", "Fake mock error"},
+			}),
+		},
+	}
+
+	result := err.Error()
+
+	assert.Equal(t, "PoolSizeTooSmall: Failed to create volume as capacity pool is too small; FakeMockError: Fake mock error", result)
+}
+
+func TestVolumePollerCache_Put_NilKey(t *testing.T) {
+	pollCache := AzurePollerResponseCache{}
+
+	err := pollCache.Put(nil, &PollerVolumeCreateResponse{})
+
+	assert.NotNil(t, err, "expected error, got nil")
+}
+
+func TestVolumePollerCache_Put(t *testing.T) {
+	key := PollerKey{
+		ID:        "mock-id",
+		Operation: Create,
+	}
+
+	pollCache := AzurePollerResponseCache{}
+
+	err := pollCache.Put(&key, &PollerVolumeCreateResponse{})
+
+	assert.Nil(t, err, "expected nil, got error")
+}
+
+func TestVolumePollerCache_Get_KeyExists(t *testing.T) {
+	key := PollerKey{
+		ID:        "mock-id",
+		Operation: Create,
+	}
+
+	pollCache := AzurePollerResponseCache{}
+	pollCache.Put(&key, &PollerVolumeCreateResponse{})
+
+	resp, ok := pollCache.Get(key)
+
+	assert.True(t, ok, "expected true, got false")
+	assert.NotNil(t, resp, "expected a value, got nil")
+}
+
+func TestVolumePollerCache_Get_KeyNotExists(t *testing.T) {
+	keyToFind := PollerKey{
+		ID:        "mock-id",
+		Operation: Create,
+	}
+
+	// Case: Empty cache
+	pollCache := AzurePollerResponseCache{}
+
+	resp, ok := pollCache.Get(keyToFind)
+
+	assert.False(t, ok, "expected false, got true")
+	assert.Nil(t, resp, "expected nil, got a value")
+
+	// Case: Key not present
+	pollCache.Put(&PollerKey{
+		ID:        "random-key",
+		Operation: Create,
+	}, &PollerVolumeCreateResponse{})
+
+	resp, ok = pollCache.Get(keyToFind)
+
+	assert.False(t, ok, "expected false, got true")
+	assert.Nil(t, resp, "expected nil, got a value")
+}
+
+func TestVolumePollerCache_Delete(t *testing.T) {
+	key := PollerKey{
+		ID:        "mock-id",
+		Operation: Create,
+	}
+
+	var value PollerResponse
+	value = &PollerVolumeCreateResponse{}
+
+	pollCache := AzurePollerResponseCache{}
+	pollCache.Put(&key, value)
+
+	pollCache.Delete(key)
+}
 
 func TestCreateVirtualNetworkID(t *testing.T) {
 	actual := CreateVirtualNetworkID("mySubscription", "myResourceGroup", "myVnet")
@@ -584,6 +715,98 @@ func TestIsANFNotFoundError_OtherError(t *testing.T) {
 	assert.False(t, result, "result should be false")
 }
 
+func TestIsANFPoolSizeTooSmallError_Nil(t *testing.T) {
+	result, err := IsANFPoolSizeTooSmallError(context.Background(), nil)
+
+	assert.False(t, result, "result should be false")
+	assert.Nil(t, err, "err should be nil")
+}
+
+func TestIsANFPoolSizeTooSmallError_PoolSizeTooSmall(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": "BadRequest",
+				"message": "Mock PoolSizeTooSmall message",
+				"details": [
+					{
+						"code": "PoolSizeTooSmall",
+						"message": "Mock PoolSizeTooSmall message"
+					}
+				]
+			}
+		}
+	`
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	result, azErr := IsANFPoolSizeTooSmallError(context.Background(), err)
+
+	var azureerr *AzureError
+	ok := errors.As(azErr, &azureerr)
+	assert.True(t, result, "result should be true")
+	assert.True(t, ok, "expected azure error, got something else")
+}
+
+func TestIsANFPoolSizeTooSmallError_SomeOtherError(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": "BadRequest",
+				"message": "Fake message",
+				"details": [
+					{
+						"code": "FakeANFError",
+						"message": "Fake message"
+					}
+				]
+			}
+		}
+	`
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	result, azErr := IsANFPoolSizeTooSmallError(context.Background(), err)
+
+	assert.False(t, result, "result should be false")
+	assert.Nil(t, azErr, "azure error should be nil")
+}
+
+func TestIsANFPoolSizeTooSmallError_InvalidJsonBody(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": "BadRequest",
+				"message": "Mock PoolSizeTooSmall message",
+				"details": [
+					{
+						"code": "PoolSizeTooSmall",
+						"message": "Mock PoolSizeTooSmall message"
+					},
+				]
+			}
+		}
+	`
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	result, _ := IsANFPoolSizeTooSmallError(context.Background(), err)
+
+	assert.False(t, result, "result should be false")
+}
+
 func TestGetCorrelationIDFromError_Nil(t *testing.T) {
 	result := GetCorrelationIDFromError(nil)
 
@@ -649,6 +872,193 @@ func TestGetCorrelationIDFromError_OtherError(t *testing.T) {
 	result := GetCorrelationIDFromError(err)
 
 	assert.Equal(t, "", result)
+}
+
+func TestGetMessageFromError_Nil(t *testing.T) {
+	result := GetMessageFromError(context.Background(), nil)
+
+	assert.Nil(t, result, "result should be nil")
+}
+
+func TestGetMessageFromError_AzureErrorWithDetails(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": "BadRequest",
+				"message": "Fake message",
+				"details": [
+					{
+						"code": "FakeANFError1",
+						"message": "Fake message1"
+					},
+					{
+						"code": "FakeANFError2",
+						"message": "Fake message2"
+					}
+				]
+			}
+		}
+	`
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	result := GetMessageFromError(context.Background(), err)
+
+	assert.Equal(t, "FakeANFError1: Fake message1; FakeANFError2: Fake message2", result.Error(), "error message not as expected")
+}
+
+func TestGetMessageFromError_NonAzureError(t *testing.T) {
+	err := errors.New("failed")
+
+	result := GetMessageFromError(context.Background(), err)
+
+	assert.Equal(t, "failed", result.Error(), "error message not as expected")
+}
+
+func TestGetMessageFromError_InvalidJsonBody(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": "BadRequest",
+				"message": "Fake message",
+				"details": [
+					{
+						"code": "FakeANFError",
+						"message": "Fake message",
+					}
+				]
+			}
+		}
+	`
+	err := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	result := GetMessageFromError(context.Background(), err)
+
+	assert.NotEqual(t, "BadRequest: Fake message; FakeANFError: Fake message", result.Error(), "error message not as expected")
+}
+
+func TestGetAzureErrorFromError_Nil(t *testing.T) {
+	err := parseAzureErrorFromInputError(context.Background(), nil)
+
+	assert.NotNil(t, err, "error is nil")
+}
+
+func TestGetAzureErrorFromError_InvalidJsonBody(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": "BadRequest",
+				"message": "Fake message",
+				"details": [
+					{
+						"code": "FakeANFError",
+						"message": "Fake message",
+					}
+				]
+			}
+		}
+	`
+	inputErr := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	err := parseAzureErrorFromInputError(context.Background(), inputErr)
+
+	assert.NotNil(t, err, "error is nil")
+}
+
+func TestGetAzureErrorFromError_UnmarshallingError(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": 1234,
+				"message": "Fake message",
+				"details": [
+					{
+						"code": "FakeANFError",
+						"message": "Fake message"
+					}
+				]
+			}
+		}
+	`
+	inputErr := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	err := parseAzureErrorFromInputError(context.Background(), inputErr)
+
+	assert.NotNil(t, err, "error is nil")
+}
+
+func TestGetAzureErrorFromError_Success(t *testing.T) {
+	body := `
+		{
+			"error": {
+				"code": "BadRequest",
+				"message": "Failed to create volume as capacity pool is too small",
+				"details": [
+					{
+						"code": "PoolSizeTooSmall",
+						"message": "Failed to create volume as capacity pool is too small"
+					}
+				]
+			}
+		}
+	`
+	inputErr := &azcore.ResponseError{
+		RawResponse: &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(strings.NewReader(body)),
+		},
+	}
+
+	expected := &AzureError{
+		AzError: struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+			Details []struct {
+				Code    string `json:"code"`
+				Message string `json:"message"`
+			} `json:"details"`
+		}{
+			Code:    "BadRequest",
+			Message: "Failed to create volume as capacity pool is too small",
+			Details: []struct {
+				Code    string `json:"code"`
+				Message string `json:"message"`
+			}([]struct {
+				Code    string
+				Message string
+			}{{"PoolSizeTooSmall", "Failed to create volume as capacity pool is too small"}}),
+		},
+	}
+
+	err := parseAzureErrorFromInputError(context.Background(), inputErr)
+
+	var azError *AzureError
+	ok := errors.As(err, &azError)
+
+	assert.True(t, ok, "error is not of type AzureError")
+	assert.Equal(t, expected.AzError.Code, azError.AzError.Code, "error code not equal")
+	assert.Equal(t, expected.AzError.Message, azError.AzError.Message, "error message not equal")
+	assert.Equal(t, expected.AzError.Details[0].Code, azError.AzError.Details[0].Code, "error details code not equal")
+	assert.Equal(t, expected.AzError.Details[0].Message, azError.AzError.Details[0].Message, "error details message not equal")
 }
 
 func TestDerefString(t *testing.T) {

@@ -20,6 +20,7 @@ import (
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
+	"go.uber.org/multierr"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	. "github.com/netapp/trident/logging"
@@ -39,6 +40,7 @@ const (
 	SDKMaxRetryDelay           = 15 * time.Second
 	CorrelationIDHeader        = "X-Ms-Correlation-Request-Id"
 	SubvolumeNameSeparator     = "-file-"
+	PoolSizeTooSmallError      = "PoolSizeTooSmall"
 )
 
 var (
@@ -48,6 +50,7 @@ var (
 	snapshotIDRegex     = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/netAppAccounts/(?P<netappAccount>[^/]+)/capacityPools/(?P<capacityPool>[^/]+)/volumes/(?P<volume>[^/]+)/snapshots/(?P<snapshot>[^/]+)$`)
 	subvolumeIDRegex    = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/netAppAccounts/(?P<netappAccount>[^/]+)/capacityPools/(?P<capacityPool>[^/]+)/volumes/(?P<volume>[^/]+)/subvolumes/(?P<subvolume>[^/]+)$`)
 	subnetIDRegex       = regexp.MustCompile(`^/subscriptions/(?P<subscriptionID>[^/]+)/resourceGroups/(?P<resourceGroup>[^/]+)/providers/(?P<provider>[^/]+)/virtualNetworks/(?P<virtualNetwork>[^/]+)/subnets/(?P<subnet>[^/]+)$`)
+	VolumePollerCache   = AzurePollerResponseCache{pollerResponseMap: make(map[PollerKey]PollerResponse)}
 )
 
 // ClientConfig holds configuration data for the API driver object.
@@ -76,15 +79,142 @@ type AzureClient struct {
 	AzureResources
 }
 
+type AzureError struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	Status    string `json:"status"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+	AzError   struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+		Details []struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"details"`
+	} `json:"error"`
+}
+
+func (e *AzureError) Error() string {
+	var errMessage error
+
+	if len(e.AzError.Details) > 0 {
+		for _, d := range e.AzError.Details {
+			errMessage = multierr.Append(
+				errMessage,
+				fmt.Errorf("%v: %v", d.Code, d.Message),
+			)
+		}
+	} else {
+		if e.AzError.Message != "" {
+			errMessage = multierr.Combine(
+				errMessage,
+				fmt.Errorf("%v: %v", e.AzError.Code, e.AzError.Message),
+			)
+		}
+	}
+
+	return errMessage.Error()
+}
+
+type Operation int64
+
+const (
+	Create Operation = iota
+	Delete
+	Update
+	Restore
+	Import
+)
+
+type PollerKey struct {
+	ID        string
+	Operation Operation
+}
+
+type PollerResponse interface {
+	Result(context.Context) error
+}
+
+type PollerResponseCache interface {
+	Put(key *PollerKey, value PollerResponse) error
+	Get(key PollerKey) (PollerResponse, bool)
+	Delete(key PollerKey)
+}
+
+type AzurePollerResponseCache struct {
+	pollerResponseMap map[PollerKey]PollerResponse
+}
+
+func (azPollerCache *AzurePollerResponseCache) Put(key *PollerKey, value PollerResponse) error {
+	if len(azPollerCache.pollerResponseMap) == 0 {
+		azPollerCache.pollerResponseMap = make(map[PollerKey]PollerResponse)
+	}
+
+	if key == nil {
+		return errors.New("failed to add to poller response cache as nil key is passed")
+	}
+
+	azPollerCache.pollerResponseMap[*key] = value
+
+	Log().Debugf("Successfully added to azure poller response cache; [key: %v, value: %v]", key, value)
+
+	return nil
+}
+
+func (azPollerCache *AzurePollerResponseCache) Get(key PollerKey) (PollerResponse, bool) {
+	Log().Debugf("Fetching from azure poller response cache; [key: %v].", key)
+
+	if len(azPollerCache.pollerResponseMap) != 0 {
+		response, ok := azPollerCache.pollerResponseMap[key]
+		return response, ok
+	}
+
+	return nil, false
+}
+
+func (azPollerCache *AzurePollerResponseCache) Delete(key PollerKey) {
+	if len(azPollerCache.pollerResponseMap) != 0 {
+		delete(azPollerCache.pollerResponseMap, key)
+	}
+
+	Log().Debugf("Successfully deleted from azure poller response cache; [key: %v].", key)
+}
+
+type PollerVolumeCreateResponse struct {
+	*runtime.Poller[netapp.VolumesClientCreateOrUpdateResponse]
+}
+
+func (p *PollerVolumeCreateResponse) Result(ctx context.Context) error {
+	if p != nil && p.Poller != nil {
+		Logc(ctx).Debug("Polling for volume create response")
+
+		var rawResponse *http.Response
+		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+
+		_, err := p.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Got error when polling for volume create result.")
+
+			if ok, azErr := IsANFPoolSizeTooSmallError(ctx, err); ok {
+				Logc(ctx).WithError(azErr).Error("Volume create failed due to low space in capacity pool.")
+				return errors.ResourceExhaustedError(azErr)
+			}
+
+			return GetMessageFromError(ctx, err)
+		}
+
+		Logc(ctx).Debug("Result received for volume create.")
+	}
+
+	return nil
+}
+
 type PollerSVCreateResponse struct {
 	*runtime.Poller[netapp.SubvolumesClientCreateResponse]
 }
 type PollerSVDeleteResponse struct {
 	*runtime.Poller[netapp.SubvolumesClientDeleteResponse]
-}
-
-type PollerResponse interface {
-	Result(context.Context) error
 }
 
 func (p *PollerSVCreateResponse) Result(ctx context.Context) error {
@@ -839,7 +969,6 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) 
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("Found volume by ID.")
-
 	return c.newFileSystemFromVolume(ctx, &response.Volume)
 }
 
@@ -859,9 +988,13 @@ func (c Client) VolumeExistsByID(ctx context.Context, id string) (bool, *FileSys
 // WaitForVolumeState watches for a desired volume state and returns when that state is achieved.
 func (c Client) WaitForVolumeState(
 	ctx context.Context, filesystem *FileSystem, desiredState string, abortStates []string,
-	maxElapsedTime time.Duration,
+	maxElapsedTime time.Duration, operation Operation,
 ) (string, error) {
 	volumeState := ""
+	pollerKey := PollerKey{
+		ID:        filesystem.CreationToken,
+		Operation: operation,
+	}
 
 	checkVolumeState := func() error {
 		f, err := c.VolumeByID(ctx, filesystem.ID)
@@ -920,12 +1053,27 @@ func (c Client) WaitForVolumeState(
 	if err := backoff.RetryNotify(checkVolumeState, stateBackoff, stateNotify); err != nil {
 		if IsTerminalStateError(err) {
 			Logc(ctx).WithError(err).Error("Volume reached terminal state.")
+
+			// If a poller object exists for this volume in the VolumePollerCache cache,
+			// then fetch error details using the poller object, and then clear the cache entry
+			if poller, ok := VolumePollerCache.Get(pollerKey); ok {
+				if pollError := poller.Result(ctx); pollError != nil {
+					Logc(ctx).WithError(pollError).Errorf("Failed to create volume: %v; poller returned an error", filesystem.CreationToken)
+					err = pollError
+				}
+
+				// Clear the cache
+				VolumePollerCache.Delete(pollerKey)
+			}
 		} else {
 			Logc(ctx).Warningf("Volume state was not %s after %3.2f seconds.",
 				desiredState, stateBackoff.MaxElapsedTime.Seconds())
 		}
 		return volumeState, err
 	}
+
+	// If desired state is reached, then clear the poller response from the cache
+	VolumePollerCache.Delete(pollerKey)
 
 	Logc(ctx).WithField("desiredState", desiredState).Debug("Desired volume state reached.")
 
@@ -1006,7 +1154,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 	var rawResponse *http.Response
 	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
 
-	_, err := c.sdkClient.VolumesClient.BeginCreateOrUpdate(responseCtx,
+	poller, err := c.sdkClient.VolumesClient.BeginCreateOrUpdate(responseCtx,
 		resourceGroup, netappAccount, cPoolName, request.Name, newVol, nil)
 
 	logFields["correlationID"] = GetCorrelationID(rawResponse)
@@ -1017,6 +1165,18 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 	}
 
 	Logc(ctx).WithFields(logFields).Info("Volume create request issued.")
+
+	// Store the poller object for this volume create request into a cache
+	pollerKey := PollerKey{
+		ID:        request.CreationToken,
+		Operation: Create,
+	}
+
+	err = VolumePollerCache.Put(&pollerKey, &PollerVolumeCreateResponse{poller})
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Failed to add poller key %v to cache.", pollerKey)
+		return nil, err
+	}
 
 	// The volume doesn't exist yet, so forge the volume ID to enable conversion to a FileSystem struct
 	newVolID := CreateVolumeID(c.config.SubscriptionID, resourceGroup, netappAccount, cPoolName, request.Name)
@@ -2087,7 +2247,7 @@ func (c Client) ValidateFilePoolVolumes(
 				volume.Location)
 		}
 
-		if volume.SubvolumesEnabled == false {
+		if !volume.SubvolumesEnabled {
 			return nil, fmt.Errorf("filePoolVolumes validation failed; volume '%s' does not support subvolumes",
 				filePoolVolumeName)
 		}
@@ -2132,6 +2292,27 @@ func IsANFTooManyRequestsError(err error) bool {
 	return false
 }
 
+// IsANFPoolSizeTooSmallError checks whether an error returned from the ANF SDK contains a PoolSizeToolSmall code
+func IsANFPoolSizeTooSmallError(ctx context.Context, inputErr error) (bool, error) {
+	if inputErr == nil {
+		return false, nil
+	}
+
+	var azError *AzureError
+	err := parseAzureErrorFromInputError(ctx, inputErr)
+	if ok := errors.As(err, &azError); ok {
+		if len(azError.AzError.Details) > 0 {
+			for _, d := range azError.AzError.Details {
+				if d.Code == PoolSizeTooSmallError {
+					return true, azError
+				}
+			}
+		}
+	}
+
+	return false, nil
+}
+
 // GetCorrelationIDFromError accepts an error returned from the ANF SDK and extracts the correlation
 // header, if present.
 func GetCorrelationIDFromError(err error) (id string) {
@@ -2160,44 +2341,64 @@ func GetCorrelationID(response *http.Response) (id string) {
 	return
 }
 
-// GetMessageFromError accepts an error returned from the ANF SDK and extracts
-// the error message.
+// GetMessageFromError accepts an error returned from the ANF SDK and returns an appropriate error message.
 func GetMessageFromError(ctx context.Context, inputErr error) error {
-	type AzureError struct {
-		Error struct {
-			Code    string `json:"code"`
-			Message string `json:"message"`
-		} `json:"error"`
-	}
-
+	// If input error is nil, return as is
 	if inputErr == nil {
 		return inputErr
 	}
 
-	if detailedErr, ok := inputErr.(*azcore.ResponseError); ok {
-		if detailedErr.RawResponse != nil && detailedErr.RawResponse.Body != nil {
-			bytes, readErr := io.ReadAll(detailedErr.RawResponse.Body)
-			if readErr != nil {
-				Logc(ctx).WithError(readErr).Error("Failed to read error body.")
-				return inputErr
-			}
-
-			var azureError AzureError
-			unmarshalErr := json.Unmarshal(bytes, &azureError)
-			if unmarshalErr != nil {
-				Logc(ctx).WithError(unmarshalErr).Error("Unmarshal error.")
-			} else {
-				errCode := azureError.Error.Code
-				errMessage := azureError.Error.Message
-
-				if errMessage != "" {
-					return fmt.Errorf("%v: %v", errCode, errMessage)
-				}
-			}
-		}
+	// Parse AzureError from input error. If not successful, then return input error as is
+	var azError *AzureError
+	err := parseAzureErrorFromInputError(ctx, inputErr)
+	if ok := errors.As(err, &azError); !ok {
+		Logc(ctx).WithError(err).Error("Failed to get azure error from error.")
+		return inputErr
 	}
 
-	return inputErr
+	return azError
+}
+
+// parseAzureErrorFromInputError accepts an error returned from the ANF SDK and extracts the AzureError
+func parseAzureErrorFromInputError(ctx context.Context, inputErr error) error {
+	if inputErr == nil {
+		return fmt.Errorf("no input error passed")
+	}
+
+	fields := LogFields{
+		"Method":     "getAzureErrorFromError",
+		"inputError": inputErr.Error(),
+	}
+	Logc(ctx).WithFields(fields).Trace(">>>> getAzureErrorFromError")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< getAzureErrorFromError")
+
+	detailedErr, ok := inputErr.(*azcore.ResponseError)
+	if !ok {
+		Logc(ctx).WithError(inputErr).Debug("Input error is not an azure error.")
+		return fmt.Errorf("input error is not an azure error: %w", inputErr)
+	}
+
+	if detailedErr.RawResponse != nil && detailedErr.RawResponse.Body != nil {
+		defer detailedErr.RawResponse.Body.Close()
+
+		bytes, readErr := io.ReadAll(detailedErr.RawResponse.Body)
+		if readErr != nil {
+			Logc(ctx).WithError(readErr).Error("Failed to read error body.")
+			return fmt.Errorf("failed to read error body: %w", readErr)
+		}
+
+		var azureError AzureError
+		unmarshalErr := json.Unmarshal(bytes, &azureError)
+		if unmarshalErr != nil {
+			Logc(ctx).WithError(unmarshalErr).Error("Failed to unmarshal azure error.")
+			return fmt.Errorf("failed to unmarshal azure error: %w", unmarshalErr)
+		}
+
+		Logc(ctx).Debug("Successfully unmarshalled AzureError from input error.")
+		return &azureError
+	}
+
+	return fmt.Errorf("azure response or body is nil: %w", inputErr)
 }
 
 // DerefString accepts a string pointer and returns the value of the string, or "" if the pointer is nil.

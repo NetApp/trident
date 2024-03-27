@@ -1013,7 +1013,7 @@ func (d *NASStorageDriver) Create(
 		volConfig.InternalID = volume.ID
 
 		// Wait for creation to complete so that the mount targets are available
-		return d.waitForVolumeCreate(ctx, volume)
+		return d.waitForVolumeCreate(ctx, volume, api.Create)
 	}
 
 	return createErrors
@@ -1215,7 +1215,7 @@ func (d *NASStorageDriver) CreateClone(
 	cloneVolConfig.InternalID = clone.ID
 
 	// Wait for creation to complete so that the mount targets are available
-	return d.waitForVolumeCreate(ctx, clone)
+	return d.waitForVolumeCreate(ctx, clone, api.Create)
 }
 
 // Import finds an existing volume and makes it available for containers.  If ImportNotManaged is false, the
@@ -1359,7 +1359,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 
 		if _, err = d.SDK.WaitForVolumeState(
-			ctx, volume, api.StateAvailable, []string{api.StateError}, d.defaultTimeout()); err != nil {
+			ctx, volume, api.StateAvailable, []string{api.StateError}, d.defaultTimeout(), api.Import); err != nil {
 			return fmt.Errorf("could not import volume %s; %v", originalName, err)
 		}
 	}
@@ -1416,9 +1416,9 @@ func (d *NASStorageDriver) updateTelemetryLabels(ctx context.Context, volume *ap
 // waitForVolumeCreate waits for volume creation to complete by reaching the Available state.  If the
 // volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
-func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.FileSystem) error {
+func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.FileSystem, operation api.Operation) error {
 	state, err := d.SDK.WaitForVolumeState(
-		ctx, volume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout)
+		ctx, volume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout, operation)
 	if err != nil {
 
 		logFields := LogFields{"volume": volume.CreationToken}
@@ -1432,7 +1432,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 		case api.StateDeleting:
 			// Wait for deletion to complete
 			_, errDelete := d.SDK.WaitForVolumeState(
-				ctx, volume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout())
+				ctx, volume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), operation)
 			if errDelete != nil {
 				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
 					"Volume could not be cleaned up and must be manually deleted.")
@@ -1447,6 +1447,9 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 			} else {
 				Logc(ctx).WithField("volume", volume.Name).Info("Volume deleted.")
 			}
+
+			Logc(ctx).WithFields(logFields).Debugf("Volume is in %s state.", state)
+			return err
 
 		case api.StateMoving, api.StateReverting:
 			fallthrough
@@ -1487,7 +1490,7 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	} else if extantVolume.ProvisioningState == api.StateDeleting {
 		// This is a retry, so give it more time before giving up again.
 		_, err = d.SDK.WaitForVolumeState(
-			ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.volumeCreateTimeout)
+			ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.volumeCreateTimeout, api.Delete)
 		return err
 	}
 
@@ -1499,7 +1502,7 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	Logc(ctx).WithField("volume", extantVolume.Name).Info("Volume deleted.")
 
 	// Wait for deletion to complete
-	_, err = d.SDK.WaitForVolumeState(ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout())
+	_, err = d.SDK.WaitForVolumeState(ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), api.Delete)
 	return err
 }
 
@@ -1789,7 +1792,7 @@ func (d *NASStorageDriver) RestoreSnapshot(
 
 	// Wait for snapshot deletion to complete
 	_, err = d.SDK.WaitForVolumeState(ctx, volume, api.StateAvailable,
-		[]string{api.StateError, api.StateDeleting, api.StateDeleted}, api.DefaultSDKTimeout,
+		[]string{api.StateError, api.StateDeleting, api.StateDeleted}, api.DefaultSDKTimeout, api.Restore,
 	)
 	return err
 }

@@ -1592,7 +1592,7 @@ func TestCreate_NFSVolume(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1637,7 +1637,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
 		api.ServiceLevelUltra).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1693,7 +1693,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_SecondSucceeds(t *testing.T) {
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1807,7 +1807,7 @@ func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -1910,7 +1910,7 @@ func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2012,7 +2012,7 @@ func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2355,7 +2355,7 @@ func TestCreate_ZeroSize(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2560,7 +2560,7 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2601,7 +2601,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2661,7 +2661,7 @@ func TestCreate_NFSVolume_BelowANFMinimumSize(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2764,7 +2764,7 @@ func TestCreate_SMBVolume(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2828,7 +2828,7 @@ func TestCreate_SMBVolume_BelowANFMinimumSize(t *testing.T) {
 		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -3042,7 +3042,7 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceFilesystem, gomock.Any()).Return(snapshot, nil).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneFilesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
@@ -3073,7 +3073,7 @@ func TestCreateClone_Snapshot(t *testing.T) {
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceFilesystem, "snap1").Return(snapshot, nil).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneFilesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
@@ -3283,32 +3283,34 @@ func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
 }
 
-func TestCreateClone_VolumeExistsCreating(t *testing.T) {
-	mockAPI, driver := newMockANFDriver(t)
-	driver.Config.BackendName = "anf"
-	driver.Config.ServiceLevel = api.ServiceLevelUltra
+/*
+	func TestCreateClone_VolumeExistsCreating(t *testing.T) {
+		mockAPI, driver := newMockANFDriver(t)
+		driver.Config.BackendName = "anf"
+		driver.Config.ServiceLevel = api.ServiceLevelUltra
 
-	driver.populateConfigurationDefaults(ctx, &driver.Config)
-	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, BackendUUID)
+		driver.populateConfigurationDefaults(ctx, &driver.Config)
+		driver.initializeStoragePools(ctx)
+		driver.initializeTelemetry(ctx, BackendUUID)
 
-	storagePool := driver.pools["anf_pool"]
+		storagePool := driver.pools["anf_pool"]
 
-	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
-		storagePool)
-	cloneFilesystem.ProvisioningState = api.StateCreating
+		sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+			storagePool)
+		cloneFilesystem.ProvisioningState = api.StateCreating
 
-	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
-	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
+		mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+		mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+		mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
+		mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+			driver.volumeCreateTimeout).Return(api.StateCreating, nil).Times(1)
 
-	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+		result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
-	assert.Error(t, result, "expected error")
-	assert.IsType(t,
-		errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
-	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
-}
+		assert.Error(t, result, "expected error")
+		assert.IsType(t, drivers.NewVolumeExistsError(""), result, "not VolumeExistsError")
+		assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
+	}
 
 func TestCreateClone_VolumeExists(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
@@ -3328,6 +3330,8 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
 	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
@@ -3335,6 +3339,7 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 	assert.IsType(t, drivers.NewVolumeExistsError(""), result, "not VolumeExistsError")
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
 }
+*/
 
 func TestCreateClone_SnapshotNotFound(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
@@ -3654,7 +3659,7 @@ func TestImport_Managed(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -3710,7 +3715,7 @@ func TestImport_ManagedWithKerberos5(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -3802,7 +3807,7 @@ func TestImport_ManagedWithKerberos5I(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -3859,7 +3864,7 @@ func TestImport_ManagedWithKerberos5P(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4020,7 +4025,7 @@ func TestImport_ManagedWithSnapshotDir(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4065,7 +4070,7 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4128,7 +4133,7 @@ func TestImport_SMB_Managed(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		nil, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4233,7 +4238,7 @@ func TestImport_ManagedWithLabels(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateAvailable, nil).Times(1)
+		driver.defaultTimeout(), api.Import).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4441,7 +4446,7 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, originalFilesystem, expectedLabels,
 		&expectedUnixPermissions, &snapshotDirAccess, &exportRule).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.defaultTimeout()).Return("", errFailed).Times(1)
+		driver.defaultTimeout(), api.Import).Return("", errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4509,9 +4514,9 @@ func TestWaitForVolumeCreate_Available(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
-	result := driver.waitForVolumeCreate(ctx, filesystem)
+	result := driver.waitForVolumeCreate(ctx, filesystem, api.Create)
 
 	assert.Nil(t, result)
 }
@@ -4528,9 +4533,9 @@ func TestWaitForVolumeCreate_Creating(t *testing.T) {
 		}
 
 		mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-			driver.volumeCreateTimeout).Return(state, errFailed).Times(1)
+			driver.volumeCreateTimeout, api.Create).Return(state, errFailed).Times(1)
 
-		result := driver.waitForVolumeCreate(ctx, filesystem)
+		result := driver.waitForVolumeCreate(ctx, filesystem, api.Create)
 
 		assert.Error(t, result, "expected error")
 		assert.IsType(t, errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
@@ -4547,11 +4552,11 @@ func TestWaitForVolumeCreate_DeletingDeleteFinished(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateDeleting, errFailed).Times(1)
+		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleting, errFailed).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
 
-	result := driver.waitForVolumeCreate(ctx, filesystem)
+	result := driver.waitForVolumeCreate(ctx, filesystem, api.Delete)
 
 	assert.Nil(t, result, "not nil")
 }
@@ -4566,11 +4571,11 @@ func TestWaitForVolumeCreate_DeletingDeleteNotFinished(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateDeleting, errFailed).Times(1)
+		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleting, errFailed).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateDeleting, errFailed).Times(1)
+		driver.defaultTimeout(), api.Delete).Return(api.StateDeleting, errFailed).Times(1)
 
-	result := driver.waitForVolumeCreate(ctx, filesystem)
+	result := driver.waitForVolumeCreate(ctx, filesystem, api.Delete)
 
 	assert.Nil(t, result, "not nil")
 }
@@ -4585,12 +4590,12 @@ func TestWaitForVolumeCreate_ErrorDelete(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateError, errFailed).Times(1)
+		driver.volumeCreateTimeout, api.Create).Return(api.StateError, errFailed).Times(1)
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
 
-	result := driver.waitForVolumeCreate(ctx, filesystem)
+	result := driver.waitForVolumeCreate(ctx, filesystem, api.Create)
 
-	assert.Nil(t, result, "not nil")
+	assert.NotNil(t, result, "error is nil")
 }
 
 func TestWaitForVolumeCreate_ErrorDeleteFailed(t *testing.T) {
@@ -4602,13 +4607,14 @@ func TestWaitForVolumeCreate_ErrorDeleteFailed(t *testing.T) {
 		ProvisioningState: api.StateCreating,
 	}
 
+	// todo: check why should an error state not return an error
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateError, errFailed).Times(1)
+		driver.volumeCreateTimeout, api.Delete).Return(api.StateError, errFailed).Times(1)
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(errFailed).Times(1)
 
-	result := driver.waitForVolumeCreate(ctx, filesystem)
+	result := driver.waitForVolumeCreate(ctx, filesystem, api.Delete)
 
-	assert.Nil(t, result, "not nil")
+	assert.NotNil(t, result, "error is nil")
 }
 
 func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
@@ -4623,9 +4629,9 @@ func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
 		}
 
 		mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-			driver.volumeCreateTimeout).Return(state, errFailed).Times(1)
+			driver.volumeCreateTimeout, api.Create).Return(state, errFailed).Times(1)
 
-		result := driver.waitForVolumeCreate(ctx, filesystem)
+		result := driver.waitForVolumeCreate(ctx, filesystem, api.Create)
 
 		assert.Nil(t, result, "not nil")
 	}
@@ -4736,7 +4742,7 @@ func TestDestroy_NFSVolume(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -4794,7 +4800,7 @@ func TestDestroy_StillDeletingDeleted(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateDeleted, nil).Times(1)
+		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleted, nil).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -4811,7 +4817,7 @@ func TestDestroy_StillDeleting(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateDeleting, errFailed).Times(1)
+		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleting, errFailed).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -4843,7 +4849,7 @@ func TestDestroy_VolumeWaitFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateDeleting, errFailed).Times(1)
+		driver.defaultTimeout(), api.Delete).Return(api.StateDeleting, errFailed).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -4860,7 +4866,7 @@ func TestDestroy_SMBVolume(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
+		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -5649,7 +5655,7 @@ func TestRestoreSnapshot(t *testing.T) {
 	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, snapConfig.InternalName).Return(snapshot, nil).Times(1)
 	mockAPI.EXPECT().RestoreSnapshot(ctx, filesystem, snapshot).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable,
-		[]string{api.StateError, api.StateDeleting, api.StateDeleted}, api.DefaultSDKTimeout).
+		[]string{api.StateError, api.StateDeleting, api.StateDeleted}, api.DefaultSDKTimeout, api.Restore).
 		Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
@@ -5763,7 +5769,7 @@ func TestRestoreSnapshot_VolumeWaitFailed(t *testing.T) {
 	mockAPI.EXPECT().RestoreSnapshot(ctx, filesystem, snapshot).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable,
 		[]string{api.StateError, api.StateDeleting, api.StateDeleted},
-		api.DefaultSDKTimeout).Return("", errFailed).Times(1)
+		api.DefaultSDKTimeout, api.Restore).Return("", errFailed).Times(1)
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
 

@@ -2084,7 +2084,7 @@ func TestSubvolumeWaitForSubvolumeCreate_Creating(t *testing.T) {
 		mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateAvailable, []string{api.StateError},
 			driver.volumeCreateTimeout).Return(state, errFailed).Times(1)
 
-		result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, Create, true)
+		result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, api.Create, true)
 		assert.Error(t, result, "subvolume creation is complete")
 	}
 }
@@ -2104,7 +2104,7 @@ func TestSubvolumeWaitForSubvolumeCreate_DeletingNotCompleted(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, nil).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, Create, true)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, api.Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -2123,7 +2123,7 @@ func TestSubvolumeWaitForSubvolumeCreate_DeletingCompleted(t *testing.T) {
 	mockAPI.EXPECT().WaitForSubvolumeState(ctx, subVolume, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout()).Return(api.StateDeleted, errFailed).Times(1)
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, Create, true)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, nil, api.Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -2143,7 +2143,7 @@ func TestSubvolumeWaitForSubvolumeCreate_ErrorDelete(t *testing.T) {
 
 	poller := api.PollerSVCreateResponse{}
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, Create, true)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, api.Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -2163,7 +2163,7 @@ func TestSubvolumeWaitForSubvolumeCreate_ErrorDeleteFailed(t *testing.T) {
 
 	poller := api.PollerSVCreateResponse{}
 
-	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, Create, true)
+	result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, api.Create, true)
 	assert.Nil(t, result, "subvolume creation is complete")
 }
 
@@ -2182,7 +2182,7 @@ func TestSubvolumeWaitForSubvolumeCreate_OtherStates(t *testing.T) {
 
 		poller := api.PollerSVCreateResponse{}
 
-		result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, Create, true)
+		result := driver.waitForSubvolumeCreate(ctx, subVolume, &poller, api.Create, true)
 		assert.Nil(t, result, "subvolume creation is complete")
 	}
 }

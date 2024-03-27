@@ -42,23 +42,7 @@ var (
 	subvolumeNameRegex          = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,39}$`)
 	subvolumeSnapshotNameRegex  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,44}$`)
 	subvolumeCreationTokenRegex = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]{0,63}$`)
-
-	pollerResponseCache = make(map[PollerKey]api.PollerResponse)
 )
-
-type Operation int64
-
-const (
-	Create Operation = iota
-	Delete
-	Update
-	Restore
-)
-
-type PollerKey struct {
-	ID        string
-	Operation Operation
-}
 
 // key is subvolume ID and value can be snapshot ID or empty
 var subvolumesToDelete map[string]string
@@ -719,12 +703,12 @@ func (d *NASBlockStorageDriver) Create(
 		}).Warning("Subvolume already exists.")
 
 		// Get the reference object
-		pollerKey := PollerKey{
+		pollerKey := api.PollerKey{
 			ID:        extantSubvolume.Name,
-			Operation: Create,
+			Operation: api.Create,
 		}
 
-		poller := pollerResponseCache[pollerKey]
+		poller, _ := api.VolumePollerCache.Get(pollerKey)
 
 		// Wait for creation to complete
 		if err = d.waitForSubvolumeCreate(ctx, extantSubvolume, poller, pollerKey.Operation, true); err != nil {
@@ -789,12 +773,16 @@ func (d *NASBlockStorageDriver) Create(
 	volConfig.InternalID = subvolume.ID
 
 	// Save the Poller's reference for later uses (if needed)
-	pollerKey := PollerKey{
+	pollerKey := api.PollerKey{
 		ID:        subvolume.Name,
-		Operation: Create,
+		Operation: api.Create,
 	}
 
-	pollerResponseCache[pollerKey] = poller
+	err = api.VolumePollerCache.Put(&pollerKey, poller)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Failed to add poller key %v to cache.", pollerKey)
+		return err
+	}
 
 	// Wait for creation to complete
 	return d.waitForSubvolumeCreate(ctx, subvolume, poller, pollerKey.Operation, true)
@@ -866,12 +854,12 @@ func (d *NASBlockStorageDriver) CreateClone(
 		}).Warning("Subvolume already exists.")
 
 		// Get the reference object
-		pollerKey := PollerKey{
+		pollerKey := api.PollerKey{
 			ID:        extantSubvolume.Name,
-			Operation: Create,
+			Operation: api.Create,
 		}
 
-		poller := pollerResponseCache[pollerKey]
+		poller, _ := api.VolumePollerCache.Get(pollerKey)
 
 		// Wait for creation to complete
 		if err = d.waitForSubvolumeCreate(ctx, extantSubvolume, poller, pollerKey.Operation, true); err != nil {
@@ -908,12 +896,17 @@ func (d *NASBlockStorageDriver) CreateClone(
 	volConfig.InternalID = subvolume.ID
 
 	// Save the Poller's reference for later uses (if needed)
-	pollerKey := PollerKey{
+	pollerKey := api.PollerKey{
 		ID:        subvolume.Name,
-		Operation: Create,
+		Operation: api.Create,
 	}
 
-	pollerResponseCache[pollerKey] = poller
+	err = api.VolumePollerCache.Put(&pollerKey, poller)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Failed to add poller key %v to cache.", pollerKey)
+
+		return err
+	}
 
 	// Wait for creation to complete
 	return d.waitForSubvolumeCreate(ctx, subvolume, poller, pollerKey.Operation, true)
@@ -985,7 +978,7 @@ func (d *NASBlockStorageDriver) Rename(ctx context.Context, name, newName string
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
 func (d *NASBlockStorageDriver) waitForSubvolumeCreate(
 	ctx context.Context, subvolume *api.Subvolume,
-	poller api.PollerResponse, operation Operation, handleErrorInFollowup bool,
+	poller api.PollerResponse, operation api.Operation, handleErrorInFollowup bool,
 ) error {
 	var pollForError bool
 
@@ -1033,12 +1026,12 @@ func (d *NASBlockStorageDriver) waitForSubvolumeCreate(
 
 	// If here, it means volume might be successful, or in deleting, error, moving or unexpected state,
 	// and not in creating state, so it should be safe to remove it from futures cache
-	pollerKey := PollerKey{
+	pollerKey := api.PollerKey{
 		ID:        subvolume.Name,
 		Operation: operation,
 	}
 
-	delete(pollerResponseCache, pollerKey)
+	api.VolumePollerCache.Delete(pollerKey)
 
 	if pollForError && poller != nil {
 		if err != nil && state == api.StateError {
@@ -1388,12 +1381,16 @@ func (d *NASBlockStorageDriver) CreateSnapshot(
 	createdAt := time.Now()
 
 	// Save the Poller's reference for later uses (if needed)
-	pollerKey := PollerKey{
+	pollerKey := api.PollerKey{
 		ID:        subvolume.Name,
-		Operation: Create,
+		Operation: api.Create,
 	}
 
-	pollerResponseCache[pollerKey] = poller
+	err = api.VolumePollerCache.Put(&pollerKey, poller)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Failed to add poller key %v to cache.", pollerKey)
+		return nil, err
+	}
 
 	if err = d.waitForSubvolumeCreate(ctx, subvolume, poller, pollerKey.Operation, false); err != nil {
 		return nil, err
@@ -1467,14 +1464,14 @@ func (d *NASBlockStorageDriver) RestoreSnapshot(
 	}
 
 	// Check if subvolume restore already in progress
-	pollerKey := PollerKey{
+	pollerKey := api.PollerKey{
 		ID:        internalVolName,
-		Operation: Restore,
+		Operation: api.Restore,
 	}
 
-	poller, ok := pollerResponseCache[pollerKey]
+	poller, _ := api.VolumePollerCache.Get(pollerKey)
 
-	if !ok {
+	if poller == nil {
 		// Create name of the volume where this `-og` subvolume will live
 		filePoolVolume := api.CreateVolumeFullName(resourceGroup, netappAccount, cPoolName, volumeName)
 
@@ -1509,12 +1506,16 @@ func (d *NASBlockStorageDriver) RestoreSnapshot(
 		}
 
 		// Save the Poller's reference for later uses (if needed)
-		pollerKey = PollerKey{
+		pollerKey = api.PollerKey{
 			ID:        tempSubvolume.Name,
-			Operation: Create,
+			Operation: api.Create,
 		}
 
-		pollerResponseCache[pollerKey] = poller
+		err = api.VolumePollerCache.Put(&pollerKey, poller)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Failed to add poller key %v to cache.", pollerKey)
+			return err
+		}
 
 		if err = d.waitForSubvolumeCreate(ctx, tempSubvolume, poller, pollerKey.Operation, false); err != nil {
 			if errors.IsVolumeCreatingError(err) {
@@ -1564,12 +1565,16 @@ func (d *NASBlockStorageDriver) RestoreSnapshot(
 		}
 
 		// Save the Poller's reference for later uses (if needed)
-		pollerKey = PollerKey{
+		pollerKey = api.PollerKey{
 			ID:        subvolume.Name,
-			Operation: Restore,
+			Operation: api.Restore,
 		}
 
-		pollerResponseCache[pollerKey] = poller
+		err = api.VolumePollerCache.Put(&pollerKey, poller)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Failed to add poller key %v to cache.", pollerKey)
+			return err
+		}
 	}
 
 	// Create Subvolume Object

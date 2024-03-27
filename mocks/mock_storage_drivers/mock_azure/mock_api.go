@@ -661,16 +661,16 @@ func (mr *MockAzureMockRecorder) WaitForSubvolumeState(arg0, arg1, arg2, arg3, a
 }
 
 // WaitForVolumeState mocks base method.
-func (m *MockAzure) WaitForVolumeState(arg0 context.Context, arg1 *api.FileSystem, arg2 string, arg3 []string, arg4 time.Duration) (string, error) {
+func (m *MockAzure) WaitForVolumeState(arg0 context.Context, arg1 *api.FileSystem, arg2 string, arg3 []string, arg4 time.Duration, arg5 api.Operation) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForVolumeState", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "WaitForVolumeState", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WaitForVolumeState indicates an expected call of WaitForVolumeState.
-func (mr *MockAzureMockRecorder) WaitForVolumeState(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockAzureMockRecorder) WaitForVolumeState(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForVolumeState", reflect.TypeOf((*MockAzure)(nil).WaitForVolumeState), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForVolumeState", reflect.TypeOf((*MockAzure)(nil).WaitForVolumeState), arg0, arg1, arg2, arg3, arg4, arg5)
 }
