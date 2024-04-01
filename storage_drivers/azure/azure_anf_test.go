@@ -1018,17 +1018,17 @@ func TestPopulateConfigurationDefaults_SnapshotDir(t *testing.T) {
 		inputSnapshotDir    string
 		expectedSnapshotDir string
 	}{
-		{"Default snapshotDir with no nfsMountOption", "", "", "false"},
+		{"Default snapshotDir with no nfsMountOption", "", "", ""},
 
-		{"Default snapshotDir with nfsMountOption as NFSv3", "nfsvers=3", "", "false"},
+		{"Default snapshotDir with nfsMountOption as NFSv3", "nfsvers=3", "", ""},
 		{"Explicit snapshotDir with nfsMountOption as NFSv3", "nfsvers=3", "TRUE", "true"},
 		{"Invalid snapshotDir with nfsMountOption as NFSv3", "nfsvers=3", "TrUe", "TrUe"},
 
-		{"Default snapshotDir with nfsMountOption as NFSv4", "nfsvers=4", "", "true"},
+		{"Default snapshotDir with nfsMountOption as NFSv4", "nfsvers=4", "", ""},
 		{"Explicit snapshotDir with nfsMountOption as NFSv4", "nfsvers=4", "FALSE", "false"},
 		{"Invalid snapshotDir with nfsMountOption as NFSv4", "nfsvers=4", "TrUe", "TrUe"},
 
-		{"Default snapshotDir with nfsMountOption as NFSv4.1", "nfsvers=4.1", "", "true"},
+		{"Default snapshotDir with nfsMountOption as NFSv4.1", "nfsvers=4.1", "", ""},
 		{"Explicit snapshotDir with nfsMountOption as NFSv4.1", "nfsvers=4.1", "FALSE", "false"},
 		{"Invalid snapshotDir with nfsMountOption as NFSv4", "nfsvers=4.1", "TrUe", "TrUe"},
 	}
@@ -2428,6 +2428,7 @@ func TestCreate_InvalidSnapshotDir(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2586,12 +2587,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 	createRequest.ProtocolTypes = []string{api.ProtocolTypeNFSv41}
 	createRequest.ExportPolicy.Rules[0].Nfsv3 = false
 	createRequest.ExportPolicy.Rules[0].Nfsv41 = true
-	// Note: snapshotDir should ideally be true by default for NFSv4 volume
-	// if no specific value is provided in backed config or volume config. But, in this case backend config assumes mountOption
-	// is NFSv3 (default mount options) and sets default snapshotDir to false;
-	// which subsequently gets set in createRequest as no value for snapshotDir is provided in volConfig
-	// However, this case won't occur in real world use case as currently there is no way to provide MountOption at volConfig level.
-	createRequest.SnapshotDirectory = false
+	createRequest.SnapshotDirectory = true
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
@@ -2607,7 +2603,512 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
-	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
+}
+
+// TestCreate_NFSVolume_WithSnapDirMountOptionCombinations tests expected snapshotDir and mountOption values
+// based on various combinations for input snapshotDir values and mount options
+func TestCreate_NFSVolume_WithSnapDirMountOptionCombinations(t *testing.T) {
+	/*
+		Each test provides input SnapshotDir + MountOption combinations; mock request objects parameters and expected snapshotDir and mountOption value
+		Each test is to test different combinations for snapshotDir, mountOptions at various places: backend config, storage class and volume config
+		Note: SnapshotDir is currently only supported to be given at backend level and volume config level and not storage class.
+		Note: MountOption is currently only supported to be given at backend and at storage class level and not volume config level.
+
+		Below are the cases.
+		- : means no explicit value given; NA - means currently it is not supported to be given at that level
+		Preference of value pickup is: volConfig >  storageClass > backend
+		NFSv4 and NFSv4.1 should behave the same
+		Output expected: default mountOption = NFSv3
+						 default snapDir for NFSv3     = false; if no explicit value is provided
+						 default snapDir for NFSv4/4.1 = true; if no explicit value is provided
+
+
+		// No explicit option provided
+
+		| Case   1   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  -       |      NA      |   -      | false    |
+		|MountOption |  -       |      -       |   NA     | nfsv3    |
+		|----------- |----------|--------------|----------|----------|
+
+		// Explicit snapDir option at various levels
+
+		| Case   2   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  -       |     NA       |  true    | true     |
+		|MountOption |  -       |      -       |   NA     | nfsv3    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   3   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  -       |     NA       |  false   | false    |
+		|MountOption |  -       |      -       |   NA     | nfsv3    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   4   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  true    |     NA       |   -      | true     |
+		|MountOption |  -       |      -       |   NA     | nfsv3    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   5   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  false   |     NA       |   -      | false    |
+		|MountOption |  -       |      -       |   NA     | nfsv3    |
+		|----------- |----------|--------------|----------|----------|
+
+
+		// Mount option in Backend Config with different snapDir values
+
+		| Case   6   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  -       |      NA      |   -      | true     |
+		|MountOption |nfsvers=4 |      -       |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   7   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  true    |      NA      |   -      | true     |
+		|MountOption |nfsvers=4 |      -       |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   8   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  false   |      NA      |   -      | false    |
+		|MountOption |nfsvers=4 |      -       |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+
+		// Mount option in Storage Class with different snapDir values
+
+		| Case   9   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  -       |      NA      |   -      | true     |
+		|MountOption |  -       |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   10  | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  -       |      NA      |   false  | false    |
+		|MountOption |  -       |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   11  | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  false   |      NA      |   -      | false    |
+		|MountOption |  -       |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   12  | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  true    |      NA      |   false  | false    |
+		|MountOption |  -       |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+
+		// Mount option in both Backend Config and Storage Class with different snapDir values
+
+		| Case   13  | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     |  -       |      NA      |   -      | true     |
+		|MountOption |nfsvers=3 |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   14  | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     | false    |      NA      |   -      | false    |
+		|MountOption |nfsvers=3 |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case   15  | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     | true     |      NA      |   -      | true     |
+		|MountOption |nfsvers=3 |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case  16   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     | -        |      NA      |  false   | false    |
+		|MountOption |nfsvers=3 |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case  17   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     | -        |      NA      |   true   | true     |
+		|MountOption |nfsvers=3 |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+
+		// All possible options given
+
+		| Case   18  | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     | true     |      NA      |  false   | false    |
+		|MountOption |nfsvers=3 |   nfsvers=4  |   NA     | nfsv4    |
+		|----------- |----------|--------------|----------|----------|
+
+		| Case  19   | Backend  | StorageClass | VolConfig| Output
+		|----------- |----------|--------------|----------|----------|
+		|SnapDir     | false    |      NA      |   true   | true     |
+		|MountOption |nfsvers=4 |   nfsvers=3  |   NA     | nfsv3    |
+		|----------- |----------|--------------|----------|----------|
+
+	*/
+
+	tests := []struct {
+		name                          string
+		snapDirInBackend              string
+		snapDirInVolConfig            string
+		mountOptInBackend             string
+		mountOptInPhyisicalPool       string
+		mockRequestSnapshotDir        bool
+		mockRequestProtocols          []string
+		mockRequestExportPolicyNfsv3  bool
+		mockRequestExportPolicyNfsv41 bool
+		mockResponseSnapshotDir       bool
+		mockResponseProtocols         []string
+		expectedSnapshotDir           bool
+		expectedProtocols             []string
+	}{
+		{
+			name:                          "1. No explicit values provided for either SnapshotDir or MountOption",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv3},
+			mockRequestExportPolicyNfsv3:  true,
+			mockRequestExportPolicyNfsv41: false,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv3},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv3},
+		},
+		{
+			name:                          "2. SnapshotDir = true in VolConfig",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "true",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv3},
+			mockRequestExportPolicyNfsv3:  true,
+			mockRequestExportPolicyNfsv41: false,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv3},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv3},
+		},
+		{
+			name:                          "3. SnapshotDir = false in VolConfig",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "false",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv3},
+			mockRequestExportPolicyNfsv3:  true,
+			mockRequestExportPolicyNfsv41: false,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv3},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv3},
+		},
+
+		{
+			name:                          "4. SnapshotDir = true in Backend",
+			snapDirInBackend:              "true",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv3},
+			mockRequestExportPolicyNfsv3:  true,
+			mockRequestExportPolicyNfsv41: false,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv3},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv3},
+		},
+		{
+			name:                          "5. SnapshotDir = false in Backend",
+			snapDirInBackend:              "false",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv3},
+			mockRequestExportPolicyNfsv3:  true,
+			mockRequestExportPolicyNfsv41: false,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv3},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv3},
+		},
+		{
+			name:                          "6. MountOption = nfsv4 in Backend + SnapshotDir = nil in Backend",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "nfsvers=4.1",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "7. MountOption = nfsv4 in Backend + SnapshotDir = true in Backend",
+			snapDirInBackend:              "true",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "nfsvers=4.1",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "8. MountOption = nfsv4 in Backend + SnapshotDir = false in Backend",
+			snapDirInBackend:              "false",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "nfsvers=4.1",
+			mountOptInPhyisicalPool:       "",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "9. MountOption = nfsv4 in Storage Class + SnapshotDir = nil everywhere",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "10. MountOption = nfsv4 in Storage Class + SnapshotDir = false in VolConfig",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "false",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "11. MountOption = nfsv4 in Storage Class + SnapshotDir = false in Backend",
+			snapDirInBackend:              "false",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "12. MountOption = nfsv4 in Storage Class + SnapshotDir = true in Backend, false in VolConfig",
+			snapDirInBackend:              "true",
+			snapDirInVolConfig:            "false",
+			mountOptInBackend:             "",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "13. MountOption = nfsv3 in Backend and nfsv4 in Storage Class + SnapshotDir = nil",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "nfsvers=3",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "14. MountOption = nfsv3 in Backend and nfsv4 in Storage Class + SnapshotDir = false in Backend",
+			snapDirInBackend:              "false",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "nfsvers=3",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "15. MountOption = nfsv3 in Backend and nfsv4 in Storage Class + SnapshotDir = true in Backend",
+			snapDirInBackend:              "true",
+			snapDirInVolConfig:            "",
+			mountOptInBackend:             "nfsvers=3",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "16. MountOption = nfsv3 in Backend and nfsv4 in Storage Class + SnapshotDir = false in VolConfig",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "false",
+			mountOptInBackend:             "nfsvers=3",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "17. MountOption = nfsv3 in Backend and nfsv4 in Storage Class + SnapshotDir = true in VolConfig",
+			snapDirInBackend:              "",
+			snapDirInVolConfig:            "true",
+			mountOptInBackend:             "nfsvers=3",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "18. MountOption = nfsv3 in Backend and nfsv4 in Storage Class + SnapshotDir = true in Backend and false in VolConfig",
+			snapDirInBackend:              "true",
+			snapDirInVolConfig:            "false",
+			mountOptInBackend:             "nfsvers=3",
+			mountOptInPhyisicalPool:       "nfsvers=4.1",
+			mockRequestSnapshotDir:        false,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv41},
+			mockRequestExportPolicyNfsv3:  false,
+			mockRequestExportPolicyNfsv41: true,
+			mockResponseSnapshotDir:       false,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv41},
+			expectedSnapshotDir:           false,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv41},
+		},
+		{
+			name:                          "19. MountOption = nfsv4 in Backend and nfsv3 in Storage Class + SnapshotDir = false in Backend and true in VolConfig",
+			snapDirInBackend:              "false",
+			snapDirInVolConfig:            "true",
+			mountOptInBackend:             "nfsvers=4",
+			mountOptInPhyisicalPool:       "nfsvers=3",
+			mockRequestSnapshotDir:        true,
+			mockRequestProtocols:          []string{api.ProtocolTypeNFSv3},
+			mockRequestExportPolicyNfsv3:  true,
+			mockRequestExportPolicyNfsv41: false,
+			mockResponseSnapshotDir:       true,
+			mockResponseProtocols:         []string{api.ProtocolTypeNFSv3},
+			expectedSnapshotDir:           true,
+			expectedProtocols:             []string{api.ProtocolTypeNFSv3},
+		},
+	}
+
+	for _, test := range tests {
+		mockAPI, driver := newMockANFDriver(t)
+		driver.Config.BackendName = "anf"
+		driver.Config.ServiceLevel = api.ServiceLevelUltra
+		driver.Config.NASType = "nfs"
+
+		// Set test values in backend config
+		driver.Config.SnapshotDir = test.snapDirInBackend
+		driver.Config.NfsMountOptions = test.mountOptInBackend
+		driver.populateConfigurationDefaults(ctx, &driver.Config)
+
+		// Set test values in storage pool if not already set by populateConfigurationDefaults
+		driver.initializeStoragePools(ctx)
+		storagePool := driver.pools["anf_pool"]
+
+		// Initialize telemetry
+		driver.initializeTelemetry(ctx, BackendUUID)
+
+		// Set test values in volume config; note that volConfig inherits mount option from storage class, so set from there
+		volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+		volConfig.SnapshotDir = test.snapDirInVolConfig
+		volConfig.MountOptions = test.mountOptInPhyisicalPool
+
+		// Set suitable values for mock requests and set mock expects
+		createRequest.ProtocolTypes = test.mockRequestProtocols
+		createRequest.ExportPolicy.Rules[0].Nfsv3 = test.mockRequestExportPolicyNfsv3
+		createRequest.ExportPolicy.Rules[0].Nfsv41 = test.mockRequestExportPolicyNfsv41
+		createRequest.SnapshotDirectory = test.mockRequestSnapshotDir
+		filesystem.ProtocolTypes = test.mockResponseProtocols
+		filesystem.SnapshotDirectory = test.mockResponseSnapshotDir
+
+		mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil)
+		mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil)
+		mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false)
+		mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet)
+		mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+			api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool})
+		mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil)
+		mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+			driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil)
+
+		// Create volume
+		result := driver.Create(ctx, volConfig, storagePool, nil)
+
+		// Assert on suitable snapshotDir values
+		assert.NoError(t, result, "create failed")
+		assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+		assert.Equal(t, test.expectedSnapshotDir, filesystem.SnapshotDirectory)
+		assert.Equal(t, test.expectedProtocols, filesystem.ProtocolTypes)
+	}
 }
 
 func TestCreate_NFSVolume_CreateFailed(t *testing.T) {

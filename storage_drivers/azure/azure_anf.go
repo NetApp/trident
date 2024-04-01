@@ -37,7 +37,7 @@ const (
 	defaultUnixPermissions         = "" // TODO (cknight): change to "0777" when whitelisted permissions feature reaches GA
 	defaultNfsMountOptions         = "nfsvers=3"
 	defaultKerberosNfsMountOptions = "nfsvers=4.1"
-	defaultSnapshotDir             = "false"
+	defaultSnapshotDir             = ""
 	defaultLimitVolumeSize         = ""
 	defaultExportRule              = "0.0.0.0/0"
 	defaultVolumeSizeStr           = "107374182400"
@@ -270,30 +270,14 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		}
 	}
 
-	snapDir := defaultSnapshotDir
-	if config.SnapshotDir == "" {
-		// If no snapshotDir is provided, ensure it is set to true by default for NFSv4 version
-		nfsVersion, err := utils.GetNFSVersionFromMountOptions(config.NfsMountOptions, nfsVersion3, supportedNFSVersions)
-		if err != nil {
-			Logc(ctx).WithError(err).Errorf("Invalid value for NfsMountOptions: %v.", config.NfsMountOptions)
-		}
-
-		switch nfsVersion {
-		case nfsVersion4:
-			fallthrough
-		case nfsVersion41:
-			snapDir = "true"
-		}
-	} else {
+	if config.SnapshotDir != "" {
 		// Set the snapshotDir provided in the config
 		snapDirFormatted, err := utils.GetFormattedBool(config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
 		}
-		snapDir = snapDirFormatted
+		config.SnapshotDir = snapDirFormatted
 	}
-
-	config.SnapshotDir = snapDir
 
 	if config.LimitVolumeSize == "" {
 		config.LimitVolumeSize = defaultLimitVolumeSize
@@ -826,14 +810,10 @@ func (d *NASStorageDriver) Create(
 		serviceLevel = pool.InternalAttributes()[ServiceLevel]
 	}
 
-	// Take snapshot directory from volume config first (handles Docker case), then from pool
-	snapshotDir := volConfig.SnapshotDir
-	if snapshotDir == "" {
-		snapshotDir = pool.InternalAttributes()[SnapshotDir]
-	}
-	snapshotDirBool, err := strconv.ParseBool(snapshotDir)
-	if err != nil {
-		return fmt.Errorf("invalid value for snapshotDir; %v", err)
+	// Determine mount options (volume config wins, followed by backend config)
+	mountOptions := d.Config.NfsMountOptions
+	if volConfig.MountOptions != "" {
+		mountOptions = volConfig.MountOptions
 	}
 
 	// Take unix permissions from volume config first (handles Docker case & PVC annotations), then from pool
@@ -845,12 +825,6 @@ func (d *NASStorageDriver) Create(
 	// TODO (cknight): remove when preview permissions feature reaches GA
 	if unixPermissions == "" && d.SDK.HasFeature(api.FeatureUnixPermissions) {
 		unixPermissions = "0777"
-	}
-
-	// Determine mount options (volume config wins, followed by backend config)
-	mountOptions := d.Config.NfsMountOptions
-	if volConfig.MountOptions != "" {
-		mountOptions = volConfig.MountOptions
 	}
 
 	// Take kerberos option from pool
@@ -871,10 +845,11 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("unsupported kerberos type: %s", kerberos)
 	}
 
+	var nfsVersion string
 	if d.Config.NASType == sa.SMB {
 		protocolTypes = []string{api.ProtocolTypeCIFS}
 	} else {
-		nfsVersion, err := utils.GetNFSVersionFromMountOptions(mountOptions, nfsVersion3, supportedNFSVersions)
+		nfsVersion, err = utils.GetNFSVersionFromMountOptions(mountOptions, nfsVersion3, supportedNFSVersions)
 		if err != nil {
 			return err
 		}
@@ -919,6 +894,25 @@ func (d *NASStorageDriver) Create(
 		exportPolicy = api.ExportPolicy{
 			Rules: []api.ExportRule{apiExportRule},
 		}
+	}
+
+	// Set snapshot directory from volume config first (handles Docker case), then from pool
+	// If none is set, set it based on mountOption by default; for nfsv3 => false, nfsv4/4.1 => true
+	snapshotDir := volConfig.SnapshotDir
+	if snapshotDir == "" {
+		snapshotDir = pool.InternalAttributes()[SnapshotDir]
+		// If snapshot directory is not set at pool level, then set default value based on mount option
+		if snapshotDir == "" {
+			if strings.HasPrefix(nfsVersion, "4") {
+				snapshotDir = "true"
+			} else {
+				snapshotDir = "false"
+			}
+		}
+	}
+	snapshotDirBool, err := strconv.ParseBool(snapshotDir)
+	if err != nil {
+		return fmt.Errorf("invalid value for snapshotDir; %v", err)
 	}
 
 	labels := make(map[string]string)
