@@ -881,42 +881,6 @@ func (h *helper) isPVInCache(ctx context.Context, name string) (bool, error) {
 	}
 }
 
-func (h *helper) waitForCachedPVByName(
-	ctx context.Context, name string, maxElapsedTime time.Duration,
-) (*v1.PersistentVolume, error) {
-	var pv *v1.PersistentVolume
-
-	Logc(ctx).WithFields(LogFields{
-		"Name":           name,
-		"MaxElapsedTime": maxElapsedTime,
-	}).Trace(">>>> waitForCachedPVByName")
-	defer Logc(ctx).Trace("<<<< waitForCachedPVByName")
-
-	checkForCachedPV := func() error {
-		var pvError error
-		pv, pvError = h.getCachedPVByName(ctx, name)
-		return pvError
-	}
-	pvNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(LogFields{
-			"name":      name,
-			"increment": duration,
-		}).Trace("PV not yet in cache, waiting.")
-	}
-	pvBackoff := backoff.NewExponentialBackOff()
-	pvBackoff.InitialInterval = CacheBackoffInitialInterval
-	pvBackoff.RandomizationFactor = CacheBackoffRandomizationFactor
-	pvBackoff.Multiplier = CacheBackoffMultiplier
-	pvBackoff.MaxInterval = CacheBackoffMaxInterval
-	pvBackoff.MaxElapsedTime = maxElapsedTime
-
-	if err := backoff.RetryNotify(checkForCachedPV, pvBackoff, pvNotify); err != nil {
-		return nil, fmt.Errorf("PV %s was not in cache after %3.2f seconds", name, maxElapsedTime.Seconds())
-	}
-
-	return pv, nil
-}
-
 // addStorageClass is the add handler for the storage class watcher.
 func (h *helper) addStorageClass(obj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassCreate, LogLayerCSIFrontend)
