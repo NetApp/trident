@@ -738,7 +738,6 @@ func TestOntapNasStorageDriverVolumeClone_ROClone(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
-	fmt.Println(result)
 
 	assert.NoError(t, result, "received error")
 }
@@ -1318,13 +1317,24 @@ func TestOntapNasStorageDriverVolumeGetSnapshot_VolumeSizeFailure(t *testing.T) 
 		VolumeInternalName: "vol1",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().VolumeUsedSize(ctx, "vol1").Return(0, fmt.Errorf("error reading volume size"))
+	tests := []struct {
+		TestName                 string
+		getVolumeSizeFailedError error
+	}{
+		{"VolumeNotFound", errors.NotFoundError("error reading volume size")},
+		{"Failed to get volume size", fmt.Errorf("error reading volume size")},
+	}
+	for _, test := range tests {
+		t.Run(fmt.Sprintf(test.TestName), func(t *testing.T) {
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeUsedSize(ctx, "vol1").Return(0, test.getVolumeSizeFailedError)
 
-	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
+			snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
-	assert.Nil(t, snap)
-	assert.Error(t, err)
+			assert.Nil(t, snap)
+			assert.Error(t, err)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumeGetSnapshot_NoSnapshot(t *testing.T) {

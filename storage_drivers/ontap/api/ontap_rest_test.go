@@ -1092,7 +1092,7 @@ func TestOntapREST_LunGetByName(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockLunResponse, false, false},
-		{"NumRecordsNilInResponse", mockLunResponseNumRecordsNil, true, false},
+		{"NumRecordsNilInResponse", mockLunResponseNumRecordsNil, true, true},
 		{"BackendReturnError", mockResourceNotFound, true, true},
 	}
 	for _, test := range tests {

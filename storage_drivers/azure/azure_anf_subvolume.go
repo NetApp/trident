@@ -1191,7 +1191,7 @@ func (d *NASBlockStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("could not find source subvolume '%s'; %v", volConfig.InternalID, err)
 	}
 	if !sourceSubvolumeExists {
-		return nil, fmt.Errorf("source subvolume '%s' does not exist", volConfig.Name)
+		return nil, errors.NotFoundError(fmt.Sprintf("source subvolume '%s' does not exist", volConfig.Name))
 	}
 
 	// For snapshot imports, creation token should be the internal name for the backend snapshot.

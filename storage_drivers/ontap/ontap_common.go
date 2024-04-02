@@ -2660,7 +2660,11 @@ func getVolumeSnapshot(
 
 	size, err := sizeGetter(ctx, internalVolName)
 	if err != nil {
-		return nil, fmt.Errorf("error reading volume size: %v", err)
+		if errors.IsNotFoundError(err) || errors.IsUnsupportedError(err) {
+			return nil, err
+		} else {
+			return nil, fmt.Errorf("error reading volume size: %v", err)
+		}
 	}
 
 	snap, err := client.VolumeSnapshotInfo(ctx, internalSnapName, internalVolName)

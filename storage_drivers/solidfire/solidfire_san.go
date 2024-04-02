@@ -1254,6 +1254,9 @@ func (d *SANStorageDriver) GetSnapshot(
 	volume, err := d.GetVolume(ctx, internalVolName)
 	if err != nil {
 		Logc(ctx).Errorf("Unable to locate snapshot parent volume: %+v", err)
+		if errors.IsNotFoundError(err) {
+			return nil, err
+		}
 		return nil, errors.New("volume not found")
 	}
 
@@ -1550,7 +1553,7 @@ func (d *SANStorageDriver) GetVolume(ctx context.Context, name string) (api.Volu
 		return api.Volume{}, err
 	}
 	if len(vols) == 0 {
-		return api.Volume{}, errors.New("volume not found")
+		return api.Volume{}, errors.NotFoundError("volume not found")
 	}
 	if len(vols) > 1 {
 		return api.Volume{}, fmt.Errorf("ambiguous volume name; %d volumes found with name %s", len(vols), name)

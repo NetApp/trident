@@ -2955,6 +2955,15 @@ func TestGetVolumeSnapshot(t *testing.T) {
 	_, err = getVolumeSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
 
 	assert.Error(t, err, "Found error when expected none")
+
+	// Test-5: Testing Error flow: LunSize returned Not found error
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().LunSize(ctx, "fakeVolInternalName").Return(0,
+		errors.NotFoundError("LunSize returned error"))
+
+	_, err = getVolumeSnapshot(ctx, snapConfig, config, mockAPI, mockAPI.LunSize)
+
+	assert.Error(t, err, "Expected LUN not found error, got none")
 }
 
 func TestGetVolumeSnapshotList(t *testing.T) {

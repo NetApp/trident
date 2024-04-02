@@ -2,10 +2,6 @@
 
 package storage
 
-import (
-	v1 "k8s.io/api/core/v1"
-)
-
 type VolumeOperation string
 
 const (
@@ -14,7 +10,6 @@ const (
 	DeleteVolume   VolumeOperation = "deleteVolume"
 	ImportVolume   VolumeOperation = "importVolume"
 	ResizeVolume   VolumeOperation = "resizeVolume"
-	UpgradeVolume  VolumeOperation = "upgradeVolume"
 	AddSnapshot    VolumeOperation = "addSnapshot"
 	DeleteSnapshot VolumeOperation = "deleteSnapshot"
 
@@ -26,14 +21,7 @@ type VolumeTransaction struct {
 	Config               *VolumeConfig
 	VolumeCreatingConfig *VolumeCreatingConfig
 	SnapshotConfig       *SnapshotConfig
-	PVUpgradeConfig      *PVUpgradeConfig
 	Op                   VolumeOperation
-}
-
-type PVUpgradeConfig struct {
-	PVCConfig       *v1.PersistentVolumeClaim `json:"pvcConfig,omitempty"`
-	PVConfig        *v1.PersistentVolume      `json:"pvConfig,omitempty"`
-	OwnedPodsForPVC []string                  `json:"ownedPodsForPVC,omitempty"`
 }
 
 // Name returns a unique identifier for the VolumeTransaction.  Volume transactions should only

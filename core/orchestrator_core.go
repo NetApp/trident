@@ -650,13 +650,6 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 			"snapshot": v.SnapshotConfig.Name,
 			"op":       v.Op,
 		}).Info("Processed snapshot transaction log.")
-	case storage.UpgradeVolume:
-		Logc(ctx).WithFields(LogFields{
-			"volume": v.Config.Name,
-			"PVC":    v.PVUpgradeConfig.PVCConfig.Name,
-			"PV":     v.PVUpgradeConfig.PVConfig.Name,
-			"op":     v.Op,
-		}).Info("Processed volume upgrade transaction log.")
 	case storage.VolumeCreating:
 		Logc(ctx).WithFields(LogFields{
 			"volume":      v.VolumeCreatingConfig.Name,
@@ -758,8 +751,9 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 				}
 				// Snapshot deletion is an idempotent operation, so it's safe to
 				// delete an already deleted snapshot.
+				// If the volume gets deleted before the snapshot, the snapshot deletion returns "NotFoundError".
 				err := backend.DeleteSnapshot(ctx, v.SnapshotConfig, v.Config)
-				if err != nil && !errors.IsUnsupportedError(err) {
+				if err != nil && !errors.IsUnsupportedError(err) && !errors.IsNotFoundError(err) {
 					return fmt.Errorf("error attempting to clean up snapshot %s from backend %s: %v",
 						v.SnapshotConfig.Name, backend.Name(), err)
 				}
@@ -864,7 +858,7 @@ func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *st
 			return fmt.Errorf("failed to clean up volume addition transaction: %v", err)
 		}
 
-	case storage.UpgradeVolume, storage.VolumeCreating:
+	case storage.VolumeCreating:
 		// Do nothing
 	}
 
@@ -2709,7 +2703,7 @@ func (o *TridentOrchestrator) AddVolumeTransaction(ctx context.Context, volTxn *
 		return err
 	}
 	if oldTxn != nil {
-		if oldTxn.Op != storage.UpgradeVolume && oldTxn.Op != storage.VolumeCreating {
+		if oldTxn.Op != storage.VolumeCreating {
 			err = o.handleFailedTransaction(ctx, oldTxn)
 			if err != nil {
 				return fmt.Errorf("unable to process the preexisting transaction for volume %s:  %v",

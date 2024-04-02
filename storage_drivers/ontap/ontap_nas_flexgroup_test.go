@@ -23,6 +23,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func newTestOntapNASFlexgroupDriver(
@@ -2393,13 +2394,25 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot_VolumeSizeFailure(t *te
 		VolumeInternalName: "vol1",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, fmt.Errorf("failed to get flexgroup size"))
+	tests := []struct {
+		TestName                 string
+		getVolumeSizeFailedError error
+	}{
+		{"VolumeNotFound", errors.NotFoundError("failed to get flexgroup size")},
+		{"Failed to get volume", fmt.Errorf("failed to get flexgroup size")},
+	}
 
-	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
+	for _, test := range tests {
+		t.Run(fmt.Sprintf(test.TestName), func(t *testing.T) {
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, test.getVolumeSizeFailedError)
 
-	assert.Nil(t, snap)
-	assert.Error(t, err, "FlexgroupUsedSize execute successfully")
+			snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
+
+			assert.Nil(t, snap)
+			assert.Error(t, err, "FlexgroupUsedSize execute successfully")
+		})
+	}
 }
 
 func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot_NoSnapshot(t *testing.T) {

@@ -1076,7 +1076,11 @@ func getFlexgroupSnapshot(
 
 	size, err := client.FlexgroupUsedSize(ctx, snapConfig.VolumeInternalName)
 	if err != nil {
-		return nil, fmt.Errorf("error reading volume size: %v", err)
+		if errors.IsNotFoundError(err) {
+			return nil, err
+		} else {
+			return nil, fmt.Errorf("error reading volume size: %v", err)
+		}
 	}
 
 	snapshots, err := client.FlexgroupSnapshotList(ctx, snapConfig.VolumeInternalName)

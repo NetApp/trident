@@ -455,8 +455,8 @@ func (d OntapAPIZAPI) LunGetByName(ctx context.Context, name string) (*Lun, erro
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
 
 	lunResponse, err := d.api.LunGet(name)
-	if err != nil || lunResponse == nil {
-		return nil, fmt.Errorf("could not get LUN by name %v, error: %v", name, err)
+	if err != nil {
+		return nil, err
 	}
 
 	lun, err := lunInfoFromZapiAttrsHelper(*lunResponse)
@@ -2501,7 +2501,7 @@ func (d OntapAPIZAPI) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, 
 }
 
 func (d OntapAPIZAPI) NVMeNamespaceGetSize(ctx context.Context, subsystemName string) (int, error) {
-	return 0, fmt.Errorf("ZAPI call is not supported yet")
+	return 0, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) VolumeWaitForStates(ctx context.Context, volumeName string, desiredStates,

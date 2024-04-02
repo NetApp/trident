@@ -632,15 +632,15 @@ func (c Client) LunGet(path string) (*azgo.LunInfoType, error) {
 	if err != nil {
 		return &azgo.LunInfoType{}, err
 	} else if response.Result.NumRecords() == 0 {
-		return &azgo.LunInfoType{}, fmt.Errorf("LUN %s not found", path)
+		return &azgo.LunInfoType{}, errors.NotFoundError(fmt.Sprintf("LUN %s not found", path))
 	} else if response.Result.NumRecords() > 1 {
 		return &azgo.LunInfoType{}, fmt.Errorf("more than one LUN %s found", path)
 	} else if response.Result.AttributesListPtr == nil {
-		return &azgo.LunInfoType{}, fmt.Errorf("LUN %s not found", path)
+		return &azgo.LunInfoType{}, errors.NotFoundError(fmt.Sprintf("LUN %s not found", path))
 	} else if response.Result.AttributesListPtr.LunInfoPtr != nil {
 		return &response.Result.AttributesListPtr.LunInfoPtr[0], nil
 	}
-	return &azgo.LunInfoType{}, fmt.Errorf("LUN %s not found", path)
+	return &azgo.LunInfoType{}, errors.NotFoundError(fmt.Sprintf("LUN %s not found", path))
 }
 
 func (c Client) lunGetAllCommon(query *azgo.LunGetIterRequestQuery) (*azgo.LunGetIterResponse, error) {
@@ -1512,15 +1512,15 @@ func (c Client) volumeGetIterCommon(
 	if err != nil {
 		return &azgo.VolumeAttributesType{}, err
 	} else if response.Result.NumRecords() == 0 {
-		return &azgo.VolumeAttributesType{}, fmt.Errorf("flexvol %s not found", name)
+		return &azgo.VolumeAttributesType{}, errors.NotFoundError(fmt.Sprintf("flexvol %s not found", name))
 	} else if response.Result.NumRecords() > 1 {
 		return &azgo.VolumeAttributesType{}, fmt.Errorf("more than one Flexvol %s found", name)
 	} else if response.Result.AttributesListPtr == nil {
-		return &azgo.VolumeAttributesType{}, fmt.Errorf("flexvol %s not found", name)
+		return &azgo.VolumeAttributesType{}, errors.NotFoundError(fmt.Sprintf("flexvol %s not found", name))
 	} else if response.Result.AttributesListPtr.VolumeAttributesPtr != nil {
 		return &response.Result.AttributesListPtr.VolumeAttributesPtr[0], nil
 	}
-	return &azgo.VolumeAttributesType{}, fmt.Errorf("flexvol %s not found", name)
+	return &azgo.VolumeAttributesType{}, errors.NotFoundError(fmt.Sprintf("flexvol %s not found", name))
 }
 
 // VolumeGetAll returns all relevant details for all FlexVols whose names match the supplied prefix

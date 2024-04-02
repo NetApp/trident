@@ -571,7 +571,7 @@ func (c RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volumeN
 		return 0, err
 	}
 	if volume == nil {
-		return 0, fmt.Errorf("could not find volume with name %v", volumeName)
+		return 0, errors.NotFoundError(fmt.Sprintf("could not find volume with name %v", volumeName))
 	}
 
 	if volume.Space == nil {
@@ -2252,7 +2252,7 @@ func (c RestClient) LunCloneCreate(
 		return err
 	}
 	if lunCreateAccepted == nil {
-		return fmt.Errorf("unexpected response from lun create")
+		return fmt.Errorf("unexpected response from LUN create")
 	}
 
 	// verify the created LUN can be found
@@ -2296,7 +2296,7 @@ func (c RestClient) LunCreate(
 		return err
 	}
 	if lunCreateAccepted == nil {
-		return fmt.Errorf("unexpected response from lun create")
+		return fmt.Errorf("unexpected response from LUN create")
 	}
 
 	// verify the created LUN can be found
@@ -2316,9 +2316,14 @@ func (c RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, err
 // LunGetByName gets the LUN with the specified name
 func (c RestClient) LunGetByName(ctx context.Context, name string) (*models.Lun, error) {
 	result, err := c.LunList(ctx, name)
-	if err != nil || result.Payload == nil {
+	if err != nil {
 		return nil, err
 	}
+
+	if result == nil || result.Payload == nil || result.Payload.NumRecords == nil {
+		return nil, errors.NotFoundError(fmt.Sprintf("could not get LUN by name %v, error: %v", name, err))
+	}
+
 	if result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.LunResponseInlineRecords != nil {
 		return result.Payload.LunResponseInlineRecords[0], nil
 	}
@@ -2405,10 +2410,10 @@ func (c RestClient) LunGetComment(
 		return "", err
 	}
 	if lun == nil {
-		return "", fmt.Errorf("could not find lun with name %v", lunPath)
+		return "", fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.Comment == nil {
-		return "", fmt.Errorf("lun did not have a comment")
+		return "", fmt.Errorf("LUN did not have a comment")
 	}
 
 	return *lun.Comment, nil
@@ -2424,10 +2429,10 @@ func (c RestClient) LunSetComment(
 		return err
 	}
 	if lun == nil {
-		return fmt.Errorf("could not find lun with name %v", lunPath)
+		return fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.UUID == nil {
-		return fmt.Errorf("could not find lun UUID with name %v", lunPath)
+		return fmt.Errorf("could not find LUN UUID with name %v", lunPath)
 	}
 
 	uuid := *lun.UUID
@@ -2564,10 +2569,10 @@ func (c RestClient) LunSetQosPolicyGroup(
 		return err
 	}
 	if lun == nil {
-		return fmt.Errorf("could not find lun with name %v", lunPath)
+		return fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.UUID == nil {
-		return fmt.Errorf("could not find lun uuid with name %v", lunPath)
+		return fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
 
 	uuid := *lun.UUID
@@ -2607,10 +2612,10 @@ func (c RestClient) LunRename(
 		return err
 	}
 	if lun == nil {
-		return fmt.Errorf("could not find lun with name %v", lunPath)
+		return fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.UUID == nil {
-		return fmt.Errorf("could not find lun uuid with name %v", lunPath)
+		return fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
 
 	uuid := *lun.UUID
@@ -2684,10 +2689,10 @@ func (c RestClient) LunUnmap(
 		return err
 	}
 	if lun == nil {
-		return fmt.Errorf("could not find lun with name %v", lunPath)
+		return fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.UUID == nil {
-		return fmt.Errorf("could not find lun uuid with name %v", lunPath)
+		return fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
 	lunUUID := *lun.UUID
 
@@ -2716,7 +2721,7 @@ func (c RestClient) LunMap(
 		return nil, err
 	}
 	if lun == nil {
-		return nil, fmt.Errorf("could not find lun with name %v", lunPath)
+		return nil, fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	uuid := lun.UUID
 
@@ -2784,10 +2789,10 @@ func (c RestClient) LunMapGetReportingNodes(
 		return nil, lunGetErr
 	}
 	if lun == nil {
-		return nil, fmt.Errorf("could not find lun with name %v", lunPath)
+		return nil, fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.UUID == nil {
-		return nil, fmt.Errorf("could not find lun uuid with name %v", lunPath)
+		return nil, fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
 	lunUUID := *lun.UUID
 
@@ -2846,13 +2851,13 @@ func (c RestClient) LunSize(
 		return 0, err
 	}
 	if lun == nil {
-		return 0, fmt.Errorf("could not find lun with name %v", lunPath)
+		return 0, errors.NotFoundError(fmt.Sprintf("could not find LUN with name %v", lunPath))
 	}
 	if lun.Space == nil {
-		return 0, fmt.Errorf("could not find lun space with name %v", lunPath)
+		return 0, fmt.Errorf("could not find LUN space with name %v", lunPath)
 	}
 	if lun.Space.Size == nil {
-		return 0, fmt.Errorf("could not find lun size with name %v", lunPath)
+		return 0, fmt.Errorf("could not find LUN size with name %v", lunPath)
 	}
 
 	// TODO validate/improve this logic? int64 vs int
@@ -2869,10 +2874,10 @@ func (c RestClient) LunSetSize(
 		return 0, err
 	}
 	if lun == nil {
-		return 0, fmt.Errorf("could not find lun with name %v", lunPath)
+		return 0, fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.UUID == nil {
-		return 0, fmt.Errorf("could not find lun uuid with name %v", lunPath)
+		return 0, fmt.Errorf("could not find LUN uuid with name %v", lunPath)
 	}
 
 	uuid := *lun.UUID
@@ -5766,7 +5771,7 @@ func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string) (*m
 		*result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
 		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
 	}
-	return nil, fmt.Errorf("namespace %s not found", name)
+	return nil, errors.NotFoundError(fmt.Sprintf("could not find namespace with name %v", name))
 }
 
 // NVMe Subsystem operations
@@ -6069,7 +6074,7 @@ func (c RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string)
 		return 0, err
 	}
 	if namespace == nil {
-		return 0, fmt.Errorf("could not find namespace with name %v", namespace)
+		return 0, errors.NotFoundError(fmt.Sprintf("could not find namespace with name %v", namespace))
 	}
 	size := namespace.Space.Size
 	return int(*size), nil
