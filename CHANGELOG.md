@@ -23,6 +23,10 @@
 
 - Removed in-toto attestations framework from multi-platform image manifests.
 
+**Known Issues:**
+
+- **Helm:** The `trident-autosupport` image in the Helm chart was not updated to 24.02. To use the 24.02 ASUP image add `--set tridentAutosupportImageTag=24.02` to the helm install command. A fix will be included in the next patch release.
+
 ## v23.10.0
 
 **Fixes:**
