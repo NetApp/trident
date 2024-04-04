@@ -279,8 +279,8 @@ func TestSubvolumeDefaultCreateTimeout(t *testing.T) {
 		Expected time.Duration
 	}{
 		{tridentconfig.ContextDocker, tridentconfig.DockerCreateTimeout},
-		{tridentconfig.ContextCSI, api.VolumeCreateTimeout},
-		{"", api.VolumeCreateTimeout},
+		{tridentconfig.ContextCSI, api.SubvolumeCreateTimeout},
+		{"", api.SubvolumeCreateTimeout},
 	}
 	for _, test := range tests {
 		t.Run(string(test.Context), func(t *testing.T) {

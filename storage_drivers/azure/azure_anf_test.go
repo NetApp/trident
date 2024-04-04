@@ -5043,7 +5043,7 @@ func TestWaitForVolumeCreate_Creating(t *testing.T) {
 	}
 }
 
-func TestWaitForVolumeCreate_DeletingDeleteFinished(t *testing.T) {
+func TestWaitForVolumeCreate_DeletingDelete(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
 	filesystem := &api.FileSystem{
@@ -5054,31 +5054,10 @@ func TestWaitForVolumeCreate_DeletingDeleteFinished(t *testing.T) {
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleting, errFailed).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
 
 	result := driver.waitForVolumeCreate(ctx, filesystem, api.Delete)
 
-	assert.Nil(t, result, "not nil")
-}
-
-func TestWaitForVolumeCreate_DeletingDeleteNotFinished(t *testing.T) {
-	mockAPI, driver := newMockANFDriver(t)
-
-	filesystem := &api.FileSystem{
-		Name:              "testvol1",
-		CreationToken:     "netapp-testvol1",
-		ProvisioningState: api.StateCreating,
-	}
-
-	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleting, errFailed).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout(), api.Delete).Return(api.StateDeleting, errFailed).Times(1)
-
-	result := driver.waitForVolumeCreate(ctx, filesystem, api.Delete)
-
-	assert.Nil(t, result, "not nil")
+	assert.NotNil(t, result, "not nil")
 }
 
 func TestWaitForVolumeCreate_ErrorDelete(t *testing.T) {
@@ -5096,7 +5075,7 @@ func TestWaitForVolumeCreate_ErrorDelete(t *testing.T) {
 
 	result := driver.waitForVolumeCreate(ctx, filesystem, api.Create)
 
-	assert.NotNil(t, result, "error is nil")
+	assert.NotNil(t, result, "nil error")
 }
 
 func TestWaitForVolumeCreate_ErrorDeleteFailed(t *testing.T) {
@@ -5115,7 +5094,7 @@ func TestWaitForVolumeCreate_ErrorDeleteFailed(t *testing.T) {
 
 	result := driver.waitForVolumeCreate(ctx, filesystem, api.Delete)
 
-	assert.NotNil(t, result, "error is nil")
+	assert.NotNil(t, result, "nil error")
 }
 
 func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
@@ -5134,7 +5113,7 @@ func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
 
 		result := driver.waitForVolumeCreate(ctx, filesystem, api.Create)
 
-		assert.Nil(t, result, "not nil")
+		assert.NotNil(t, result, "nil error")
 	}
 }
 
@@ -5233,9 +5212,10 @@ func getStructsForDestroySMBVolume(
 	return volConfig, filesystem
 }
 
-func TestDestroy_NFSVolume(t *testing.T) {
+func TestDestroy_NFSVolume_Docker(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextDocker
 
 	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -5244,6 +5224,22 @@ func TestDestroy_NFSVolume(t *testing.T) {
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
 		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
+
+	result := driver.Destroy(ctx, volConfig)
+
+	assert.Nil(t, result, "not nil")
+}
+
+func TestDestroy_NFSVolume_CSI(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextCSI
+
+	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -5291,9 +5287,10 @@ func TestDestroy_AlreadyDeleted(t *testing.T) {
 	assert.Nil(t, result, "not nil")
 }
 
-func TestDestroy_StillDeletingDeleted(t *testing.T) {
+func TestDestroy_StillDeletingDeleted_Docker(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextDocker
 
 	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
 	filesystem.ProvisioningState = api.StateDeleting
@@ -5301,14 +5298,32 @@ func TestDestroy_StillDeletingDeleted(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleted, nil).Times(1)
+		tridentconfig.DockerDefaultTimeout, api.Delete).Return(api.StateDeleted, nil).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
 	assert.Nil(t, result, "not nil")
 }
 
-func TestDestroy_StillDeleting(t *testing.T) {
+func TestDestroy_StillDeleting_Docker(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextDocker
+
+	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	filesystem.ProvisioningState = api.StateDeleting
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
+		tridentconfig.DockerDefaultTimeout, api.Delete).Return(api.StateDeleting, errFailed).Times(1)
+
+	result := driver.Destroy(ctx, volConfig)
+
+	assert.NotNil(t, result, "expected error")
+}
+
+func TestDestroy_StillDeleting_CSI(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
@@ -5317,12 +5332,10 @@ func TestDestroy_StillDeleting(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.volumeCreateTimeout, api.Delete).Return(api.StateDeleting, errFailed).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
-	assert.NotNil(t, result, "expected error")
+	assert.Nil(t, result, "not nil")
 }
 
 func TestDestroy_DeleteFailed(t *testing.T) {
@@ -5340,9 +5353,10 @@ func TestDestroy_DeleteFailed(t *testing.T) {
 	assert.NotNil(t, result, "expected error")
 }
 
-func TestDestroy_VolumeWaitFailed(t *testing.T) {
+func TestDestroy_VolumeWaitFailed_Docker(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextDocker
 
 	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
 
@@ -5366,8 +5380,6 @@ func TestDestroy_SMBVolume(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
-		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -6277,9 +6289,10 @@ func TestRestoreSnapshot_VolumeWaitFailed(t *testing.T) {
 	assert.NotNil(t, result, "expected error")
 }
 
-func TestDeleteSnapshot(t *testing.T) {
+func TestDeleteSnapshot_Docker(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextDocker
 
 	snapTime := time.Now()
 	volConfig, filesystem, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
@@ -6290,6 +6303,23 @@ func TestDeleteSnapshot(t *testing.T) {
 	mockAPI.EXPECT().DeleteSnapshot(ctx, filesystem, snapshot).Return(nil).Times(1)
 	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, filesystem, api.StateDeleted, []string{api.StateError},
 		api.SnapshotTimeout).Return(nil).Times(1)
+
+	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, result, "not nil")
+}
+
+func TestDeleteSnapshot_CSI(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	snapTime := time.Now()
+	volConfig, filesystem, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, filesystem, snapConfig.InternalName).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, filesystem, snapshot).Return(nil).Times(1)
 
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
@@ -6389,9 +6419,10 @@ func TestDeleteSnapshot_SnapshotDeleteFailed(t *testing.T) {
 	assert.NotNil(t, result, "expected error")
 }
 
-func TestDeleteSnapshot_SnapshotWaitFailed(t *testing.T) {
+func TestDeleteSnapshot_SnapshotWaitFailed_Docker(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextDocker
 
 	snapTime := time.Now()
 	volConfig, filesystem, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)

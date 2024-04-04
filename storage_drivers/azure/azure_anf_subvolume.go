@@ -210,7 +210,7 @@ func (d *NASBlockStorageDriver) defaultCreateTimeout() time.Duration {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerCreateTimeout
 	default:
-		return api.VolumeCreateTimeout
+		return api.SubvolumeCreateTimeout
 	}
 }
 

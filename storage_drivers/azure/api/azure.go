@@ -30,7 +30,8 @@ import (
 )
 
 const (
-	VolumeCreateTimeout        = 10 * time.Second
+	VolumeCreateTimeout        = 2 * time.Second
+	SubvolumeCreateTimeout     = 10 * time.Second
 	SnapshotTimeout            = 240 * time.Second // Snapshotter sidecar has a timeout of 5 minutes.  Stay under that!
 	DefaultTimeout             = 120 * time.Second
 	MaxLabelLength             = 256
@@ -1008,6 +1009,9 @@ func (c Client) WaitForVolumeState(
 				volumeState = StateDeleted
 				return nil
 			}
+			if errors.Is(err, context.Canceled) {
+				return backoff.Permanent(err)
+			}
 
 			volumeState = ""
 			return fmt.Errorf("could not get volume status; %v", err)
@@ -1349,7 +1353,7 @@ func (c Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error 
 		return err
 	}
 
-	Logc(ctx).WithFields(logFields).Debug("Volume deleted.")
+	Logc(ctx).WithFields(logFields).Debug("Volume deletion started.")
 
 	return nil
 }
@@ -1487,6 +1491,9 @@ func (c Client) WaitForSnapshotState(
 			if desiredState == StateDeleted && errors.IsNotFoundError(err) {
 				Logc(ctx).Debugf("Implied deletion for snapshot %s.", snapshot.Name)
 				return nil
+			}
+			if errors.Is(err, context.Canceled) {
+				return backoff.Permanent(err)
 			}
 			return fmt.Errorf("could not get snapshot status; %v", err)
 		}
@@ -1634,7 +1641,7 @@ func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snap
 		return err
 	}
 
-	Logc(ctx).WithFields(logFields).Debug("Snapshot deleted.")
+	Logc(ctx).WithFields(logFields).Debug("Snapshot deletion started.")
 
 	return nil
 }

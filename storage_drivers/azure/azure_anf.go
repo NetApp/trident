@@ -582,10 +582,11 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 
 	// Azure workload identity
 	// If cloud identity is provided and cloud provider is set to 'Azure' during the installation,
-	// we can use AZURE_CLIENT_ID,AZURE_TENANT_ID,AZURE_FEDERATED_TOKEN_FILE and AZURE_AUTHORITY_HOST environment variables
-	// injected by workload identity webhook for initialization of ANF driver.
+	// we can use AZURE_CLIENT_ID,AZURE_TENANT_ID,AZURE_FEDERATED_TOKEN_FILE and AZURE_AUTHORITY_HOST
+	// environment variables injected by workload identity webhook for initialization of ANF driver.
 
-	if os.Getenv("AZURE_CLIENT_ID") != "" && os.Getenv("AZURE_TENANT_ID") != "" && os.Getenv("AZURE_FEDERATED_TOKEN_FILE") != "" && os.Getenv("AZURE_AUTHORITY_HOST") != "" {
+	if os.Getenv("AZURE_CLIENT_ID") != "" && os.Getenv("AZURE_TENANT_ID") != "" &&
+		os.Getenv("AZURE_FEDERATED_TOKEN_FILE") != "" && os.Getenv("AZURE_AUTHORITY_HOST") != "" {
 		Logc(ctx).Info("Using Azure workload identity.")
 	} else {
 		// Azure managed identity
@@ -1336,7 +1337,8 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 				}
 			}
 
-			if err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess, &modifiedExportRule); err != nil {
+			err = d.SDK.ModifyVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess, &modifiedExportRule)
+			if err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1424,22 +1426,18 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 			return errors.VolumeCreatingError(err.Error())
 
 		case api.StateDeleting:
-			// Wait for deletion to complete
-			_, errDelete := d.SDK.WaitForVolumeState(
-				ctx, volume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), operation)
-			if errDelete != nil {
-				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
-					"Volume could not be cleaned up and must be manually deleted.")
-			}
+			// Don't wait if volume is already being deleted
+			Logc(ctx).WithFields(logFields).WithError(err).Error(
+				"Volume is being cleaned up and should be recreated later.")
 
 		case api.StateError:
 			// Delete a failed volume
-			errDelete := d.SDK.DeleteVolume(ctx, volume)
-			if errDelete != nil {
+			if errDelete := d.SDK.DeleteVolume(ctx, volume); errDelete != nil {
 				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
 					"Volume could not be cleaned up and must be manually deleted.")
+				return multierr.Combine(err, errDelete)
 			} else {
-				Logc(ctx).WithField("volume", volume.Name).Info("Volume deleted.")
+				Logc(ctx).WithField("volume", volume.Name).Info("Cleanup of failed volume started.")
 			}
 
 			Logc(ctx).WithFields(logFields).Debugf("Volume is in %s state.", state)
@@ -1453,7 +1451,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 		}
 	}
 
-	return nil
+	return err
 }
 
 // Destroy deletes a volume.
@@ -1482,10 +1480,13 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
 		return nil
 	} else if extantVolume.ProvisioningState == api.StateDeleting {
-		// This is a retry, so give it more time before giving up again.
-		_, err = d.SDK.WaitForVolumeState(
-			ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.volumeCreateTimeout, api.Delete)
-		return err
+		// This is a retry, so give Docker more time before giving up again.  Don't wait in other contexts.
+		if d.Config.DriverContext == tridentconfig.ContextDocker {
+			_, err = d.SDK.WaitForVolumeState(
+				ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), api.Delete)
+			return err
+		}
+		return nil
 	}
 
 	// Delete the volume
@@ -1495,9 +1496,13 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	Logc(ctx).WithField("volume", extantVolume.Name).Info("Volume deleted.")
 
-	// Wait for deletion to complete
-	_, err = d.SDK.WaitForVolumeState(ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), api.Delete)
-	return err
+	// If Docker, wait for deletion to complete.  Don't wait in other contexts.
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
+		_, err = d.SDK.WaitForVolumeState(
+			ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), api.Delete)
+		return err
+	}
+	return nil
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
@@ -1834,10 +1839,13 @@ func (d *NASStorageDriver) DeleteSnapshot(
 		return err
 	}
 
-	// Wait for snapshot deletion to complete
-	return d.SDK.WaitForSnapshotState(
-		ctx, snapshot, extantVolume, api.StateDeleted, []string{api.StateError}, api.SnapshotTimeout,
-	)
+	// If Docker, wait for deletion to complete.  Don't wait in other contexts.
+	if d.Config.DriverContext == tridentconfig.ContextDocker {
+		return d.SDK.WaitForSnapshotState(
+			ctx, snapshot, extantVolume, api.StateDeleted, []string{api.StateError}, api.SnapshotTimeout,
+		)
+	}
+	return nil
 }
 
 // List returns the list of volumes associated with this backend.
