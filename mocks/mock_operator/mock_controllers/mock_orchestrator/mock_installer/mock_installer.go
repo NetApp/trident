@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	v10 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
+	v10 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	version "github.com/netapp/trident/utils/version"
 	v11 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"

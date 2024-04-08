@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/netapp/trident/config"
 	versionutils "github.com/netapp/trident/utils/version"
@@ -21,6 +22,9 @@ const (
 	/* Misc. orchestrator constants */
 	OperatorName    = "trident-operator"
 	operatorVersion = config.DefaultOrchestratorVersion
+
+	// ConfiguratorReconcileInterval is the resource refresh rate for the auto generated backends.
+	ConfiguratorReconcileInterval time.Duration = 30 * time.Minute
 )
 
 var (

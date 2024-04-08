@@ -20,7 +20,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
+	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
@@ -44,6 +44,7 @@ const (
 	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
 	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
 	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
+	ConfiguratorCRDName          = "tridentconfigurators.trident.netapp.io"
 
 	DefaultTimeout = 30
 )
@@ -112,6 +113,7 @@ var (
 		VolumeCRDName,
 		VolumeReferenceCRDName,
 		VolumePublicationCRDName,
+		ConfiguratorCRDName,
 	}
 )
 
@@ -764,6 +766,9 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 	}
 	if err = i.CreateOrPatchCRD(ActionSnapshotRestoreCRDName, k8sclient.GetActionSnapshotRestoreCRDYAML(),
 		false); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(ConfiguratorCRDName, k8sclient.GetConfiguratorCRDYAML(), false); err != nil {
 		return err
 	}
 

@@ -96,7 +96,7 @@ OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
 OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
 OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/operator/controllers/orchestrator/installer
-OPERATOR_KUBERNETES_PKG = github.com/netapp/trident/operator/controllers/orchestrator
+OPERATOR_KUBERNETES_PKG = github.com/netapp/trident/operator/crd
 VERSION_FILE = github.com/netapp/trident/hack/VERSION
 BUILD_ROOT = /go/src/github.com/netapp/trident
 TRIDENT_VOLUME = trident-build
@@ -429,10 +429,10 @@ k8s_codegen_operator:
 	@$(K8S_CODE_GENERATOR)/generate-groups.sh all $(OPERATOR_KUBERNETES_PKG)/client \
 		$(OPERATOR_KUBERNETES_PKG)/apis "netapp:v1" -h ./hack/boilerplate.go.txt
 	@rm -rf $(K8S_CODE_GENERATOR)
-	@rm -rf ./operator/controllers/orchestrator/client/*
-	@mv $(OPERATOR_KUBERNETES_PKG)/client/* ./operator/controllers/orchestrator/client/
-	@rm -rf ./operator/controllers/orchestrator/apis/netapp/v1/zz_generated.deepcopy.go
-	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/controllers/orchestrator/apis/netapp/v1/
+	@rm -rf ./operator/crd/client/*
+	@mv $(OPERATOR_KUBERNETES_PKG)/client/* ./operator/crd/client/
+	@rm -rf ./operator/crd/apis/netapp/v1/zz_generated.deepcopy.go
+	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/crd/apis/netapp/v1/
 
 mocks:
 	@go install github.com/golang/mock/mockgen@v1.6.0

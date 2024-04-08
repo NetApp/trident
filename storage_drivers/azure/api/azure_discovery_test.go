@@ -5,6 +5,7 @@ package api
 import (
 	"context"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 
@@ -845,7 +846,7 @@ func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
 	assert.Nil(t, sdk.EnsureVolumeInValidCapacityPool(context.TODO(), volume), "result not nil")
 }
 
-func TestSubnetsForStoragePool(t *testing.T) {
+func TestSubnetsForStoragePoolAndFilteredSubnetMap(t *testing.T) {
 	sdk := getFakeSDK()
 	RG1_VN1_SN1 := sdk.subnet("RG1/VN1/SN1")
 	RG1_VN2_SN2 := sdk.subnet("RG1/VN2/SN2")
@@ -969,6 +970,131 @@ func TestSubnetsForStoragePool(t *testing.T) {
 			assert.Contains(t, test.expected, subnet)
 		} else {
 			assert.Nil(t, subnet)
+		}
+	}
+
+	for _, test := range tests {
+		var rgFilter []string
+		if test.resourceGroups != "" {
+			rgFilter = strings.Split(test.resourceGroups, ",")
+		}
+
+		subnetMap := sdk.FilteredSubnetMap(context.TODO(), rgFilter, test.virtualNetwork, test.subnet)
+		var subnetList []*Subnet
+		for _, subnet := range subnetMap {
+			subnetList = append(subnetList, subnet)
+		}
+
+		if len(test.expected) > 0 {
+			assert.ElementsMatch(t, test.expected, subnetList)
+		} else {
+			assert.Nil(t, subnetList)
+		}
+	}
+}
+
+func TestFilteredCapacityPoolMap(t *testing.T) {
+	sdk := getFakeSDK()
+	RG1_NA1_CP1 := sdk.capacityPool("RG1/NA1/CP1")
+	RG1_NA1_CP2 := sdk.capacityPool("RG1/NA1/CP2")
+	RG1_NA2_CP1 := sdk.capacityPool("RG1/NA2/CP1")
+	RG1_NA2_CP2 := sdk.capacityPool("RG1/NA2/CP2")
+	RG2_NA1_CP1 := sdk.capacityPool("RG2/NA1/CP1")
+	RG2_NA1_CP2 := sdk.capacityPool("RG2/NA1/CP2")
+	RG2_NA2_CP3 := sdk.capacityPool("RG2/NA2/CP3")
+
+	tests := []struct {
+		resourceGroups []string
+		netappAccounts []string
+		capacityPools  []string
+		expected       []*CapacityPool
+	}{
+		{
+			resourceGroups: []string{"RG1"},
+			netappAccounts: []string{},
+			capacityPools:  []string{},
+			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA1_CP2, RG1_NA2_CP1, RG1_NA2_CP2},
+		},
+		{
+			resourceGroups: []string{"RG2"},
+			netappAccounts: []string{},
+			capacityPools:  []string{},
+			expected:       []*CapacityPool{RG2_NA1_CP1, RG2_NA1_CP2, RG2_NA2_CP3},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{},
+			capacityPools:  []string{},
+			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA1_CP2, RG1_NA2_CP1, RG1_NA2_CP2, RG2_NA1_CP1, RG2_NA1_CP2, RG2_NA2_CP3},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{"NA1"},
+			capacityPools:  []string{},
+			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA1_CP2, RG2_NA1_CP1, RG2_NA1_CP2},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{"NA2"},
+			capacityPools:  []string{},
+			expected:       []*CapacityPool{RG1_NA2_CP1, RG1_NA2_CP2, RG2_NA2_CP3},
+		},
+		{
+			resourceGroups: []string{"RG2"},
+			netappAccounts: []string{"NA2"},
+			capacityPools:  []string{"CP3"},
+			expected:       []*CapacityPool{RG2_NA2_CP3},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{},
+			capacityPools:  []string{"RG1/NA1/CP2"},
+			expected:       []*CapacityPool{RG1_NA1_CP2},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{},
+			capacityPools:  []string{"CP2"},
+			expected:       []*CapacityPool{RG1_NA1_CP2, RG1_NA2_CP2, RG2_NA1_CP2},
+		},
+		{
+			resourceGroups: []string{"RG3"},
+			netappAccounts: []string{},
+			capacityPools:  []string{},
+			expected:       []*CapacityPool{},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{"NA3"},
+			capacityPools:  []string{},
+			expected:       []*CapacityPool{},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{},
+			capacityPools:  []string{"CP4"},
+			expected:       []*CapacityPool{},
+		},
+		{
+			resourceGroups: []string{},
+			netappAccounts: []string{},
+			capacityPools:  []string{"RG3/NA3/CP4"},
+			expected:       []*CapacityPool{},
+		},
+	}
+
+	for _, test := range tests {
+		cpMap := sdk.FilteredCapacityPoolMap(context.TODO(), test.resourceGroups, test.netappAccounts, test.capacityPools)
+
+		var cpList []*CapacityPool
+		for _, cp := range cpMap {
+			cpList = append(cpList, cp)
+		}
+
+		if len(test.expected) > 0 {
+			assert.ElementsMatch(t, test.expected, cpList)
+		} else {
+			assert.Nil(t, cpList)
 		}
 	}
 }

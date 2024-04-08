@@ -26,15 +26,15 @@ import (
 	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/operator/clients"
-	netappv1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
-	"github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned/scheme"
 	"github.com/netapp/trident/operator/controllers/orchestrator/installer"
+	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	operatorV1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	"github.com/netapp/trident/operator/crd/client/clientset/versioned/scheme"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
 type (
-	AppStatus    string
 	ResourceType string // If Operator starts to List and Watch other CR types, this can be used to differentiate.
 )
 
@@ -44,15 +44,6 @@ const (
 	CRDName           = "TridentOrchestrator"
 	Operator          = "trident-operator.netapp.io"
 	CacheSyncPeriod   = 300 * time.Second
-
-	AppStatusNotInstalled AppStatus = ""             // default
-	AppStatusInstalling   AppStatus = "Installing"   // Set only on controlling CR
-	AppStatusInstalled    AppStatus = "Installed"    // Set only on controlling CR
-	AppStatusUninstalling AppStatus = "Uninstalling" // Set only on controlling CR
-	AppStatusUninstalled  AppStatus = "Uninstalled"  // Set only on controlling CR
-	AppStatusFailed       AppStatus = "Failed"       // Set only on controlling CR
-	AppStatusUpdating     AppStatus = "Updating"     // Set only on controlling CR
-	AppStatusError        AppStatus = "Error"        // Should not be set on controlling CR
 
 	ResourceTridentOrchestratorCR ResourceType = "resourceTridentOrchestratorCR"
 	ResourceDeployment            ResourceType = "resourceDeployment"
@@ -668,7 +659,7 @@ func (c *Controller) reconcileTridentNotPresent() error {
 	// Iterate through all the CRs, identify if any of the CRs has status "Uninstalled" then return,
 	// until this CR is removed cannot perform new Trident installation.
 	for _, cr := range tridentCRs {
-		if cr.Status.Status == string(AppStatusUninstalled) {
+		if cr.Status.Status == string(operatorV1.AppStatusUninstalled) {
 			Log().WithField("controllingCR",
 				cr.Name).Warnf("Remove TridentOrchestrator CR with uninstalled status to allow new Trident installation.")
 
@@ -703,7 +694,7 @@ func (c *Controller) reconcileTridentNotPresent() error {
 	statusMessage := "Installing Trident"
 
 	newTridentCR, err := c.updateTorcEventAndStatus(tridentCR, debugMessage, statusMessage,
-		string(AppStatusInstalling), "", "", tridentCR.Spec.Namespace, corev1.EventTypeNormal, nil)
+		string(operatorV1.AppStatusInstalling), "", "", tridentCR.Spec.Namespace, corev1.EventTypeNormal, nil)
 	if err != nil {
 		return errors.ReconcileFailedError(
 			"unable to update status of the CR '%v' to installing", tridentCR.Name)
@@ -865,7 +856,7 @@ func (c *Controller) controllingCRBasedReconcile(
 	controllingCR *netappv1.TridentOrchestrator, deploymentExist bool,
 ) error {
 	// Check to see if controllingCR status is uninstalled, if this is the case installation/patch should not be run
-	if controllingCR.Status.Status == string(AppStatusUninstalled) {
+	if controllingCR.Status.Status == string(operatorV1.AppStatusUninstalled) {
 
 		// If for some reason deployment exists remove Trident installation to make sure Trident remains in
 		// uninstalled state
@@ -892,7 +883,7 @@ func (c *Controller) controllingCRBasedReconcile(
 		statusMessage := "Uninstalled Trident" + crdNote + UninstallationNote
 
 		if _, crErr := c.updateTorcEventAndStatus(controllingCR, debugMessage, statusMessage,
-			string(AppStatusUninstalled), "", "", controllingCR.Status.Namespace, corev1.EventTypeNormal,
+			string(operatorV1.AppStatusUninstalled), "", "", controllingCR.Status.Namespace, corev1.EventTypeNormal,
 			nil); crErr != nil {
 			Log().Error(crErr)
 		}
@@ -924,7 +915,7 @@ func (c *Controller) controllingCRBasedReconcile(
 			debugMessage := "Updating Trident Orchestrator CR after failing to detect Trident Deployment and/or DaemonSet."
 			statusMessage := fmt.Sprintf("Failed to detect installed Trident resources; err: %s", err.Error())
 
-			if _, crErr := c.updateTorcEventAndStatus(controllingCR, debugMessage, statusMessage, string(AppStatusFailed),
+			if _, crErr := c.updateTorcEventAndStatus(controllingCR, debugMessage, statusMessage, string(operatorV1.AppStatusFailed),
 				controllingCR.Status.Version, currentInstalledACPVersion, controllingCR.Status.Namespace,
 				corev1.EventTypeWarning,
 				&controllingCR.Status.CurrentInstallationParams); crErr != nil {
@@ -959,7 +950,7 @@ func (c *Controller) controllingCRBasedReconcile(
 				" `%v` to `%v`; namespace change is not allowed.", currentInstallationNamespace,
 				controllingCR.Spec.Namespace)
 
-			if _, crErr := c.updateTorcEventAndStatus(controllingCR, debugMessage, errorMessage, string(AppStatusFailed),
+			if _, crErr := c.updateTorcEventAndStatus(controllingCR, debugMessage, errorMessage, string(operatorV1.AppStatusFailed),
 				currentInstalledTridentVersion, currentInstalledACPVersion, currentInstallationNamespace,
 				corev1.EventTypeWarning,
 				&controllingCR.Status.CurrentInstallationParams); crErr != nil {
@@ -993,7 +984,7 @@ func (c *Controller) controllingCRBasedReconcile(
 			controllingCRName := controllingCR.Name
 
 			controllingCR, err = c.updateTorcEventAndStatus(controllingCR, debugMessage, statusMessage,
-				string(AppStatusUpdating), currentInstalledTridentVersion, currentInstalledACPVersion,
+				string(operatorV1.AppStatusUpdating), currentInstalledTridentVersion, currentInstalledACPVersion,
 				currentInstallationNamespace,
 				eventType, &controllingCR.Status.CurrentInstallationParams)
 			if err != nil {
@@ -1042,7 +1033,7 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 		}
 
 		if _, crErr := c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage,
-			string(AppStatusFailed), "", "", tridentCR.Spec.Namespace, corev1.EventTypeWarning,
+			string(operatorV1.AppStatusFailed), "", "", tridentCR.Spec.Namespace, corev1.EventTypeWarning,
 			identifiedSpecValues); crErr != nil {
 			Log().Error(crErr)
 		}
@@ -1064,7 +1055,7 @@ func (c *Controller) installTridentAndUpdateStatus(tridentCR netappv1.TridentOrc
 	}
 
 	// TODO: may need to check if ACP version needs to be bumped
-	_, err = c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage, string(AppStatusInstalled),
+	_, err = c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage, string(operatorV1.AppStatusInstalled),
 		identifiedTridentVersion, identifiedACPVersion, tridentCR.Spec.Namespace, eventType,
 		identifiedSpecValues)
 
@@ -1080,7 +1071,7 @@ func (c *Controller) uninstallTridentAndUpdateStatus(
 	debugMessage := "Updating TridentOrchestrator CR before uninstallation"
 	statusMessage := "Uninstalling Trident"
 
-	newTridentCR, err := c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage, string(AppStatusUninstalling),
+	newTridentCR, err := c.updateTorcEventAndStatus(&tridentCR, debugMessage, statusMessage, string(operatorV1.AppStatusUninstalling),
 		currentInstalledTridentVersion, tridentCR.Status.ACPVersion, tridentCR.Status.Namespace, corev1.EventTypeNormal,
 		&tridentCR.Status.CurrentInstallationParams)
 	if err != nil {
@@ -1094,7 +1085,7 @@ func (c *Controller) uninstallTridentAndUpdateStatus(
 		debugMessage := "Updating TridentOrchestrator CR after failed uninstallation."
 		statusMessage := fmt.Sprintf("Failed to uninstall Trident; err: %s", err.Error())
 
-		if _, crErr := c.updateTorcEventAndStatus(newTridentCR, debugMessage, statusMessage, string(AppStatusFailed),
+		if _, crErr := c.updateTorcEventAndStatus(newTridentCR, debugMessage, statusMessage, string(operatorV1.AppStatusFailed),
 			currentInstalledTridentVersion, tridentCR.Status.ACPVersion, tridentCR.Status.Namespace,
 			corev1.EventTypeWarning,
 			&tridentCR.Status.CurrentInstallationParams); crErr != nil {
@@ -1119,7 +1110,7 @@ func (c *Controller) uninstallTridentAndUpdateStatus(
 	statusMessage = "Uninstalled Trident" + crdNote + UninstallationNote
 
 	return c.updateTorcEventAndStatus(newTridentCR, debugMessage, statusMessage,
-		string(AppStatusUninstalled), "", "", newTridentCR.Status.Namespace, corev1.EventTypeNormal, nil)
+		string(operatorV1.AppStatusUninstalled), "", "", newTridentCR.Status.Namespace, corev1.EventTypeNormal, nil)
 }
 
 // uninstallTridentAll uninstalls Trident CSI, Trident CSI Preview, Trident Legacy
@@ -1233,7 +1224,7 @@ func (c *Controller) identifyControllingCRBasedOnStatus() (bool, *netappv1.Tride
 
 	// Identify and return the CR that has status neither "NotInstalled" not "Error"
 	for _, cr := range tridentCRs {
-		if cr.Status.Status == string(AppStatusNotInstalled) || cr.Status.Status == string(AppStatusError) {
+		if cr.Status.Status == string(operatorV1.AppStatusNotInstalled) || cr.Status.Status == string(operatorV1.AppStatusError) {
 			continue
 		}
 
@@ -1299,7 +1290,7 @@ func (c *Controller) updateAllCRs(message string) error {
 	var debugMessage string
 	for _, cr := range allCRs {
 		debugMessage = "Updating " + cr.Name + " TridentOrchestrator CR."
-		_, err = c.updateTorcEventAndStatus(cr, debugMessage, message, string(AppStatusError), "", "",
+		_, err = c.updateTorcEventAndStatus(cr, debugMessage, message, string(operatorV1.AppStatusError), "", "",
 			cr.Spec.Namespace,
 			corev1.EventTypeWarning, nil)
 	}
@@ -1323,7 +1314,7 @@ func (c *Controller) updateOtherCRs(controllingCRName string) error {
 			statusMessage := fmt.Sprintf("Trident is bound to another CR '%v'",
 				controllingCRName)
 
-			_, err = c.updateTorcEventAndStatus(cr, debugMessage, statusMessage, string(AppStatusError), "", "",
+			_, err = c.updateTorcEventAndStatus(cr, debugMessage, statusMessage, string(operatorV1.AppStatusError), "", "",
 				cr.Spec.Namespace, corev1.EventTypeWarning, nil)
 		}
 	}
@@ -1490,7 +1481,7 @@ func (c *Controller) removeNonTorcBasedCSIInstallation(tridentCR *netappv1.Tride
 			" namespace '%v'.", csiTridentNamespace)
 
 		Log().Info(eventMessage)
-		c.eventRecorder.Event(tridentCR, corev1.EventTypeNormal, string(AppStatusInstalling), eventMessage)
+		c.eventRecorder.Event(tridentCR, corev1.EventTypeNormal, string(operatorV1.AppStatusInstalling), eventMessage)
 
 		uninstallRequired = true
 	}
@@ -1505,7 +1496,7 @@ func (c *Controller) removeNonTorcBasedCSIInstallation(tridentCR *netappv1.Tride
 			Log().Error(failureMessage)
 
 			if _, crErr := c.updateTorcEventAndStatus(tridentCR, debugMessage, failureMessage,
-				string(AppStatusFailed), "", "", tridentCR.Spec.Namespace, corev1.EventTypeWarning, nil); crErr != nil {
+				string(operatorV1.AppStatusFailed), "", "", tridentCR.Spec.Namespace, corev1.EventTypeWarning, nil); crErr != nil {
 				Log().Error(crErr)
 			}
 
@@ -1517,7 +1508,7 @@ func (c *Controller) removeNonTorcBasedCSIInstallation(tridentCR *netappv1.Tride
 		eventMessage := "Non-Trident Orchestrator based CSI Trident installation removed."
 
 		Log().Info(eventMessage)
-		c.eventRecorder.Event(tridentCR, corev1.EventTypeNormal, string(AppStatusInstalling), eventMessage)
+		c.eventRecorder.Event(tridentCR, corev1.EventTypeNormal, string(operatorV1.AppStatusInstalling), eventMessage)
 	}
 
 	return nil

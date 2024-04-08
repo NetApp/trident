@@ -17,7 +17,9 @@ import (
 	operatorclient "github.com/netapp/trident/operator/clients"
 	"github.com/netapp/trident/operator/config"
 	"github.com/netapp/trident/operator/controllers"
+	"github.com/netapp/trident/operator/controllers/configurator"
 	"github.com/netapp/trident/operator/controllers/orchestrator"
+	"github.com/netapp/trident/operator/frontend/rest"
 )
 
 var (
@@ -30,6 +32,14 @@ var (
 	k8sAPIServer        = flag.String("k8s-api-server", "", "Kubernetes API server address")
 	k8sConfigPath       = flag.String("k8s-config-path", "", "Path to KubeConfig file")
 	skipK8sVersionCheck = flag.Bool("skip-k8s-version-check", false, "(Deprecated) Skip Kubernetes version check for Trident compatibility")
+
+	configuratorReconcileInterval = flag.Duration("configurator-reconcile-interval",
+		config.ConfiguratorReconcileInterval, "Set resource refresh rate for the auto generated backends")
+)
+
+const (
+	operatorCheckAddress = ""
+	operatorCheckPort    = "8002"
 )
 
 func printFlag(f *flag.Flag) {
@@ -41,7 +51,7 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
-	crdControllers := make([]controllers.Controller, 0)
+	frontends := make([]controllers.Controller, 0)
 
 	// Seed RNG one time
 	rand.Seed(time.Now().UnixNano())
@@ -88,14 +98,24 @@ func main() {
 	}
 
 	// Create Trident Orchestrator controller
-	tridentOrchestrator, err := orchestrator.NewController(k8sClients)
+	torcFrontend, err := orchestrator.NewController(k8sClients)
 	if err != nil {
 		Log().WithField("error", err).Fatalf("Could not create Trident Orchestrator controller.")
 	}
-	crdControllers = append(crdControllers, tridentOrchestrator)
 
-	// Activate the controllers
-	for _, c := range crdControllers {
+	// Create Trident Configurator controller
+	tconfFrontend, err := configurator.NewController(k8sClients, *configuratorReconcileInterval)
+	if err != nil {
+		Log().WithField("error", err).Fatalf("Could not create Trident Configurator controller.")
+	}
+
+	// Create the Operator frontend
+	operatorFrontend := rest.NewHTTPServer(operatorCheckAddress, operatorCheckPort, k8sClients)
+
+	frontends = append(frontends, torcFrontend, tconfFrontend, operatorFrontend)
+
+	// Activate the frontends
+	for _, c := range frontends {
 		_ = c.Activate()
 	}
 
@@ -105,8 +125,8 @@ func main() {
 	<-c
 	Log().Info("Shutting down.")
 
-	// Deactivate the controllers
-	for _, c := range crdControllers {
+	// Deactivate the frontends
+	for _, c := range frontends {
 		_ = c.Deactivate()
 	}
 }

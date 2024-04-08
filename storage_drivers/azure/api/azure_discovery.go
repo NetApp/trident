@@ -999,3 +999,109 @@ func (c Client) RandomSubnetForStoragePool(ctx context.Context, sPool storage.Po
 
 	return filteredSubnets[crypto.GetRandomNumber(len(filteredSubnets))]
 }
+
+// AZ Client Functions for AKS Extension
+
+func (c Client) FilteredCapacityPoolMap(
+	ctx context.Context, rgFilter, naFilter, cpFilter []string,
+) map[string]*CapacityPool {
+	// This map tracks which capacity pools have passed the filters
+	filteredCapacityPoolMap := make(map[string]bool)
+
+	// Start with all capacity pools marked as passing the filters
+	for cPoolFullName := range c.sdkClient.CapacityPoolMap {
+		filteredCapacityPoolMap[cPoolFullName] = true
+	}
+
+	if len(rgFilter) > 0 {
+		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+			if !utils.SliceContainsString(rgFilter, cPool.ResourceGroup) {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
+					Debugf("Ignoring capacity pool %s, not in resource groups [%s].", cPoolFullName, rgFilter)
+				filteredCapacityPoolMap[cPoolFullName] = false
+			}
+		}
+	}
+
+	if len(naFilter) > 0 {
+		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+			naName := cPool.NetAppAccount
+			naFullName := CreateNetappAccountFullName(cPool.ResourceGroup, cPool.NetAppAccount)
+			if !utils.SliceContainsString(naFilter, naName) && !utils.SliceContainsString(naFilter, naFullName) {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
+					Debugf("Ignoring capacity pool %s, not in netapp accounts [%s].", cPoolFullName, naFilter)
+				filteredCapacityPoolMap[cPoolFullName] = false
+			}
+		}
+	}
+
+	if len(cpFilter) > 0 {
+		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+			if !utils.SliceContainsString(cpFilter, cPool.Name) && !utils.SliceContainsString(cpFilter, cPoolFullName) {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
+					Debugf("Ignoring capacity pool %s, not in capacity pools [%s].", cPoolFullName, cpFilter)
+				filteredCapacityPoolMap[cPoolFullName] = false
+			}
+		}
+	}
+
+	newCapacityPoolMap := make(map[string]*CapacityPool)
+	for cpFullName, present := range filteredCapacityPoolMap {
+		if present {
+			newCapacityPoolMap[cpFullName] = c.sdkClient.CapacityPoolMap[cpFullName]
+		}
+	}
+
+	return newCapacityPoolMap
+}
+
+func (c Client) FilteredSubnetMap(
+	ctx context.Context, rgFilter []string, vnFilter, snFilter string,
+) map[string]*Subnet {
+	filteredSubnetMap := make(map[string]bool)
+
+	for subnetFullName := range c.sdkClient.SubnetMap {
+		filteredSubnetMap[subnetFullName] = true
+	}
+
+	if len(rgFilter) > 0 {
+		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+			if !utils.SliceContainsString(rgFilter, subnet.ResourceGroup) {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
+					Tracef("Ignoring subnet %s, not in resource groups [%s].", subnetFullName, rgFilter)
+				filteredSubnetMap[subnetFullName] = false
+			}
+		}
+	}
+
+	if vnFilter != "" {
+		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+			vnName := subnet.VirtualNetwork
+			vnFullName := CreateVirtualNetworkFullName(subnet.ResourceGroup, subnet.VirtualNetwork)
+			if vnFilter != vnName && vnFilter != vnFullName {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
+					Debugf("Ignoring subnet %s, not in virtual network %s.", subnetFullName, vnFilter)
+				filteredSubnetMap[subnetFullName] = false
+			}
+		}
+	}
+
+	if snFilter != "" {
+		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
+			if snFilter != subnet.Name && snFilter != subnetFullName {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).
+					Debugf("Ignoring subnet %s, not equal to subnet %s.", subnetFullName, snFilter)
+				filteredSubnetMap[subnetFullName] = false
+			}
+		}
+	}
+
+	newSubnetMap := make(map[string]*Subnet)
+	for snFullName, present := range filteredSubnetMap {
+		if present {
+			newSubnetMap[snFullName] = c.sdkClient.SubnetMap[snFullName]
+		}
+	}
+
+	return newSubnetMap
+}

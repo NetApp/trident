@@ -144,3 +144,19 @@ iscsiSelfHealingInterval: "5m0s"
 
 # iscsiSelfHealingWaitTime is the wait time after which iSCSI self-healing attempts to fix stale sessions
 iscsiSelfHealingWaitTime: "7m0s"
+
+# configuratorReconcileInterval is the resource refresh rate for the auto generated backends.
+configuratorReconcileInterval: 30m0s
+
+# Auto generated ANF backend related fields consumed by the configurator controller.
+anfConfigurator:
+  enabled: false
+  virtualNetwork: ""
+  subnet: ""
+  subscriptionID: ""
+  tenantID: ""
+  location: ""
+  clientCredentials: ""
+  capacityPools: []
+  netappAccounts: []
+  resourceGroups: []

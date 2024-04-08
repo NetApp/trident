@@ -229,6 +229,34 @@ func (mr *MockAzureMockRecorder) Features() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Features", reflect.TypeOf((*MockAzure)(nil).Features))
 }
 
+// FilteredCapacityPoolMap mocks base method.
+func (m *MockAzure) FilteredCapacityPoolMap(arg0 context.Context, arg1, arg2, arg3 []string) map[string]*api.CapacityPool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilteredCapacityPoolMap", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(map[string]*api.CapacityPool)
+	return ret0
+}
+
+// FilteredCapacityPoolMap indicates an expected call of FilteredCapacityPoolMap.
+func (mr *MockAzureMockRecorder) FilteredCapacityPoolMap(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilteredCapacityPoolMap", reflect.TypeOf((*MockAzure)(nil).FilteredCapacityPoolMap), arg0, arg1, arg2, arg3)
+}
+
+// FilteredSubnetMap mocks base method.
+func (m *MockAzure) FilteredSubnetMap(arg0 context.Context, arg1 []string, arg2, arg3 string) map[string]*api.Subnet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilteredSubnetMap", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(map[string]*api.Subnet)
+	return ret0
+}
+
+// FilteredSubnetMap indicates an expected call of FilteredSubnetMap.
+func (mr *MockAzureMockRecorder) FilteredSubnetMap(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilteredSubnetMap", reflect.TypeOf((*MockAzure)(nil).FilteredSubnetMap), arg0, arg1, arg2, arg3)
+}
+
 // HasFeature mocks base method.
 func (m *MockAzure) HasFeature(arg0 string) bool {
 	m.ctrl.T.Helper()
