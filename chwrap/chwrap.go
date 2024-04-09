@@ -53,6 +53,7 @@ func modifyEnv(oldEnv []string) []string {
 }
 
 func main() {
+	rootPath := "/host"
 	// First modify argv0 to strip off any absolute or relative paths
 	argv := os.Args
 	binary := argv[0]
@@ -61,12 +62,19 @@ func main() {
 		binary = binary[idx+1:]
 	}
 	// Now implement the path search logic, but in the host's filesystem
-	argv0 := findBinary("/host", binary)
+	argv0 := findBinary(rootPath, binary)
 	if "" == argv0 {
-		panic(binary + " not found")
+		// binary is not found on /host.
+		argv0 = findBinary("", binary)
+		if "" == argv0 {
+			panic(binary + " not found")
+		} else {
+			// Binary found locally.
+			rootPath = "/"
+		}
 	}
-	// Chroot in the the host's FS
-	if err := unix.Chroot("/host"); nil != err {
+	// Chroot in the host's FS
+	if err := unix.Chroot(rootPath); nil != err {
 		panic(err)
 	}
 	// Change cwd to the root

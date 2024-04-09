@@ -178,10 +178,15 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (
 
 	// Build the command
 	var args []string
+	mountCommand := "mount.nfs"
+	nfsVersRegex := regexp.MustCompile(`nfsvers\s*=\s*4(\.\d+)?`)
+	if nfsVersRegex.MatchString(options) {
+		mountCommand = "mount.nfs4"
+	}
 	if len(options) > 0 {
-		args = []string{"-t", "nfs", "-o", strings.TrimPrefix(options, "-o "), exportPath, mountpoint}
+		args = []string{"-o", strings.TrimPrefix(options, "-o "), exportPath, mountpoint}
 	} else {
-		args = []string{"-t", "nfs", exportPath, mountpoint}
+		args = []string{exportPath, mountpoint}
 	}
 
 	// Create the mount point dir if necessary
@@ -189,7 +194,7 @@ func mountNFSPath(ctx context.Context, exportPath, mountpoint, options string) (
 		Logc(ctx).WithField("error", err).Warning("Mkdir failed.")
 	}
 
-	if out, err := command.Execute(ctx, "mount", args...); err != nil {
+	if out, err := command.Execute(ctx, mountCommand, args...); err != nil {
 		Logc(ctx).WithField("output", string(out)).Debug("Mount failed.")
 		return fmt.Errorf("error mounting NFS volume %v on mountpoint %v: %v", exportPath, mountpoint, err)
 	}
