@@ -735,6 +735,17 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 		if err == nil {
 			topologyLabels = nodeDetails.TopologyLabels
 			node.TopologyLabels = nodeDetails.TopologyLabels
+
+			// Setting log level, log workflows and log layers on the node same as to what is set on the controller.
+			if err = p.orchestrator.SetLogLevel(ctx, nodeDetails.LogLevel); err != nil {
+				Logc(ctx).WithError(err).Error("Unable to set log level.")
+			}
+			if err = p.orchestrator.SetLoggingWorkflows(ctx, nodeDetails.LogWorkflows); err != nil {
+				Logc(ctx).WithError(err).Error("Unable to set logging workflows.")
+			}
+			if err = p.orchestrator.SetLogLayers(ctx, nodeDetails.LogLayers); err != nil {
+				Logc(ctx).WithError(err).Error("Unable to set logging layers.")
+			}
 		}
 		return err
 	}

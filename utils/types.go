@@ -168,6 +168,9 @@ type Node struct {
 	HostInfo         *HostSystem          `json:"hostInfo,omitempty"`
 	Deleted          bool                 `json:"deleted"`
 	PublicationState NodePublicationState `json:"publicationState"`
+	LogLevel         string               `json:"logLevel"`
+	LogWorkflows     string               `json:"logWorkflows"`
+	LogLayers        string               `json:"logLayers"`
 }
 
 type NodeExternal struct {
@@ -180,6 +183,9 @@ type NodeExternal struct {
 	HostInfo         *HostSystem          `json:"hostInfo,omitempty"`
 	Deleted          *bool                `json:"deleted,omitempty"`
 	PublicationState NodePublicationState `json:"publicationState,omitempty"`
+	LogLevel         string               `json:"logLevel"`
+	LogWorkflows     string               `json:"logWorkflows"`
+	LogLayers        string               `json:"logLayers"`
 }
 
 func (n *Node) Copy() *Node {
@@ -209,6 +215,9 @@ func (n *Node) ConstructExternal() *NodeExternal {
 		HostInfo:         node.HostInfo,
 		Deleted:          Ptr(node.Deleted),
 		PublicationState: node.PublicationState,
+		LogLevel:         node.LogLevel,
+		LogWorkflows:     node.LogWorkflows,
+		LogLayers:        node.LogLayers,
 	}
 }
 

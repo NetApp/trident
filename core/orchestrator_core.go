@@ -5150,6 +5150,16 @@ func (o *TridentOrchestrator) AddNode(
 		node.PublicationState = existingNode.PublicationState
 	}
 
+	// Setting log level, log workflows and log layers on the node same as to what is set on the controller.
+	logLevel := GetDefaultLogLevel()
+	node.LogLevel = logLevel
+
+	logWorkflows := GetSelectedWorkFlows()
+	node.LogWorkflows = logWorkflows
+
+	logLayers := GetSelectedLogLayers()
+	node.LogLayers = logLayers
+
 	if err = o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
 		return
 	}

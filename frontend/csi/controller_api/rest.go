@@ -119,6 +119,9 @@ func (c *ControllerRestClient) InvokeAPI(
 
 type CreateNodeResponse struct {
 	TopologyLabels map[string]string `json:"topologyLabels"`
+	LogLevel       string            `json:"logLevel"`
+	LogWorkflows   string            `json:"logWorkflows"`
+	LogLayers      string            `json:"logLayers"`
 }
 
 // CreateNode registers the node with the CSI controller server

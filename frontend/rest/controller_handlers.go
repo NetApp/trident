@@ -913,6 +913,9 @@ func DeleteStorageClass(w http.ResponseWriter, r *http.Request) {
 type AddNodeResponse struct {
 	Name           string            `json:"name"`
 	TopologyLabels map[string]string `json:"topologyLabels,omitempty"`
+	LogLevel       string            `json:"logLevel,omitempty"`
+	LogWorkflows   string            `json:"logWorkflows,omitempty"`
+	LogLayers      string            `json:"logLayers,omitempty"`
 	Error          string            `json:"error,omitempty"`
 }
 
@@ -947,6 +950,9 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 		Name:           "",
 		TopologyLabels: make(map[string]string),
 		Error:          "",
+		LogLayers:      "",
+		LogLevel:       "",
+		LogWorkflows:   "",
 	}
 
 	const auditMsg = "AddNode endpoint called."
@@ -997,11 +1003,15 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 			nodeEventCallback := func(eventType, reason, message string) {
 				helper.RecordNodeEvent(ctx, node.Name, eventType, reason, message)
 			}
+
 			err = orchestrator.AddNode(ctx, node, nodeEventCallback)
 			if err != nil {
 				response.setError(err)
 			}
 			updateResponse.Name = node.Name
+			updateResponse.LogLevel = node.LogLevel
+			updateResponse.LogWorkflows = node.LogWorkflows
+			updateResponse.LogLayers = node.LogLayers
 			return httpStatusCodeForAdd(err)
 		},
 	)

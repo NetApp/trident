@@ -376,6 +376,12 @@ type TridentNode struct {
 	Deleted bool `json:"deleted"`
 	// PublicationState indicates whether the node is safe for volume publications
 	PublicationState string `json:"publicationState"`
+	// LogLevel indicates the log level which is currently set for the node
+	LogLevel string `json:"logLevel"`
+	// LogWorkflows indicates the selected workflows which are currently set for the node
+	LogWorkflows string `json:"logWorkflows"`
+	// LogLayers indicates the selected log layers which are currently set for the node
+	LogLayers string `json:"logLayers"`
 }
 
 // TridentNodeList is a list of TridentNode objects.

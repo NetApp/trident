@@ -43,6 +43,9 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 	in.IPs = persistent.IPs
 	in.Deleted = persistent.Deleted
 	in.PublicationState = string(persistent.PublicationState)
+	in.LogLevel = persistent.LogLevel
+	in.LogWorkflows = persistent.LogWorkflows
+	in.LogLayers = persistent.LogLayers
 
 	nodePrep, err := json.Marshal(persistent.NodePrep)
 	if err != nil {
