@@ -6,13 +6,13 @@
 
 * Docker-compatible container cli, such as nerdctl or docker
 * Make, if not building natively or with linker flags
-* Go 1.19 or greater, to optionally build Trident natively
+* Go 1.21 or greater, to optionally build Trident natively
 
 ### Multi-Platform
 
 * Make
 * Docker
-* Go 1.19 or greater, to optionally build Trident binaries natively
+* Go 1.21 or greater, to optionally build Trident binaries natively
 * jq
 
 ## Makefile Parameters
@@ -32,7 +32,7 @@ Container registry used to tag images and manifests, and optionally to push imag
 
 `GO_IMAGE`
 
-Default: `golang:1.19`
+Default: `golang:1.21`
 
 Container image used by default `$GO_SHELL` to run binary build scripts.
 
@@ -52,11 +52,15 @@ Default: `alpine/helm:3.6.1`
 
 Container image used by default `$HELM_CMD` to package helm chart.
 
+`HELM_CHART_VERSION`
+
+If defined, overrides the default chart version
+
 `DOCKER_CLI`
 
 Default: `docker`
 
-docker-compatible cli, such as nerdctl or docker, used to run containers and tag single-platform images.
+Docker-compatible cli, such as nerdctl or docker, used to run containers and tag single-platform images.
 
 `BUILD_CLI`
 

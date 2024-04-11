@@ -28,6 +28,9 @@ GOFLAGS ?=
 # HELM_IMAGE helm image used in default HELM_CMD
 HELM_IMAGE ?= alpine/helm:3.6.1
 
+# HELM_CHART_VERSION overrides the default chart version
+HELM_CHART_VERSION ?=
+
 # DOCKER_CLI the docker-compatible cli used to run and tag images
 DOCKER_CLI ?= docker
 
@@ -363,7 +366,9 @@ operator_manifest: operator_images
 # packages helm chart
 chart:
 	@cp README.md ./helm/trident-operator/
-	@$(HELM_CMD) package ./helm/trident-operator $(if $(HELM_PGP_KEY),--sign --key "$(HELM_PGP_KEY)" --keyring "$(HELM_PGP_KEYRING)")
+	@$(HELM_CMD) package ./helm/trident-operator \
+		$(if $(HELM_PGP_KEY),--sign --key "$(HELM_PGP_KEY)" --keyring "$(HELM_PGP_KEYRING)") \
+		$(if $(HELM_CHART_VERSION),--version "$(HELM_CHART_VERSION)")
 	@rm -f ./helm/trident-operator/README.md
 
 # builds installer bundle. Skips binaries that have not been built.
