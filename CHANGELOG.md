@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v23.10.0
+## Changes since v24.02.0
+
+**Enhancements:**
+
+- Added support to run Trident as an Extension in Azure Kubernetes Service.
+
+## v24.02.0
 
 **Fixes:**
 
