@@ -26,6 +26,9 @@ spec:
       labels:
         app: operator.trident.netapp.io
         name: trident-operator
+        {{- if and (eq .Values.cloudProvider "Azure") (ne .Values.cloudIdentity "") }}
+        azure.workload.identity/use: 'true'
+        {{- end }}
     spec:
       affinity:
         nodeAffinity:
@@ -61,6 +64,7 @@ spec:
       containers:
       - command:
         - /trident-operator
+        - -configurator-reconcile-interval={{ .Values.configuratorReconcileInterval }}
         {{- if .Values.operatorDebug }}
         - -debug
         {{- end }}
@@ -71,6 +75,27 @@ spec:
               fieldPath: metadata.name
         - name: OPERATOR_NAME
           value: trident-operator
+        {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
+        - name: AZURE_CREDENTIAL_FILE
+          value: /etc/kubernetes/azure.json
+        volumeMounts:
+          - name: azure-cred
+            mountPath: /etc/kubernetes
+        {{- end }}
         image: {{ include "trident-operator.image" $ }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: trident-operator
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "40Mi"
+          limits:
+            cpu: "20m"
+            memory: "80Mi"
+      {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
+      volumes:
+      - name: azure-cred
+        hostPath:
+          path: /etc/kubernetes
+          type: DirectoryOrCreate
+      {{- end }}

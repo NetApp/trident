@@ -2,9 +2,10 @@
 
 package controllers
 
+import (
+	. "github.com/netapp/trident/operator/frontend"
+)
+
 type Controller interface {
-	Activate() error
-	Deactivate() error
-	GetName() string
-	Version() string
+	Frontend
 }

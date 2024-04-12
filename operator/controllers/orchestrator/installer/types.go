@@ -15,7 +15,7 @@ import (
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	v15 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
+	v15 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 )
 
 // TridentInstaller is responsible for installing, patching, or uninstalling orchestrator controlled instances of Trident.

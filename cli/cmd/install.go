@@ -49,6 +49,7 @@ const (
 	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
 	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
 	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
+	ConfiguratorCRDName          = "tridentconfigurators.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -175,6 +176,7 @@ var (
 		VolumeCRDName,
 		VolumePublicationCRDName,
 		ActionSnapshotRestoreCRDName,
+		ConfiguratorCRDName,
 	}
 )
 

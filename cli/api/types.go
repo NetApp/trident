@@ -86,3 +86,25 @@ type KubernetesNamespace struct {
 	Kind       string   `json:"kind"`
 	Metadata   Metadata `json:"metadata"`
 }
+
+type CRStatus struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type OperatorPhaseStatus string
+
+const (
+	OperatorPhaseDone       OperatorPhaseStatus = "Done"
+	OperatorPhaseProcessing OperatorPhaseStatus = "Processing"
+	OperatorPhaseUnknown    OperatorPhaseStatus = "Unknown"
+	OperatorPhaseFailed     OperatorPhaseStatus = "Failed"
+	OperatorPhaseError      OperatorPhaseStatus = "Error"
+)
+
+type OperatorStatus struct {
+	ErrorMessage string              `json:"errorMessage"`
+	Status       string              `json:"operatorStatus"`
+	TorcStatus   map[string]CRStatus `json:"torcStatus"`
+	TconfStatus  map[string]CRStatus `json:"tconfStatus"`
+}

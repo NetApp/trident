@@ -28,6 +28,9 @@ GOFLAGS ?=
 # HELM_IMAGE helm image used in default HELM_CMD
 HELM_IMAGE ?= alpine/helm:3.6.1
 
+# HELM_CHART_VERSION overrides the default chart version
+HELM_CHART_VERSION ?=
+
 # DOCKER_CLI the docker-compatible cli used to run and tag images
 DOCKER_CLI ?= docker
 
@@ -96,7 +99,7 @@ OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
 TRIDENT_KUBERNETES_PKG = github.com/netapp/trident/persistent_store/crd
 OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
 OPERATOR_INSTALLER_CONFIG_PKG = github.com/netapp/trident/operator/controllers/orchestrator/installer
-OPERATOR_KUBERNETES_PKG = github.com/netapp/trident/operator/controllers/orchestrator
+OPERATOR_KUBERNETES_PKG = github.com/netapp/trident/operator/crd
 VERSION_FILE = github.com/netapp/trident/hack/VERSION
 BUILD_ROOT = /go/src/github.com/netapp/trident
 TRIDENT_VOLUME = trident-build
@@ -363,7 +366,9 @@ operator_manifest: operator_images
 # packages helm chart
 chart:
 	@cp README.md ./helm/trident-operator/
-	@$(HELM_CMD) package ./helm/trident-operator $(if $(HELM_PGP_KEY),--sign --key "$(HELM_PGP_KEY)" --keyring "$(HELM_PGP_KEYRING)")
+	@$(HELM_CMD) package ./helm/trident-operator \
+		$(if $(HELM_PGP_KEY),--sign --key "$(HELM_PGP_KEY)" --keyring "$(HELM_PGP_KEYRING)") \
+		$(if $(HELM_CHART_VERSION),--version "$(HELM_CHART_VERSION)")
 	@rm -f ./helm/trident-operator/README.md
 
 # builds installer bundle. Skips binaries that have not been built.
@@ -429,10 +434,10 @@ k8s_codegen_operator:
 	@$(K8S_CODE_GENERATOR)/generate-groups.sh all $(OPERATOR_KUBERNETES_PKG)/client \
 		$(OPERATOR_KUBERNETES_PKG)/apis "netapp:v1" -h ./hack/boilerplate.go.txt
 	@rm -rf $(K8S_CODE_GENERATOR)
-	@rm -rf ./operator/controllers/orchestrator/client/*
-	@mv $(OPERATOR_KUBERNETES_PKG)/client/* ./operator/controllers/orchestrator/client/
-	@rm -rf ./operator/controllers/orchestrator/apis/netapp/v1/zz_generated.deepcopy.go
-	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/controllers/orchestrator/apis/netapp/v1/
+	@rm -rf ./operator/crd/client/*
+	@mv $(OPERATOR_KUBERNETES_PKG)/client/* ./operator/crd/client/
+	@rm -rf ./operator/crd/apis/netapp/v1/zz_generated.deepcopy.go
+	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/crd/apis/netapp/v1/
 
 mocks:
 	@go install github.com/golang/mock/mockgen@v1.6.0

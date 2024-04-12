@@ -19,7 +19,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	torc "github.com/netapp/trident/operator/controllers/orchestrator/client/clientset/versioned"
+	torc "github.com/netapp/trident/operator/crd/client/clientset/versioned"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils/errors"
 )

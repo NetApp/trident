@@ -1,0 +1,31 @@
+{{- if .Values.anfConfigurator.enabled }}
+apiVersion: trident.netapp.io/v1
+kind: TridentConfigurator
+metadata:
+  name: netapp-anf-backend-configurator
+spec:
+  storageDriverName: azure-netapp-files
+  {{- if eq .Values.cloudProvider "" }}
+  tenantID: {{ .Values.anfConfigurator.tenantID }}
+  clientCredentials: {{ .Values.anfConfigurator.clientCredentials }}
+  {{- end }}
+  {{- if or (eq .Values.cloudProvider "") (and (eq .Values.cloudProvider "Azure") (ne .Values.cloudIdentity "")) }}
+  subscriptionID: {{ .Values.anfConfigurator.subscriptionID }}
+  location: {{ .Values.anfConfigurator.location }}
+  {{- end }}
+  virtualNetwork: {{ .Values.anfConfigurator.virtualNetwork }}
+  subnet: {{ .Values.anfConfigurator.subnet }}
+  capacityPools:
+    {{- range .Values.anfConfigurator.capacityPools }}
+    - {{ . }}
+    {{- end }}
+  netappAccounts:
+    {{- range .Values.anfConfigurator.netappAccounts }}
+    - {{ . }}
+    {{- end }}
+  resourceGroups:
+    {{- range .Values.anfConfigurator.resourceGroups }}
+    - {{ . }}
+    {{- end }}
+{{- end }}
+

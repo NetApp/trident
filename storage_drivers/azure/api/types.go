@@ -25,6 +25,8 @@ type Azure interface {
 	EnsureVolumeInValidCapacityPool(context.Context, *FileSystem) error
 	SubnetsForStoragePool(context.Context, storage.Pool) []*Subnet
 	RandomSubnetForStoragePool(context.Context, storage.Pool) *Subnet
+	FilteredCapacityPoolMap(ctx context.Context, rgFilter, naFilter, cpFilter []string) map[string]*CapacityPool
+	FilteredSubnetMap(ctx context.Context, rgFilter []string, vnFilter, snFilter string) map[string]*Subnet
 
 	Volumes(context.Context) (*[]*FileSystem, error)
 	Volume(context.Context, *storage.VolumeConfig) (*FileSystem, error)

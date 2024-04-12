@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
-	v1 "github.com/netapp/trident/operator/controllers/orchestrator/apis/netapp/v1"
+	v1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	version "github.com/netapp/trident/utils/version"
 	v10 "k8s.io/api/apps/v1"
 	v11 "k8s.io/api/core/v1"

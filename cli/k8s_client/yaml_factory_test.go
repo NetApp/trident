@@ -2135,6 +2135,75 @@ func TestGetCRDsYAML(t *testing.T) {
 			},
 		},
 	}
+	expected15 := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentconfigurators.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentconfigurators",
+				Singular:   "tridentconfigurator",
+				Kind:       "TridentConfigurator",
+				ShortNames: []string{"tconf", "tconfigurator"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Cluster",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema1,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Phase",
+							Type:        "string",
+							Description: "The backend config phase",
+							Priority:    int32(0),
+							JSONPath:    ".status.phase",
+						},
+						{
+							Name:        "Status",
+							Type:        "string",
+							Description: "The result of the last operation",
+							Priority:    int32(0),
+							JSONPath:    ".status.lastOperationStatus",
+						},
+						{
+							Name:        "Cloud Provider",
+							Type:        "string",
+							Description: "The name of cloud provider",
+							Priority:    int32(0),
+							JSONPath:    ".status.cloudProvider",
+						},
+						{
+							Name:        "Storage Driver",
+							Type:        "string",
+							Description: "The storage driver type",
+							Priority:    int32(1),
+							JSONPath:    ".spec.storageDriverName",
+						},
+						{
+							Name:        "Deletion Policy",
+							Type:        "string",
+							Description: "The deletion policy",
+							Priority:    int32(1),
+							JSONPath:    ".status.deletionPolicy",
+						},
+					},
+				},
+			},
+		},
+	}
 
 	// trident version
 	var actual1 apiextensionsv1.CustomResourceDefinition
@@ -2233,6 +2302,13 @@ func TestGetCRDsYAML(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(expected14.TypeMeta, actual14.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected14.ObjectMeta, actual14.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected14.Spec, actual14.Spec))
+
+	// trident configurator
+	var actual15 apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(result[14]), &actual15), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected15.TypeMeta, actual15.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected15.ObjectMeta, actual15.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected15.Spec, actual15.Spec))
 }
 
 func TestGetVersionCRDYAML(t *testing.T) {
@@ -2495,6 +2571,93 @@ func TestGetBackendConfigCRDYAML(t *testing.T) {
 	}
 
 	actualYAML := GetBackendConfigCRDYAML()
+
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.True(t, reflect.DeepEqual(expected.Spec, actual.Spec))
+}
+
+func TestGetConfiguratorCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentconfigurators.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentconfigurators",
+				Singular:   "tridentconfigurator",
+				Kind:       "TridentConfigurator",
+				ShortNames: []string{"tconf", "tconfigurator"},
+				Categories: []string{"trident", "trident-internal", "trident-external"},
+			},
+			Scope: "Cluster",
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+						Scale:  nil,
+					},
+					AdditionalPrinterColumns: []apiextensionsv1.CustomResourceColumnDefinition{
+						{
+							Name:        "Phase",
+							Type:        "string",
+							Description: "The backend config phase",
+							Priority:    int32(0),
+							JSONPath:    ".status.phase",
+						},
+						{
+							Name:        "Status",
+							Type:        "string",
+							Description: "The result of the last operation",
+							Priority:    int32(0),
+							JSONPath:    ".status.lastOperationStatus",
+						},
+						{
+							Name:        "Cloud Provider",
+							Type:        "string",
+							Description: "The name of cloud provider",
+							Priority:    int32(0),
+							JSONPath:    ".status.cloudProvider",
+						},
+						{
+							Name:        "Storage Driver",
+							Type:        "string",
+							Description: "The storage driver type",
+							Priority:    int32(1),
+							JSONPath:    ".spec.storageDriverName",
+						},
+						{
+							Name:        "Deletion Policy",
+							Type:        "string",
+							Description: "The deletion policy",
+							Priority:    int32(1),
+							JSONPath:    ".status.deletionPolicy",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	actualYAML := GetConfiguratorCRDYAML()
 
 	var actual apiextensionsv1.CustomResourceDefinition
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")

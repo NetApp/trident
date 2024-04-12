@@ -600,6 +600,10 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
         - name: TRIDENT_SERVER
@@ -1591,6 +1595,12 @@ func GetBackendConfigCRDYAML() string {
 	return tridentBackendConfigCRDYAMLv1
 }
 
+func GetConfiguratorCRDYAML() string {
+	Log().Trace(">>>> GetConfiguratorCRDYAML")
+	defer func() { Log().Trace("<<<< GetConfiguratorCRDYAML") }()
+	return tridentConfiguratorCRDYAMLv1
+}
+
 func GetMirrorRelationshipCRDYAML() string {
 	Log().Trace(">>>> GetMirrorRelationshipCRDYAML")
 	defer func() { Log().Trace("<<<< GetMirrorRelationshipCRDYAML") }()
@@ -2060,6 +2070,62 @@ spec:
     - trident-internal
     - trident-external`
 
+const tridentConfiguratorCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentconfigurators.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+          openAPIV3Schema:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+      - name: Phase
+        type: string
+        description: The backend config phase
+        priority: 0
+        jsonPath: .status.phase
+      - name: Status
+        type: string
+        description: The result of the last operation
+        priority: 0
+        jsonPath: .status.lastOperationStatus
+      - name: Cloud Provider
+        type: string
+        description: The name of cloud provider
+        priority: 0
+        jsonPath: .status.cloudProvider
+      - name: Storage Driver
+        type: string
+        description: The storage driver type
+        priority: 1
+        jsonPath: .spec.storageDriverName
+      - name: Deletion Policy
+        type: string
+        description: The deletion policy
+        priority: 1
+        jsonPath: .status.deletionPolicy
+  scope: Cluster
+  names:
+    plural: tridentconfigurators
+    singular: tridentconfigurator
+    kind: TridentConfigurator
+    shortNames:
+    - tconf
+    - tconfigurator
+    categories:
+    - trident
+    - trident-internal
+    - trident-external`
+
 const tridentStorageClassCRDYAMLv1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -2427,7 +2493,8 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 +
 	"\n---" + tridentVolumeReferenceCRDYAMLv1 +
-	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 + "\n"
+	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 +
+	"\n---" + tridentConfiguratorCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{

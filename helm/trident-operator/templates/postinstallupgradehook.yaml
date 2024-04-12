@@ -1,0 +1,58 @@
+{{- if .Values.anfConfigurator.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: trident-operator
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: operator.trident.netapp.io
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8002
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: trident-post-install-upgrade-hook
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install, post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded, hook-failed
+spec:
+  restartPolicy: Never
+  initContainers:
+    - name: init-container-1
+      image: {{ include "trident.image" $ }}
+      command:
+        - tridentctl
+        - --debug
+        - -s
+        - 127.0.0.1:8000
+        - check
+        - operator
+        - --timeout
+        - "7200" # Keeping it 12mins as AKS extension script has an upper limit of 15mins.
+      env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+  containers:
+    - name: trident-post-hook
+      image: {{ include "trident.image" $ }}
+      command:
+        - tridentctl
+        - --debug
+        - -s
+        - 127.0.0.1:8000
+        - check
+        - operator
+      env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+{{- end }}
