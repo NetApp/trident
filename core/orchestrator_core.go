@@ -263,11 +263,7 @@ func (o *TridentOrchestrator) bootstrapBackends(ctx context.Context) error {
 		if found {
 			newBackend.SetOnline(b.Online)
 
-			if b.UserState != "" {
-				newBackend.SetUserState(b.UserState)
-			} else {
-				newBackend.SetUserState(storage.UserNormal)
-			}
+			newBackend.SetUserState(b.UserState)
 
 			if backendErr != nil {
 				newBackend.SetState(storage.Failed)
@@ -1094,7 +1090,16 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 		}
 	}
 
-	return factory.NewStorageBackendForConfig(ctx, configInJSON, configRef, backendUUID, commonConfig, backendSecret)
+	sb, err := factory.NewStorageBackendForConfig(ctx, configInJSON, configRef, backendUUID, commonConfig, backendSecret)
+
+	if commonConfig.UserState != "" {
+		// If the userState field is present in tbc/backend.json, then update the userBackendState.
+		if err = o.updateUserBackendState(ctx, &sb, commonConfig.UserState, false); err != nil {
+			return nil, err
+		}
+	}
+
+	return sb, err
 }
 
 // UpdateBackend updates an existing backend.
@@ -1256,6 +1261,15 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 	backend, err = o.validateAndCreateBackendFromConfig(ctx, configJSON, callingConfigRef, backendUUID)
 	if err != nil {
 		return nil, err
+	}
+
+	// We're updating a backend, there can be two scenarios (related to userState):
+	// 1. userState field is not present in the tbc/backend.json,
+	//       so we should set it to whatever it was before.
+	// 2. userState field is present in the tbc/backend.json, then we've already set it
+	//       when we called validateAndCreateBackendFromConfig() above.
+	if backend.Driver().GetCommonConfig(ctx).UserState == "" {
+		backend.SetUserState(originalBackend.UserState())
 	}
 
 	if err = o.validateBackendUpdate(originalBackend, backend); err != nil {
@@ -1431,49 +1445,79 @@ func (o *TridentOrchestrator) UpdateBackendState(
 	}
 
 	if userBackendState != "" {
-		backendExternal, err = o.updateUserBackendState(ctx, backend, userBackendState)
+		if err = o.updateUserBackendState(ctx, &backend, userBackendState, true); err != nil {
+			return nil, err
+		}
 	}
 	if backendState != "" {
-		backendExternal, err = o.updateBackendState(ctx, backend, backendState)
+		if err = o.updateBackendState(ctx, &backend, backendState); err != nil {
+			return nil, err
+		}
 	}
 
-	return backendExternal, err
+	return backend.ConstructExternal(ctx), o.storeClient.UpdateBackend(ctx, backend)
 }
 
-func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, backend storage.Backend, userBackendState string) (backendExternal *storage.BackendExternal, err error) {
+func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, sb *storage.Backend, userBackendState string, isCLI bool) (err error) {
+	backend := *sb
 	Logc(ctx).WithFields(LogFields{
 		"backendName":      backend.Name(),
 		"userBackendState": userBackendState,
 	}).Debug("updateUserBackendState")
+
+	// There are primarily two methods for creating a backend:
+	// 1. Backend is either created via tbc or linked to tbc, then there can be two scenarios:
+	//     A. If the userState field is present in the config section of the tbc,
+	//        then updating via tridentctl is not allowed.
+	//	   B. If the userState field is not present in the config section of the tbc,
+	//	      then updating via tridentctl is allowed.
+	// 2. Backend is created via tridentctl, using backend.json:
+	//     A. It doesn't matter if the userState field is present in the backend.json or not,
+	//        updating via tridentctl is allowed.
+	if isCLI {
+		commonConfig := backend.Driver().GetCommonConfig(ctx)
+		if commonConfig.UserState != "" {
+			if backend.ConfigRef() != "" {
+				return fmt.Errorf("updating via tridentctl is not allowed when `userState` field is set in the tbc of the backend")
+			} else {
+				// If the userState has been updated via tridentctl,
+				//    then in the config section of tbe, userState will be shown empty.
+				// We will only come to this section of the code when a backend is created via tridentctl using backend.json,
+				//    and hasn't been linked to any of the tbc yet.
+				commonConfig.UserState = ""
+			}
+		}
+	}
 
 	userBackendState = strings.ToLower(userBackendState)
 	newUserBackendState := storage.UserBackendState(userBackendState)
 
 	// An extra check to ensure that the user-backend state is valid.
 	if err = newUserBackendState.Validate(); err != nil {
-		return nil, err
+		return fmt.Errorf("invalid user backend state provided: %s, allowed are: `%s`, `%s`", string(newUserBackendState), storage.UserNormal, storage.UserSuspended)
 	}
 
 	// Idempotent check.
 	if backend.UserState() == newUserBackendState {
-		return backend.ConstructExternal(ctx), nil
+		return nil
 	}
 
 	// If the user requested for the backend to be suspended.
 	if newUserBackendState.IsSuspended() {
 		// Backend is only suspended when its current state is either online, offline or failed.
 		if !backend.State().IsOnline() && !backend.State().IsOffline() && !backend.State().IsFailed() {
-			return nil, fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(), backend.State())
+			return fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(), backend.State())
 		}
 	}
 
 	// Update the user-backend state.
 	backend.SetUserState(newUserBackendState)
 
-	return backend.ConstructExternal(ctx), o.storeClient.UpdateBackend(ctx, backend)
+	return nil
 }
 
-func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backend storage.Backend, backendState string) (backendExternal *storage.BackendExternal, err error) {
+func (o *TridentOrchestrator) updateBackendState(ctx context.Context, sb *storage.Backend, backendState string) (err error) {
+	backend := *sb
 	Logc(ctx).WithFields(LogFields{
 		"backendName":      backend.Name(),
 		"userBackendState": backendState,
@@ -1484,7 +1528,7 @@ func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backend st
 
 	// Limit the command to Failed
 	if !newBackendState.IsFailed() {
-		return nil, fmt.Errorf("unsupported backend state: %s", newBackendState)
+		return fmt.Errorf("unsupported backend state: %s", newBackendState)
 	}
 
 	if !newBackendState.IsOnline() {
@@ -1492,7 +1536,7 @@ func (o *TridentOrchestrator) updateBackendState(ctx context.Context, backend st
 	}
 	backend.SetState(newBackendState)
 
-	return backend.ConstructExternal(ctx), o.storeClient.UpdateBackend(ctx, backend)
+	return nil
 }
 
 func (o *TridentOrchestrator) getBackendUUIDByBackendName(backendName string) (string, error) {

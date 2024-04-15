@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
-	"github.com/tidwall/gjson"
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -79,14 +78,6 @@ func NewStorageBackendForConfig(
 		}
 	}()
 
-	// Retrieving userBackendState that either has been set by the user via an update/creation of the tbc/backend.json
-	// or was previously stored in the config and the control flow is a part of the orchestrator bootstrap process.
-	var userBackendState storage.UserBackendState
-	if userBackendState, err = GetUserBackendState(ctx, configJSON); err != nil {
-		Logc(ctx).WithField("error", err).Error("Failed to get userBackendState from the config, setting it to default i.e. UserNormal")
-	}
-	Logc(ctx).WithField("userBackendState", userBackendState).Trace("Retrieved userBackendState from the config.")
-
 	driverProtocol, err := GetDriverProtocol(commonConfig.StorageDriverName, configJSON)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Failed to get driver protocol.")
@@ -120,7 +111,6 @@ func NewStorageBackendForConfig(
 
 	if err == nil {
 		sb.SetState(storage.Online)
-		sb.SetUserState(userBackendState)
 	}
 	sb.SetBackendUUID(backendUUID)
 	sb.SetConfigRef(configRef)
@@ -201,22 +191,4 @@ func GetDriverProtocol(driverName, configJSON string) (string, error) {
 	}
 
 	return "", nil
-}
-
-// GetUserBackendState retrieves the userBackendState that was set by the user
-// in the storage backend config file, either in tbc or backend.json.
-func GetUserBackendState(ctx context.Context, configJSON string) (storage.UserBackendState, error) {
-	// gjon is a Go package that provides a fast and simple way to get values from a json document
-	value := gjson.Get(configJSON, "userBackendState")
-
-	// Converting the value to userBackendState and validating it.
-	// If validation failed i.e., any value other than suspended or normal is provided,
-	// by default userBackendState: UserNormal will be returned.
-	userBackendState := storage.UserBackendState(strings.ToLower(value.String()))
-	if err := userBackendState.Validate(); err != nil {
-		Logc(ctx).WithField("error", err).Error("Validation failed for user backend state.")
-		return storage.UserNormal, err
-	}
-
-	return userBackendState, nil
 }

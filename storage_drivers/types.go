@@ -76,6 +76,7 @@ type CommonStorageDriverConfig struct {
 	DriverContext     trident.DriverContext `json:"-"`
 	LimitVolumeSize   string                `json:"limitVolumeSize"`
 	Credentials       map[string]string     `json:"credentials"`
+	UserState         string                `json:"userState"`
 }
 
 type CommonStorageDriverConfigDefaults struct {
@@ -715,8 +716,7 @@ type FakeStorageDriverConfig struct {
 	Username     string                  `json:"username"`
 	Password     string                  `json:"password"`
 	// Dummy field for unit tests
-	VolumeAccess     string `json:"volumeAccess"`
-	UserBackendState string `json:"userBackendState"`
+	VolumeAccess string `json:"volumeAccess"`
 	FakeStorageDriverPool
 }
 

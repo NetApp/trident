@@ -8547,12 +8547,14 @@ func TestUpdateBackendState(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	fakeStorageDriver := fakedriver.NewFakeStorageDriverWithDebugTraceFlags(nil)
 	o := getOrchestrator(t, false)
 	o.storeClient = mockStoreClient
 	o.bootstrapError = nil
 	o.backends[backendUUID] = mockBackend
 
 	mockBackend.EXPECT().Name().Return("something").AnyTimes()
+	mockBackend.EXPECT().Driver().Return(fakeStorageDriver).AnyTimes()
 	mockBackend.EXPECT().GetDriverName().Return("ontap").AnyTimes()
 	mockBackend.EXPECT().SetState(gomock.Any()).AnyTimes()
 	mockBackend.EXPECT().SetUserState(gomock.Any()).AnyTimes()
@@ -8638,4 +8640,19 @@ func TestUpdateBackendState(t *testing.T) {
 	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
 	assert.Error(t, err, "should return error, bootstrap error")
 	o.bootstrapError = nil
+
+	// Test 15 - when commonConfig.userState in tbc is set
+	fakeStorageDriver.Config.UserState = "suspended"
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	mockBackend.EXPECT().ConfigRef().Return("1234").Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
+	assert.Errorf(t, err, "should return error, userBackendState is set in commonConfig, so modifying via cli is not allowed")
+
+	// Test 16 - when commonConfig.userState in tbe is set, and there's no tbc linked to this tbe yet.
+	fakeStorageDriver.Config.UserState = "suspended"
+	mockBackend.EXPECT().ConfigRef().Return("").Times(1)
+	mockBackend.EXPECT().State().Return(storage.Online).Times(1)
+	mockBackend.EXPECT().UserState().Return(storage.UserSuspended).Times(1)
+	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
+	assert.NoError(t, err, "update to userState via tridentctl should be allowed when there's no tbc linked to this tbe yet")
 }
