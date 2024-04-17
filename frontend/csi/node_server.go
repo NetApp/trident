@@ -37,6 +37,7 @@ const (
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maximumNodeReconciliationJitter = 5000 * time.Millisecond
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
+	csiNodeLockTimeout              = 60 * time.Second
 )
 
 var (
@@ -51,20 +52,33 @@ var (
 	NVMeNamespacesFlushRetry = make(map[string]time.Time)
 )
 
+func attemptLock(ctx context.Context, lockContext string, lockTimeout time.Duration) bool {
+	startTime := time.Now()
+	utils.Lock(ctx, lockContext, lockID)
+	// Fail if the gRPC call came in a long time ago to avoid kubelet 120s timeout
+	if time.Since(startTime) > lockTimeout {
+		Logc(ctx).Debugf("Request spent more than %v in the queue and timed out", csiNodeLockTimeout)
+		return false
+	}
+	return true
+}
+
 func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 	ctx = SetContextWorkflow(ctx, WorkflowNodeStage)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
-	lockContext := "NodeStageVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
-	defer utils.Unlock(ctx, lockContext, lockID)
-
 	fields := LogFields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeStageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeStageVolume")
 
+	lockContext := "NodeStageVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
 		if req.PublishContext["filesystemType"] == utils.SMB {
@@ -94,10 +108,6 @@ func (p *Plugin) NodeUnstageVolume(
 func (p *Plugin) nodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
-	lockContext := "NodeUnstageVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
-	defer utils.Unlock(ctx, lockContext, lockID)
-
 	fields := LogFields{
 		"Method": "NodeUnstageVolume",
 		"Type":   "CSI_Node",
@@ -106,6 +116,12 @@ func (p *Plugin) nodeUnstageVolume(
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnstageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
+	lockContext := "NodeUnstageVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
 	// Empty strings for either of these arguments are required by CSI Sanity to return an error.
 	if req.VolumeId == "" {
 		msg := "nodeUnstageVolume was called, but no VolumeID was provided in the request"
@@ -179,14 +195,16 @@ func (p *Plugin) NodePublishVolume(
 	ctx = SetContextWorkflow(ctx, WorkflowNodePublish)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
-	lockContext := "NodePublishVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
-	defer utils.Unlock(ctx, lockContext, lockID)
-
 	fields := LogFields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodePublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodePublishVolume")
 
+	lockContext := "NodePublishVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
@@ -220,13 +238,16 @@ func (p *Plugin) NodeUnpublishVolume(
 	ctx = SetContextWorkflow(ctx, WorkflowNodeUnpublish)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
-	lockContext := "NodeUnpublishVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
-	defer utils.Unlock(ctx, lockContext, lockID)
-
 	fields := LogFields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnpublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnpublishVolume")
+
+	lockContext := "NodeUnpublishVolume-" + req.GetVolumeId()
+	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext, csiNodeLockTimeout) {
+		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	}
 
 	if req.GetVolumeId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")

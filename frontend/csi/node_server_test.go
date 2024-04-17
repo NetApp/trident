@@ -5,6 +5,7 @@ package csi
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -993,4 +994,73 @@ func TestFixNVMeSessions(t *testing.T) {
 	nodeServer.fixNVMeSessions(ctx, time.UnixMicro(0), subsystems)
 	// Cleanup of global objects.
 	publishedNVMeSessions.RemoveNVMeSession(subsystem1.NQN)
+}
+
+// The test is to check if the lock is acquired by the first request for a long time
+// the second request timesout and returns false while attempting to aquire lock
+// This is done by letting the first request acquire the lock and starting another go routine
+// that also tries to take a lock with a timeout of 2sec. The first requests relinquishes the lock
+// after 5sec. By the time the second request gets the lock, locktimeout has expired and it returns
+// a failure
+func TestAttemptLock_Failure(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	ctx := context.Background()
+	lockContext := "fakeLockContext-req1"
+	lockTimeout := 200 * time.Millisecond
+	// first request takes the lock
+	expected := attemptLock(ctx, lockContext, lockTimeout)
+
+	// start the second request so that it is in race for the lock
+	go func() {
+		defer wg.Done()
+		ctx := context.Background()
+		lockContext := "fakeLockContext-req2"
+		expected := attemptLock(ctx, lockContext, lockTimeout)
+
+		assert.False(t, expected)
+		utils.Unlock(ctx, lockContext, lockID)
+	}()
+	// first request goes to sleep holding the lock
+	if expected {
+		time.Sleep(500 * time.Millisecond)
+	}
+	utils.Unlock(ctx, lockContext, lockID)
+	wg.Wait()
+}
+
+// The test is to check if the lock is acquired by the first request for a short time
+// the second request doesn't timesout and aquires lock after request1 releases the lock
+// This is done by letting the first request acquire the lock and starting another go routine
+// that also tries to take a lock with a timeout of 5sec. The first requests relinquishes the lock
+// after 2sec. The second request gets the lock before the locktimeout has expired and returns success.
+func TestAttemptLock_Success(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	ctx := context.Background()
+	lockContext := "fakeLockContext-req1"
+	lockTimeout := 500 * time.Millisecond
+	// first request takes the lock
+	expected := attemptLock(ctx, lockContext, lockTimeout)
+
+	// start the second request so that it is in race for the lock
+	go func() {
+		defer wg.Done()
+		ctx := context.Background()
+		lockContext := "fakeLockContext-req2"
+		lockTimeout := 5 * time.Second
+
+		expected := attemptLock(ctx, lockContext, lockTimeout)
+
+		assert.True(t, expected)
+		utils.Unlock(ctx, lockContext, lockID)
+	}()
+	// first request goes to sleep holding the lock
+	if expected {
+		time.Sleep(200 * time.Millisecond)
+	}
+	utils.Unlock(ctx, lockContext, lockID)
+	wg.Wait()
 }
