@@ -149,6 +149,12 @@ rules:
   - apiGroups:
       - snapshot.storage.k8s.io
     resources:
+      - volumesnapshotclasses
+    verbs:
+      - create
+  - apiGroups:
+      - snapshot.storage.k8s.io
+    resources:
       - volumesnapshots/status
       - volumesnapshotcontents/status
     verbs:
@@ -230,6 +236,8 @@ rules:
       - tridentprovisioners/status # Required to update Tprov's status section
       - tridentorchestrators # Required for Torc
       - tridentorchestrators/status # Required to update Torc's status section
+      - tridentconfigurators # Required for tconf
+      - tridentconfigurators/status # Required to update tconf's status section
     verbs:
       - get
       - list
