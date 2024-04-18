@@ -279,10 +279,6 @@ func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
 		return false
 	}
 
-	if feature == LunGeometrySkip {
-		return !ontapSemVer.AtLeast(versionutils.MustParseSemantic("9.11.0"))
-	}
-
 	if minVersion, ok := featuresByVersion[feature]; ok {
 		return ontapSemVer.AtLeast(minVersion)
 	} else {

@@ -20,13 +20,12 @@ import (
 	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
-	"github.com/netapp/trident/utils"
-
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -1133,7 +1132,7 @@ func TestGet_WithErrorInApiOperation(t *testing.T) {
 }
 
 func TestEnsureFlexvolForQtree_Success_EligibleFlexvolFound(t *testing.T) {
-	driverConfig := drivers.OntapStorageDriverConfig{
+	driverConfig := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{},
 	}
 
@@ -1157,7 +1156,7 @@ func TestEnsureFlexvolForQtree_Success_EligibleFlexvolFound(t *testing.T) {
 }
 
 func TestEnsureFlexvolForQtree_Success_NoEligibleFlexvol(t *testing.T) {
-	driverConfig := drivers.OntapStorageDriverConfig{
+	driverConfig := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{},
 	}
 
@@ -1187,8 +1186,8 @@ func TestEnsureFlexvolForQtree_Success_NoEligibleFlexvol(t *testing.T) {
 }
 
 func TestEnsureFlexvolForQtree_WithInvalidConfig(t *testing.T) {
-	driverConfig := drivers.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{LimitVolumeSize: "invalid"},
+	driverConfig := &drivers.OntapStorageDriverConfig{
+		LimitVolumePoolSize: "invalid",
 	}
 
 	_, driver := newMockOntapNasQtreeDriver(t)
@@ -1202,7 +1201,7 @@ func TestEnsureFlexvolForQtree_WithInvalidConfig(t *testing.T) {
 }
 
 func TestEnsureFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
-	driverConfig := drivers.OntapStorageDriverConfig{
+	driverConfig := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{},
 	}
 
@@ -2804,6 +2803,147 @@ func TestResize_WithInvalidVolumeSizeLimit(t *testing.T) {
 	assert.Error(t, result, "Expected error when invalid volume size limit, but got no error")
 }
 
+func TestResize_OverSizeLimit(t *testing.T) {
+	volName := "vol1"
+	volNameInternal := volName + "Internal"
+	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	volInfo.Aggregates = []string{"aggr1"}
+	volConfig := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+	}
+	resizeToInBytes := 10737418240 // 10g
+
+	quotaEntry := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 1073741824}
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.CommonStorageDriverConfig.LimitVolumeSize = "9GiB"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
+	mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).AnyTimes().Return(volInfo, nil)
+
+	result := driver.Resize(ctx, volConfig, uint64(resizeToInBytes))
+	assert.Error(t, result, "Expected error with insufficient volume size limit, but got no error")
+}
+
+func TestResize_OverPoolSizeLimit_CheckPassed(t *testing.T) {
+	volName := "vol1"
+	volNameInternal := volName + "Internal"
+	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	volInfo.Aggregates = []string{"aggr1"}
+	volInfo.Size = "1181116006"
+	volConfig := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+	}
+	resizeToInBytes := 10737418240 // 10g
+
+	quotaEntry := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 1073741824}
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.LimitVolumePoolSize = "20GiB"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
+	mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).AnyTimes().Return(volInfo, nil)
+	mockAPI.EXPECT().VolumeSetSize(ctx, volName, gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().QuotaSetEntry(ctx, volNameInternal, volName, gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().QuotaEntryList(ctx, volName).AnyTimes().Return(api.QuotaEntries{quotaEntry}, nil)
+
+	result := driver.Resize(ctx, volConfig, uint64(resizeToInBytes))
+
+	assert.NoError(t, result, "Expected no error")
+}
+
+func TestResize_OverPoolSizeLimit_MultipleQtrees(t *testing.T) {
+	volName := "vol1"
+	volNameInternal := volName + "Internal"
+	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	volInfo.Aggregates = []string{"aggr1"}
+	volInfo.Size = "10737418240"
+	volInfo.SnapshotReserve = 0
+	volConfig := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+	}
+	resizeToInBytes := 10737418240 // 10g
+
+	quotaEntry1 := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 1073741824}
+	quotaEntry2 := &api.QuotaEntry{Target: "/vol/vol1/qtree2", DiskLimitBytes: 3221225472}
+	quotaEntries := api.QuotaEntries{quotaEntry1, quotaEntry2}
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.LimitVolumePoolSize = "11GiB"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).Return(true, volName, nil)
+	mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).Return(quotaEntry1, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(volInfo, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(volInfo, nil)
+	mockAPI.EXPECT().QuotaEntryList(ctx, volName).Return(quotaEntries, nil)
+
+	result := driver.Resize(ctx, volConfig, uint64(resizeToInBytes))
+
+	assert.Error(t, result, "Expected error")
+	ok, _ := errors.HasUnsupportedCapacityRangeError(result)
+	assert.True(t, ok)
+}
+
+func TestResize_OverPoolSizeLimit_OneQtree(t *testing.T) {
+	volName := "vol1"
+	volNameInternal := volName + "Internal"
+	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	volInfo.Aggregates = []string{"aggr1"}
+	volInfo.Size = "1181116006"
+	volConfig := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+	}
+	resizeToInBytes := 10737418240 // 10g
+
+	quotaEntry := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 1073741824}
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.LimitVolumePoolSize = "9GiB"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).Return(true, volName, nil)
+	mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).Return(quotaEntry, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(volInfo, nil)
+
+	result := driver.Resize(ctx, volConfig, uint64(resizeToInBytes))
+
+	assert.Error(t, result, "Expected error")
+	ok, _ := errors.HasUnsupportedCapacityRangeError(result)
+	assert.True(t, ok)
+}
+
+func TestResize_OverPoolSizeLimitCheck_VolumeInfoFailed(t *testing.T) {
+	volName := "vol1"
+	volNameInternal := volName + "Internal"
+	volInfo, _ := MockGetVolumeInfo(ctx, volName)
+	volInfo.Aggregates = []string{"aggr1"}
+	volInfo.Size = "1181116006"
+	volConfig := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+	}
+	resizeToInBytes := 10737418240 // 10g
+
+	quotaEntry := &api.QuotaEntry{Target: "/vol/vol1/qtree1", DiskLimitBytes: 1073741824}
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.LimitVolumePoolSize = "20GiB"
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
+	mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(volInfo, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).AnyTimes().Return(nil, failed)
+
+	result := driver.Resize(ctx, volConfig, uint64(resizeToInBytes))
+
+	assert.Error(t, result, "Expected error")
+}
+
 func TestResize_WithErrorInApiOperation(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
@@ -3182,14 +3322,14 @@ func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_1Gi(t *testing.T) {
 	}
 	qtreeName := "foo"
 	flexvolName := "bar"
-	expectedLimit := quotaEntry.DiskLimitBytes
+	expectedLimit := uint64(quotaEntry.DiskLimitBytes)
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().QuotaGetEntry(gomock.Any(), flexvolName, qtreeName, "tree").Return(quotaEntry, nil)
-
 	driver := newNASQtreeStorageDriver(mockAPI)
 
 	limit, err := driver.getQuotaDiskLimitSize(ctx, qtreeName, flexvolName)
+
 	assert.Nil(t, err, fmt.Sprintf("Unexpected err, %v", err))
 	assert.Equal(t, expectedLimit, limit, "Unexpected return value")
 }
@@ -3203,14 +3343,35 @@ func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_1Ki(t *testing.T) {
 	}
 	qtreeName := "foo"
 	flexvolName := "bar"
-	expectedLimit := quotaEntry.DiskLimitBytes
+	expectedLimit := uint64(quotaEntry.DiskLimitBytes)
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().QuotaGetEntry(gomock.Any(), flexvolName, qtreeName, "tree").Return(quotaEntry, nil)
-
 	driver := newNASQtreeStorageDriver(mockAPI)
 
 	limit, err := driver.getQuotaDiskLimitSize(ctx, qtreeName, flexvolName)
+
+	assert.Nil(t, err, fmt.Sprintf("Unexpected err, %v", err))
+	assert.Equal(t, expectedLimit, limit, "Unexpected return value")
+}
+
+func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_NoLimit(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+
+	quotaEntry := &api.QuotaEntry{
+		Target:         "",
+		DiskLimitBytes: -1,
+	}
+	qtreeName := "foo"
+	flexvolName := "bar"
+	expectedLimit := uint64(0)
+
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().QuotaGetEntry(gomock.Any(), flexvolName, qtreeName, "tree").Return(quotaEntry, nil)
+	driver := newNASQtreeStorageDriver(mockAPI)
+
+	limit, err := driver.getQuotaDiskLimitSize(ctx, qtreeName, flexvolName)
+
 	assert.Nil(t, err, fmt.Sprintf("Unexpected err, %v", err))
 	assert.Equal(t, expectedLimit, limit, "Unexpected return value")
 }
@@ -3220,14 +3381,14 @@ func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_Error(t *testing.T) {
 
 	qtreeName := "foo"
 	flexvolName := "bar"
-	expectedLimit := int64(0)
+	expectedLimit := uint64(0)
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().QuotaGetEntry(gomock.Any(), flexvolName, qtreeName, "tree").Return(nil, fmt.Errorf("error"))
-
 	driver := newNASQtreeStorageDriver(mockAPI)
 
 	limit, err := driver.getQuotaDiskLimitSize(ctx, qtreeName, flexvolName)
+
 	assert.NotNil(t, err, "Unexpected success")
 	assert.Equal(t, expectedLimit, limit, "Unexpected return value")
 }
@@ -3356,6 +3517,7 @@ func TestNASQtreeStorageDriver_VolumeCreate(t *testing.T) {
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.AutoExportPolicy = true
 	driver.Config.NASType = sa.SMB
+	driver.Config.LimitVolumeSize = "2g"
 	volAttrs := map[string]sa.Request{}
 
 	addCommonExpectForQtreeCreate(mockAPI, flexvol, flexvolName, sizeBytesStr)
@@ -3556,6 +3718,89 @@ func TestCreate_WithInvalidConfig(t *testing.T) {
 			assert.Error(t, result, "Expected error in volume create %s, got nil", test.name)
 		})
 	}
+}
+
+func TestCreate_OverSizeLimit(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	qtreeName := "qtree1"
+	volConfig := &storage.VolumeConfig{
+		Size:         "200g",
+		FileSystem:   "nfs",
+		Name:         qtreeName,
+		InternalName: qtreeName,
+	}
+
+	sb := &storage.StorageBackend{}
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.AutoExportPolicy = true
+	driver.Config.NASType = sa.SMB
+	driver.Config.LimitVolumeSize = "100g"
+	volAttrs := map[string]sa.Request{}
+
+	mockAPI.EXPECT().QtreeExists(ctx, qtreeName, "*").Return(false, "", nil)
+
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.Error(t, result)
+}
+
+func TestCreate_OverPoolSizeLimit(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	qtreeName := "qtree1"
+	volConfig := &storage.VolumeConfig{
+		Size:         "5g",
+		FileSystem:   "nfs",
+		Name:         qtreeName,
+		InternalName: qtreeName,
+	}
+	flexvolName := "flexvol1"
+	flexvol := &api.Volume{Name: flexvolName}
+	sizeBytes := 1073741824
+	sizeBytesStr := strconv.FormatUint(uint64(sizeBytes), 10)
+
+	sb := &storage.StorageBackend{}
+	sb.SetBackendUUID(BackendUUID)
+	pool1 := storage.NewStoragePool(sb, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.AutoExportPolicy = true
+	driver.Config.NASType = sa.SMB
+	driver.Config.LimitVolumePoolSize = "2g"
+	volAttrs := map[string]sa.Request{}
+
+	addCommonExpectForQtreeCreate(mockAPI, flexvol, flexvolName, sizeBytesStr)
+	mockAPI.EXPECT().QtreeExists(ctx, qtreeName, "*").Return(false, "", nil)
+
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.Error(t, result, "Expected error in volume create when ineligible backend, got nil")
 }
 
 func TestCreate_WithIneligibleBackend(t *testing.T) {

@@ -465,6 +465,12 @@ func (d *SANEconomyStorageDriver) Create(
 
 	lunSize := strconv.FormatUint(sizeBytes, 10)
 
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
+
 	// Ensure LUN name isn't too long
 	if len(name) > maxLunNameLength {
 		return fmt.Errorf("volume %s name exceeds the limit of %d characters", name, maxLunNameLength)
@@ -574,7 +580,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 		// Make sure we have a Flexvol for the new LUN
 		bucketVol, newVol, err = d.ensureFlexvolForLUN(
-			ctx, volAttrs, sizeBytes, opts, d.Config, storagePool, ignoredVols,
+			ctx, volAttrs, sizeBytes, opts, &d.Config, storagePool, ignoredVols,
 		)
 		if err != nil {
 			errMessage := fmt.Sprintf(
@@ -808,6 +814,29 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 	}
 	if !sourceLunExists {
 		return fmt.Errorf("error source LUN %s does not exist", source)
+	}
+
+	sourceLunSizeBytes, lunSizeErr := d.getLUNSize(ctx, source, flexvol)
+	if lunSizeErr != nil {
+		Logc(ctx).WithField("error", err).Error("Failed to determine LUN size")
+		return lunSizeErr
+	}
+
+	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
+		ctx, sourceLunSizeBytes, config)
+	if checkFlexvolSizeLimitsError != nil {
+		return checkFlexvolSizeLimitsError
+	}
+
+	if shouldLimitFlexvolSize {
+		sizeWithRequest, flexvolSizeErr := d.getOptimalSizeForFlexvol(ctx, flexvol, sourceLunSizeBytes)
+		if flexvolSizeErr != nil {
+			return fmt.Errorf("could not calculate optimal Flexvol size; %v", flexvolSizeErr)
+		}
+		if sizeWithRequest > flexvolSizeLimit {
+			return errors.UnsupportedCapacityRangeError(fmt.Errorf(
+				"requested size %d would exceed the pool size limit %d", sourceLunSizeBytes, flexvolSizeLimit))
+		}
 	}
 
 	// Create the clone based on given LUN
@@ -1509,18 +1538,16 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 // as is a boolean indicating whether the volume was newly created to satisfy this request.
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	ctx context.Context, volAttrs *api.Volume, sizeBytes uint64, opts map[string]string,
-	config drivers.OntapStorageDriverConfig,
-	storagePool storage.Pool, ignoredVols map[string]struct{},
+	config *drivers.OntapStorageDriverConfig, storagePool storage.Pool, ignoredVols map[string]struct{},
 ) (string, bool, error) {
-	shouldLimitVolumeSize, flexvolSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, config.CommonStorageDriverConfig,
-	)
-	if checkVolumeSizeLimitsError != nil {
-		return "", false, checkVolumeSizeLimitsError
+	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
+		ctx, sizeBytes, config)
+	if checkFlexvolSizeLimitsError != nil {
+		return "", false, checkFlexvolSizeLimitsError
 	}
 
 	// Check if a suitable Flexvol already exists
-	flexvol, err := d.getFlexvolForLUN(ctx, volAttrs, sizeBytes, shouldLimitVolumeSize, flexvolSizeLimit, ignoredVols)
+	flexvol, err := d.getFlexvolForLUN(ctx, volAttrs, sizeBytes, shouldLimitFlexvolSize, flexvolSizeLimit, ignoredVols)
 	if err != nil {
 		return "", false, fmt.Errorf("error finding Flexvol for LUN: %v", err)
 	}
@@ -2085,48 +2112,40 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		return fmt.Errorf("requested size %d is less than existing volume size %d", flexvolSize, totalLunSize)
 	}
 
+	// Enforce aggregate usage limit
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, bucketVol, flexvolSize, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
+	// Enforce volume size limit
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, flexvolSize, d.Config.CommonStorageDriverConfig,
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
 	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
-	// Resize operations
-	lunPath := d.helper.GetLUNPath(bucketVol, name)
-	if !d.API.SupportsFeature(ctx, api.LunGeometrySkip) {
-		// Check LUN geometry and verify LUN max size.
-		lunMaxSize, err := d.API.LunGetGeometry(ctx, lunPath)
-		if err != nil {
-			Logc(ctx).WithField("error", err).Error("LUN resize failed.")
-			return fmt.Errorf("volume resize failed")
-		}
-
-		if lunMaxSize < sizeBytes {
-			Logc(ctx).WithFields(
-				LogFields{
-					"error":      err,
-					"sizeBytes":  sizeBytes,
-					"lunMaxSize": lunMaxSize,
-					"lunPath":    lunPath,
-				},
-			).Error("Requested size is larger than LUN's maximum capacity.")
-			return errors.UnsupportedCapacityRangeError(fmt.Errorf(
-				"volume resize failed as requested size is larger than LUN's maximum capacity"))
-		}
+	// Enforce Flexvol pool size limit
+	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
+		ctx, sizeBytes, &d.Config)
+	if checkFlexvolSizeLimitsError != nil {
+		return checkFlexvolSizeLimitsError
 	}
+	if shouldLimitFlexvolSize && flexvolSize > flexvolSizeLimit {
+		return errors.UnsupportedCapacityRangeError(fmt.Errorf(
+			"requested size %d would exceed the pool size limit %d", sizeBytes, flexvolSizeLimit))
+	}
+
+	// Resize operations
+
+	lunPath := d.helper.GetLUNPath(bucketVol, name)
 
 	// Resize FlexVol
 	err = d.API.VolumeSetSize(ctx, bucketVol, strconv.FormatUint(flexvolSize, 10))
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Volume resize failed.")
 		return fmt.Errorf("volume resize failed")
-
 	}
 
 	// Resize LUN

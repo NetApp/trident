@@ -1228,6 +1228,7 @@ const (
 	DefaultMirroring                 = "false"
 	DefaultLimitAggregateUsage       = ""
 	DefaultLimitVolumeSize           = ""
+	DefaultLimitVolumePoolSize       = ""
 	DefaultTieringPolicy             = ""
 )
 
@@ -1332,14 +1333,6 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.Mirroring = DefaultMirroring
 	}
 
-	if config.LimitAggregateUsage == "" {
-		config.LimitAggregateUsage = DefaultLimitAggregateUsage
-	}
-
-	if config.LimitVolumeSize == "" {
-		config.LimitVolumeSize = DefaultLimitVolumeSize
-	}
-
 	if config.TieringPolicy == "" {
 		config.TieringPolicy = DefaultTieringPolicy
 	}
@@ -1403,6 +1396,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"Mirroring":              config.Mirroring,
 		"LimitAggregateUsage":    config.LimitAggregateUsage,
 		"LimitVolumeSize":        config.LimitVolumeSize,
+		"LimitVolumePoolSize":    config.LimitVolumePoolSize,
 		"Size":                   config.Size,
 		"TieringPolicy":          config.TieringPolicy,
 		"AutoExportPolicy":       config.AutoExportPolicy,
@@ -1525,6 +1519,43 @@ func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error
 			sizeBytes, MinimumVolumeSizeBytes))
 	}
 	return sizeBytes, nil
+}
+
+// CheckVolumePoolSizeLimits checks if a volume pool size limit has been set.
+func CheckVolumePoolSizeLimits(
+	ctx context.Context, requestedSize uint64, config *drivers.OntapStorageDriverConfig,
+) (bool, uint64, error) {
+	// If the user specified a limit for volume pool size, parse and enforce it
+	limitVolumePoolSize := config.LimitVolumePoolSize
+	Logc(ctx).WithFields(LogFields{
+		"limitVolumePoolSize": limitVolumePoolSize,
+	}).Debugf("Limits")
+
+	if limitVolumePoolSize == "" {
+		Logc(ctx).Debugf("No limits specified, not limiting volume pool size")
+		return false, 0, nil
+	}
+
+	var volumePoolSizeLimit uint64
+	volumePoolSizeLimitStr, parseErr := utils.ConvertSizeToBytes(limitVolumePoolSize)
+	if parseErr != nil {
+		return false, 0, fmt.Errorf("error parsing limitVolumePoolSize: %v", parseErr)
+	}
+	volumePoolSizeLimit, _ = strconv.ParseUint(volumePoolSizeLimitStr, 10, 64)
+
+	Logc(ctx).WithFields(LogFields{
+		"limitVolumePoolSize": limitVolumePoolSize,
+		"volumePoolSizeLimit": volumePoolSizeLimit,
+		"requestedSizeBytes":  requestedSize,
+	}).Debugf("Comparing pool limits")
+
+	// Check whether pool size limit would prevent *any* Flexvol from working
+	if requestedSize > volumePoolSizeLimit {
+		return true, volumePoolSizeLimit, errors.UnsupportedCapacityRangeError(fmt.Errorf(
+			"requested size: %d > the pool size limit: %d", requestedSize, volumePoolSizeLimit))
+	}
+
+	return true, volumePoolSizeLimit, nil
 }
 
 func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {

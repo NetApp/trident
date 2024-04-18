@@ -355,6 +355,12 @@ func (d *NASQtreeStorageDriver) Create(
 		return err
 	}
 
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
+
 	// Ensure qtree name isn't too long
 	if len(name) > maxQtreeNameLength {
 		return fmt.Errorf("volume %s name exceeds the limit of %d characters", name, maxQtreeNameLength)
@@ -429,7 +435,7 @@ func (d *NASQtreeStorageDriver) Create(
 		// Make sure we have a Flexvol for the new qtree
 		flexvol, err := d.ensureFlexvolForQtree(
 			ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, sizeBytes,
-			d.Config, snapshotReserve, exportPolicy)
+			&d.Config, snapshotReserve, exportPolicy)
 		if err != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol location/creation failed %s: %v",
 				storagePool.Name(), aggregate, name, err)
@@ -1034,18 +1040,18 @@ func (d *NASQtreeStorageDriver) Get(ctx context.Context, name string) error {
 // qtree or it creates a new Flexvol with the needed attributes.
 func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool,
-	enableEncryption *bool, sizeBytes uint64, config drivers.OntapStorageDriverConfig, snapshotReserve,
+	enableEncryption *bool, sizeBytes uint64, config *drivers.OntapStorageDriverConfig, snapshotReserve,
 	exportPolicy string,
 ) (string, error) {
-	shouldLimitVolumeSize, flexvolQuotaSizeLimit, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, config.CommonStorageDriverConfig)
-	if checkVolumeSizeLimitsError != nil {
-		return "", checkVolumeSizeLimitsError
+	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
+		ctx, sizeBytes, config)
+	if checkFlexvolSizeLimitsError != nil {
+		return "", checkFlexvolSizeLimitsError
 	}
 
 	// Check if a suitable Flexvol already exists
 	flexvol, err := d.findFlexvolForQtree(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve,
-		enableSnapshotDir, enableEncryption, shouldLimitVolumeSize, sizeBytes, flexvolQuotaSizeLimit)
+		enableSnapshotDir, enableEncryption, shouldLimitFlexvolSize, sizeBytes, flexvolSizeLimit)
 	if err != nil {
 		return "", fmt.Errorf("error finding Flexvol for qtree: %v", err)
 	}
@@ -1175,8 +1181,8 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 // is returned at random.
 func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve string,
-	enableSnapshotDir bool, enableEncryption *bool, shouldLimitFlexvolQuotaSize bool,
-	sizeBytes, flexvolQuotaSizeLimit uint64,
+	enableSnapshotDir bool, enableEncryption *bool, shouldLimitFlexvolSize bool,
+	sizeBytes, flexvolSizeLimit uint64,
 ) (string, error) {
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
@@ -1207,15 +1213,14 @@ func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 		volName := volume.Name
 
 		// skip flexvols over the size limit
-		if shouldLimitFlexvolQuotaSize {
+		if shouldLimitFlexvolSize {
 			sizeWithRequest, err := d.getOptimalSizeForFlexvol(ctx, volName, sizeBytes)
 			if err != nil {
 				Logc(ctx).Errorf("Error checking size for existing qtree. %v %v", volName, err)
 				continue
 			}
-			if sizeWithRequest > flexvolQuotaSizeLimit {
-				Logc(ctx).Debugf("Flexvol quota size for %v is over the limit of %v", volName,
-					flexvolQuotaSizeLimit)
+			if sizeWithRequest > flexvolSizeLimit {
+				Logc(ctx).Debugf("Flexvol quota size for %v is over the limit of %v", volName, flexvolSizeLimit)
 				continue
 			}
 		}
@@ -1257,8 +1262,7 @@ func (d *NASQtreeStorageDriver) getOptimalSizeForFlexvol(
 		return 0, err
 	}
 
-	return calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttrs, newQtreeSizeBytes,
-		totalDiskLimitBytes), nil
+	return calculateFlexvolEconomySizeBytes(ctx, flexvol, volAttrs, newQtreeSizeBytes, totalDiskLimitBytes), nil
 }
 
 // addDefaultQuotaForFlexvol adds a default quota rule to a Flexvol so that quotas for
@@ -1298,15 +1302,14 @@ func (d *NASQtreeStorageDriver) setQuotaForQtree(ctx context.Context, qtree, fle
 }
 
 // getQuotaDiskLimitSize returns the disk limit size for the specified quota.
-func (d *NASQtreeStorageDriver) getQuotaDiskLimitSize(ctx context.Context, name, flexvol string) (int64, error) {
+func (d *NASQtreeStorageDriver) getQuotaDiskLimitSize(ctx context.Context, name, flexvol string) (uint64, error) {
 	quota, err := d.API.QuotaGetEntry(ctx, flexvol, name, "tree")
 	if err != nil {
 		return 0, err
 	}
 
-	quotaSize := quota.DiskLimitBytes
-
-	return quotaSize, nil
+	// Report no quota as 0
+	return uint64(max(0, quota.DiskLimitBytes)), nil
 }
 
 // enableQuotas disables quotas on a Flexvol, optionally waiting for the operation to finish.
@@ -2085,29 +2088,49 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 		return resizeError
 	}
 
-	volConfig.Size = strconv.FormatInt(quotaSize, 10)
-	if int64(sizeBytes) == quotaSize {
+	volConfig.Size = strconv.FormatUint(quotaSize, 10)
+	if sizeBytes == quotaSize {
 		Logc(ctx).Infof("Requested size and existing volume size are the same for volume %s.", name)
 		return nil
 	}
 
-	if quotaSize >= 0 && int64(sizeBytes) < quotaSize {
+	if sizeBytes < quotaSize {
 		return fmt.Errorf("requested size %d is less than existing volume size %d", sizeBytes, quotaSize)
 	}
-	deltaQuotaSize := int64(sizeBytes) - quotaSize
+	deltaQuotaSize := sizeBytes - quotaSize
 
+	// Enforce aggregate usage limit
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, flexvol, sizeBytes, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
 		return aggrLimitsErr
 	}
 
+	// Enforce volume size limit
 	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
 		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
 	); checkVolumeSizeLimitsError != nil {
 		return checkVolumeSizeLimitsError
 	}
 
+	// Enforce Flexvol pool size limit
+	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
+		ctx, sizeBytes, &d.Config)
+	if checkFlexvolSizeLimitsError != nil {
+		return checkFlexvolSizeLimitsError
+	}
+	if shouldLimitFlexvolSize {
+		flexvolSize, flexvolSizeErr := d.getOptimalSizeForFlexvol(ctx, flexvol, uint64(deltaQuotaSize))
+		if flexvolSizeErr != nil {
+			return flexvolSizeErr
+		}
+		if flexvolSize > flexvolSizeLimit {
+			return errors.UnsupportedCapacityRangeError(fmt.Errorf(
+				"requested size %d would exceed the pool size limit %d", sizeBytes, flexvolSizeLimit))
+		}
+	}
+
+	// Resize the Flexvol
 	err = d.resizeFlexvol(ctx, flexvol, uint64(deltaQuotaSize))
 	if err != nil {
 		Logc(ctx).WithField("error", err).Error("Failed to resize flexvol.")
@@ -2131,20 +2154,20 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(ctx context.Context, flexvol strin
 	flexvolSizeBytes, err := d.getOptimalSizeForFlexvol(ctx, flexvol, sizeBytes)
 	if err != nil {
 		Logc(ctx).Warnf("Could not calculate optimal Flexvol size. %v", err)
-		// Lacking the optimal size, just grow the Flexvol to contain the new qtree
+
+		// Lacking the optimal size, just grow the Flexvol to contain the new qtree if Flexvol size isn't capped
 		size := strconv.FormatUint(sizeBytes, 10)
-		err := d.API.VolumeSetSize(ctx, flexvol, "+"+size)
-		if err != nil {
-			return fmt.Errorf("flexvol resize failed: %v", err)
-		}
-	} else {
-		// Got optimal size, so just set the Flexvol to that value
-		flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
-		err := d.API.VolumeSetSize(ctx, flexvol, flexvolSizeStr)
-		if err != nil {
+		if err = d.API.VolumeSetSize(ctx, flexvol, "+"+size); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
 	}
+
+	// Got optimal size, so just set the Flexvol to that value
+	flexvolSizeStr := strconv.FormatUint(flexvolSizeBytes, 10)
+	if err = d.API.VolumeSetSize(ctx, flexvol, flexvolSizeStr); err != nil {
+		return fmt.Errorf("flexvol resize failed: %v", err)
+	}
+
 	return nil
 }
 

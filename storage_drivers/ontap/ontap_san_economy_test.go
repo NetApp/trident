@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
+	utilserrors "github.com/netapp/trident/utils/errors"
 )
 
 var failed = errors.New("failed")
@@ -613,6 +614,7 @@ func TestOntapSanEconomyVolumeCreate(t *testing.T) {
 		FileSystem: "xfs",
 	}
 	volAttrs := map[string]sa.Request{}
+	d.Config.LimitVolumeSize = "2g"
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
@@ -727,6 +729,175 @@ func TestOntapSanEconomyVolumeCreate_InvalidSize(t *testing.T) {
 			assert.Error(t, result)
 		})
 	}
+}
+
+func TestOntapSanEconomyVolumeCreate_OverSizeLimit(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.InternalAttributes()[TieringPolicy] = "none"
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	volAttrs := map[string]sa.Request{}
+
+	tests := []struct {
+		limitVolumeSize string
+	}{
+		{"invalid"},
+		{"1GiB"},
+	}
+	for _, test := range tests {
+		t.Run(test.limitVolumeSize, func(t *testing.T) {
+			volConfig := &storage.VolumeConfig{
+				Size:       "2GiB",
+				Encryption: "false",
+				FileSystem: "xfs",
+			}
+			d.Config.LimitVolumeSize = test.limitVolumeSize
+
+			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
+
+			result := d.Create(ctx, volConfig, pool1, volAttrs)
+
+			assert.Error(t, result)
+		})
+	}
+}
+
+func TestOntapSanEconomyVolumeCreate_OverPoolSizeLimit_CreateNewFlexvol(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "none",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		LUKSEncryption:    "false",
+	})
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	existingLUN := api.Lun{Size: "1073741824"}
+	existingFlexvol := &api.Volume{
+		Size: "1g",
+		Name: "flexvol1",
+	}
+	newFlexvol := &api.Volume{
+		Size: "1g",
+		Name: "flexvol2",
+	}
+	volConfig := &storage.VolumeConfig{
+		Size:       "2g",
+		Encryption: "false",
+		FileSystem: "xfs",
+	}
+
+	volAttrs := map[string]sa.Request{}
+	d.Config.LimitVolumePoolSize = "2g"
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{}, nil)
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return([]*api.Volume{existingFlexvol}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(existingFlexvol, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{existingLUN}, nil)
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, gomock.Any(), false).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(newFlexvol, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{existingLUN}, nil)
+	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&api.Lun{Size: "1073741824"}, nil)
+	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).Times(1).Return(nil)
+
+	result := d.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.NoError(t, result)
+	assert.Equal(t, "none", volConfig.SpaceReserve)
+	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
+	assert.Equal(t, "10", volConfig.SnapshotReserve)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "fake-export-policy", volConfig.ExportPolicy)
+	assert.Equal(t, "mixed", volConfig.SecurityStyle)
+	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
+	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
+	assert.Equal(t, "false", volConfig.LUKSEncryption)
+	assert.Equal(t, "xfs", volConfig.FileSystem)
+}
+
+func TestOntapSanEconomyVolumeCreate_NotOverPoolSizeLimit_UseExistingFlexvol(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "none",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		LUKSEncryption:    "false",
+	})
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	d.lunsPerFlexvol = 100
+	existingLUN := api.Lun{
+		Size: "1073741824",
+		Name: "lun1",
+	}
+	existingFlexvol := &api.Volume{
+		Size: "1g",
+		Name: "flexvol1",
+	}
+	newFlexvol := &api.Volume{
+		Size: "1g",
+		Name: "flexvol2",
+	}
+	volConfig := &storage.VolumeConfig{
+		Size:       "2g",
+		Encryption: "false",
+		FileSystem: "xfs",
+	}
+
+	volAttrs := map[string]sa.Request{}
+	d.Config.LimitVolumePoolSize = "5g"
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{}, nil)
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return([]*api.Volume{existingFlexvol}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(existingFlexvol, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{existingLUN}, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(newFlexvol, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{existingLUN}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{existingLUN}, nil)
+	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&api.Lun{Size: "1073741824"}, nil)
+	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).Times(1).Return(nil)
+
+	result := d.Create(ctx, volConfig, pool1, volAttrs)
+
+	assert.NoError(t, result)
+	assert.Equal(t, "none", volConfig.SpaceReserve)
+	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
+	assert.Equal(t, "10", volConfig.SnapshotReserve)
+	assert.Equal(t, "0755", volConfig.UnixPermissions)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "fake-export-policy", volConfig.ExportPolicy)
+	assert.Equal(t, "mixed", volConfig.SecurityStyle)
+	assert.Equal(t, "false", volConfig.Encryption)
+	assert.Equal(t, "fake-qos-policy", volConfig.QosPolicy)
+	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
+	assert.Equal(t, "false", volConfig.LUKSEncryption)
+	assert.Equal(t, "xfs", volConfig.FileSystem)
 }
 
 func TestOntapSanEconomyVolumeCreate_LUNNameLimitExceeding(t *testing.T) {
@@ -1214,22 +1385,152 @@ func TestOntapSanEconomyVolumeClone(t *testing.T) {
 	pool1.InternalAttributes()[TieringPolicy] = "none"
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	volConfig := &storage.VolumeConfig{
-		Size:       "1g",
-		Encryption: "false",
-		FileSystem: "xfs",
+		CloneSourceVolumeInternal: "storagePrefix_lunName",
+		Size:                      "1g",
+		Encryption:                "false",
+		FileSystem:                "xfs",
+	}
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/volumeName/storagePrefix_lunName",
+		VolumeName: "volumeName",
 	}
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
-	mockAPI.EXPECT().LunList(ctx,
-		gomock.Any()).Times(1).Return(api.Luns{api.Lun{Size: "1g", Name: "lunName", VolumeName: "volumeName"}}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{sourceLun}, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, sourceLun.Name).Return(&sourceLun, nil)
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 
-	result := d.CreateClone(ctx, volConfig, volConfig, pool1)
+	result := d.CreateClone(ctx, nil, volConfig, pool1)
 
 	assert.Nil(t, result)
+}
+
+func TestOntapSanEconomyVolumeClone_getSizeFailed(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.InternalAttributes()[TieringPolicy] = "none"
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	volConfig := &storage.VolumeConfig{
+		CloneSourceVolumeInternal: "storagePrefix_lunName",
+		Size:                      "1g",
+		Encryption:                "false",
+		FileSystem:                "xfs",
+	}
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/volumeName/storagePrefix_lunName",
+		VolumeName: "volumeName",
+	}
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{sourceLun}, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, sourceLun.Name).Return(nil, failed)
+
+	result := d.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapSanEconomyVolumeClone_OverPoolSizeLimit_CheckFailed(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.InternalAttributes()[TieringPolicy] = "none"
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	volConfig := &storage.VolumeConfig{
+		CloneSourceVolumeInternal: "storagePrefix_lunName",
+		Size:                      "1g",
+		Encryption:                "false",
+		FileSystem:                "xfs",
+	}
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/volumeName/storagePrefix_lunName",
+		VolumeName: "volumeName",
+	}
+	d.Config.LimitVolumePoolSize = "1500MiB"
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{sourceLun}, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, sourceLun.Name).Return(&sourceLun, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{Size: "1073741824"}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{sourceLun}, nil)
+
+	result := d.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+	ok, _ := utilserrors.HasUnsupportedCapacityRangeError(result)
+	assert.True(t, ok)
+}
+
+func TestOntapSanEconomyVolumeClone_OverPoolSizeLimit_CheckPassed(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.InternalAttributes()[TieringPolicy] = "none"
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	volConfig := &storage.VolumeConfig{
+		CloneSourceVolumeInternal: "storagePrefix_lunName",
+		Size:                      "1g",
+		Encryption:                "false",
+		FileSystem:                "xfs",
+	}
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/volumeName/storagePrefix_lunName",
+		VolumeName: "volumeName",
+	}
+	cloneLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/volumeName/storagePrefix_lunName2",
+		VolumeName: "volumeName",
+	}
+	d.Config.LimitVolumePoolSize = "3g"
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{sourceLun}, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, sourceLun.Name).Return(&sourceLun, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{Size: "1073741824"}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{sourceLun}, nil)
+	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{Size: "1073741824"}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return([]api.Lun{sourceLun, cloneLun}, nil)
+	mockAPI.EXPECT().VolumeSetSize(ctx, "volumeName", "2147483648").Times(1).Return(nil)
+
+	result := d.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Nil(t, result)
+}
+
+func TestOntapSanEconomyVolumeClone_OverPoolSizeLimitCheck_VolumeInfoFailed(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.InternalAttributes()[TieringPolicy] = "none"
+	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	volConfig := &storage.VolumeConfig{
+		CloneSourceVolumeInternal: "storagePrefix_lunName",
+		Size:                      "1g",
+		Encryption:                "false",
+		FileSystem:                "xfs",
+	}
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/volumeName/storagePrefix_lunName",
+		VolumeName: "volumeName",
+	}
+	d.Config.LimitVolumePoolSize = "1500MiB"
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{sourceLun}, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, sourceLun.Name).Return(&sourceLun, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(nil, failed)
+
+	result := d.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
 }
 
 func TestOntapSanEconomyVolumeClone_BothQosPolicy(t *testing.T) {
@@ -2246,54 +2547,47 @@ func TestOntapSanEconomyGetSnapshots_LUNDoesNotExist(t *testing.T) {
 	}
 }
 
+func getStructsForSnapshotCreate() (string, *storage.SnapshotConfig, string, api.Lun, api.Lun) {
+	storagePrefix := "storagePrefix"
+
+	snapConfig := &storage.SnapshotConfig{
+		InternalName:       "snapshot-00c6b55c-afeb-4657-b86e-156d66c0c9fc",
+		VolumeName:         "pvc-ff297a18-921a-4435-b679-c3fea351f92c",
+		Name:               "snapshot-00c6b55c-afeb-4657-b86e-156d66c0c9fc",
+		VolumeInternalName: "storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c",
+	}
+
+	bucketVol := "trident_lun_pool_storagePrefix_MGURDMZTKA"
+
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/trident_lun_pool_storagePrefix_MGURDMZTKA/storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c",
+		VolumeName: "trident_lun_pool_storagePrefix_MGURDMZTKA",
+	}
+	snapLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/trident_lun_pool_storagePrefix_MGURDMZTKA/storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c_snapshot_snapshot_00c6b55c_afeb_4657_b86e_156d66c0c9fc",
+		VolumeName: "trident_lun_pool_storagePrefix_MGURDMZTKA",
+	}
+	return storagePrefix, snapConfig, bucketVol, sourceLun, snapLun
+}
+
 func TestOntapSanEconomyCreateSnapshot(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
-	d.flexvolNamePrefix = "storagePrefix"
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap_1",
-		VolumeName:         "my_Bucket",
-		Name:               "/vol/my_Bucket/storagePrefix_my_Lun",
-		VolumeInternalName: "storagePrefix_my_Lun_my_Bucket",
-	}
 
-	mockAPI.EXPECT().LunList(ctx,
-		gomock.Any()).Times(2).Return(api.Luns{
-		api.Lun{
-			Size:       "1073741824",
-			Name:       "/vol/my_Bucket/storagePrefix_my_Lun_my_Bucket",
-			VolumeName: "my_Bucket",
-		},
-	},
-		nil)
-	mockAPI.EXPECT().LunGetByName(ctx,
-		gomock.Any()).Times(1).Return(&api.Lun{
-		Size:       "1073741824",
-		Name:       "/vol/my_Bucket/storagePrefix_my_Lun_my_Bucket",
-		VolumeName: "my_Bucket",
-	},
-		nil)
-	mockAPI.EXPECT().LunList(ctx,
-		gomock.Any()).Times(2).Return(api.Luns{
-		api.Lun{
-			Size:       "1073741824",
-			Name:       "/vol/my_Bucket/storagePrefix_my_Lun_my_Bucket",
-			VolumeName: "my_Bucket",
-		},
-	},
-		nil)
-	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	storagePrefix, snapConfig, _, sourceLun, snapLun := getStructsForSnapshotCreate()
+	d.flexvolNamePrefix = storagePrefix
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&sourceLun, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&sourceLun, nil)
+	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), api.QosPolicyGroup{}).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().LunList(ctx,
-		gomock.Any()).Times(1).Return(api.Luns{
-		api.Lun{
-			Size:       "1073741824",
-			Name:       "/vol/my_Bucket/storagePrefix_my_Lun_snapshot_snap_1",
-			VolumeName: "my_Bucket",
-		},
-	},
-		nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(2).Return(api.Luns{snapLun}, nil)
 
 	snap, err := d.CreateSnapshot(ctx, snapConfig, nil)
 
@@ -2304,13 +2598,9 @@ func TestOntapSanEconomyCreateSnapshot(t *testing.T) {
 func TestOntapSanEconomyCreateSnapshot_LUNDoesNotExist(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
-	d.flexvolNamePrefix = "storagePrefix"
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap_1",
-		VolumeName:         "my_Bucket",
-		Name:               "/vol/my_Bucket/storagePrefix_my_Lun",
-		VolumeInternalName: "storagePrefix_my_Lun_my_Bucket",
-	}
+
+	storagePrefix, snapConfig, _, _, _ := getStructsForSnapshotCreate()
+	d.flexvolNamePrefix = storagePrefix
 
 	tests := []struct {
 		message     string
@@ -2338,22 +2628,15 @@ func TestOntapSanEconomyCreateSnapshot_LUNDoesNotExist(t *testing.T) {
 func TestOntapSanEconomyCreateSnapshot_LUNCreateCloneFailed(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
-	d.flexvolNamePrefix = "storagePrefix"
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap_1",
-		VolumeName:         "my_Bucket",
-		Name:               "vol1_snapshot_snap_1",
-		VolumeInternalName: "vol1_snapshot_snap_1",
-	}
-	lun := api.Lun{
-		Size: "1073741824", Name: "vol/my_Bucket/storagePrefix_vol1_snapshot_snap_1",
-		VolumeName: "volumeName",
-	}
-	luns := []api.Lun{lun}
 
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&lun, nil)
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
+	storagePrefix, snapConfig, _, sourceLun, _ := getStructsForSnapshotCreate()
+	d.flexvolNamePrefix = storagePrefix
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&sourceLun, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&sourceLun, nil)
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		api.QosPolicyGroup{}).Return(fmt.Errorf("failed to create lun clone"))
 
@@ -2366,18 +2649,11 @@ func TestOntapSanEconomyCreateSnapshot_LUNCreateCloneFailed(t *testing.T) {
 func TestOntapSanEconomyCreateSnapshot_LUNGetByNameFailed(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
-	d.flexvolNamePrefix = "storagePrefix"
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap_1",
-		VolumeName:         "my_Bucket",
-		Name:               "/vol/my_Bucket/storagePrefix_my_Lun",
-		VolumeInternalName: "vol1",
-	}
-	luns := []api.Lun{
-		{Size: "1073741824", Name: "lun_storagePrefix_vol1", VolumeName: "volumeName"},
-	}
 
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
+	storagePrefix, snapConfig, _, sourceLun, _ := getStructsForSnapshotCreate()
+	d.flexvolNamePrefix = storagePrefix
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to fetch lun"))
 
 	snap, err := d.CreateSnapshot(ctx, snapConfig, nil)
@@ -2390,8 +2666,10 @@ func TestOntapSanEconomyCreateSnapshot_CreateLUNClone_LUNDoesNotExist(t *testing
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	d.flexvolNamePrefix = "storagePrefix"
-	luns := []api.Lun{
-		{Size: "1073741824", Name: "lun_storagePrefix_vol1", VolumeName: "volumeName"},
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/trident_lun_pool_storagePrefix_MGURDMZTKA/storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c",
+		VolumeName: "trident_lun_pool_storagePrefix_MGURDMZTKA",
 	}
 	d.Config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
 	policy := api.QosPolicyGroup{}
@@ -2408,11 +2686,11 @@ func TestOntapSanEconomyCreateSnapshot_CreateLUNClone_LUNDoesNotExist(t *testing
 			if test.expectError {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
 			} else {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil)
 			}
 
-			result := d.createLUNClone(ctx, "lun_storagePrefix_vol1", "source", "snap", &d.Config, mockAPI,
-				"storagePrefix", true, policy)
+			result := d.createLUNClone(ctx, "storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c",
+				"source", "snap", &d.Config, mockAPI, "storagePrefix", true, policy)
 
 			assert.Error(t, result)
 		})
@@ -2454,19 +2732,24 @@ func TestOntapSanEconomyCreateSnapshot_CreateLUNClone_LUNCloneCreateFailed(t *te
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	d.flexvolNamePrefix = "storagePrefix"
-	luns := []api.Lun{
-		{Size: "1073741824", Name: "lun_storagePrefix_vol1_snapshot_snap", VolumeName: "volumeName"},
+	sourceLun := api.Lun{
+		Size:       "1073741824",
+		Name:       "/vol/trident_lun_pool_storagePrefix_MGURDMZTKA/storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c_snapshot_snapshot_00c6b55c_afeb_4657_b86e_156d66c0c9fc",
+		VolumeName: "trident_lun_pool_storagePrefix_MGURDMZTKA",
 	}
 	d.Config.CommonStorageDriverConfig.DebugTraceFlags["method"] = true
 	policy := api.QosPolicyGroup{}
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&sourceLun, nil)
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
 		api.QosPolicyGroup{}).Return(fmt.Errorf("failed to create lun clone"))
 
-	result := d.createLUNClone(ctx, "lun_storagePrefix_vol1_snapshot_snap", "vol1", "snap", &d.Config, mockAPI,
-		"storagePrefix", true, policy)
+	result := d.createLUNClone(ctx,
+		"storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c_snapshot_snapshot_e753e1a5-e57b-4f94-adbc-22f7c05e2121",
+		"storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c", "snapshot-00c6b55c-afeb-4657-b86e-156d66c0c9fc",
+		&d.Config, mockAPI, "storagePrefix", true, policy)
 
 	assert.Error(t, result)
 }
@@ -2474,21 +2757,15 @@ func TestOntapSanEconomyCreateSnapshot_CreateLUNClone_LUNCloneCreateFailed(t *te
 func TestOntapSanEconomyCreateSnapshot_GetSnapshotsEconomyFailed(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
-	d.flexvolNamePrefix = "storagePrefix"
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap_1",
-		VolumeName:         "my_Bucket",
-		Name:               "/vol/my_Bucket/storagePrefix_my_Lun",
-		VolumeInternalName: "vol1",
-	}
-	lun := api.Lun{
-		Size: "1073741824", Name: "lun_storagePrefix_vol1",
-		VolumeName: "volumeName",
-	}
-	luns := []api.Lun{lun}
 
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(3)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
+	storagePrefix, snapConfig, _, sourceLun, _ := getStructsForSnapshotCreate()
+	d.flexvolNamePrefix = storagePrefix
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&sourceLun, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&sourceLun, nil)
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), api.QosPolicyGroup{}).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
@@ -2503,30 +2780,13 @@ func TestOntapSanEconomyCreateSnapshot_GetSnapshotsEconomyFailed(t *testing.T) {
 func TestOntapSanEconomyCreateSnapshot_InvalidSize(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
-	d.flexvolNamePrefix = "storagePrefix"
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap_1",
-		VolumeName:         "my_Bucket",
-		Name:               "/vol/my_Bucket/storagePrefix_my_Lun",
-		VolumeInternalName: "vol1",
-	}
-	lun := api.Lun{
-		Size: "invalid", Name: "lun_storagePrefix_vol1",
-		VolumeName: "volumeName",
-	}
-	luns := []api.Lun{
-		{Size: "1073741824", Name: "lun_storagePrefix_vol1", VolumeName: "volumeName"},
-	}
-	snapLuns := []api.Lun{
-		{Size: "1073741824", Name: "/vol/volumeName/storagePrefix_vol1_snapshot_mySnap", VolumeName: "volumeName"},
-	}
 
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(4)
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(snapLuns, nil)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
-	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), api.QosPolicyGroup{}).Return(nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
-	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
+	storagePrefix, snapConfig, _, sourceLun, snapLun := getStructsForSnapshotCreate()
+	d.flexvolNamePrefix = storagePrefix
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(2)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&snapLun, nil)
 
 	snap, err := d.CreateSnapshot(ctx, snapConfig, nil)
 
@@ -2537,24 +2797,14 @@ func TestOntapSanEconomyCreateSnapshot_InvalidSize(t *testing.T) {
 func TestOntapSanEconomyCreateSnapshot_SnapshotNotFound(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
-	d.flexvolNamePrefix = "storagePrefix"
-	snapConfig := &storage.SnapshotConfig{
-		InternalName:       "snap_1",
-		VolumeName:         "my_Bucket",
-		Name:               "/vol/my_Bucket/storagePrefix_my_Lun",
-		VolumeInternalName: "vol1",
-	}
-	lun := api.Lun{
-		Size: "invalid", Name: "lun_storagePrefix_vol1",
-		VolumeName: "volumeName",
-	}
-	luns := []api.Lun{
-		{Size: "1073741824", Name: "lun_storagePrefix_vol1", VolumeName: "volumeName"},
-	}
 
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(4)
+	storagePrefix, snapConfig, _, sourceLun, snapLun := getStructsForSnapshotCreate()
+	d.flexvolNamePrefix = storagePrefix
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(4)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&snapLun, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&sourceLun, nil)
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), api.QosPolicyGroup{}).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
@@ -2994,9 +3244,9 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_InvalidVolumeSize(t *testing.T) {
 	opts := make(map[string]string)
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
-	d.Config.LimitVolumeSize = "invalid"
+	d.Config.LimitVolumePoolSize = "invalid"
 
-	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, &api.Volume{}, uint64(1073741824), opts, d.Config, pool1,
+	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, &api.Volume{}, uint64(1073741824), opts, &d.Config, pool1,
 		make(map[string]struct{}))
 
 	assert.Equal(t, flexVol, "")
@@ -3021,7 +3271,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_FlexvolFound(t *testing.T) {
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{vol}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
 
-	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, vol, uint64(1073741824), opts, d.Config, pool1,
+	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, vol, uint64(1073741824), opts, &d.Config, pool1,
 		make(map[string]struct{}))
 
 	assert.NotEqual(t, flexVol, "")
@@ -3048,7 +3298,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_FlexvolNotFound(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(fmt.Errorf("failed to create volume"))
 
-	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, vol, uint64(1073741824), opts, d.Config, pool1,
+	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, vol, uint64(1073741824), opts, &d.Config, pool1,
 		make(map[string]struct{}))
 
 	assert.Equal(t, flexVol, "")
@@ -3433,8 +3683,6 @@ func TestOntapSanEconomyVolumeResize(t *testing.T) {
 	},
 		nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{Aggregates: []string{"data"}}, nil)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(2147483648), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), "2147483648").Return(uint64(2147483648), nil)
 
@@ -3582,7 +3830,7 @@ func TestOntapSanEconomyVolumeResize_SizeError(t *testing.T) {
 	}
 }
 
-func TestOntapSanEconomyVolumeResize_LimitVolumeSize(t *testing.T) {
+func TestOntapSanEconomyVolumeResize_WithInvalidVolumeSizeLimit(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	d.Config.LimitVolumeSize = "invalid-value" // invalid int value
@@ -3606,9 +3854,10 @@ func TestOntapSanEconomyVolumeResize_LimitVolumeSize(t *testing.T) {
 	assert.Error(t, result)
 }
 
-func TestOntapSanEconomyVolumeResize_LUNGetGeometryFailed(t *testing.T) {
+func TestOntapSanEconomyVolumeResize_OverSizeLimit(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	d.Config.LimitVolumeSize = "2GB"
 	volConfig := &storage.VolumeConfig{
 		Size:       "1073741824",
 		Encryption: "false",
@@ -3622,41 +3871,78 @@ func TestOntapSanEconomyVolumeResize_LUNGetGeometryFailed(t *testing.T) {
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(3)
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(2147483648),
-		fmt.Errorf("failed to get lun geometry"))
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil).Times(2)
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
 	assert.Error(t, result)
 }
 
-func TestOntapSanEconomyVolumeResize_LUNMaxSizeLess(t *testing.T) {
+func TestOntapSanEconomyVolumeResize_OverPoolSizeLimit_OneLUN(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	d.Config.LimitVolumePoolSize = "2g"
 	volConfig := &storage.VolumeConfig{
 		Size:       "1073741824",
 		Encryption: "false",
 		FileSystem: "xfs",
 	}
 	lun := api.Lun{
-		Size: "1073741824", Name: "lun_vol1",
+		Size:       "1073741824",
+		Name:       "lun_vol1",
 		VolumeName: "volumeName",
+	}
+	flexvol := &api.Volume{
+		Aggregates: []string{"aggr"},
+		Size:       "1073741824",
 	}
 	luns := []api.Lun{lun}
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(3)
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(1073741824), nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(flexvol, nil).Times(2)
 
-	result := d.Resize(ctx, volConfig, uint64(2147483648))
+	result := d.Resize(ctx, volConfig, uint64(3221225472))
 
 	assert.Error(t, result)
+	ok, _ := utilserrors.HasUnsupportedCapacityRangeError(result)
+	assert.True(t, ok)
+}
+
+func TestOntapSanEconomyVolumeResize_OverPoolSizeLimit_MultipleLUNs(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
+	d.Config.LimitVolumePoolSize = "5g"
+	volConfig := &storage.VolumeConfig{
+		Size:       "1073741824",
+		Encryption: "false",
+		FileSystem: "xfs",
+	}
+	lun1 := api.Lun{
+		Size:       "1073741824",
+		Name:       "lun1",
+		VolumeName: "volumeName",
+	}
+	lun2 := api.Lun{
+		Size:       "3221225472",
+		Name:       "lun2",
+		VolumeName: "volumeName",
+	}
+	flexvol := &api.Volume{
+		Aggregates: []string{"aggr"},
+		Size:       "1073741824",
+	}
+	luns := []api.Lun{lun1, lun2}
+
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(3)
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun1, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(flexvol, nil).Times(2)
+
+	result := d.Resize(ctx, volConfig, uint64(3221225472))
+
+	assert.Error(t, result)
+	ok, _ := utilserrors.HasUnsupportedCapacityRangeError(result)
+	assert.True(t, ok)
 }
 
 func TestOntapSanEconomyVolumeResize_VolumeSetSizeFailed(t *testing.T) {
@@ -3677,8 +3963,6 @@ func TestOntapSanEconomyVolumeResize_VolumeSetSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(2147483648), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set volume size"))
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
@@ -3704,8 +3988,6 @@ func TestOntapSanEconomyVolumeResize_LunSetSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(2147483648), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), "2147483648").Return(uint64(2147483648),
 		fmt.Errorf("failed to set lun size"))
@@ -3733,8 +4015,6 @@ func TestOntapSanEconomyVolumeResize_FlexvolBiggerThanLUN(t *testing.T) {
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil).Times(2)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(16106127360), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(2)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(16106127360), nil)
 	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(2147483648), nil)
@@ -3762,8 +4042,6 @@ func TestOntapSanEconomyVolumeResize_VolumeSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil).Times(2)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(16106127360), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(2)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(16106127360), nil)
 	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(2147483648), fmt.Errorf("failed to get volume size"))
@@ -3791,8 +4069,6 @@ func TestOntapSanEconomyVolumeResize_VolumeSetSizeFailed2(t *testing.T) {
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil).Times(2)
-	mockAPI.EXPECT().SupportsFeature(ctx, api.LunGeometrySkip).Times(1)
-	mockAPI.EXPECT().LunGetGeometry(ctx, gomock.Any()).Times(1).Return(uint64(16106127360), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(16106127360), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set volume size"))

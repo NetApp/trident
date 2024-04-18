@@ -4241,6 +4241,48 @@ func TestValidateNASDriver(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCheckVolumePoolSizeLimits(t *testing.T) {
+	ctx := context.Background()
+	requestedSize := uint64(1073741824) // 1Gi
+
+	// Returns because LimitVolumePoolSize not specified.
+	config := &drivers.OntapStorageDriverConfig{
+		LimitVolumePoolSize: "",
+	}
+	shouldLimit, sizeLimit, err := CheckVolumePoolSizeLimits(ctx, requestedSize, config)
+	assert.False(t, shouldLimit, "expected should limit to be false")
+	assert.Zero(t, sizeLimit, "expected zero size limit")
+	assert.Nil(t, err, "expected nil error")
+
+	// Errors when LimitVolumePoolSize is not empty but invalid and cannot be parsed.
+	config = &drivers.OntapStorageDriverConfig{
+		LimitVolumePoolSize: "Gi",
+	}
+	shouldLimit, sizeLimit, err = CheckVolumePoolSizeLimits(ctx, requestedSize, config)
+	assert.False(t, shouldLimit, "expected should limit to be false")
+	assert.Zero(t, sizeLimit, "expected zero size limit")
+	assert.NotNil(t, err, "expected non-nil error")
+
+	// Errors when the requested volume is larger than LimitVolumePoolSize.
+	requestedSize = uint64(2000000000)
+	config = &drivers.OntapStorageDriverConfig{
+		LimitVolumePoolSize: "1Gi",
+	}
+	shouldLimit, sizeLimit, err = CheckVolumePoolSizeLimits(ctx, requestedSize, config)
+	assert.True(t, shouldLimit, "expected should limit to be true")
+	assert.Equal(t, sizeLimit, uint64(1073741824), "expected size limit of 1Gi")
+	assert.NotNil(t, err, "expected non-nil error")
+
+	requestedSize = uint64(1000000000)
+	config = &drivers.OntapStorageDriverConfig{
+		LimitVolumePoolSize: "1Gi",
+	}
+	shouldLimit, sizeLimit, err = CheckVolumePoolSizeLimits(ctx, requestedSize, config)
+	assert.True(t, shouldLimit, "expected should limit to be true")
+	assert.Equal(t, sizeLimit, uint64(1073741824), "expected size limit of 1Gi")
+	assert.Nil(t, err, "expected nil error")
+}
+
 func TestGetSnapshotReserve(t *testing.T) {
 	// snapshot reserve is not passed
 	snapshotPolicy := "fakePolicy"

@@ -201,7 +201,6 @@ var features = map[Feature]*versionutils.Version{
 	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("1.170.0"), // cDOT 9.7.0
 	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("1.120.0"), // cDOT 9.2.0
 	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
-	LunGeometrySkip:           versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	FabricPoolForSVMDR:        versionutils.MustParseSemantic("1.150.0"), // cDOT 9.5.0
 	QosPolicies:               versionutils.MustParseSemantic("1.180.0"), // cDOT 9.8.0
 	LIFServices:               versionutils.MustParseSemantic("1.160.0"), // cDOT 9.6.0
@@ -216,7 +215,6 @@ var featuresByVersion = map[Feature]*versionutils.Version{
 	NetAppFlexGroupsClone:     versionutils.MustParseSemantic("9.7.0"),
 	NetAppFabricPoolFlexVol:   versionutils.MustParseSemantic("9.2.0"),
 	NetAppFabricPoolFlexGroup: versionutils.MustParseSemantic("9.5.0"),
-	LunGeometrySkip:           versionutils.MustParseSemantic("9.5.0"),
 	FabricPoolForSVMDR:        versionutils.MustParseSemantic("9.5.0"),
 	QosPolicies:               versionutils.MustParseSemantic("9.8.0"),
 	LIFServices:               versionutils.MustParseSemantic("9.6.0"),
