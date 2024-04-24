@@ -1324,6 +1324,25 @@ func TestNVMeResize_Success(t *testing.T) {
 	assert.Equal(t, "50000200", volConfig.Size, "Incorrect namespace size after resize.")
 }
 
+func TestNVMeResize_VolumeLargerThanResizeRequest(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	ns := &api.NVMeNamespace{Name: "/vol/vol1/namespace0", Size: "100"}
+	vol := &api.Volume{Aggregates: []string{"data"}}
+
+	mAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+	mAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(tridentconfig.SANResizeDelta*2), nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(ns, nil)
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed"))
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
+
+	err := d.Resize(ctx, volConfig, tridentconfig.SANResizeDelta+200)
+
+	assert.NoError(t, err, "Volume resize failed.")
+	assert.Equal(t, "50000200", volConfig.Size, "Incorrect namespace size after resize.")
+}
+
 func TestCreateClone(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)

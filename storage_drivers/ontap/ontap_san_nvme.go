@@ -1300,6 +1300,14 @@ func (d *NVMeStorageDriver) Resize(
 		return nil
 	}
 
+	if !sameFlexVolSize && (currentFlexVolSize > newFlexVolSize) {
+		Logc(ctx).WithFields(LogFields{
+			"requestedSize":      requestedSizeBytes,
+			"currentFlexvolSize": currentFlexVolSize,
+			"name":               name,
+		}).Info("Requested size is less than current FlexVol size. FlexVol will not be resized.")
+	}
+
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexVolSize, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
@@ -1313,7 +1321,7 @@ func (d *NVMeStorageDriver) Resize(
 	}
 
 	// Resize FlexVol.
-	if !sameFlexVolSize {
+	if !sameFlexVolSize && (currentFlexVolSize < newFlexVolSize) {
 		if err = d.API.VolumeSetSize(ctx, name, strconv.FormatUint(newFlexVolSize, 10)); err != nil {
 			Logc(ctx).WithField("error", err).Error("Volume resize failed.")
 			return fmt.Errorf("volume resize failed")

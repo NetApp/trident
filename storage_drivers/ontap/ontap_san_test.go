@@ -2531,6 +2531,29 @@ func TestOntapSANStorageDriverResize_SameSize(t *testing.T) {
 	assert.NoError(t, err, "able to update volume size smaller than actual size")
 }
 
+func TestOntapSANStorageDriverResize_VolumeLargerThanResizeRequest(t *testing.T) {
+	mockAPI, driver := newMockOntapSANDriver(t)
+	aggr := make([]string, 0)
+	aggr = append(aggr, "aggr1")
+	volume := api.Volume{
+		Name:           "vol1",
+		Comment:        "",
+		Aggregates:     aggr,
+		SnapshotPolicy: "none",
+	}
+	volConfig := getVolumeConfig()
+
+	mockAPI.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true, nil)
+	mockAPI.EXPECT().VolumeSize(ctx, "trident-pvc-1234").Return(uint64(2684354560), nil) // 2.5 Gi
+	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)            // 1 Gi
+	mockAPI.EXPECT().VolumeInfo(ctx, "trident-pvc-1234").AnyTimes().Return(&volume, nil)
+	mockAPI.EXPECT().LunSetSize(ctx, "/vol/trident-pvc-1234/lun0", "2147483648").Return(uint64(214748364), nil)
+
+	err := driver.Resize(ctx, volConfig, 2147483648) // 2Gi
+
+	assert.NoError(t, err, "Volume resize failed")
+}
+
 func TestOntapSANStorageDriverResize_UpdateSmallerSize(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	aggr := make([]string, 0)

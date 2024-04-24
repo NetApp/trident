@@ -1295,6 +1295,14 @@ func (d *SANStorageDriver) Resize(
 		return nil
 	}
 
+	if !sameFlexvolSize && (currentFlexvolSize > newFlexvolSize) {
+		Logc(ctx).WithFields(LogFields{
+			"requestedSize":      requestedSizeBytes,
+			"currentFlexvolSize": currentFlexvolSize,
+			"name":               name,
+		}).Info("Requested size is less than current FlexVol size. FlexVol will not be resized.")
+	}
+
 	if aggrLimitsErr := checkAggregateLimitsForFlexvol(
 		ctx, name, newFlexvolSize, d.Config, d.GetAPI(),
 	); aggrLimitsErr != nil {
@@ -1308,7 +1316,7 @@ func (d *SANStorageDriver) Resize(
 	}
 
 	// Resize FlexVol
-	if !sameFlexvolSize {
+	if !sameFlexvolSize && (currentFlexvolSize < newFlexvolSize) {
 		err := d.API.VolumeSetSize(ctx, name, strconv.FormatUint(newFlexvolSize, 10))
 		if err != nil {
 			Logc(ctx).WithField("error", err).Error("Volume resize failed.")
