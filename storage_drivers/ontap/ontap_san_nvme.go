@@ -292,10 +292,7 @@ func (d *NVMeStorageDriver) Create(
 		return fmt.Errorf("could not convert volume size %s: %v", volConfig.Size, err)
 	}
 	requestedSizeBytes, _ := strconv.ParseUint(requestedSize, 10, 64)
-	namespaceSizeBytes, err := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes()[Size])
-	if err != nil {
-		return err
-	}
+	namespaceSizeBytes := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes()[Size])
 	namespaceSize := strconv.FormatUint(namespaceSizeBytes, 10)
 	// Get the FlexVol size based on the snapshot reserve.
 	flexVolSize := calculateFlexvolSizeBytes(ctx, name, namespaceSizeBytes, snapshotReserveInt)
@@ -331,6 +328,7 @@ func (d *NVMeStorageDriver) Create(
 	}
 
 	// Update config to reflect values used to create volume.
+	volConfig.Size = strconv.FormatUint(namespaceSizeBytes, 10)
 	volConfig.SpaceReserve = spaceReserve
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve

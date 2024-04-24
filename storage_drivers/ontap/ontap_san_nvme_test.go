@@ -531,11 +531,11 @@ func TestNVMeCreate_InvalidSnapshotReserve(t *testing.T) {
 	assert.ErrorContains(t, err, "invalid value for snapshotReserve")
 }
 
-func TestNVMeCreate_VolSizeErrors(t *testing.T) {
+func TestNVMeCreate_VolSize(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
 
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil).Times(4)
+	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil).Times(3)
 
 	// Convert volume size error.
 	volConfig.Size = "convert-size"
@@ -551,20 +551,12 @@ func TestNVMeCreate_VolSizeErrors(t *testing.T) {
 
 	assert.ErrorContains(t, err, "invalid size")
 
-	// Unsupported capacity error; size < 20 MiB.
-	volConfig.Size = "10"
-
-	err = d.Create(ctx, volConfig, pool1, volAttrs)
-	isUnsupportedErr, _ := errors.HasUnsupportedCapacityRangeError(err)
-
-	assert.True(t, isUnsupportedErr, "Volume size supported.")
-
 	// Required volume size more than backend config volume size.
 	volConfig.Size = "200000000"
 	d.Config.LimitVolumeSize = "2000"
 
 	err = d.Create(ctx, volConfig, pool1, volAttrs)
-	isUnsupportedErr, _ = errors.HasUnsupportedCapacityRangeError(err)
+	isUnsupportedErr, _ := errors.HasUnsupportedCapacityRangeError(err)
 
 	assert.True(t, isUnsupportedErr, "Volume size as per backend config.")
 }

@@ -2684,7 +2684,7 @@ func TestOntapNasStorageDriverVolumeCreate_VolumeSize(t *testing.T) {
 		valid      bool
 	}{
 		{"invalid", false},
-		{"19m", false},
+		{"19m", true},
 		{"-1002947563b", false},
 		{"10g", true},
 	}

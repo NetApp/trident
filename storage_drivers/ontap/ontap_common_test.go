@@ -4641,27 +4641,23 @@ func TestGetVolumeSize(t *testing.T) {
 	expected := uint64(MinimumVolumeSizeBytes)
 
 	// Test1- Getting default size
-	size, err := GetVolumeSize(uint64(sizeBytes), poolDefaultSizeBytes)
+	size := GetVolumeSize(uint64(sizeBytes), poolDefaultSizeBytes)
 
 	assert.Equal(t, expected, size)
-	assert.NoError(t, err)
 
 	// Test2- size less than MinimumVolumeSizeBytes
 	sizeBytes = 209715
-	expected = 0
 
-	size, err = GetVolumeSize(uint64(sizeBytes), poolDefaultSizeBytes)
+	size = GetVolumeSize(uint64(sizeBytes), poolDefaultSizeBytes)
 
 	assert.Equal(t, expected, size)
-	assert.Error(t, err)
 
 	// Test2- Positive case
 	sizeBytes = MinimumVolumeSizeBytes
 
-	size, err = GetVolumeSize(uint64(sizeBytes), poolDefaultSizeBytes)
+	size = GetVolumeSize(uint64(sizeBytes), poolDefaultSizeBytes)
 
 	assert.Equal(t, sizeBytes, size)
-	assert.NoError(t, err)
 }
 
 func TestGetDefaultIgroupName(t *testing.T) {

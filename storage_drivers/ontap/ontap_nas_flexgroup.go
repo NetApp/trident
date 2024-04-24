@@ -568,7 +568,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 	// get the flexgroup size based on the snapshot reserve
 	flexgroupSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
-	sizeBytes, err = GetVolumeSize(flexgroupSize, storagePool.InternalAttributes()[Size])
+	sizeBytes = GetVolumeSize(flexgroupSize, storagePool.InternalAttributes()[Size])
 	if err != nil {
 		return err
 	}
@@ -592,6 +592,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	// Update config to reflect values used to create volume
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	volConfig.SpaceReserve = spaceReserve
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve

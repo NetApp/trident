@@ -275,10 +275,8 @@ func (d *NASStorageDriver) Create(
 	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
-	sizeBytes, err = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
-	if err != nil {
-		return err
-	}
+	sizeBytes = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
+
 	// Get the flexvol size based on the snapshot reserve
 	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 
@@ -314,6 +312,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Update config to reflect values used to create volume
+	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	volConfig.SpaceReserve = spaceReserve
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve

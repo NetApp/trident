@@ -1206,12 +1206,20 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupSize(t *testing.T) 
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
 
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+		SnapshotDir:     "true",
+	})
+	driver.physicalPool = pool1
+
 	tests := []struct {
 		volumeSize string
+		expectErr  bool
 	}{
-		{"invalid"},
-		{"19m"},
-		{"-1002947563b"},
+		{"invalid", true},
+		{"19m", false},
+		{"-1002947563b", true},
 	}
 	for _, test := range tests {
 		t.Run(test.volumeSize, func(t *testing.T) {
@@ -1223,20 +1231,21 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupSize(t *testing.T) 
 				PeerVolumeHandle: "fakesvm:vol1",
 			}
 
-			pool1 := storage.NewStoragePool(nil, "pool1")
-			pool1.SetInternalAttributes(map[string]string{
-				"tieringPolicy": "none",
-				SnapshotDir:     "true",
-			})
-			driver.virtualPools = map[string]storage.Pool{"pool1": pool1}
-
-			volAttrs := map[string]sa.Request{}
-
 			mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
 			mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+			if !test.expectErr {
+				mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).Return(nil)
+				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
 
-			result := driver.Create(ctx, volConfig, pool1, volAttrs)
-			assert.Error(t, result, "Volume size validation succeeded with invalid volume size")
+			}
+
+			result := driver.Create(ctx, volConfig, pool1, map[string]sa.Request{})
+
+			if test.expectErr {
+				assert.Error(t, result, "expected error, got nil")
+			} else {
+				assert.NoError(t, result, "expected no error, got error")
+			}
 		})
 	}
 }

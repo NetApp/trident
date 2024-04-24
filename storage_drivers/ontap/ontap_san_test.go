@@ -1142,7 +1142,6 @@ func TestOntapSanVolumeCreate_InvalidVolumeSize(t *testing.T) {
 		volumeSize string
 	}{
 		{"invalid"},
-		{"19m"},
 		{"-1002947563b"},
 	}
 

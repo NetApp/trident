@@ -1508,17 +1508,17 @@ func checkAggregateLimits(
 	return errors.New("could not find aggregate, cannot check aggregate provisioning limits for " + aggregate)
 }
 
-func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) (uint64, error) {
+func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) uint64 {
 	if sizeBytes == 0 {
 		defaultSize, _ := utils.ConvertSizeToBytes(poolDefaultSizeBytes)
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
-		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf(
-			"requested volume size (%d bytes) is too small; the minimum volume size is %d bytes",
-			sizeBytes, MinimumVolumeSizeBytes))
+		Log().Infof("Requested size %v is too small. Setting volume size to the minimum allowable %v.", sizeBytes, MinimumVolumeSizeBytes)
+		sizeBytes = MinimumVolumeSizeBytes
 	}
-	return sizeBytes, nil
+
+	return sizeBytes
 }
 
 // CheckVolumePoolSizeLimits checks if a volume pool size limit has been set.

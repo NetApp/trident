@@ -711,7 +711,6 @@ func TestOntapSanEconomyVolumeCreate_InvalidSize(t *testing.T) {
 		volumeSize string
 	}{
 		{"invalid"},
-		{"19m"},
 		{"-1002947563b"},
 	}
 	for _, test := range tests {
