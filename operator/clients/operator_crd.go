@@ -11,10 +11,10 @@ import (
 )
 
 type OperatorCRDClient struct {
-	client *operatorClient.Clientset
+	client operatorClient.Interface
 }
 
-func NewOperatorCRDClient(client *operatorClient.Clientset) OperatorCRDClientInterface {
+func NewOperatorCRDClient(client operatorClient.Interface) OperatorCRDClientInterface {
 	return &OperatorCRDClient{client: client}
 }
 

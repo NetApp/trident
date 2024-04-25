@@ -11,10 +11,10 @@ import (
 )
 
 type SnapshotCRDClient struct {
-	client *snapshotClient.Clientset
+	client snapshotClient.Interface
 }
 
-func NewSnapshotCRDClient(client *snapshotClient.Clientset) SnapshotCRDClientInterface {
+func NewSnapshotCRDClient(client snapshotClient.Interface) SnapshotCRDClientInterface {
 	return &SnapshotCRDClient{client: client}
 }
 

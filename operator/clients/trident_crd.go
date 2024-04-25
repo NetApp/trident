@@ -12,10 +12,10 @@ import (
 )
 
 type TridentCRDClient struct {
-	client *tridentClient.Clientset
+	client tridentClient.Interface
 }
 
-func NewTridentCRDClient(client *tridentClient.Clientset) TridentCRDClientInterface {
+func NewTridentCRDClient(client tridentClient.Interface) TridentCRDClientInterface {
 	return &TridentCRDClient{client: client}
 }
 

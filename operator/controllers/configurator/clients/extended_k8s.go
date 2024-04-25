@@ -20,11 +20,11 @@ import (
 
 type K8sClient struct {
 	k8sclient.KubernetesClient
-	KubeClient *kubernetes.Clientset
+	KubeClient kubernetes.Interface
 }
 
 func NewExtendedK8sClient(
-	config *rest.Config, namespace string, timeout int, client *kubernetes.Clientset,
+	config *rest.Config, namespace string, timeout int, client kubernetes.Interface,
 ) (ExtendedK8sClientInterface, error) {
 	if client == nil {
 		return nil, fmt.Errorf("invalid k8s clientset")

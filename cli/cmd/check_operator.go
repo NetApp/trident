@@ -25,6 +25,7 @@ const (
 	operatorService     = "trident-operator"
 	operatorServicePort = "8000"
 	operatorServicePath = "/operator/status"
+	podNamespace        = "POD_NAMESPACE"
 )
 
 func init() {
@@ -40,21 +41,28 @@ var checkOperatorCmd = &cobra.Command{
 	Short:   "check operator pod status",
 	Aliases: []string{"o"},
 	Hidden:  true,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if OperatingMode == ModeTunnel {
-			command := []string{
-				"check",
-				"operator",
-				"--timeout",
-				fmt.Sprintf("%d", checkTimeout),
-			}
-			out, err := TunnelCommand(append(command, args...))
-			printOutput(cmd, out, err)
-			return err
-		} else {
-			return checkOperatorStatus(checkTimeout)
+	RunE:    checkOperatorStatusRunE,
+}
+
+func checkOperatorStatusRunE(cmd *cobra.Command, args []string) error {
+	if OperatingMode == ModeTunnel {
+		command := []string{
+			"check",
+			"operator",
+			"--timeout",
+			fmt.Sprintf("%d", checkTimeout),
 		}
-	},
+		out, err := TunnelCommand(append(command, args...))
+		printOutput(cmd, out, err)
+		return err
+	} else {
+		return checkOperatorStatus(checkTimeout)
+	}
+}
+
+func getOperatorStatusURL(namespace string) string {
+	return "http://" + operatorService + "." + namespace + "." + "svc.cluster.local" + ":" +
+		operatorServicePort + operatorServicePath
 }
 
 func checkOperatorStatus(checkTimeout int32) error {
@@ -64,10 +72,10 @@ func checkOperatorStatus(checkTimeout int32) error {
 	var url string
 
 	getOperatorStatus := func() error {
-		if namespace := os.Getenv("POD_NAMESPACE"); namespace == "" {
+		if namespace := os.Getenv(podNamespace); namespace == "" {
 			return errors.New("error in getting trident operator pod")
 		} else {
-			url = "http://" + operatorService + "." + namespace + "." + "svc.cluster.local" + ":" + operatorServicePort + operatorServicePath
+			url = getOperatorStatusURL(namespace)
 		}
 		request, err := http.NewRequest("GET", url, nil)
 		request.Header.Set("Content-Type", "application/json")
