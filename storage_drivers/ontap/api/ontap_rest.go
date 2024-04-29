@@ -1145,7 +1145,10 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c RestClient) createVolumeByStyle(ctx context.Context, name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool) error {
+func (c RestClient) createVolumeByStyle(
+	ctx context.Context, name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool,
+) error {
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1225,7 +1228,14 @@ func (c RestClient) createVolumeByStyle(ctx context.Context, name string, sizeIn
 		return fmt.Errorf("unexpected response from volume create")
 	}
 
+	// Sample ZAPI error: API status: failed, Reason: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 13115
+	// Sample REST error: API State: failure, Message: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 917534
+
 	if pollErr := c.PollJobStatus(ctx, volumeCreateAccepted.Payload); pollErr != nil {
+		apiError, message, code := ExtractError(pollErr)
+		if apiError == "failure" && code == FLEXGROUP_VOLUME_SIZE_ERROR_REST {
+			return errors.InvalidInputError(message)
+		}
 		return pollErr
 	}
 
@@ -1420,7 +1430,10 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) 
 // equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
-func (c RestClient) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) error {
+func (c RestClient) VolumeCreate(
+	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
+) error {
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
 	sizeInBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
 
@@ -3340,6 +3353,23 @@ func ExtractErrorResponse(ctx context.Context, restError interface{}) (errorResp
 	}
 
 	return nil, fmt.Errorf("no error payload field exists for type '%v'", getType(restError))
+}
+
+func ExtractError(errResponse error) (string, string, string) {
+	// Split the error response to get API state, message and code
+	err := strings.Split(errResponse.Error(), ",")
+	var apiState, message, code string
+
+	// Size error will be of below format
+	// Sample ZAPI error: API status: failed, Reason: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 13115
+	// Sample REST error: API State: failure, Message: Size \"1GB\" (\"1073741824B\") is too small.Minimum size is \"400GB\" (\"429496729600B\").,Code: 917534
+	if len(err) == 3 {
+		apiState = strings.TrimSpace(strings.Split(err[0], ":")[1])
+		message = strings.TrimSpace(strings.Split(err[1], ":")[1])
+		code = strings.TrimSpace(strings.Split(err[2], ":")[1])
+	}
+
+	return apiState, message, code
 }
 
 func getType(i interface{}) string {

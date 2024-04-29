@@ -629,50 +629,27 @@ func (d *NASFlexGroupStorageDriver) Create(
 	}
 
 	// Create the FlexGroup
-	checkVolumeCreated := func() error {
-		// Create the FlexGroup
-		err = d.API.FlexgroupCreate(
-			ctx, api.Volume{
-				Aggregates:      flexGroupAggregateList,
-				Comment:         labels,
-				Encrypt:         enableEncryption,
-				ExportPolicy:    exportPolicy,
-				Name:            name,
-				Qos:             qosPolicyGroup,
-				Size:            strconv.FormatUint(sizeBytes, 10),
-				SpaceReserve:    spaceReserve,
-				SnapshotPolicy:  snapshotPolicy,
-				SecurityStyle:   securityStyle,
-				SnapshotReserve: snapshotReserveInt,
-				TieringPolicy:   tieringPolicy,
-				UnixPermissions: unixPermissions,
-				DPVolume:        volConfig.IsMirrorDestination,
-			})
-		return err
-	}
+	err = d.API.FlexgroupCreate(
+		ctx, api.Volume{
+			Aggregates:      flexGroupAggregateList,
+			Comment:         labels,
+			Encrypt:         enableEncryption,
+			ExportPolicy:    exportPolicy,
+			Name:            name,
+			Qos:             qosPolicyGroup,
+			Size:            strconv.FormatUint(sizeBytes, 10),
+			SpaceReserve:    spaceReserve,
+			SnapshotPolicy:  snapshotPolicy,
+			SecurityStyle:   securityStyle,
+			SnapshotReserve: snapshotReserveInt,
+			TieringPolicy:   tieringPolicy,
+			UnixPermissions: unixPermissions,
+			DPVolume:        volConfig.IsMirrorDestination,
+		})
 
-	volumeCreateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(LogFields{
-			"name":      name,
-			"increment": duration,
-		}).Debug("FlexGroup not yet created, waiting.")
-	}
-
-	if d.timeout == 0 {
-		d.timeout = flexgroupCreateTimeout
-	}
-
-	volumeBackoff := backoff.NewExponentialBackOff()
-	volumeBackoff.InitialInterval = 3 * time.Second
-	volumeBackoff.Multiplier = 1.414
-	volumeBackoff.RandomizationFactor = 0.1
-	volumeBackoff.MaxElapsedTime = d.timeout
-	volumeBackoff.MaxInterval = 10 * time.Second
-
-	// Run the volume check using an exponential backoff
-	if err := backoff.RetryNotify(checkVolumeCreated, volumeBackoff, volumeCreateNotify); err != nil {
-		createErrors = append(createErrors, fmt.Errorf("ONTAP-NAS-FLEXGROUP pool %s; error creating FlexGroup %v: %v",
-			storagePool.Name(), name, err))
+	if err != nil {
+		errMessage := fmt.Sprintf("ONTAP-NAS-FLEXGROUP pool %s; error creating volume %s: %v", storagePool.Name(), name, err)
+		createErrors = append(createErrors, fmt.Errorf(errMessage))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 

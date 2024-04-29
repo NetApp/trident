@@ -144,12 +144,14 @@ func TestExtractErrorResponse(t *testing.T) {
 	assert.Nil(t, eeResponse)
 
 	// pass a LunModifyDefault instance, with a populated error response
-	lunModifyDefaultResponse = s_a_n.LunModifyDefault{Payload: &models.ErrorResponse{
-		Error: &models.Error{
-			Code:    utils.Ptr("42"),
-			Message: utils.Ptr("error 42"),
+	lunModifyDefaultResponse = s_a_n.LunModifyDefault{
+		Payload: &models.ErrorResponse{
+			Error: &models.Error{
+				Code:    utils.Ptr("42"),
+				Message: utils.Ptr("error 42"),
+			},
 		},
-	}}
+	}
 	eeResponse, err = ExtractErrorResponse(ctx, lunModifyDefaultResponse)
 	assert.Nil(t, err)
 	assert.NotNil(t, eeResponse)
@@ -259,8 +261,10 @@ func mockIscsiServiceResponse(w http.ResponseWriter, r *http.Request) {
 		Enabled: &enabled, Target: &models.IscsiServiceInlineTarget{Name: &targetName},
 		Svm: &svm,
 	}
-	iscsiServiceResponse := models.IscsiServiceResponse{IscsiServiceResponseInlineRecords: []*models.
-		IscsiService{&iscsiService}}
+	iscsiServiceResponse := models.IscsiServiceResponse{
+		IscsiServiceResponseInlineRecords: []*models.
+			IscsiService{&iscsiService},
+	}
 
 	setHTTPResponseHeader(w, http.StatusOK)
 	json.NewEncoder(w).Encode(iscsiServiceResponse)
@@ -549,8 +553,11 @@ func TestOntapREST_IgroupList(t *testing.T) {
 	}
 }
 
-func getHttpServer(isNegativeTest bool, mockFunction func(hasNextLink bool, w http.ResponseWriter,
-	r *http.Request),
+func getHttpServer(
+	isNegativeTest bool, mockFunction func(
+		hasNextLink bool, w http.ResponseWriter,
+		r *http.Request,
+	),
 ) *httptest.Server {
 	hasNextLink := true
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -2113,10 +2120,14 @@ func mockIsVserverInSVMDR(w http.ResponseWriter, r *http.Request) {
 				},
 				UUID: utils.Ptr(strfmt.UUID("1")),
 			},
-			{Source: &models.
-				SnapmirrorEndpoint{Svm: &models.SnapmirrorEndpointInlineSvm{}}},
-			{Source: &models.
-				SnapmirrorEndpoint{Path: utils.Ptr("svm0:")}},
+			{
+				Source: &models.
+					SnapmirrorEndpoint{Svm: &models.SnapmirrorEndpointInlineSvm{}},
+			},
+			{
+				Source: &models.
+					SnapmirrorEndpoint{Path: utils.Ptr("svm0:")},
+			},
 			{},
 		},
 	}
@@ -5392,12 +5403,21 @@ func TestOntapREST_VolumeDestroy(t *testing.T) {
 	}
 }
 
-func mockJobResponseEmpty(w http.ResponseWriter, r *http.Request) {
-	jobResponse := models.JobLinkResponse{}
-	sc := http.StatusAccepted
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(sc)
-	json.NewEncoder(w).Encode(jobResponse)
+func getHttpServerPollCreateVolumeJob(
+	mockPostRequest func(w http.ResponseWriter, r *http.Request),
+	mockGetRequest func(w http.ResponseWriter, r *http.Request),
+) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" && r.URL.Path == "/api/storage/volumes" {
+			mockPostRequest(w, r)
+		} else if r.Method == "GET" && r.URL.Path == "/api/cluster/jobs/1234" {
+			mockJobResponse(w, r)
+		} else if r.Method == "GET" && r.URL.Path == "/api/storage/volumes" {
+			mockGetRequest(w, r)
+		} else {
+			mockResourceNotFound(w, r)
+		}
+	}))
 }
 
 func TestOntapREST_CreateFlexGroup(t *testing.T) {
@@ -5406,13 +5426,13 @@ func TestOntapREST_CreateFlexGroup(t *testing.T) {
 		mockFunction    func(w http.ResponseWriter, r *http.Request)
 		isErrorExpected bool
 	}{
-		{"PositiveTest", mockJobResponseEmpty, true},
+		{"PositiveTest", mockRequestAccepted, false},
 		{"BackendReturnError", mockResourceNotFound, true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			encrypt := true
-			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			server := getHttpServerPollCreateVolumeJob(test.mockFunction, mockGetVolumeResponse)
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
@@ -5427,6 +5447,46 @@ func TestOntapREST_CreateFlexGroup(t *testing.T) {
 			} else {
 				assert.Error(t, err, "flexgroup volume created")
 			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapREST_PollJobSuccess(t *testing.T) {
+	server := getHttpServerPollCreateVolumeJob(mockRequestAccepted, mockGetVolumeResponse)
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	jobId := strfmt.UUID("1234")
+	jobLink := models.JobLink{UUID: &jobId}
+	jobResponse := models.JobLinkResponse{Job: &jobLink}
+
+	err := rs.PollJobStatus(ctx, &jobResponse)
+	assert.NoError(t, err, "Poll job failed")
+	server.Close()
+}
+
+func TestOntapREST_PollJobFailed(t *testing.T) {
+	tests := []struct {
+		name            string
+		isErrorExpected bool
+	}{
+		{"JobIsEmpty", true},
+		{"JobUUIDEmpty", true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(mockJobResponse))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			jobResponse := models.JobLinkResponse{}
+			if test.name == "JobUUIDEmpty" {
+				jobResponse = models.JobLinkResponse{Job: &models.JobLink{}}
+			}
+
+			err := rs.PollJobStatus(ctx, &jobResponse)
+			assert.Error(t, err, "job or job uuid is not empty")
 			server.Close()
 		})
 	}
@@ -7838,6 +7898,45 @@ func TestOntapREST_DeleteExportRule(t *testing.T) {
 				assert.Error(t, err, "export rule destroyed")
 			}
 			server.Close()
+		})
+	}
+}
+
+func TestExtractError(t *testing.T) {
+	tests := []struct {
+		Name  string
+		Value error
+		Valid bool
+	}{
+		// Valid errors
+		{
+			"Valid",
+			fmt.Errorf("API status: failed, Reason: Size \\\"1GB\\\" (\\\"1073741824B\\\") is too small.Minimum size is \\\"400GB\\\" (\\\"429496729600B\\\").,Code: 13115"),
+			true,
+		},
+		{
+			"Valid",
+			fmt.Errorf("API State: failure, Message: Size \\\"1GB\\\" (\\\"1073741824B\\\") is too small.Minimum size is \\\"400GB\\\" (\\\"429496729600B\\\").,Code: 917534"),
+			true,
+		},
+
+		// Invalid errors
+		{"Invalid", fmt.Errorf("test-error, 113455"), false},
+		{"Invalid", fmt.Errorf("test-error"), false},
+		{"Invalid", fmt.Errorf(""), false},
+	}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			field1, field2, field3 := ExtractError(test.Value)
+			if test.Valid {
+				assert.NotEmpty(t, field1, "should be valid")
+				assert.NotEmpty(t, field2, "should be valid")
+				assert.NotEmpty(t, field3, "should be valid")
+			} else {
+				assert.Empty(t, field1, "should be invalid")
+				assert.Empty(t, field2, "should be invalid")
+				assert.Empty(t, field3, "should be invalid")
+			}
 		})
 	}
 }

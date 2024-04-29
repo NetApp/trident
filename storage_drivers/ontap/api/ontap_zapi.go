@@ -857,6 +857,11 @@ func (c Client) FlexGroupCreate(
 
 	response, err := request.ExecuteUsing(c.zr)
 	if zerr := azgo.GetError(ctx, *response, err); zerr != nil {
+		apiError, message, code := ExtractError(zerr)
+		if apiError == "failed" && code == azgo.EINVALIDINPUTERROR {
+			return response, errors.InvalidInputError(message)
+		}
+
 		return response, zerr
 	}
 
