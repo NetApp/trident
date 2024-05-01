@@ -1064,3 +1064,93 @@ func TestAttemptLock_Success(t *testing.T) {
 	utils.Unlock(ctx, lockContext, lockID)
 	wg.Wait()
 }
+
+func TestOutdatedAccessControlInUse(t *testing.T) {
+	tt := map[string]struct {
+		tracking map[string]*utils.VolumeTrackingInfo
+		expected bool
+	}{
+		"when default trident igroup is used for one volume": {
+			tracking: map[string]*utils.VolumeTrackingInfo{
+				"one": {
+					VolumePublishInfo: utils.VolumePublishInfo{
+						VolumeAccessInfo: utils.VolumeAccessInfo{
+							IscsiAccessInfo: utils.IscsiAccessInfo{
+								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
+							},
+						},
+					},
+				},
+				"two": {
+					VolumePublishInfo: utils.VolumePublishInfo{
+						VolumeAccessInfo: utils.VolumeAccessInfo{
+							IscsiAccessInfo: utils.IscsiAccessInfo{
+								IscsiIgroup: "trident",
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		"when custom trident igroup is used for one volume": {
+			tracking: map[string]*utils.VolumeTrackingInfo{
+				"one": {
+					VolumePublishInfo: utils.VolumePublishInfo{
+						VolumeAccessInfo: utils.VolumeAccessInfo{
+							IscsiAccessInfo: utils.IscsiAccessInfo{
+								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
+							},
+						},
+					},
+				},
+				"two": {
+					VolumePublishInfo: utils.VolumePublishInfo{
+						VolumeAccessInfo: utils.VolumeAccessInfo{
+							IscsiAccessInfo: utils.IscsiAccessInfo{
+								IscsiIgroup: "my-trident-igroup",
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		"when per-node igroups are used for all volumes": {
+			tracking: map[string]*utils.VolumeTrackingInfo{
+				"one": {
+					VolumePublishInfo: utils.VolumePublishInfo{
+						VolumeAccessInfo: utils.VolumeAccessInfo{
+							IscsiAccessInfo: utils.IscsiAccessInfo{
+								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
+							},
+						},
+					},
+				},
+				"two": {
+					VolumePublishInfo: utils.VolumePublishInfo{
+						VolumeAccessInfo: utils.VolumeAccessInfo{
+							IscsiAccessInfo: utils.IscsiAccessInfo{
+								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
+							},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for test, data := range tt {
+		t.Run(test, func(t *testing.T) {
+			ctx := context.Background()
+			mockCtrl := gomock.NewController(t)
+			mockHelper := mockNodeHelpers.NewMockNodeHelper(mockCtrl)
+
+			mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(data.tracking, nil).Times(1)
+
+			p := Plugin{nodeHelper: mockHelper}
+			assert.Equal(t, data.expected, p.outdatedAccessControlInUse(ctx))
+		})
+	}
+}

@@ -118,7 +118,8 @@ func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[
 	// Volumes have a 1-1 relationship with a tracking file. A tracking file may contain 1-many published paths.
 	files, err := v.GetVolumeTrackingFiles()
 	if err != nil {
-		return nil, fmt.Errorf("could not find volume tracking info files; %s", err)
+		Logc(ctx).WithError(err).Debug("Error reading tracking file directory.")
+		return nil, fmt.Errorf("failed to get tracking files; %v", err)
 	}
 
 	if len(files) == 0 {

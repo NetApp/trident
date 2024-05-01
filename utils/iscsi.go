@@ -18,6 +18,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
+	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -54,7 +55,21 @@ var (
 
 	// Non-persistent map to maintain flush delays/errors if any, for device path(s).
 	iSCSIVolumeFlushExceptions = make(map[string]time.Time)
+
+	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
+	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>
+	// ex: Kubernetes-NodeA-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z
+	perNodeIgroupRegex = regexp.MustCompile(`^[0-9A-z\-]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
 )
+
+// IsPerNodeIgroup accepts an igroup and returns whether that igroup matches the per-node igroup schema.
+func IsPerNodeIgroup(igroup string) bool {
+	// Trident never creates per-node igroups with "trident" in the name.
+	if strings.Contains(igroup, config.OrchestratorName) {
+		return false
+	}
+	return perNodeIgroupRegex.MatchString(igroup)
+}
 
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
 func AttachISCSIVolumeRetry(
@@ -932,7 +947,8 @@ func iSCSIScanTargetLUN(ctx context.Context, lunID int, hosts []int) error {
 		Logc(ctx).WithFields(LogFields{
 			"scanCmd":  scanCmd,
 			"scanFile": filename,
-		}).Debug("Invoked single-LUN scan.")
+			"host":     hostNumber,
+		}).Debug("Invoked SCSI scan for host.")
 	}
 
 	return nil
@@ -1985,14 +2001,14 @@ func IsISCSISessionStale(ctx context.Context, sessionID string) bool {
 	return sessionState != iSCSISessionStateLoggedIn
 }
 
-// InitiateScanForLuns scans all paths to each of the LUNs passed.
-func InitiateScanForLuns(ctx context.Context, luns []int32, iSCSINodeName string) error {
+// InitiateScanForLun scans all paths on a host to a single LUN.
+func InitiateScanForLun(ctx context.Context, lunID int, iSCSINodeName string) error {
 	fields := LogFields{
-		"lunIDs":        luns,
+		"lunID":         lunID,
 		"iSCSINodeName": iSCSINodeName,
 	}
-	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForLuns")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForLuns")
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForLun")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForLun")
 
 	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
 	if len(hostSessionMap) == 0 {
@@ -2005,10 +2021,36 @@ func InitiateScanForLuns(ctx context.Context, luns []int32, iSCSINodeName string
 		hosts = append(hosts, hostNumber)
 	}
 
-	for _, lun := range luns {
-		if err := iSCSIScanTargetLUN(ctx, int(lun), hosts); err != nil {
-			Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
-		}
+	if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
+		Logc(ctx).WithField("scanError", err).Error("Could not scan for new LUN.")
+	}
+
+	return nil
+}
+
+// InitiateScanForAllLUNs scans all paths to each of the LUNs passed.
+func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
+	fields := LogFields{"iSCSINodeName": iSCSINodeName}
+
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForAllLUNs")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForAllLUNs")
+
+	// Setting lunID to -1 so that all the LUNs are scanned.
+	lunID := -1
+
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
+	}
+
+	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
+	hosts := make([]int, 0)
+	for hostNumber := range hostSessionMap {
+		hosts = append(hosts, hostNumber)
+	}
+
+	if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
+		Logc(ctx).WithError(err).Error("Could not scan for new LUN.")
 	}
 
 	return nil
@@ -2433,32 +2475,4 @@ func SortPortals(portals []string, publishedSessions *ISCSISessions) {
 			return iLastAccessTime.Before(jLastAccessTime)
 		})
 	}
-}
-
-// InitiateScanForAllLUNs scans all paths to each of the LUNs passed.
-func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
-	fields := LogFields{"iSCSINodeName": iSCSINodeName}
-
-	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForAllLUNs")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForAllLUNs")
-
-	// Setting lunID to -1 so that all the LUNs are scanned.
-	lunID := -1
-
-	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, iSCSINodeName)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("no iSCSI hosts found for target %s", iSCSINodeName)
-	}
-
-	Logc(ctx).WithField("hostSessionMap", hostSessionMap).Debug("Built iSCSI host/session map.")
-	hosts := make([]int, 0)
-	for hostNumber := range hostSessionMap {
-		hosts = append(hosts, hostNumber)
-	}
-
-	if err := iSCSIScanTargetLUN(ctx, lunID, hosts); err != nil {
-		Logc(ctx).WithError(err).Error("Could not scan for new LUN.")
-	}
-
-	return nil
 }

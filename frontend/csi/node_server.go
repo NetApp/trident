@@ -1968,11 +1968,12 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	if publishInfo, err = publishedISCSISessions.GeneratePublishInfo(portal); err != nil {
 		return err
 	}
+	lunID, targetIQN := publishInfo.IscsiLunNumber, publishInfo.IscsiTargetIQN
 
 	switch action {
 	case utils.LogoutLoginScan:
-		if err = utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
-			return fmt.Errorf("error while logging out of target %s", publishInfo.IscsiTargetIQN)
+		if err = utils.ISCSILogout(ctx, targetIQN, portal); err != nil {
+			return fmt.Errorf("error while logging out of target %s", targetIQN)
 		} else {
 			Logc(ctx).Debug("Logout is successful.")
 		}
@@ -2013,16 +2014,49 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		// Login is successful, fallthrough to perform scan
 		fallthrough
 	case utils.Scan:
-		if err = utils.InitiateScanForAllLUNs(ctx, publishInfo.IscsiTargetIQN); err != nil {
-			Logc(ctx).Debug("Error while rescanning of LUNs.")
-		}
+		if p.outdatedAccessControlInUse(ctx) {
+			Logc(ctx).WithField("lunID", lunID).Debug("Initiating SCSI scan for exact LUN.")
 
-		Logc(ctx).Debug("Scanning of LUNs is successful.")
+			if err := utils.InitiateScanForLun(ctx, int(lunID), targetIQN); err != nil {
+				Logc(ctx).WithError(err).Debug("Error while initiating SCSI scan for LUN.")
+			} else {
+				Logc(ctx).WithField("lunID", lunID).Debug("Successfully initiated SCSI scan for LUN.")
+			}
+		} else {
+			Logc(ctx).Debug("Initiating SCSI scan for all LUNs.")
+
+			if err := utils.InitiateScanForAllLUNs(ctx, targetIQN); err != nil {
+				Logc(ctx).WithError(err).Debug("Error while initiating SCSI scan for LUNs.")
+			} else {
+				Logc(ctx).Debug("Successfully initiated SCSI scan for all LUNs.")
+			}
+		}
 	default:
 		Logc(ctx).Debug("No valid action to be taken in iSCSI self-healing.")
 	}
 
 	return nil
+}
+
+// outdatedAccessControlInUse looks for older access control mechanisms (like backend-scoped initiator groups)
+// and reports if any are in use on this host.
+func (p *Plugin) outdatedAccessControlInUse(ctx context.Context) bool {
+	Logc(ctx).Debug("Determining if outdated access control schemas are in use.")
+
+	volumeTrackingInfo, _ := p.nodeHelper.ListVolumeTrackingInfo(ctx)
+	for id, info := range volumeTrackingInfo {
+		if !utils.IsPerNodeIgroup(info.IscsiIgroup) {
+			Logc(ctx).WithFields(LogFields{
+				"volumeID":       id,
+				"lunID":          info.IscsiLunNumber,
+				"initiatorGroup": info.IscsiIgroup,
+			}).Debug("Detected an outdated access control schema is in use.")
+			return true
+		}
+	}
+
+	Logc(ctx).Debug("No outdated access control schema detected.")
+	return false
 }
 
 // performISCSISelfHealing inspects the desired state of the iSCSI sessions with the current state and accordingly
@@ -2068,8 +2102,8 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 		Logc(ctx).Debug("No iSCSI sessions LUN mappings found.")
 	}
 
-	Logc(ctx).Debugf("\nPublished iSCSI Sessions: %v", publishedISCSISessions)
-	Logc(ctx).Debugf("\n\nCurrent iSCSI Sessions: %v", currentISCSISessions)
+	Logc(ctx).Debugf("Published iSCSI Sessions: %v", publishedISCSISessions)
+	Logc(ctx).Debugf("Current iSCSI Sessions: %v", currentISCSISessions)
 
 	// The problems self-heal aims to resolve can be divided into two buckets. A stale portal bucket
 	// and a non-stale portal bucket. Stale portals are the sessions that were healthy at some point

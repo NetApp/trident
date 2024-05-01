@@ -122,7 +122,11 @@ func TestControllerPublishVolume(t *testing.T) {
 	assert.Nilf(t, err, "unexpected error publishing volume; %v", err)
 
 	publishContext := publishResponse.PublishContext
-	expectedPublishContext := map[string]string{"filesystemType": "", "mountOptions": "", "protocol": ""}
+	expectedPublishContext := map[string]string{
+		"filesystemType": "",
+		"mountOptions":   "",
+		"protocol":       "",
+	}
 	assert.Equal(t, expectedPublishContext, publishContext)
 }
 

@@ -50,6 +50,23 @@ func reverseSlice(input []string) []string {
 	return output
 }
 
+func TestIsPerNodeIgroup(t *testing.T) {
+	tt := map[string]bool{
+		"":        false,
+		"trident": false,
+		"node-01-8095-ad1b8212-49a0-82d4-ef4f8b5b620z":          false,
+		"trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":          false,
+		"-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                 false,
+		"igroup-a-trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z": false,
+		"node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":          true,
+		"trdnt-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":            true,
+	}
+
+	for input, expected := range tt {
+		assert.Equal(t, expected, IsPerNodeIgroup(input))
+	}
+}
+
 func TestFormatPortal(t *testing.T) {
 	type IPAddresses struct {
 		InputPortal  string
