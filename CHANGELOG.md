@@ -2,7 +2,14 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v23.10.0
+## Changes since v24.02.0
+
+**Enhancements:**
+
+- iSCSI self-healing will now initiate SCSI scans by exact LUN ID if deprecated igroups are in use (Issue [#883](https://github.com/NetApp/trident/issues/883)).
+- **Kubernetes**: Trident DaemonSet will now clean zombie mounts and residual tracking files at startup.
+
+## v24.02.0
 
 **Fixes:**
 
