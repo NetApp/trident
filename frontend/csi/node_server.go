@@ -2014,7 +2014,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		// Login is successful, fallthrough to perform scan
 		fallthrough
 	case utils.Scan:
-		if p.outdatedAccessControlInUse(ctx) {
+		if p.deprecatedIgroupInUse(ctx) {
 			Logc(ctx).WithField("lunID", lunID).Debug("Initiating SCSI scan for exact LUN.")
 
 			if err := utils.InitiateScanForLun(ctx, int(lunID), targetIQN); err != nil {
@@ -2038,24 +2038,21 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	return nil
 }
 
-// outdatedAccessControlInUse looks for older access control mechanisms (like backend-scoped initiator groups)
-// and reports if any are in use on this host.
-func (p *Plugin) outdatedAccessControlInUse(ctx context.Context) bool {
-	Logc(ctx).Debug("Determining if outdated access control schemas are in use.")
-
+// deprecatedIgroupInUse looks through the tracking files for deprecated igroups and reports if any are in use.
+func (p *Plugin) deprecatedIgroupInUse(ctx context.Context) bool {
 	volumeTrackingInfo, _ := p.nodeHelper.ListVolumeTrackingInfo(ctx)
 	for id, info := range volumeTrackingInfo {
 		if !utils.IsPerNodeIgroup(info.IscsiIgroup) {
 			Logc(ctx).WithFields(LogFields{
-				"volumeID":       id,
-				"lunID":          info.IscsiLunNumber,
-				"initiatorGroup": info.IscsiIgroup,
-			}).Debug("Detected an outdated access control schema is in use.")
+				"volumeID": id,
+				"lunID":    info.IscsiLunNumber,
+				"igroup":   info.IscsiIgroup,
+			}).Debug("Detected a deprecated igroup.")
 			return true
 		}
 	}
 
-	Logc(ctx).Debug("No outdated access control schema detected.")
+	Logc(ctx).Debug("No deprecated igroups detected.")
 	return false
 }
 

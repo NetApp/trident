@@ -1150,7 +1150,7 @@ func TestOutdatedAccessControlInUse(t *testing.T) {
 			mockHelper.EXPECT().ListVolumeTrackingInfo(ctx).Return(data.tracking, nil).Times(1)
 
 			p := Plugin{nodeHelper: mockHelper}
-			assert.Equal(t, data.expected, p.outdatedAccessControlInUse(ctx))
+			assert.Equal(t, data.expected, p.deprecatedIgroupInUse(ctx))
 		})
 	}
 }
