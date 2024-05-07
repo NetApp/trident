@@ -8,6 +8,10 @@
 
 - Added support to run Trident as an Extension in Azure Kubernetes Service.
 
+**Fixes:**
+
+- Fixed Helm chart so that default `trident-autosupport` image is 24.02.
+
 ## v24.02.0
 
 **Fixes:**
