@@ -587,6 +587,12 @@ func getVolumeConfig(
 		Logc(ctx).WithError(err).Warning("Unable to parse notManaged annotation into bool.")
 	}
 
+	isMirrorDestination, err := strconv.ParseBool(getAnnotation(annotations, AnnIsMirrorDestination))
+	if err != nil {
+		Logc(ctx).WithError(err).Warning("Unable to parse isMirrorDestination annotation into bool.")
+		isMirrorDestination = false
+	}
+
 	return &storage.VolumeConfig{
 		Name:                name,
 		Size:                fmt.Sprintf("%d", size.Value()),
@@ -609,6 +615,7 @@ func getVolumeConfig(
 		MountOptions:        strings.Join(storageClass.MountOptions, ","),
 		RequisiteTopologies: requisiteTopology,
 		PreferredTopologies: preferredTopology,
+		IsMirrorDestination: isMirrorDestination,
 	}
 }
 

@@ -54,6 +54,7 @@ const (
 	AnnVolumeShareFromPVC   = annPrefix + "/shareFromPVC"
 	AnnVolumeShareToNS      = annPrefix + "/shareToNamespace"
 	AnnReadOnlyClone        = annPrefix + "/readOnlyClone"
+	AnnIsMirrorDestination  = annPrefix + "/isMirrorDestination"
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{
