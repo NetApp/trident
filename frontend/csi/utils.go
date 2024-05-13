@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
@@ -329,4 +330,25 @@ func ensureLUKSVolumePassphrase(
 		}
 	}
 	return nil
+}
+
+// Iteratees through the selector parameters in the request, and applies
+// LUKS selector to the volume
+func overrideRequestedValues(req *csi.CreateVolumeRequest, volConfig *storage.VolumeConfig ) {
+	var luksLabel = "luks"
+	// Add each selector to a map for accessibility
+	selectors := map[string]string{}
+	for _, selector := range strings.Split(req.Parameters["selector"], "; ") {
+		key, val, ok := strings.Cut(selector, "=")
+		if !ok {
+			// Selector has wrong format, skipped
+			continue
+		}
+		selectors[key] = val
+	}
+
+	// If LUKS selector is set pass it to the volume config
+	if selectors[luksLabel] != "" {
+		volConfig.LUKSEncryption = selectors[luksLabel]
+	}
 }

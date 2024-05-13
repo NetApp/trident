@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/golang/mock/gomock"
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	"github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
+	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -464,4 +467,90 @@ func TestEnsureLUKSVolumePassphrase_NoCorrectPassphraseProvided(t *testing.T) {
 	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
 	assert.Error(t, err)
 	mockCtrl.Finish()
+}
+
+func TestOverrideRequestedValues(t *testing.T) {
+	tests := []struct{
+		name string
+		req csi.CreateVolumeRequest
+		volConfig storage.VolumeConfig
+		result storage.VolumeConfig
+	}{
+		{
+			name: "Empty",
+		},
+		{
+			name: "LUKSTrue",
+			req: csi.CreateVolumeRequest{
+				Parameters: map[string]string{
+					"selector": "luks=true",
+				},
+			},
+			result: storage.VolumeConfig{
+				LUKSEncryption: "true",
+			},
+		},
+		{
+			name: "Multiple",
+			req: csi.CreateVolumeRequest{
+				Parameters: map[string]string{
+					"selector": "efg=yes; luks=true; abc=false",
+				},
+			},
+			result: storage.VolumeConfig{
+				LUKSEncryption: "true",
+			},
+		},
+		{
+			name: "LUKSFalse",
+			req: csi.CreateVolumeRequest{
+				Parameters: map[string]string{
+					"selector": "efg=yes; luks=false; abc=false",
+				},
+			},
+			volConfig: storage.VolumeConfig{
+				LUKSEncryption: "true",
+			},
+			result: storage.VolumeConfig{
+				LUKSEncryption: "false",
+			},
+		},
+		{
+			name: "Misconfigured",
+			req: csi.CreateVolumeRequest{
+				Parameters: map[string]string{
+					"selector": "efg:yes; luks:false; abc=false",
+				},
+			},
+			volConfig: storage.VolumeConfig{
+				LUKSEncryption: "true",
+			},
+			result: storage.VolumeConfig{
+				LUKSEncryption: "true",
+			},
+		},
+		{
+			name: "Mixed",
+			req: csi.CreateVolumeRequest{
+				Parameters: map[string]string{
+					"selector": "efg:yes; luks=false; abc/false",
+				},
+			},
+			volConfig: storage.VolumeConfig{
+				LUKSEncryption: "true",
+			},
+			result: storage.VolumeConfig{
+				LUKSEncryption: "false",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func (t *testing.T) {
+			overrideRequestedValues(&test.req, &test.volConfig)
+			if diff := cmp.Diff(test.volConfig, test.result); diff != "" {
+				t.Errorf("overrideRequestedValues(): volConfig differs (+got, -want): %s", diff)
+			}
+		})
+	}
 }
