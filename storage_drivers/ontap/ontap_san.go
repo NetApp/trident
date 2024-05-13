@@ -616,7 +616,9 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Set the volume to LUKS if backend has LUKS true as default
-	volConfig.LUKSEncryption = d.Config.LUKSEncryption
+	if volConfig.LUKSEncryption == "" {
+		volConfig.LUKSEncryption = d.Config.LUKSEncryption
+	}
 
 	// Ensure the volume has only one LUN
 	lunInfo, err := d.API.LunGetByName(ctx, "/vol/"+originalName+"/*")

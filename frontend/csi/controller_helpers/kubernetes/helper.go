@@ -26,11 +26,11 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 //
 // This file contains the methods that implement the ControllerHelper interface.
 //
-/////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////
 
 // GetVolumeConfig accepts the attributes of a volume being requested by
 // the CSI provisioner, combines those with PVC and storage class info
@@ -100,6 +100,18 @@ func (h *helper) GetVolumeConfig(
 		volumeConfig.CloneSourceVolume = cloneSourcePVName
 	}
 
+	// Check if we're importing a volume and do some further validation
+	if volumeConfig.ImportOriginalName != "" {
+		// If this is a LUKS encrypted volume, ensure the storage class contains the expected parameters
+		if volumeConfig.LUKSEncryption != "" {
+			err = h.validateStorageClassParameters(sc, CSIParameterNodeStageSecretName, CSIParameterNodeStageSecretNamespace)
+			if err != nil {
+				Logc(ctx).WithError(err).Error("Invalid storage class parameters for LUKS volume import.")
+				return nil, err
+			}
+		}
+	}
+
 	// Check for TMRs pointing to this PVC
 	mirrorRelationshipName := getAnnotation(annotations, AnnMirrorRelationship)
 	volumeConfig.PeerVolumeHandle, err = h.getPVCMirrorPeer(pvc, mirrorRelationshipName)
@@ -119,6 +131,17 @@ func (h *helper) GetVolumeConfig(
 	}
 
 	return volumeConfig, nil
+}
+
+// validateStorageClassParameters looks through a storage class and reports if any of the expected keys are not found.
+func (h *helper) validateStorageClassParameters(sc *k8sstoragev1.StorageClass, keys ...string) error {
+	var errs error
+	for _, key := range keys {
+		if _, ok := sc.Parameters[key]; !ok {
+			errs = errors.Join(errs, errors.NotFoundError("storage class parameter [%s] not found", key))
+		}
+	}
+	return errs
 }
 
 // getPVCMirrorPeer returns the spec.remoteVolumeHandle of the TMR pointing to this PVC
@@ -587,6 +610,17 @@ func getVolumeConfig(
 		Logc(ctx).WithError(err).Warning("Unable to parse notManaged annotation into bool.")
 	}
 
+	importOriginalName := getAnnotation(annotations, AnnImportOriginalName)
+	luksEncryption := ""
+	if importOriginalName != "" {
+		luksEncryption = getAnnotation(annotations, AnnLUKSEncryption)
+		if luksEncryption != "" {
+			if _, err = strconv.ParseBool(luksEncryption); err != nil {
+				Logc(ctx).WithError(err).Warning("Unable to parse luks annotation into bool.")
+			}
+		}
+	}
+
 	return &storage.VolumeConfig{
 		Name:                name,
 		Size:                fmt.Sprintf("%d", size.Value()),
@@ -599,11 +633,12 @@ func getVolumeConfig(
 		StorageClass:        storageClass.Name,
 		BlockSize:           getAnnotation(annotations, AnnBlockSize),
 		FileSystem:          getAnnotation(annotations, AnnFileSystem),
+		LUKSEncryption:      luksEncryption,
 		SplitOnClone:        getAnnotation(annotations, AnnSplitOnClone),
 		ReadOnlyClone:       readOnlyClone,
 		VolumeMode:          config.VolumeMode(*volumeMode),
 		AccessMode:          accessMode,
-		ImportOriginalName:  getAnnotation(annotations, AnnImportOriginalName),
+		ImportOriginalName:  importOriginalName,
 		ImportBackendUUID:   getAnnotation(annotations, AnnImportBackendUUID),
 		ImportNotManaged:    notManaged,
 		MountOptions:        strings.Join(storageClass.MountOptions, ","),

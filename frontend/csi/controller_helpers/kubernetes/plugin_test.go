@@ -1373,3 +1373,38 @@ func TestGetSnapshotInternalName(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateStorageClassParameters(t *testing.T) {
+	tt := map[string]struct {
+		keys   []string
+		params map[string]string
+		pass   bool
+	}{
+		"fails when a single key is missing from parameters": {
+			keys:   []string{"a", "b"},
+			params: map[string]string{"a": ""},
+		},
+		"fails when all keys are missing from parameters": {
+			keys:   []string{"a", "b"},
+			params: map[string]string{"c": "", "d": ""},
+		},
+		"fails when keys are expected but no parameters exist": {
+			keys:   []string{"a", "b"},
+			params: map[string]string{},
+		},
+		"succeeds when no keys are missing from parameters": {
+			keys:   []string{"a", "b"},
+			params: map[string]string{"a": "d", "b": "e", "c": "f"},
+			pass:   true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			p := helper{}
+			sc := &k8sstoragev1.StorageClass{Parameters: test.params}
+			err := p.validateStorageClassParameters(sc, test.keys...)
+			assert.Equal(t, test.pass, err == nil)
+		})
+	}
+}

@@ -26,8 +26,10 @@ const (
 
 	// Kubernetes-defined storage class parameters
 
-	K8sFsType          = "fsType"
-	CSIParameterPrefix = "csi.storage.k8s.io/"
+	K8sFsType                            = "fsType"
+	CSIParameterPrefix                   = "csi.storage.k8s.io/"
+	CSIParameterNodeStageSecretName      = CSIParameterPrefix + "node-stage-secret-name"
+	CSIParameterNodeStageSecretNamespace = CSIParameterPrefix + "node-stage-secret-namespace"
 
 	// Kubernetes-defined annotations
 	// (Based on kubernetes/pkg/controller/volume/persistentvolume/controller.go)
@@ -54,6 +56,7 @@ const (
 	AnnVolumeShareFromPVC   = annPrefix + "/shareFromPVC"
 	AnnVolumeShareToNS      = annPrefix + "/shareToNamespace"
 	AnnReadOnlyClone        = annPrefix + "/readOnlyClone"
+	AnnLUKSEncryption       = annPrefix + "/luksEncryption" // import only
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{
