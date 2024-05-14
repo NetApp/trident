@@ -3784,34 +3784,32 @@ func TestCreateClone_VolumeExistsCheckFailed(t *testing.T) {
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
 }
 
-/*
-	func TestCreateClone_VolumeExistsCreating(t *testing.T) {
-		mockAPI, driver := newMockANFDriver(t)
-		driver.Config.BackendName = "anf"
-		driver.Config.ServiceLevel = api.ServiceLevelUltra
+func TestCreateClone_VolumeExistsCreating(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
 
-		driver.populateConfigurationDefaults(ctx, &driver.Config)
-		driver.initializeStoragePools(ctx)
-		driver.initializeTelemetry(ctx, BackendUUID)
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
 
-		storagePool := driver.pools["anf_pool"]
+	storagePool := driver.pools["anf_pool"]
 
-		sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
-			storagePool)
-		cloneFilesystem.ProvisioningState = api.StateCreating
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+		storagePool)
+	cloneFilesystem.ProvisioningState = api.StateCreating
 
-		mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
-		mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
-		mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
-		mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
-			driver.volumeCreateTimeout).Return(api.StateCreating, nil).Times(1)
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
 
-		result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
-		assert.Error(t, result, "expected error")
-		assert.IsType(t, drivers.NewVolumeExistsError(""), result, "not VolumeExistsError")
-		assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
-	}
+	assert.Error(t, result, "expected error")
+	assert.IsType(t,
+		errors.VolumeCreatingError(""), result, "not VolumeCreatingError")
+	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
+}
 
 func TestCreateClone_VolumeExists(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
@@ -3831,8 +3829,6 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
 	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
-	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
-		driver.volumeCreateTimeout).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
@@ -3840,7 +3836,6 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 	assert.IsType(t, drivers.NewVolumeExistsError(""), result, "not VolumeExistsError")
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
 }
-*/
 
 func TestCreateClone_SnapshotNotFound(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
