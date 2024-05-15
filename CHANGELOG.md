@@ -7,7 +7,8 @@
 **Enhancements:**
 
 - iSCSI self-healing will now initiate SCSI scans by exact LUN ID if deprecated igroups are in use (Issue [#883](https://github.com/NetApp/trident/issues/883)).
-- **Kubernetes**: Trident DaemonSet will now clean zombie mounts and residual tracking files at startup.
+- **Kubernetes:** Trident DaemonSet will now clean zombie mounts and residual tracking files at startup.
+- **Kubernetes:** Added `orchestratorImageRegistry` and `enableTridentOrchestrator` attributes to the Helm chart to enable users to specify different imageRegistries for this helm chart and TridentOrchestrator resource.
 
 ## v24.02.0
 
