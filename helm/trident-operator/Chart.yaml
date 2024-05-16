@@ -1,6 +1,6 @@
 apiVersion: v2
 name: trident-operator
-version: 101.2405.0 # Some services require a semver here: "100.<CalVer>"
+version: 100.2405.0 # Some services require a semver here: "100.<CalVer>"
 kubeVersion: ">= 1.24.0-0"
 description: "A Helm chart for deploying NetApp's Trident CSI storage provisioner using the Trident Operator."
 type: application
