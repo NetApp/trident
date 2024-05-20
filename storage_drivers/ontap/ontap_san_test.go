@@ -783,6 +783,108 @@ func TestOntapSanVolumeCreate_LabelLengthExceeding(t *testing.T) {
 	assert.Error(t, err, "Error is nil")
 }
 
+func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
+	ctx = context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	volConfig := getVolumeConfig()
+
+	dummyLun := &api.Lun{
+		Comment:      "dummyLun",
+		SerialNumber: "testSerialNumber",
+	}
+
+	tests := []struct {
+		name          string
+		mocks         func(mockAPI *mockapi.MockOntapAPI)
+		wantErr       assert.ErrorAssertionFunc
+		volExists     bool
+		assertMessage string // This message prints when the test case fails
+	}{
+		{
+			name: "VolumeExists_Fail",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false,
+					fmt.Errorf("Volume checks fail"))
+			},
+			wantErr:       assert.Error,
+			volExists:     false,
+			assertMessage: "Checking for volume succeeded.",
+		},
+		{
+			name: "VolumeDoesNotExist",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+			},
+			wantErr:       assert.NoError,
+			volExists:     false,
+			assertMessage: "Volume existed.",
+		},
+		{
+			name: "LUNExists",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(dummyLun, nil)
+			},
+			wantErr:       assert.NoError,
+			volExists:     true,
+			assertMessage: "LUN does not exist",
+		},
+		{
+			name: "LUNFindError",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, nil)
+			},
+			wantErr:       assert.Error,
+			volExists:     false,
+			assertMessage: "LUN is found.",
+		},
+		{
+			name: "LUNDoesNotExist",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil,
+					errors.NotFoundError("LUN does not exist"))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(errors.New("destroy fail"))
+			},
+			wantErr:       assert.Error,
+			volExists:     true,
+			assertMessage: "Successful volume cleanup.",
+		},
+		{
+			name: "LUNDoesNotExist_VolDestroy",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil,
+					errors.NotFoundError("LUN does not exist"))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+			},
+			wantErr:       assert.NoError,
+			volExists:     false,
+			assertMessage: "Failed volume cleanup.",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.mocks(mockAPI)
+			volExists, err := driver.destroyVolumeIfNoLUN(ctx, volConfig)
+			assert.Equal(t, test.volExists, volExists, "volume exist status is not expected.")
+			if !test.wantErr(t, err, test.assertMessage) {
+				return
+			}
+		})
+	}
+
+	// Mirrored configuration coverage
+	volConfig.IsMirrorDestination = true
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	t.Run("mirrored configuration", func(t *testing.T) {
+		volExists, err := driver.destroyVolumeIfNoLUN(ctx, volConfig)
+		assert.True(t, volExists, "volume does not exist")
+		assert.NoError(t, err, "volume exist check return error")
+	})
+}
+
 func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 	ctx := context.Background()
 
@@ -790,6 +892,10 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
+	dummyLun := &api.Lun{
+		Comment:      "dummyLun",
+		SerialNumber: "testSerialNumber",
+	}
 
 	type args struct {
 		snapshotReserve   string
@@ -833,6 +939,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(dummyLun, nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Volume is not present in backend",
@@ -1038,9 +1145,11 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
 				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(
 					api.VolumeCreateJobExistsError("Volume creation failed"))
+				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(fmt.Errorf("lun creation failed"))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			},
-			wantErr:       assert.NoError,
-			assertMessage: "create volume job is completed",
+			wantErr:       assert.Error,
+			assertMessage: "Volume is created",
 		},
 		{
 			name: "LunCreateFail",

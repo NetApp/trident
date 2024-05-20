@@ -212,6 +212,60 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	return nil
 }
 
+// destroyVolumeIfNoLUN attempts to destroy volume if there exists a volume with no associated LUN.
+// This is used to make Create() idempotent by cleaning up a Flexvol with no LUN.
+// Returns (Volume State, error)
+//
+//	Caller can check for:
+//	non-nil error, indicates one of the following.
+//	   - Error checking volume existence.
+//	   - Error checking LUN existence.
+//	   - Could not destroy the required volume for an error.
+//	Volume state:true indicating both volume and required LUN exist.
+//	Volume state:false indicating no volume existed or cleaned up now.
+func (d *SANStorageDriver) destroyVolumeIfNoLUN(ctx context.Context, volConfig *storage.VolumeConfig) (bool, error) {
+	name := volConfig.InternalName
+	fields := LogFields{
+		"Method": "destroyVolumeIfNoLUN",
+		"Type":   "SANStorageDriver",
+		"name":   name,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> destroyVolumeIfNoLUN")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< destroyVolumeIfNoLUN")
+
+	volExists, err := d.API.VolumeExists(ctx, name)
+	if err != nil {
+		return false, fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		// No volume exists, no clean up.
+		return false, nil
+	}
+	if volConfig.IsMirrorDestination {
+		// No clean up required, this is DP volume.
+		return true, nil
+	}
+
+	// Verify if LUN exists.
+	newLUNPath := lunPath(name)
+	extantLUN, err := d.API.LunGetByName(ctx, newLUNPath)
+	if extantLUN != nil {
+		// Volume and LUN both exist. No clean up needed.
+		return true, nil
+	}
+	if !errors.IsNotFoundError(err) {
+		// Could not verify if LUN exists. Clean up pending.
+		return false, fmt.Errorf("error checking for existing LUN %s: %v", newLUNPath, err)
+	}
+	// LUN does not exist, but volume. Initiate clean-up.
+	if err = d.API.VolumeDestroy(ctx, name, true); err != nil {
+		Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume: %v", err)
+		return true, fmt.Errorf("could not clean up partial create of vol/lun: %v", err)
+	}
+	Logc(ctx).WithField("volume", name).Debug("Cleaned up volume since LUN create failed.")
+	return false, nil
+}
+
 // Create a volume+LUN with the specified options
 func (d *SANStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
@@ -229,10 +283,10 @@ func (d *SANStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// If the volume already exists, bail out
-	volExists, err := d.API.VolumeExists(ctx, name)
+	// Early exit if volume+LUN exist. Clean up volume if no LUN exists.
+	volExists, err := d.destroyVolumeIfNoLUN(ctx, volConfig)
 	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
+		return fmt.Errorf("failure checking for existence of volume and cleaning if any: %v", err)
 	}
 	if volExists {
 		return drivers.NewVolumeExistsError(name)
@@ -406,26 +460,26 @@ func (d *SANStorageDriver) Create(
 			})
 
 		if err != nil {
-			if api.IsVolumeCreateJobExistsError(err) {
-				return nil
+			if !api.IsVolumeCreateJobExistsError(err) {
+				errMessage := fmt.Sprintf(
+					"ONTAP-SAN pool %s/%s; error creating volume %s: %v", storagePool.Name(),
+					aggregate, name, err,
+				)
+				Logc(ctx).Error(errMessage)
+				createErrors = append(createErrors, fmt.Errorf(errMessage))
+
+				// Move on to the next pool
+				continue
 			}
-
-			errMessage := fmt.Sprintf(
-				"ONTAP-SAN pool %s/%s; error creating volume %s: %v", storagePool.Name(),
-				aggregate, name, err,
-			)
-			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
-
-			// Move on to the next pool
-			continue
+			// Log a message. Proceed to create LUN, hoping volume would have been created by the time we send
+			// LUN create request.
+			Logc(ctx).WithField("volume", name).Debug("Volume create is already in progress.")
 		}
-
-		lunPath := lunPath(name)
-		osType := "linux"
 
 		// If a DP volume, do not create the LUN, it will be copied over by snapmirror
 		if !volConfig.IsMirrorDestination {
+			lunPath := lunPath(name)
+			osType := "linux"
 			// Create the LUN.  If this fails, clean up and move on to the next pool.
 			// QoS policy is set at the LUN layer
 			err = d.API.LunCreate(
@@ -446,7 +500,8 @@ func (d *SANStorageDriver) Create(
 				Logc(ctx).Error(errMessage)
 				createErrors = append(createErrors, fmt.Errorf(errMessage))
 
-				// Don't leave the new Flexvol around
+				// Don't leave the new Flexvol around.
+				// If VolumeDestroy() fails for any reason, volume must be manually deleted.
 				if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
 					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
 				} else {
@@ -469,14 +524,16 @@ func (d *SANStorageDriver) Create(
 				Logc(ctx).Error(errMessage)
 				createErrors = append(createErrors, fmt.Errorf(errMessage))
 
-				// Don't leave the new LUN around
+				// Don't leave the new LUN around.
+				// If the following LunDestroy() fails for any reason, LUN and volume must be manually deleted.
 				if err := d.API.LunDestroy(ctx, lunPath); err != nil {
 					Logc(ctx).WithField("LUN", lunPath).Errorf("Could not clean up LUN; %v", err)
 				} else {
 					Logc(ctx).WithField("volume", name).Debugf("Cleaned up LUN after set attribute error.")
 				}
 
-				// Don't leave the new Flexvol around
+				// Don't leave the new Flexvol around.
+				// If the following VolumeDestroy() fails for any reason, volume must be manually deleted.
 				if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
 					Logc(ctx).WithField("volume", name).Errorf("Could not clean up volume; %v", err)
 				} else {
