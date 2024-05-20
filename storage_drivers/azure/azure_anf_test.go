@@ -2262,6 +2262,37 @@ func TestCreate_VolumeExistsCreating(t *testing.T) {
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
+func TestCreate_VolumeExistsResourceExhaustedError(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, _, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	filesystem.ProvisioningState = api.StateError
+	cpLowSpaceError := errors.ResourceExhaustedError(
+		errors.New("PoolSizeTooSmall: Unable to complete the operation. " +
+			"The capacity pool size of 4398046511104 bytes is too small for the " +
+			"combined volume size of 6597069766656 bytes of the capacity pool."))
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateError, cpLowSpaceError).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create did not fail")
+	assert.IsType(t, errors.ResourceExhaustedError(errors.New("")), result, "not ResourceExhaustedError")
+	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+}
+
 func TestCreate_VolumeExists(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
@@ -2278,6 +2309,8 @@ func TestCreate_VolumeExists(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -3811,6 +3844,39 @@ func TestCreateClone_VolumeExistsCreating(t *testing.T) {
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
 }
 
+func TestCreateClone_VolumeExistsResourceExhaustedError(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	sourceVolConfig, cloneVolConfig, _, sourceFilesystem, cloneFilesystem, _ := getStructsForCreateClone(ctx, driver,
+		storagePool)
+	cloneFilesystem.ProvisioningState = api.StateError
+	cpLowSpaceError := errors.ResourceExhaustedError(
+		errors.New("PoolSizeTooSmall: Unable to complete the operation. " +
+			"The capacity pool size of 4398046511104 bytes is too small for the " +
+			"combined volume size of 6597069766656 bytes of the capacity pool."))
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateError, cpLowSpaceError).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, cloneFilesystem).Return(nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.Error(t, result, "expected error")
+	assert.IsType(t, errors.ResourceExhaustedError(errors.New("")), result, "not ResourceExhaustedError")
+	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
+}
+
 func TestCreateClone_VolumeExists(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
@@ -3829,6 +3895,8 @@ func TestCreateClone_VolumeExists(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
 	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(true, cloneFilesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 

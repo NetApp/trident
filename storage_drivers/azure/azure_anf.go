@@ -771,6 +771,12 @@ func (d *NASStorageDriver) Create(
 			"state": extantVolume.ProvisioningState,
 		}).Warning("Volume already exists.")
 
+		// Volume here is likely in terminal state. Get the exact error message why is it so.
+		if err = d.waitForVolumeCreate(ctx, extantVolume, api.Create); err != nil {
+			return err
+		}
+
+		// No specific error is returned, so return a generic volume exists error
 		return drivers.NewVolumeExistsError(name)
 	}
 
@@ -1085,6 +1091,13 @@ func (d *NASStorageDriver) CreateClone(
 			return errors.VolumeCreatingError(
 				fmt.Sprintf("volume state is still %s, not %s", api.StateCreating, api.StateAvailable))
 		}
+
+		// Volume here is likely in terminal state. Get the exact error message why is it so.
+		if err = d.waitForVolumeCreate(ctx, extantVolume, api.Create); err != nil {
+			return err
+		}
+
+		// No specific error is returned, so return a generic volume exists error
 		return drivers.NewVolumeExistsError(name)
 	}
 
