@@ -45,18 +45,18 @@ func (m *MockRestClientInterface) EXPECT() *MockRestClientInterfaceMockRecorder 
 }
 
 // AggregateList mocks base method.
-func (m *MockRestClientInterface) AggregateList(arg0 context.Context, arg1 string) (*storage.AggregateCollectionGetOK, error) {
+func (m *MockRestClientInterface) AggregateList(arg0 context.Context, arg1 string, arg2 []string) (*storage.AggregateCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AggregateList", arg0, arg1)
+	ret := m.ctrl.Call(m, "AggregateList", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*storage.AggregateCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AggregateList indicates an expected call of AggregateList.
-func (mr *MockRestClientInterfaceMockRecorder) AggregateList(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) AggregateList(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregateList", reflect.TypeOf((*MockRestClientInterface)(nil).AggregateList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregateList", reflect.TypeOf((*MockRestClientInterface)(nil).AggregateList), arg0, arg1, arg2)
 }
 
 // ClientConfig mocks base method.
@@ -266,33 +266,33 @@ func (mr *MockRestClientInterfaceMockRecorder) FlexGroupExists(arg0, arg1 interf
 }
 
 // FlexGroupGetAll mocks base method.
-func (m *MockRestClientInterface) FlexGroupGetAll(arg0 context.Context, arg1 string) (*storage.VolumeCollectionGetOK, error) {
+func (m *MockRestClientInterface) FlexGroupGetAll(arg0 context.Context, arg1 string, arg2 []string) (*storage.VolumeCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupGetAll", arg0, arg1)
+	ret := m.ctrl.Call(m, "FlexGroupGetAll", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*storage.VolumeCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupGetAll indicates an expected call of FlexGroupGetAll.
-func (mr *MockRestClientInterfaceMockRecorder) FlexGroupGetAll(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) FlexGroupGetAll(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGetAll", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupGetAll), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGetAll", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupGetAll), arg0, arg1, arg2)
 }
 
 // FlexGroupGetByName mocks base method.
-func (m *MockRestClientInterface) FlexGroupGetByName(arg0 context.Context, arg1 string) (*models.Volume, error) {
+func (m *MockRestClientInterface) FlexGroupGetByName(arg0 context.Context, arg1 string, arg2 []string) (*models.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupGetByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "FlexGroupGetByName", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupGetByName indicates an expected call of FlexGroupGetByName.
-func (mr *MockRestClientInterfaceMockRecorder) FlexGroupGetByName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) FlexGroupGetByName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupGetByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).FlexGroupGetByName), arg0, arg1, arg2)
 }
 
 // FlexGroupModifyUnixPermissions mocks base method.
@@ -539,33 +539,33 @@ func (mr *MockRestClientInterfaceMockRecorder) IgroupGet(arg0, arg1 interface{})
 }
 
 // IgroupGetByName mocks base method.
-func (m *MockRestClientInterface) IgroupGetByName(arg0 context.Context, arg1 string) (*models.Igroup, error) {
+func (m *MockRestClientInterface) IgroupGetByName(arg0 context.Context, arg1 string, arg2 []string) (*models.Igroup, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IgroupGetByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "IgroupGetByName", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.Igroup)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IgroupGetByName indicates an expected call of IgroupGetByName.
-func (mr *MockRestClientInterfaceMockRecorder) IgroupGetByName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) IgroupGetByName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).IgroupGetByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).IgroupGetByName), arg0, arg1, arg2)
 }
 
 // IgroupList mocks base method.
-func (m *MockRestClientInterface) IgroupList(arg0 context.Context, arg1 string) (*s_a_n.IgroupCollectionGetOK, error) {
+func (m *MockRestClientInterface) IgroupList(arg0 context.Context, arg1 string, arg2 []string) (*s_a_n.IgroupCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IgroupList", arg0, arg1)
+	ret := m.ctrl.Call(m, "IgroupList", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*s_a_n.IgroupCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IgroupList indicates an expected call of IgroupList.
-func (mr *MockRestClientInterfaceMockRecorder) IgroupList(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) IgroupList(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupList", reflect.TypeOf((*MockRestClientInterface)(nil).IgroupList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupList", reflect.TypeOf((*MockRestClientInterface)(nil).IgroupList), arg0, arg1, arg2)
 }
 
 // IgroupRemove mocks base method.
@@ -642,19 +642,33 @@ func (mr *MockRestClientInterfaceMockRecorder) IsVserverDRSource(arg0 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverDRSource", reflect.TypeOf((*MockRestClientInterface)(nil).IsVserverDRSource), arg0)
 }
 
-// IscsiInitiatorGetDefaultAuth mocks base method.
-func (m *MockRestClientInterface) IscsiInitiatorGetDefaultAuth(arg0 context.Context) (*s_a_n.IscsiCredentialsCollectionGetOK, error) {
+// IsVserverInSVMDR mocks base method.
+func (m *MockRestClientInterface) IsVserverInSVMDR(arg0 context.Context) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInitiatorGetDefaultAuth", arg0)
+	ret := m.ctrl.Call(m, "IsVserverInSVMDR", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsVserverInSVMDR indicates an expected call of IsVserverInSVMDR.
+func (mr *MockRestClientInterfaceMockRecorder) IsVserverInSVMDR(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverInSVMDR", reflect.TypeOf((*MockRestClientInterface)(nil).IsVserverInSVMDR), arg0)
+}
+
+// IscsiInitiatorGetDefaultAuth mocks base method.
+func (m *MockRestClientInterface) IscsiInitiatorGetDefaultAuth(arg0 context.Context, arg1 []string) (*s_a_n.IscsiCredentialsCollectionGetOK, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IscsiInitiatorGetDefaultAuth", arg0, arg1)
 	ret0, _ := ret[0].(*s_a_n.IscsiCredentialsCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInitiatorGetDefaultAuth indicates an expected call of IscsiInitiatorGetDefaultAuth.
-func (mr *MockRestClientInterfaceMockRecorder) IscsiInitiatorGetDefaultAuth(arg0 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) IscsiInitiatorGetDefaultAuth(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorGetDefaultAuth", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiInitiatorGetDefaultAuth), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorGetDefaultAuth", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiInitiatorGetDefaultAuth), arg0, arg1)
 }
 
 // IscsiInitiatorSetDefaultAuth mocks base method.
@@ -672,48 +686,48 @@ func (mr *MockRestClientInterfaceMockRecorder) IscsiInitiatorSetDefaultAuth(arg0
 }
 
 // IscsiInterfaceGet mocks base method.
-func (m *MockRestClientInterface) IscsiInterfaceGet(arg0 context.Context) (*s_a_n.IscsiServiceCollectionGetOK, error) {
+func (m *MockRestClientInterface) IscsiInterfaceGet(arg0 context.Context, arg1 []string) (*s_a_n.IscsiServiceCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInterfaceGet", arg0)
+	ret := m.ctrl.Call(m, "IscsiInterfaceGet", arg0, arg1)
 	ret0, _ := ret[0].(*s_a_n.IscsiServiceCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInterfaceGet indicates an expected call of IscsiInterfaceGet.
-func (mr *MockRestClientInterfaceMockRecorder) IscsiInterfaceGet(arg0 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) IscsiInterfaceGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInterfaceGet", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiInterfaceGet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInterfaceGet", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiInterfaceGet), arg0, arg1)
 }
 
 // IscsiNodeGetName mocks base method.
-func (m *MockRestClientInterface) IscsiNodeGetName(arg0 context.Context) (*s_a_n.IscsiServiceGetOK, error) {
+func (m *MockRestClientInterface) IscsiNodeGetName(arg0 context.Context, arg1 []string) (*s_a_n.IscsiServiceGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiNodeGetName", arg0)
+	ret := m.ctrl.Call(m, "IscsiNodeGetName", arg0, arg1)
 	ret0, _ := ret[0].(*s_a_n.IscsiServiceGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiNodeGetName indicates an expected call of IscsiNodeGetName.
-func (mr *MockRestClientInterfaceMockRecorder) IscsiNodeGetName(arg0 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) IscsiNodeGetName(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiNodeGetName", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiNodeGetName), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiNodeGetName", reflect.TypeOf((*MockRestClientInterface)(nil).IscsiNodeGetName), arg0, arg1)
 }
 
 // JobGet mocks base method.
-func (m *MockRestClientInterface) JobGet(arg0 context.Context, arg1 string) (*cluster.JobGetOK, error) {
+func (m *MockRestClientInterface) JobGet(arg0 context.Context, arg1 string, arg2 []string) (*cluster.JobGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JobGet", arg0, arg1)
+	ret := m.ctrl.Call(m, "JobGet", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*cluster.JobGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // JobGet indicates an expected call of JobGet.
-func (mr *MockRestClientInterfaceMockRecorder) JobGet(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) JobGet(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobGet", reflect.TypeOf((*MockRestClientInterface)(nil).JobGet), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobGet", reflect.TypeOf((*MockRestClientInterface)(nil).JobGet), arg0, arg1, arg2)
 }
 
 // JobScheduleExists mocks base method.
@@ -804,18 +818,18 @@ func (mr *MockRestClientInterfaceMockRecorder) LunGetAttribute(arg0, arg1, arg2 
 }
 
 // LunGetByName mocks base method.
-func (m *MockRestClientInterface) LunGetByName(arg0 context.Context, arg1 string) (*models.Lun, error) {
+func (m *MockRestClientInterface) LunGetByName(arg0 context.Context, arg1 string, arg2 []string) (*models.Lun, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunGetByName", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.Lun)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetByName indicates an expected call of LunGetByName.
-func (mr *MockRestClientInterfaceMockRecorder) LunGetByName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) LunGetByName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).LunGetByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).LunGetByName), arg0, arg1, arg2)
 }
 
 // LunGetComment mocks base method.
@@ -834,18 +848,18 @@ func (mr *MockRestClientInterfaceMockRecorder) LunGetComment(arg0, arg1 interfac
 }
 
 // LunList mocks base method.
-func (m *MockRestClientInterface) LunList(arg0 context.Context, arg1 string) (*s_a_n.LunCollectionGetOK, error) {
+func (m *MockRestClientInterface) LunList(arg0 context.Context, arg1 string, arg2 []string) (*s_a_n.LunCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunList", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunList", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*s_a_n.LunCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunList indicates an expected call of LunList.
-func (mr *MockRestClientInterfaceMockRecorder) LunList(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) LunList(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunList", reflect.TypeOf((*MockRestClientInterface)(nil).LunList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunList", reflect.TypeOf((*MockRestClientInterface)(nil).LunList), arg0, arg1, arg2)
 }
 
 // LunMap mocks base method.
@@ -894,18 +908,18 @@ func (mr *MockRestClientInterfaceMockRecorder) LunMapInfo(arg0, arg1, arg2 inter
 }
 
 // LunMapList mocks base method.
-func (m *MockRestClientInterface) LunMapList(arg0 context.Context, arg1, arg2 string) (*s_a_n.LunMapCollectionGetOK, error) {
+func (m *MockRestClientInterface) LunMapList(arg0 context.Context, arg1, arg2 string, arg3 []string) (*s_a_n.LunMapCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapList", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "LunMapList", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*s_a_n.LunMapCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapList indicates an expected call of LunMapList.
-func (mr *MockRestClientInterfaceMockRecorder) LunMapList(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) LunMapList(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapList", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapList), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapList", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapList), arg0, arg1, arg2, arg3)
 }
 
 // LunOptions mocks base method.
@@ -1098,33 +1112,33 @@ func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceCreate(arg0, arg1 in
 }
 
 // NVMeNamespaceGetByName mocks base method.
-func (m *MockRestClientInterface) NVMeNamespaceGetByName(arg0 context.Context, arg1 string) (*models.NvmeNamespace, error) {
+func (m *MockRestClientInterface) NVMeNamespaceGetByName(arg0 context.Context, arg1 string, arg2 []string) (*models.NvmeNamespace, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeNamespaceGetByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "NVMeNamespaceGetByName", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.NvmeNamespace)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NVMeNamespaceGetByName indicates an expected call of NVMeNamespaceGetByName.
-func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceGetByName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceGetByName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceGetByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceGetByName), arg0, arg1, arg2)
 }
 
 // NVMeNamespaceList mocks base method.
-func (m *MockRestClientInterface) NVMeNamespaceList(arg0 context.Context, arg1 string) (*n_v_me.NvmeNamespaceCollectionGetOK, error) {
+func (m *MockRestClientInterface) NVMeNamespaceList(arg0 context.Context, arg1 string, arg2 []string) (*n_v_me.NvmeNamespaceCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeNamespaceList", arg0, arg1)
+	ret := m.ctrl.Call(m, "NVMeNamespaceList", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*n_v_me.NvmeNamespaceCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NVMeNamespaceList indicates an expected call of NVMeNamespaceList.
-func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceList(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) NVMeNamespaceList(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceList", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeNamespaceList", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeNamespaceList), arg0, arg1, arg2)
 }
 
 // NVMeNamespaceSetSize mocks base method.
@@ -1214,33 +1228,33 @@ func (mr *MockRestClientInterfaceMockRecorder) NVMeSubsystemDelete(arg0, arg1 in
 }
 
 // NVMeSubsystemGetByName mocks base method.
-func (m *MockRestClientInterface) NVMeSubsystemGetByName(arg0 context.Context, arg1 string) (*models.NvmeSubsystem, error) {
+func (m *MockRestClientInterface) NVMeSubsystemGetByName(arg0 context.Context, arg1 string, arg2 []string) (*models.NvmeSubsystem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeSubsystemGetByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "NVMeSubsystemGetByName", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.NvmeSubsystem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NVMeSubsystemGetByName indicates an expected call of NVMeSubsystemGetByName.
-func (mr *MockRestClientInterfaceMockRecorder) NVMeSubsystemGetByName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) NVMeSubsystemGetByName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeSubsystemGetByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeSubsystemGetByName), arg0, arg1, arg2)
 }
 
 // NVMeSubsystemList mocks base method.
-func (m *MockRestClientInterface) NVMeSubsystemList(arg0 context.Context, arg1 string) (*n_v_me.NvmeSubsystemCollectionGetOK, error) {
+func (m *MockRestClientInterface) NVMeSubsystemList(arg0 context.Context, arg1 string, arg2 []string) (*n_v_me.NvmeSubsystemCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeSubsystemList", arg0, arg1)
+	ret := m.ctrl.Call(m, "NVMeSubsystemList", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*n_v_me.NvmeSubsystemCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NVMeSubsystemList indicates an expected call of NVMeSubsystemList.
-func (mr *MockRestClientInterfaceMockRecorder) NVMeSubsystemList(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) NVMeSubsystemList(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemList", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeSubsystemList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeSubsystemList", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeSubsystemList), arg0, arg1, arg2)
 }
 
 // NVMeSubsystemRemoveNamespace mocks base method.
@@ -1436,33 +1450,33 @@ func (mr *MockRestClientInterfaceMockRecorder) QtreeGetByName(arg0, arg1, arg2 i
 }
 
 // QtreeGetByPath mocks base method.
-func (m *MockRestClientInterface) QtreeGetByPath(arg0 context.Context, arg1 string) (*models.Qtree, error) {
+func (m *MockRestClientInterface) QtreeGetByPath(arg0 context.Context, arg1 string, arg2 []string) (*models.Qtree, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeGetByPath", arg0, arg1)
+	ret := m.ctrl.Call(m, "QtreeGetByPath", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.Qtree)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeGetByPath indicates an expected call of QtreeGetByPath.
-func (mr *MockRestClientInterfaceMockRecorder) QtreeGetByPath(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) QtreeGetByPath(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeGetByPath", reflect.TypeOf((*MockRestClientInterface)(nil).QtreeGetByPath), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeGetByPath", reflect.TypeOf((*MockRestClientInterface)(nil).QtreeGetByPath), arg0, arg1, arg2)
 }
 
 // QtreeList mocks base method.
-func (m *MockRestClientInterface) QtreeList(arg0 context.Context, arg1, arg2 string) (*storage.QtreeCollectionGetOK, error) {
+func (m *MockRestClientInterface) QtreeList(arg0 context.Context, arg1, arg2 string, arg3 []string) (*storage.QtreeCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeList", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "QtreeList", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*storage.QtreeCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeList indicates an expected call of QtreeList.
-func (mr *MockRestClientInterfaceMockRecorder) QtreeList(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) QtreeList(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeList", reflect.TypeOf((*MockRestClientInterface)(nil).QtreeList), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeList", reflect.TypeOf((*MockRestClientInterface)(nil).QtreeList), arg0, arg1, arg2, arg3)
 }
 
 // QtreeModifyExportPolicy mocks base method.
@@ -1760,18 +1774,18 @@ func (mr *MockRestClientInterfaceMockRecorder) SnapmirrorDeleteViaDestination(ar
 }
 
 // SnapmirrorGet mocks base method.
-func (m *MockRestClientInterface) SnapmirrorGet(arg0 context.Context, arg1, arg2, arg3, arg4 string) (*models.SnapmirrorRelationship, error) {
+func (m *MockRestClientInterface) SnapmirrorGet(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 []string) (*models.SnapmirrorRelationship, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorGet", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "SnapmirrorGet", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*models.SnapmirrorRelationship)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorGet indicates an expected call of SnapmirrorGet.
-func (mr *MockRestClientInterfaceMockRecorder) SnapmirrorGet(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) SnapmirrorGet(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGet", reflect.TypeOf((*MockRestClientInterface)(nil).SnapmirrorGet), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGet", reflect.TypeOf((*MockRestClientInterface)(nil).SnapmirrorGet), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // SnapmirrorInitialize mocks base method.
@@ -1786,6 +1800,21 @@ func (m *MockRestClientInterface) SnapmirrorInitialize(arg0 context.Context, arg
 func (mr *MockRestClientInterfaceMockRecorder) SnapmirrorInitialize(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorInitialize", reflect.TypeOf((*MockRestClientInterface)(nil).SnapmirrorInitialize), arg0, arg1, arg2, arg3, arg4)
+}
+
+// SnapmirrorListDestinations mocks base method.
+func (m *MockRestClientInterface) SnapmirrorListDestinations(arg0 context.Context, arg1, arg2, arg3, arg4 string) (*models.SnapmirrorRelationship, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SnapmirrorListDestinations", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*models.SnapmirrorRelationship)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SnapmirrorListDestinations indicates an expected call of SnapmirrorListDestinations.
+func (mr *MockRestClientInterfaceMockRecorder) SnapmirrorListDestinations(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorListDestinations", reflect.TypeOf((*MockRestClientInterface)(nil).SnapmirrorListDestinations), arg0, arg1, arg2, arg3, arg4)
 }
 
 // SnapmirrorPolicyExists mocks base method.
@@ -2196,33 +2225,33 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeExists(arg0, arg1 interface
 }
 
 // VolumeGetByName mocks base method.
-func (m *MockRestClientInterface) VolumeGetByName(arg0 context.Context, arg1 string) (*models.Volume, error) {
+func (m *MockRestClientInterface) VolumeGetByName(arg0 context.Context, arg1 string, arg2 []string) (*models.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeGetByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeGetByName", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeGetByName indicates an expected call of VolumeGetByName.
-func (mr *MockRestClientInterfaceMockRecorder) VolumeGetByName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) VolumeGetByName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeGetByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGetByName", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeGetByName), arg0, arg1, arg2)
 }
 
 // VolumeList mocks base method.
-func (m *MockRestClientInterface) VolumeList(arg0 context.Context, arg1 string) (*storage.VolumeCollectionGetOK, error) {
+func (m *MockRestClientInterface) VolumeList(arg0 context.Context, arg1 string, arg2 []string) (*storage.VolumeCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeList", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeList", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*storage.VolumeCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeList indicates an expected call of VolumeList.
-func (mr *MockRestClientInterfaceMockRecorder) VolumeList(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) VolumeList(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeList", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeList", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeList), arg0, arg1, arg2)
 }
 
 // VolumeListAllBackedBySnapshot mocks base method.
@@ -2241,18 +2270,18 @@ func (mr *MockRestClientInterfaceMockRecorder) VolumeListAllBackedBySnapshot(arg
 }
 
 // VolumeListByAttrs mocks base method.
-func (m *MockRestClientInterface) VolumeListByAttrs(arg0 context.Context, arg1 *api.Volume) (api.Volumes, error) {
+func (m *MockRestClientInterface) VolumeListByAttrs(arg0 context.Context, arg1 *api.Volume, arg2 []string) (*storage.VolumeCollectionGetOK, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeListByAttrs", arg0, arg1)
-	ret0, _ := ret[0].(api.Volumes)
+	ret := m.ctrl.Call(m, "VolumeListByAttrs", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*storage.VolumeCollectionGetOK)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeListByAttrs indicates an expected call of VolumeListByAttrs.
-func (mr *MockRestClientInterfaceMockRecorder) VolumeListByAttrs(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) VolumeListByAttrs(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListByAttrs", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeListByAttrs), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListByAttrs", reflect.TypeOf((*MockRestClientInterface)(nil).VolumeListByAttrs), arg0, arg1, arg2)
 }
 
 // VolumeModifyExportPolicy mocks base method.

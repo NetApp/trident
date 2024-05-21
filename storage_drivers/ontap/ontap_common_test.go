@@ -360,8 +360,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			return nil, nil
 		},
 	).AnyTimes()
@@ -378,8 +378,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: nil,
 			}
@@ -400,8 +400,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: nil,
@@ -420,8 +420,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{},
@@ -444,8 +444,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
@@ -470,8 +470,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
@@ -499,8 +499,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
@@ -530,8 +530,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{
@@ -568,8 +568,8 @@ func TestRestGetSVMAggregateSpace(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, d)
 
-	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr).DoAndReturn(
-		func(ctx context.Context, pattern string) (*ontap_storage.AggregateCollectionGetOK, error) {
+	mockRestClient.EXPECT().AggregateList(gomock.Any(), aggr, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, pattern string, fields []string) (*ontap_storage.AggregateCollectionGetOK, error) {
 			result := &ontap_storage.AggregateCollectionGetOK{
 				Payload: &models.AggregateResponse{
 					AggregateResponseInlineRecords: []*models.Aggregate{

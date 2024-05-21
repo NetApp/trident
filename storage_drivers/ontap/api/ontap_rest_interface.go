@@ -26,14 +26,12 @@ type RestClientInterface interface {
 	SVMUUID() string
 	SetSVMName(svmName string)
 	SVMName() string
-	// GetSVMState gets the latest state of associated vserver
-	GetSVMState(ctx context.Context) (string, error)
 	// SupportsFeature returns true if the Ontap version supports the supplied feature
 	SupportsFeature(ctx context.Context, feature Feature) bool
 	// VolumeList returns the names of all Flexvols whose names match the supplied pattern
-	VolumeList(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error)
+	VolumeList(ctx context.Context, pattern string, fields []string) (*storage.VolumeCollectionGetOK, error)
 	// VolumeListByAttrs is used to find bucket volumes for nas-eco and san-eco
-	VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error)
+	VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume, fields []string) (*storage.VolumeCollectionGetOK, error)
 	// VolumeCreate creates a volume with the specified options
 	// equivalent to filer::> volume create -vserver iscsi_vs -volume v -aggregate aggr1 -size 1g -state online -type RW
 	// -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
@@ -42,7 +40,7 @@ type RestClientInterface interface {
 	// VolumeExists tests for the existence of a flexvol
 	VolumeExists(ctx context.Context, volumeName string) (bool, error)
 	// VolumeGetByName gets the flexvol with the specified name
-	VolumeGetByName(ctx context.Context, volumeName string) (*models.Volume, error)
+	VolumeGetByName(ctx context.Context, volumeName string, fields []string) (*models.Volume, error)
 	// VolumeMount mounts a flexvol at the specified junction
 	VolumeMount(ctx context.Context, volumeName, junctionPath string) error
 	// VolumeRename changes the name of a flexvol
@@ -94,16 +92,16 @@ type RestClientInterface interface {
 	VolumeCloneCreateAsync(ctx context.Context, cloneName, sourceVolumeName, snapshot string) error
 	// IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
 	// equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
-	IscsiInitiatorGetDefaultAuth(ctx context.Context) (*san.IscsiCredentialsCollectionGetOK, error)
+	IscsiInitiatorGetDefaultAuth(ctx context.Context, fields []string) (*san.IscsiCredentialsCollectionGetOK, error)
 	// IscsiInterfaceGet returns information about the vserver's  iSCSI interfaces
-	IscsiInterfaceGet(ctx context.Context) (*san.IscsiServiceCollectionGetOK, error)
+	IscsiInterfaceGet(ctx context.Context, fields []string) (*san.IscsiServiceCollectionGetOK, error)
 	// IscsiInitiatorSetDefaultAuth sets the authorization details for the default initiator
 	//
 	//	equivalent to filer::> vserver iscsi security modify -vserver SVM -initiator-name default \
 	//	                          -auth-type CHAP -user-name outboundUserName -outbound-user-name outboundPassphrase
 	IscsiInitiatorSetDefaultAuth(ctx context.Context, authType, userName, passphrase, outbountUserName, outboundPassphrase string) error
 	// IscsiNodeGetName returns information about the vserver's iSCSI node name
-	IscsiNodeGetName(ctx context.Context) (*san.IscsiServiceGetOK, error)
+	IscsiNodeGetName(ctx context.Context, fields []string) (*san.IscsiServiceGetOK, error)
 	// IgroupCreate creates the specified initiator group
 	// equivalent to filer::> igroup create docker -vserver iscsi_vs -protocol iscsi -ostype linux
 	IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error
@@ -116,11 +114,11 @@ type RestClientInterface interface {
 	// IgroupDestroy destroys an initiator group
 	IgroupDestroy(ctx context.Context, initiatorGroupName string) error
 	// IgroupList lists initiator groups
-	IgroupList(ctx context.Context, pattern string) (*san.IgroupCollectionGetOK, error)
+	IgroupList(ctx context.Context, pattern string, fields []string) (*san.IgroupCollectionGetOK, error)
 	// IgroupGet gets the igroup with the specified uuid
 	IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetOK, error)
 	// IgroupGetByName gets the igroup with the specified name
-	IgroupGetByName(ctx context.Context, initiatorGroupName string) (*models.Igroup, error)
+	IgroupGetByName(ctx context.Context, initiatorGroupName string, fields []string) (*models.Igroup, error)
 	// LunOptions gets the LUN options
 	LunOptions(ctx context.Context) (*LunOptionsResult, error)
 	// LunCloneCreate creates a LUN clone
@@ -130,9 +128,9 @@ type RestClientInterface interface {
 	// LunGet gets the LUN with the specified uuid
 	LunGet(ctx context.Context, uuid string) (*san.LunGetOK, error)
 	// LunGetByName gets the LUN with the specified name
-	LunGetByName(ctx context.Context, name string) (*models.Lun, error)
+	LunGetByName(ctx context.Context, name string, fields []string) (*models.Lun, error)
 	// LunList finds LUNs with the specified pattern
-	LunList(ctx context.Context, pattern string) (*san.LunCollectionGetOK, error)
+	LunList(ctx context.Context, pattern string, fields []string) (*san.LunCollectionGetOK, error)
 	// LunDelete deletes a LUN
 	LunDelete(ctx context.Context, lunUUID string) error
 	// LunGetComment gets the comment for a given LUN.
@@ -159,7 +157,7 @@ type RestClientInterface interface {
 	// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 	// filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup *
 	// filer::> lun mapping show -vserver iscsi_vs -path *           -igroup trident
-	LunMapList(ctx context.Context, initiatorGroupName, lunPath string) (*san.LunMapCollectionGetOK, error)
+	LunMapList(ctx context.Context, initiatorGroupName, lunPath string, fields []string) (*san.LunMapCollectionGetOK, error)
 	// LunMapGetReportingNodes
 	// equivalent to filer::> lun mapping show -vserver iscsi_vs -path /vol/v/lun0 -igroup trident
 	LunMapGetReportingNodes(ctx context.Context, initiatorGroupName, lunPath string) ([]string, error)
@@ -171,29 +169,29 @@ type RestClientInterface interface {
 	NetworkIPInterfacesList(ctx context.Context) (*networking.NetworkIPInterfacesGetOK, error)
 	NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error)
 	// JobGet returns the job by ID
-	JobGet(ctx context.Context, jobUUID string) (*cluster.JobGetOK, error)
+	JobGet(ctx context.Context, jobUUID string, fields []string) (*cluster.JobGetOK, error)
 	// IsJobFinished lookus up the supplied JobLinkResponse's UUID to see if it's reached a terminal state
 	IsJobFinished(ctx context.Context, payload *models.JobLinkResponse) (bool, error)
 	// PollJobStatus polls for the ONTAP job to complete, with backoff retry logic
 	PollJobStatus(ctx context.Context, payload *models.JobLinkResponse) error
 	// AggregateList returns the names of all Aggregates whose names match the supplied pattern
-	AggregateList(ctx context.Context, pattern string) (*storage.AggregateCollectionGetOK, error)
+	AggregateList(ctx context.Context, pattern string, fields []string) (*storage.AggregateCollectionGetOK, error)
 	// SvmGet gets the volume with the specified uuid
 	SvmGet(ctx context.Context, uuid string) (*svm.SvmGetOK, error)
 	// SvmList returns the names of all SVMs whose names match the supplied pattern
 	SvmList(ctx context.Context, pattern string) (*svm.SvmCollectionGetOK, error)
-	// SvmGetByName gets the volume with the specified name
+	// SvmGetByName gets the SVM with the specified name
 	SvmGetByName(ctx context.Context, svmName string) (*models.Svm, error)
 	SVMGetAggregateNames(ctx context.Context) ([]string, error)
 	// ClusterInfo returns information about the cluster
 	ClusterInfo(ctx context.Context) (*cluster.ClusterGetOK, error)
 	// SystemGetOntapVersion gets the ONTAP version using the credentials, and caches & returns the result.
 	SystemGetOntapVersion(ctx context.Context) (string, error)
-	// ClusterInfo returns information about the cluster
+	// NodeList returns information about nodes
 	NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
-	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) error
+	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int, eventSource string, logLevel int) error
 	TieringPolicyValue(ctx context.Context) string
 	// ExportPolicyCreate creates an export policy
 	// equivalent to filer::> vserver export-policy create
@@ -238,9 +236,9 @@ type RestClientInterface interface {
 	// FlexGroupSetComment sets a flexgroup's comment to the supplied value
 	FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) error
 	// FlexGroupGetByName gets the flexgroup with the specified name
-	FlexGroupGetByName(ctx context.Context, volumeName string) (*models.Volume, error)
+	FlexGroupGetByName(ctx context.Context, volumeName string, fields []string) (*models.Volume, error)
 	// FlexGroupGetAll returns all relevant details for all FlexGroups whose names match the supplied prefix
-	FlexGroupGetAll(ctx context.Context, pattern string) (*storage.VolumeCollectionGetOK, error)
+	FlexGroupGetAll(ctx context.Context, pattern string, fields []string) (*storage.VolumeCollectionGetOK, error)
 	// FlexGroupMount mounts a flexgroup at the specified junction
 	FlexGroupMount(ctx context.Context, volumeName, junctionPath string) error
 	// FlexgroupUnmount unmounts the flexgroup
@@ -257,9 +255,9 @@ type RestClientInterface interface {
 	QtreeDestroyAsync(ctx context.Context, path string, force bool) error
 	// QtreeList returns the names of all Qtrees whose names match the supplied prefix
 	// equivalent to filer::> volume qtree show
-	QtreeList(ctx context.Context, prefix, volumePrefix string) (*storage.QtreeCollectionGetOK, error)
+	QtreeList(ctx context.Context, prefix, volumePrefix string, fields []string) (*storage.QtreeCollectionGetOK, error)
 	// QtreeGetByPath gets the qtree with the specified path
-	QtreeGetByPath(ctx context.Context, path string) (*models.Qtree, error)
+	QtreeGetByPath(ctx context.Context, path string, fields []string) (*models.Qtree, error)
 	// QtreeGetByName gets the qtree with the specified name in the specified volume
 	QtreeGetByName(ctx context.Context, name, volumeName string) (*models.Qtree, error)
 	// QtreeCount returns the number of Qtrees in the specified Flexvol, not including the Flexvol itself
@@ -299,60 +297,71 @@ type RestClientInterface interface {
 	IsVserverDRDestination(ctx context.Context) (bool, error)
 	// IsVserverDRSource identifies if the Vserver is a source vserver of Snapmirror relationship (SVM-DR) or not
 	IsVserverDRSource(ctx context.Context) (bool, error)
-	SnapmirrorGet(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*models.SnapmirrorRelationship, error)
-	SnapmirrorCreate(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) error
-	SnapmirrorInitialize(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorResync(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorBreak(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) error
-	SnapmirrorQuiesce(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorAbort(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	// IsVserverInSVMDR identifies if the Vserver is in Snapmirror relationship (SVM-DR) or not
+	IsVserverInSVMDR(ctx context.Context) bool
+	SnapmirrorGet(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string, fields []string) (*models.SnapmirrorRelationship, error)
+	SnapmirrorListDestinations(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) (*models.SnapmirrorRelationship, error)
+	SnapmirrorCreate(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) error
+	SnapmirrorInitialize(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorResync(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorBreak(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) error
+	SnapmirrorQuiesce(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
+	SnapmirrorAbort(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
 	// SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
 	// Intended to be used on the source vserver
 	SnapmirrorRelease(ctx context.Context, sourceFlexvolName, sourceSVMName string) error
 	// Intended to be from the destination vserver
-	SnapmirrorDeleteViaDestination(ctx context.Context, localInternalVolumeName, localSVMName string) error
+	SnapmirrorDeleteViaDestination(ctx context.Context, localFlexvolName, localSVMName string) error
 	// Intended to be from the destination vserver
-	SnapmirrorDelete(ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) error
-	SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error
+	SnapmirrorDelete(ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string) error
 	IsVserverDRCapable(ctx context.Context) (bool, error)
 	SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error)
 	SnapmirrorPolicyGet(ctx context.Context, policyName string) (*snapmirror.SnapmirrorPoliciesGetOK, error)
 	JobScheduleExists(ctx context.Context, jobName string) (bool, error)
+	// GetSVMState returns the SVM state from the backend storage.
+	GetSVMState(ctx context.Context) (string, error)
+	SnapmirrorUpdate(ctx context.Context, localInternalVolumeName, snapshotName string) error
 	// SMBShareCreate creates an SMB share with the specified name and path.
+	// Equivalent to filer::> vserver cifs share create -share-name <shareName> -path <path>
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	// SMBShareExists checks for the existence of an SMB share with the given name.
-	SMBShareExists(ctx context.Context, shareName string) (bool, error)
-	// SMBShareDestroy deletes an SMB Share.
+	// Equivalent to filer::> cifs share show <shareName>
+	SMBShareExists(ctx context.Context, smbShareName string) (bool, error)
+	// SMBShareDestroy destroys an SMB share.
+	// Equivalent to filer::> cifs share delete <shareName>
 	SMBShareDestroy(ctx context.Context, shareName string) error
-	// NVMeNamespaceCreate creates a NVMe namespace.
+	// NVMe Namespace operations
+	// NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
 	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error)
 	// NVMeNamespaceSetSize updates the namespace size to newSize.
 	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
-	// NVMeNamespaceGetByName gets the Namespace with the specified name.
-	NVMeNamespaceGetByName(ctx context.Context, name string) (*models.NvmeNamespace, error)
 	// NVMeNamespaceList finds Namespaces with the specified pattern.
-	NVMeNamespaceList(ctx context.Context, pattern string) (*nvme.NvmeNamespaceCollectionGetOK, error)
-	// NVMeIsNamespaceMapped gets a namespace from subsystem map
-	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
-	// NVMeNamespaceCount gives the number of namespaces mapped to a Subsystem with the specified subsystem UUID.
-	NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
-	// NVMeNamespaceSize gives the size of the namespace.
-	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
-	// NVMeSubsystemList finds Subsystems with the specified pattern.
-	NVMeSubsystemList(ctx context.Context, pattern string) (*nvme.NvmeSubsystemCollectionGetOK, error)
-	// NVMeSubsystemGetByName finds Subsystem with the specified subsystem name.
-	NVMeSubsystemGetByName(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error)
-	// NVMeSubsystemCreate creates a Subsystem with the specified subsystem name.
-	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error)
-	// NVMeSubsystemDelete deletes a Subsystem with the specified subsystem UUID.
-	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
-	// NVMeAddHostNqnToSubsystem adds host's NQN to a Subsystem with the specified subsystem UUID.
-	NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
-	// NVMeGetHostsOfSubsystem gets all the hosts mapped to a Subsystem with the specified subsystem UUID.
-	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error)
-	// NVMeSubsystemAddNamespace maps a namespace to a Subsystem with the specified subsystem name.
+	NVMeNamespaceList(ctx context.Context, pattern string, fields []string) (*nvme.NvmeNamespaceCollectionGetOK, error)
+	// NVMeNamespaceGetByName gets the Namespace with the specified name.
+	NVMeNamespaceGetByName(ctx context.Context, name string, fields []string) (*models.NvmeNamespace, error)
+	// NVMe Subsystem operations
+	// NVMeSubsystemAddNamespace adds namespace to subsystem-map
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
-	// NVMeSubsystemRemoveNamespace ummaps a given namespace from a Subsystem with the specified subsystem UUID.
+	// NVMeSubsystemRemoveNamespace removes a namespace from subsystem-map
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
-	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsystemUUID string) error
+	// NVMeIsNamespaceMapped retrives a namespace from subsystem-map
+	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string) (bool, error)
+	// NVMeNamespaceCount gets the number of namespaces mapped to a subsystem
+	NVMeNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
+	// Subsystem operations
+	// NVMeSubsystemList returns a list of subsystems seen by the host
+	NVMeSubsystemList(ctx context.Context, pattern string, fields []string) (*nvme.NvmeSubsystemCollectionGetOK, error)
+	// NVMeSubsystemGetByName gets the subsystem with the specified name
+	NVMeSubsystemGetByName(ctx context.Context, subsystemName string, fields []string) (*models.NvmeSubsystem, error)
+	// NVMeSubsystemCreate creates a new subsystem
+	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error)
+	// NVMeSubsystemDelete deletes a given subsystem
+	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
+	// NVMeAddHostNqnToSubsystem adds the NQN of the host to the subsystem
+	NVMeAddHostNqnToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	// NVMeRemoveHostFromSubsystem remove the NQN of the host from the subsystem
+	NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, subsUUID string) error
+	// NVMeGetHostsOfSubsystem retuns all the hosts connected to a subsystem
+	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error)
+	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
 }

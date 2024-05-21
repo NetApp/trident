@@ -187,7 +187,12 @@ func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force bool
 }
 
 func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
-	volumeGetResponse, err := d.api.VolumeGetByName(ctx, name)
+	fields := []string{
+		"type", "size", "comment", "aggregates", "nas", "guarantee",
+		"snapshot_policy", "snapshot_directory_access_enabled",
+		"space.snapshot.used", "space.snapshot.reserve_percent",
+	}
+	volumeGetResponse, err := d.api.VolumeGetByName(ctx, name, fields)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v, error: %v", name, err.Error())
 		return nil, err
@@ -204,6 +209,48 @@ func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, err
 	}
 
 	return volumeInfo, nil
+}
+
+func FlexVolInfoFromRestAttrsHelper(volume *models.Volume) (*Volume, error) {
+	aggregates := []string{}
+	for _, aggr := range volume.VolumeInlineAggregates {
+		if aggr.Name != nil {
+			aggregates = append(aggregates, *aggr.Name)
+		}
+	}
+
+	snapshotDirAccessEnabled := false
+	if volume.SnapshotDirectoryAccessEnabled != nil {
+		snapshotDirAccessEnabled = *volume.SnapshotDirectoryAccessEnabled
+	}
+
+	tieringPolicy := models.VolumeInlineTieringPolicyNone
+	if volume.Movement != nil && volume.Movement.TieringPolicy != nil {
+		tieringPolicy = *volume.Movement.TieringPolicy
+	}
+
+	encryption := false
+	if volume.Encryption != nil && volume.Encryption.Enabled != nil {
+		encryption = *volume.Encryption.Enabled
+	}
+
+	v := &Volume{
+		Aggregates:    aggregates,
+		Encrypt:       &encryption,
+		TieringPolicy: tieringPolicy,
+		SnapshotDir:   snapshotDirAccessEnabled,
+	}
+	if volume.Name != nil {
+		v.Name = *volume.Name
+	}
+	if volume.Guarantee != nil && volume.Guarantee.Type != nil {
+		v.SpaceReserve = *volume.Guarantee.Type
+	}
+	if volume.SnapshotPolicy != nil && volume.SnapshotPolicy.Name != nil {
+		v.SnapshotPolicy = *volume.SnapshotPolicy.Name
+	}
+
+	return v, nil
 }
 
 func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, error) {
@@ -237,9 +284,6 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 				*volumeGetResponse.VolumeInlineAggregates[0].Name,
 			}
 		}
-	} else {
-		return nil, VolumeIdAttributesReadError(fmt.Sprintf("error reading aggregates for volume %s",
-			*volumeGetResponse.Name))
 	}
 
 	if volumeGetResponse.Comment != nil {
@@ -329,9 +373,6 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 	if lunGetResponse == nil {
 		return nil, fmt.Errorf("lun response is nil")
 	}
-	if lunGetResponse.Comment != nil {
-		responseComment = *lunGetResponse.Comment
-	}
 
 	var lunMap LunMap
 	for _, record := range lunGetResponse.LunInlineLunMaps {
@@ -356,7 +397,7 @@ func lunInfoFromRestAttrsHelper(lunGetResponse *models.Lun) (*Lun, error) {
 		responseQos = *lunGetResponse.QosPolicy.Name
 	}
 
-	if lunGetResponse.Status.Mapped != nil {
+	if lunGetResponse.Status != nil && lunGetResponse.Status.Mapped != nil {
 		responseMapped = *lunGetResponse.Status.Mapped
 	}
 
@@ -560,7 +601,11 @@ func (d OntapAPIREST) FlexgroupModifySnapshotDirectoryAccess(ctx context.Context
 }
 
 func (d OntapAPIREST) FlexgroupInfo(ctx context.Context, volumeName string) (*Volume, error) {
-	volumeGetResponse, err := d.api.FlexGroupGetByName(ctx, volumeName)
+	fields := []string{
+		"type", "size", "comment", "aggregates", "nas", "guarantee", "snapshot_policy",
+		"snapshot_directory_access_enabled", "space.snapshot.used", "space.snapshot.reserve_percent",
+	}
+	volumeGetResponse, err := d.api.FlexGroupGetByName(ctx, volumeName, fields)
 	if err != nil {
 		Logc(ctx).Errorf("Could not find volume with name: %v, error: %v", volumeName, err.Error())
 		return nil, err
@@ -694,7 +739,12 @@ func (d OntapAPIREST) FlexgroupListByPrefix(ctx context.Context, prefix string) 
 		prefix += "*"
 	}
 
-	flexgroupsResponse, err := d.api.FlexGroupGetAll(ctx, prefix)
+	fields := []string{
+		"type", "size", "comment", "aggregates", "nas", "guarantee",
+		"snapshot_policy", "snapshot_directory_access_enabled",
+		"space.snapshot.used", "space.snapshot.reserve_percent",
+	}
+	flexgroupsResponse, err := d.api.FlexGroupGetAll(ctx, prefix, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -759,7 +809,8 @@ func (d OntapAPIREST) GetSVMAggregateAttributes(ctx context.Context) (aggrList m
 		}
 	}()
 
-	result, err := d.api.AggregateList(ctx, "*")
+	fields := []string{"block_storage.primary.disk_type"}
+	result, err := d.api.AggregateList(ctx, "*", fields)
 	if result == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 || result.Payload.AggregateResponseInlineRecords == nil {
 		return nil, fmt.Errorf("could not retrieve aggregate information")
 	}
@@ -818,7 +869,8 @@ func hasRestAggrSpaceInformation(ctx context.Context, aggrSpace *models.Aggregat
 }
 
 func (d OntapAPIREST) GetSVMAggregateSpace(ctx context.Context, aggregate string) ([]SVMAggregateSpace, error) {
-	response, aggrSpaceErr := d.api.AggregateList(ctx, aggregate)
+	fields := []string{"space.footprint", "space.block_storage.size", "space.block_storage.used"}
+	response, aggrSpaceErr := d.api.AggregateList(ctx, aggregate, fields)
 	if aggrSpaceErr != nil {
 		return nil, aggrSpaceErr
 	}
@@ -974,7 +1026,12 @@ func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 		prefix += "*"
 	}
 
-	volumesResponse, err := d.api.VolumeList(ctx, prefix)
+	fields := []string{
+		"type", "size", "comment", "aggregates", "nas", "guarantee",
+		"snapshot_policy", "snapshot_directory_access_enabled",
+		"space.snapshot.used", "space.snapshot.reserve_percent",
+	}
+	volumesResponse, err := d.api.VolumeList(ctx, prefix, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -997,7 +1054,40 @@ func (d OntapAPIREST) VolumeListByPrefix(ctx context.Context, prefix string) (Vo
 
 // VolumeListByAttrs is used to find bucket volumes for nas-eco and san-eco
 func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume) (Volumes, error) {
-	return d.api.VolumeListByAttrs(ctx, volumeAttrs)
+	fields := []string{
+		"aggregates",
+		"snapshot_directory_access_enabled",
+		"encryption.enabled",
+		"guarantee.type",
+		"snapshot_policy.name",
+	}
+	volumesResponse, err := d.api.VolumeListByAttrs(ctx, volumeAttrs, fields)
+	if err != nil {
+		return nil, err
+	}
+
+	if volumesResponse == nil {
+		if volumeAttrs.Name != "" {
+			Logc(ctx).Errorf("Could not find volume with name: %v", volumeAttrs.Name)
+		} else {
+			Logc(ctx).Errorf("Could not find volume")
+		}
+	}
+
+	volumes := Volumes{}
+
+	if volumesResponse.Payload != nil {
+		payload := *volumesResponse.Payload
+		for _, volume := range payload.VolumeResponseInlineRecords {
+			volumeInfo, err := FlexVolInfoFromRestAttrsHelper(volume)
+			if err != nil {
+				return nil, err
+			}
+			volumes = append(volumes, volumeInfo)
+		}
+	}
+
+	return volumes, nil
 }
 
 func (d OntapAPIREST) ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRules, nasProtocol string) error {
@@ -1140,7 +1230,8 @@ func (d OntapAPIREST) QtreeCount(ctx context.Context, volumeName string) (int, e
 }
 
 func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefix string) (Qtrees, error) {
-	qtreeList, err := d.api.QtreeList(ctx, prefix, volumePrefix)
+	fields := []string{"name", "volume"}
+	qtreeList, err := d.api.QtreeList(ctx, prefix, volumePrefix, fields)
 	if err != nil {
 		msg := fmt.Sprintf("Error listing qtrees; %v", err)
 		Logc(ctx).Errorf(msg)
@@ -1230,7 +1321,8 @@ func (d OntapAPIREST) QuotaResize(context.Context, string) error {
 }
 
 func (d OntapAPIREST) QuotaStatus(ctx context.Context, volumeName string) (string, error) {
-	volume, err := d.api.VolumeGetByName(ctx, volumeName)
+	fields := []string{"quota"}
+	volume, err := d.api.VolumeGetByName(ctx, volumeName, fields)
 	if err != nil {
 		return "", fmt.Errorf("error getting quota status for Flexvol %s: %v", volumeName, err)
 	}
@@ -1357,7 +1449,7 @@ func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string
 	var volumeState string
 
 	checkVolumeState := func() error {
-		vol, err := d.api.VolumeGetByName(ctx, volumeName)
+		vol, err := d.api.VolumeGetByName(ctx, volumeName, []string{"state"})
 		if err != nil {
 			volumeState = ""
 			return fmt.Errorf("error getting volume %v; %v", volumeName, err)
@@ -1421,7 +1513,6 @@ func (d OntapAPIREST) VolumeWaitForStates(ctx context.Context, volumeName string
 
 func (d OntapAPIREST) VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error) {
 	emptyResult := Snapshot{}
-
 	volume, err := d.VolumeInfo(ctx, sourceVolume)
 	if err != nil {
 		return emptyResult, fmt.Errorf("error looking up source volume; %v", err)
@@ -1679,8 +1770,20 @@ func (d OntapAPIREST) SnapmirrorGet(
 	ctx context.Context, localInternalVolumeName, localSVMName, remoteFlexvolName,
 	remoteSVMName string,
 ) (*Snapmirror, error) {
+	fields := []string{
+		"state",
+		"last_transfer_type",
+		"transfer.state",
+		"transfer.end_time",
+		"healthy",
+		"unhealthy_reason",
+		"policy.name",
+		"transfer_schedule.name",
+		"source.path",
+		"destination.path",
+	}
 	snapmirrorResponse, err := d.api.SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, remoteFlexvolName,
-		remoteSVMName)
+		remoteSVMName, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -1909,7 +2012,21 @@ func (d OntapAPIREST) GetSVMPeers(ctx context.Context) ([]string, error) {
 }
 
 func (d OntapAPIREST) LunList(ctx context.Context, pattern string) (Luns, error) {
-	lunsResponse, err := d.api.LunList(ctx, pattern)
+	fields := []string{
+		"lun_maps.igroup.name",
+		"lun_maps.logical_unit_number",
+		"space.size",
+		"comment",
+		"qos_policy.name",
+		"status.mapped",
+		"location.volume.name",
+		"create_time",
+		"enabled",
+		"serial_number",
+		"status.state",
+		"os_type",
+	}
+	lunsResponse, err := d.api.LunList(ctx, pattern, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -1952,16 +2069,17 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 }
 
 func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
-	fields := LogFields{
+	logFields := LogFields{
 		"Method": "LunDestroy",
 		"Type":   "OntapAPIREST",
 		"Name":   lunPath,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunDestroy")
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> LunDestroy")
 	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunDestroy")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< LunDestroy")
 
-	lun, err := d.api.LunGetByName(ctx, lunPath)
+	fields := []string{""}
+	lun, err := d.api.LunGetByName(ctx, lunPath, fields)
 	if err != nil {
 		return fmt.Errorf("error getting LUN: %v", lunPath)
 	}
@@ -2057,7 +2175,7 @@ func (d OntapAPIREST) LunCloneCreate(
 		fullCloneLunPath = fmt.Sprintf("/vol/%s/%s", flexvol, lunPath)
 	}
 
-	fields := LogFields{
+	logFields := LogFields{
 		"Method":            "LunCloneCreate",
 		"Type":              "OntapAPIREST",
 		"flexvol":           flexvol,
@@ -2067,11 +2185,12 @@ func (d OntapAPIREST) LunCloneCreate(
 		"fullCloneLunPath":  fullCloneLunPath,
 	}
 	Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunCloneCreate")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> LunCloneCreate")
 	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunCloneCreate")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< LunCloneCreate")
 
-	lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath)
+	fields := []string{"os_type", "space.size"}
+	lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath, fields)
 	if err != nil {
 		return err
 	}
@@ -2142,17 +2261,32 @@ func (d OntapAPIREST) LunSetQosPolicyGroup(ctx context.Context, lunPath string, 
 }
 
 func (d OntapAPIREST) LunGetByName(ctx context.Context, name string) (*Lun, error) {
-	fields := LogFields{
+	logFields := LogFields{
 		"Method":  "LunGetByName",
 		"Type":    "OntapAPIREST",
 		"LunPath": name,
 	}
 	Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> LunGetByName")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> LunGetByName")
 	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< LunGetByName")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< LunGetByName")
 
-	lunResponse, err := d.api.LunGetByName(ctx, name)
+	fields := []string{
+		"lun_maps.igroup.name",
+		"lun_maps.logical_unit_number",
+		"space.size",
+		"comment",
+		"qos_policy.name",
+		"status.mapped",
+		"location.volume.name",
+		"create_time",
+		"enabled",
+		"serial_number",
+		"status.state",
+		"os_type",
+	}
+
+	lunResponse, err := d.api.LunGetByName(ctx, name, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -2238,7 +2372,8 @@ func (d OntapAPIREST) isLunMapped(
 					).Debug("LUN already mapped.")
 					break
 				} else {
-					lun, err := d.api.LunGetByName(ctx, lunPath)
+					fields := []string{"lun_maps.logical_unit_number"}
+					lun, err := d.api.LunGetByName(ctx, lunPath, fields)
 					if err != nil {
 						return alreadyMapped, lunID, err
 					}
@@ -2319,7 +2454,8 @@ func (d OntapAPIREST) LunUnmap(ctx context.Context, initiatorGroupName, lunPath 
 func (d OntapAPIREST) LunListIgroupsMapped(ctx context.Context, lunPath string) ([]string, error) {
 	var names []string
 
-	results, err := d.api.LunMapList(ctx, "*", lunPath)
+	fields := []string{""}
+	results, err := d.api.LunMapList(ctx, "*", lunPath, fields)
 	if err != nil {
 		return names, err
 	}
@@ -2339,7 +2475,8 @@ func (d OntapAPIREST) LunListIgroupsMapped(ctx context.Context, lunPath string) 
 func (d OntapAPIREST) IgroupListLUNsMapped(ctx context.Context, initiatorGroupName string) ([]string, error) {
 	var names []string
 
-	results, err := d.api.LunMapList(ctx, initiatorGroupName, "*")
+	fields := []string{""}
+	results, err := d.api.LunMapList(ctx, initiatorGroupName, "*", fields)
 	if err != nil {
 		return names, err
 	}
@@ -2384,7 +2521,14 @@ func (d OntapAPIREST) LunSetSize(ctx context.Context, lunPath, newSize string) (
 
 func (d OntapAPIREST) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiInitiatorAuth, error) {
 	authInfo := IscsiInitiatorAuth{}
-	response, err := d.api.IscsiInitiatorGetDefaultAuth(ctx)
+	fields := []string{
+		"svm.name",
+		"chap.inbound.user",
+		"chap.outbound.user",
+		"initiator",
+		"authentication_type",
+	}
+	response, err := d.api.IscsiInitiatorGetDefaultAuth(ctx, fields)
 	if err != nil {
 		return authInfo, err
 	}
@@ -2449,7 +2593,8 @@ func (d OntapAPIREST) IscsiInitiatorSetDefaultAuth(
 
 func (d OntapAPIREST) IscsiInterfaceGet(ctx context.Context, svm string) ([]string, error) {
 	var iSCSINodeNames []string
-	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx)
+	fields := []string{"target.name", "enabled"}
+	interfaceResponse, err := d.api.IscsiInterfaceGet(ctx, fields)
 	if err != nil {
 		return nil, fmt.Errorf("could not get SVM iSCSI node name; %v", err)
 	}
@@ -2473,7 +2618,8 @@ func (d OntapAPIREST) IscsiInterfaceGet(ctx context.Context, svm string) ([]stri
 }
 
 func (d OntapAPIREST) IscsiNodeGetNameRequest(ctx context.Context) (string, error) {
-	result, err := d.api.IscsiNodeGetName(ctx)
+	fields := []string{"target.name"}
+	result, err := d.api.IscsiNodeGetName(ctx, fields)
 	if err != nil {
 		return "", err
 	}
@@ -2493,7 +2639,7 @@ func (d OntapAPIREST) IscsiNodeGetNameRequest(ctx context.Context) (string, erro
 }
 
 func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, initiatorGroupType, osType string) error {
-	fields := LogFields{
+	logFields := LogFields{
 		"Method":             "IgroupCreate",
 		"Type":               "OntapAPIREST",
 		"InitiatorGroupName": initiatorGroupName,
@@ -2501,11 +2647,12 @@ func (d OntapAPIREST) IgroupCreate(ctx context.Context, initiatorGroupName, init
 		"OsType":             osType,
 	}
 	Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupCreate")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> IgroupCreate")
 	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupCreate")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< IgroupCreate")
 
-	igroup, err := d.api.IgroupGetByName(ctx, initiatorGroupName)
+	fields := []string{""}
+	igroup, err := d.api.IgroupGetByName(ctx, initiatorGroupName, fields)
 	if err != nil {
 		return err
 	}
@@ -2574,7 +2721,8 @@ func (d OntapAPIREST) EnsureIgroupAdded(
 
 func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGroupName string) (bool, error) {
 	alreadyAdded := false
-	igroup, err := d.api.IgroupGetByName(ctx, initiatorGroupName)
+	fields := []string{"initiators.name"}
+	igroup, err := d.api.IgroupGetByName(ctx, initiatorGroupName, fields)
 	if err != nil {
 		return alreadyAdded, err
 	}
@@ -2591,16 +2739,17 @@ func (d OntapAPIREST) isIgroupAdded(ctx context.Context, initiator, initiatorGro
 }
 
 func (d OntapAPIREST) IgroupList(ctx context.Context) ([]string, error) {
-	fields := LogFields{
+	logFields := LogFields{
 		"Method": "IgroupList",
 		"Type":   "OntapAPIREST",
 	}
 	Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> IgroupList")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> IgroupList")
 	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< IgroupList")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< IgroupList")
 
-	igroupsResponse, err := d.api.IgroupList(ctx, "")
+	fields := []string{""}
+	igroupsResponse, err := d.api.IgroupList(ctx, "", fields)
 	if err != nil {
 		return nil, err
 	}
@@ -2637,7 +2786,8 @@ func (d OntapAPIREST) IgroupGetByName(ctx context.Context, initiatorGroupName st
 	error,
 ) {
 	// Discover mapped initiators
-	iGroupResponse, err := d.api.IgroupGetByName(ctx, initiatorGroupName)
+	fields := []string{"initiators.name"}
+	iGroupResponse, err := d.api.IgroupGetByName(ctx, initiatorGroupName, fields)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read igroup info; %v", err)
 	}
@@ -2760,17 +2910,25 @@ func (d OntapAPIREST) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, n
 
 // NVMeNamespaceGetByName returns NVMe namespace with the specified name.
 func (d OntapAPIREST) NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error) {
-	fields := LogFields{
+	logFields := LogFields{
 		"Method":  "NVMeNamespaceGetByName",
 		"Type":    "OntapAPIREST",
 		"LunPath": name,
 	}
 	Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceGetByName")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> NVMeNamespaceGetByName")
 	defer Logd(ctx, d.driverName,
-		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceGetByName")
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< NVMeNamespaceGetByName")
 
-	nsResponse, err := d.api.NVMeNamespaceGetByName(ctx, name)
+	fields := []string{
+		"os_type",
+		"location.volume.name",
+		"space.size",
+		"space.block_size",
+		"status.state",
+		"comment",
+	}
+	nsResponse, err := d.api.NVMeNamespaceGetByName(ctx, name, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -2783,7 +2941,15 @@ func (d OntapAPIREST) NVMeNamespaceGetByName(ctx context.Context, name string) (
 
 // NVMeNamespaceList returns the list of NVMe namespaces with the specified pattern.
 func (d OntapAPIREST) NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error) {
-	nsResponse, err := d.api.NVMeNamespaceList(ctx, pattern)
+	fields := []string{
+		"os_type",
+		"location.volume.name",
+		"space.size",
+		"space.block_size",
+		"status.state",
+		"comment",
+	}
+	nsResponse, err := d.api.NVMeNamespaceList(ctx, pattern, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -2955,15 +3121,16 @@ func (d OntapAPIREST) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, 
 
 // NVMeSubsystemCreate Checks if the subsystem is already there or not. If not, creates a new one.
 func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
-	fields := LogFields{
+	logFields := LogFields{
 		"Method":        "SubsystemCreate",
 		"Type":          "OntapAPIREST",
 		"SubsystemName": subsystemName,
 	}
-	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> SubsystemCreate")
-	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< SubsystemCreate")
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> SubsystemCreate")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< SubsystemCreate")
 
-	subsystem, err := d.api.NVMeSubsystemGetByName(ctx, subsystemName)
+	fields := []string{"target_nqn"}
+	subsystem, err := d.api.NVMeSubsystemGetByName(ctx, subsystemName, fields)
 	if err != nil {
 		Logc(ctx).Infof("problem getting subsystem; %v", err)
 		return nil, err

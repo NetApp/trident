@@ -45,19 +45,19 @@ func TestEnsureIGroupAdded(t *testing.T) {
 	// common call for all subtests
 	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, errors.New("error getting igroup"))
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, errors.New("error getting igroup"))
 	err = oapi.EnsureIgroupAdded(ctx, initiatorGroup, initiator)
 	assert.Errorf(t, err, "error getting igroup")
 
 	// No error and igroup not present
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, nil)
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, nil)
 	rsi.EXPECT().IgroupAdd(ctx, initiatorGroup, initiator).Return(nil)
 	err = oapi.EnsureIgroupAdded(ctx, initiatorGroup, initiator)
 	assert.NoError(t, err)
 
 	// positive test case
 	igroup := &models.Igroup{IgroupInlineInitiators: []*models.IgroupInlineInitiatorsInlineArrayItem{{Name: utils.Ptr(initiator)}}}
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(igroup, nil)
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(igroup, nil)
 	err = oapi.EnsureIgroupAdded(ctx, initiatorGroup, initiator)
 	assert.NoError(t, err)
 }
@@ -102,14 +102,14 @@ func TestEnsureLunMapped(t *testing.T) {
 
 	// positive test case where lun == nil, lunGetByName gets called to find the LUN details
 	lun := &models.Lun{LunInlineLunMaps: []*models.LunInlineLunMapsInlineArrayItem{{LogicalUnitNumber: number}}}
-	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(lun, nil)
+	rsi.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(lun, nil)
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Nil(t, err)
 	assert.Equal(t, int(*number), resultLun, "lun count does not match")
 
 	// record.LogicalUnitNumber == nil and lunGetByName returns error
-	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(nil, errors.New("error getting LUN by name"))
+	rsi.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(nil, errors.New("error getting LUN by name"))
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
 	assert.Errorf(t, err, "error getting LUN by name")
@@ -119,7 +119,7 @@ func TestEnsureLunMapped(t *testing.T) {
 	lunMapCreated := &s_a_n.LunMapCreateCreated{
 		Payload: lunPayload,
 	}
-	rsi.EXPECT().LunGetByName(ctx, lunPath).Return(nil, nil)
+	rsi.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(nil, nil)
 	rsi.EXPECT().LunMapInfo(ctx, "", lunPath).Return(lunMapCollection, nil)
 	rsi.EXPECT().LunMap(ctx, initiatorGroup, lunPath, -1).Return(lunMapCreated, nil)
 	resultLun, err = oapi.EnsureLunMapped(ctx, initiatorGroup, lunPath)
@@ -304,7 +304,7 @@ func TestNVMeNamespaceGetByName(t *testing.T) {
 	}
 
 	// case 1: No error while getting namespace
-	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name).Return(ns, nil)
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(ns, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	namespace, err := oapi.NVMeNamespaceGetByName(ctx, Name)
 	assert.NoError(t, err)
@@ -312,13 +312,13 @@ func TestNVMeNamespaceGetByName(t *testing.T) {
 	assert.Equal(t, Name, namespace.Name, "namespace name does not match")
 
 	// case 2: error while getting namespace
-	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name).Return(nil, fmt.Errorf("Error while getting namespace"))
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("Error while getting namespace"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	namespace, err = oapi.NVMeNamespaceGetByName(ctx, Name)
 	assert.Error(t, err)
 
 	// case 3: no error while getting namespace but response is nil
-	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name).Return(nil, nil)
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	namespace, err = oapi.NVMeNamespaceGetByName(ctx, Name)
 	assert.Error(t, err)
@@ -370,14 +370,14 @@ func TestNVMeNamespaceList(t *testing.T) {
 	}
 
 	// case 1: No error while getting namespace
-	mock.EXPECT().NVMeNamespaceList(ctx, Name).Return(nsResp, nil)
+	mock.EXPECT().NVMeNamespaceList(ctx, Name, gomock.Any()).Return(nsResp, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	namespaces, err := oapi.NVMeNamespaceList(ctx, Name)
 	assert.NoError(t, err)
 	assert.Equal(t, Name, namespaces[0].Name, "namespace does not match")
 
 	// case 2: error while getting namespace list
-	mock.EXPECT().NVMeNamespaceList(ctx, Name).Return(nil, fmt.Errorf("Error getting namespace list"))
+	mock.EXPECT().NVMeNamespaceList(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("Error getting namespace list"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	_, err = oapi.NVMeNamespaceList(ctx, Name)
 	assert.Error(t, err)
@@ -388,7 +388,7 @@ func TestNVMeNamespaceList(t *testing.T) {
 			NvmeNamespaceResponseInlineRecords: []*models.NvmeNamespace{nil},
 		},
 	}
-	mock.EXPECT().NVMeNamespaceList(ctx, Name).Return(nsResp1, nil).AnyTimes()
+	mock.EXPECT().NVMeNamespaceList(ctx, Name, gomock.Any()).Return(nsResp1, nil).AnyTimes()
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	_, err = oapi.NVMeNamespaceList(ctx, Name)
 	assert.Error(t, err)
@@ -622,7 +622,7 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 		TargetNqn: &targetNQN,
 	}
 
-	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName).Return(subsys, nil)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(subsys, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	subsystem, err := oapi.NVMeSubsystemCreate(ctx, subsystemName)
 	assert.NoError(t, err)
@@ -631,13 +631,13 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	assert.Equal(t, subsystem.NQN, targetNQN, "host does not match")
 
 	// case 2: Error getting susbsystem info from backend
-	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName).Return(nil, fmt.Errorf("Error getting susbsystem info"))
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, fmt.Errorf("Error getting susbsystem info"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	_, err = oapi.NVMeSubsystemCreate(ctx, subsystemName)
 	assert.Error(t, err)
 
 	// case 3: Subsystem not present, create a new one successfully
-	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName).Return(nil, nil)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil)
 	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName).Return(subsys, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	newsubsys, err := oapi.NVMeSubsystemCreate(ctx, subsystemName)
@@ -647,14 +647,14 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	assert.Equal(t, newsubsys.NQN, targetNQN, "host does not match")
 
 	// case 4: Subsystem not present, create a new one with failure
-	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName).Return(nil, nil)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil)
 	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName).Return(nil, fmt.Errorf("Error creating susbsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName)
 	assert.Error(t, err)
 
 	// case 5: Subsystem not present, create a new one but returned nil
-	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName).Return(nil, nil)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil)
 	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName).Return(nil, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName)
@@ -907,7 +907,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 
 	// Test1: Error - While getting the volume
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().VolumeGetByName(ctx, volName).AnyTimes().Return(nil, fmt.Errorf("Error getting the volume"))
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).AnyTimes().Return(nil, fmt.Errorf("Error getting the volume"))
 
 	currentState, err := oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
@@ -923,7 +923,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	assert.NoError(t, err)
 
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().VolumeGetByName(ctx, volName).AnyTimes().Return(nil, nil)
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).AnyTimes().Return(nil, nil)
 
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
@@ -937,7 +937,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	mock = mockapi.NewMockRestClientInterface(ctrl)
 	oapi, err = api.NewOntapAPIRESTFromRestClientInterface(mock)
 
-	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil)
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).Return(volume, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
@@ -955,7 +955,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	abortStates = []string{"error"}
 	volume.State = &errorState
 
-	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).Return(volume, nil).AnyTimes()
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
@@ -973,7 +973,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	abortStates = []string{"fakeerrorState"}
 	volume.State = &errorState
 
-	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).Return(volume, nil).AnyTimes()
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
@@ -992,7 +992,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	volState := "unknown"
 	volume.State = &volState
 
-	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).Return(volume, nil).AnyTimes()
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, newAbortState, maxElapsedTime)
@@ -1010,7 +1010,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 	volState = "online"
 	volume.State = &volState
 
-	mock.EXPECT().VolumeGetByName(ctx, volName).Return(volume, nil).AnyTimes()
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).Return(volume, nil).AnyTimes()
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	currentState, err = oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, newAbortState, maxElapsedTime)
@@ -1076,7 +1076,7 @@ func TestIgroupList(t *testing.T) {
 
 	// case 1: No error while getting Igroup list
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupList(ctx, "").Return(&igroupResponseOK, nil)
+	mock.EXPECT().IgroupList(ctx, "", gomock.Any()).Return(&igroupResponseOK, nil)
 
 	igroups, err1 := oapi.IgroupList(ctx)
 	assert.NoError(t, err1, "error while getting Igroup list")
@@ -1085,7 +1085,7 @@ func TestIgroupList(t *testing.T) {
 
 	// case 2: Error returned while getting igroup list
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupList(ctx, "").Return(nil, fmt.Errorf("failed to get igroup"))
+	mock.EXPECT().IgroupList(ctx, "", gomock.Any()).Return(nil, fmt.Errorf("failed to get igroup"))
 
 	_, err1 = oapi.IgroupList(ctx)
 	assert.Error(t, err1, "No error while getting Igroup list")
@@ -1093,7 +1093,7 @@ func TestIgroupList(t *testing.T) {
 	// case 3: Empty payload returned while getting igroup list
 	igroupResponseOK = s_a_n.IgroupCollectionGetOK{Payload: nil}
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupList(ctx, "").Return(&igroupResponseOK, nil)
+	mock.EXPECT().IgroupList(ctx, "", gomock.Any()).Return(&igroupResponseOK, nil)
 
 	igroups, err1 = oapi.IgroupList(ctx)
 	assert.NoError(t, err1, "error while getting Igroup list")
@@ -1107,7 +1107,7 @@ func TestIgroupList(t *testing.T) {
 	igroupResponseOK = s_a_n.IgroupCollectionGetOK{Payload: igroupResponse}
 
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupList(ctx, "").Return(&igroupResponseOK, nil)
+	mock.EXPECT().IgroupList(ctx, "", gomock.Any()).Return(&igroupResponseOK, nil)
 
 	igroups, err1 = oapi.IgroupList(ctx)
 	assert.NoError(t, err1, "error while getting Igroup list")
@@ -1167,7 +1167,7 @@ func TestIgroupGetByName(t *testing.T) {
 
 	// case 1: No Error returned while getting igroup by name.
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(&igroup, nil)
+	mock.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(&igroup, nil)
 
 	mappedIQNs, err1 := oapi.IgroupGetByName(ctx, initiatorGroup)
 	assert.NoError(t, err1, "error returned while getting igroup by name")
@@ -1177,7 +1177,7 @@ func TestIgroupGetByName(t *testing.T) {
 
 	// case 2: Error returned while getting igroup by name.
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, fmt.Errorf("Failed to get igroup by name"))
+	mock.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, fmt.Errorf("Failed to get igroup by name"))
 
 	_, err1 = oapi.IgroupGetByName(ctx, initiatorGroup)
 
@@ -1475,31 +1475,24 @@ func TestVolumeInfo(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Get volume. Returned volume list
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	_, err := oapi.VolumeInfo(ctx, "vol1")
 	assert.NoError(t, err, "error returned while getting a volume")
 
 	// case 2: Get volume. Returned empty list
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(nil, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, nil)
 	_, err = oapi.VolumeInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a volume")
 
 	// case 3: Get volume. Backend returned an error.
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(nil, fmt.Errorf("Failed to get volume"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("Failed to get volume"))
 	_, err = oapi.VolumeInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a volume")
 
 	// case 4: Get volume. Returned volume list with volume name nil
 	// Want an error from "VolumeInfoFromRestAttrsHelper" function.
 	volume.Name = nil
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
-	_, err = oapi.VolumeInfo(ctx, "vol1")
-	assert.Error(t, err, "no error returned while getting a volume")
-
-	// case 5: Get volume. Returned volume list with volume aggregates nil
-	volume.Name = utils.Ptr("vol1")
-	volume.VolumeInlineAggregates = nil
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	_, err = oapi.VolumeInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a volume")
 }
@@ -1649,23 +1642,23 @@ func TestFlexgroupInfo(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Flexgroup get by name
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	_, err := oapi.FlexgroupInfo(ctx, "vol1")
 	assert.NoError(t, err, "error returned while getting a flexgroup volume")
 
 	// case 2: Flexgroup get by name returned volume info nil
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(nil, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, nil)
 	_, err = oapi.FlexgroupInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup volume")
 
 	// case 3: Flexgroup get by name, returned error.
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(nil, fmt.Errorf("failed to get flexgroup volume"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup volume"))
 	_, err = oapi.FlexgroupInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup volume")
 
 	// case 4: Flexgroup get by name. Response contain volume name is nil
 	volume.Name = nil
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	_, err = oapi.FlexgroupInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup volume")
 }
@@ -1760,23 +1753,23 @@ func TestFlexgroupSnapshotCreate(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Flexgroup snapshot create
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotCreateAndWait(ctx, volumeUUID, "fake-snapshot").Return(nil)
 	err := oapi.FlexgroupSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.NoError(t, err, "error returned while creating snapshot of a flexgroup")
 
 	// case 2: Flexgroup snapshot create. Could not get the volume info
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(nil, fmt.Errorf("Failed to get flexgroup"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("Failed to get flexgroup"))
 	err = oapi.FlexgroupSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating snapshot of a flexgroup")
 
 	// case 3: Flexgroup snapshot create returned response nil
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(nil, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, nil)
 	err = oapi.FlexgroupSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating snapshot of a flexgroup")
 
 	// case 4: Flexgroup snapshot create. Could not create snapshot.
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotCreateAndWait(ctx, volumeUUID, "fake-snapshot").Return(fmt.Errorf("snapshot creation failed"))
 	err = oapi.FlexgroupSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating snapshot of a flexgroup")
@@ -1797,7 +1790,7 @@ func TestFlexgroupSnapshotList(t *testing.T) {
 	snapshotResponseOK := storage.SnapshotCollectionGetOK{Payload: &snapshotResponse}
 
 	// case 1: Flexgroup get info.
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(&snapshotResponseOK, nil)
 	snapshots, err := oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.NoError(t, err, "error returned while getting a flexgroup")
@@ -1806,30 +1799,30 @@ func TestFlexgroupSnapshotList(t *testing.T) {
 	assert.Equal(t, createTime1.String(), snapshots[0].CreateTime)
 
 	// case 2: Flexgroup get by name returned error
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(nil, fmt.Errorf("failed to get flexgroup"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup"))
 	_, err = oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup")
 
 	// case 3: Flexgroup get by name returned nil
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(nil, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, nil)
 	_, err = oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup")
 
 	// case 4: Flexgroup snapshot list returned nil
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, nil)
 	snapshots, err = oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup")
 
 	// case 5: Flexgroup snapshot list returned error
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, fmt.Errorf("failed to get snapshot info"))
 	snapshots, err = oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup")
 
 	// case 6: Flexgroup snapshot list returned payload nil
 	snapshotResponseOK = storage.SnapshotCollectionGetOK{Payload: nil}
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(&snapshotResponseOK, nil)
 	_, err = oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup")
@@ -1900,24 +1893,24 @@ func TestFlexgroupListByPrefix(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Flexgroup get list by prefix
-	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*").Return(&volumeResponse, nil)
+	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*", gomock.Any()).Return(&volumeResponse, nil)
 	volumeInfo, err := oapi.FlexgroupListByPrefix(ctx, *volume.Name)
 	assert.NoError(t, err, "error returned while getting a volume")
 	assert.Equal(t, *volume.Name, volumeInfo[0].Name)
 
 	// case 2: Flexgroup get returned empty list
-	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*").Return(nil, nil)
+	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*", gomock.Any()).Return(nil, nil)
 	volumeInfo, err = oapi.FlexgroupListByPrefix(ctx, *volume.Name)
 	assert.Error(t, err, "no error returned while getting a volume")
 
 	// case 3: Flexgroup get returned error
-	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*").Return(nil, fmt.Errorf("failed to get flexgroup"))
+	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup"))
 	volumeInfo, err = oapi.FlexgroupListByPrefix(ctx, *volume.Name)
 	assert.Error(t, err, "no error returned while getting a volume")
 
 	// case 4: Flexgroup get list, response contain volume name nil
 	volume.Name = nil
-	rsi.EXPECT().FlexGroupGetAll(ctx, "*").Return(&volumeResponse, nil)
+	rsi.EXPECT().FlexGroupGetAll(ctx, "*", gomock.Any()).Return(&volumeResponse, nil)
 	volumeInfo, err = oapi.FlexgroupListByPrefix(ctx, "*")
 	assert.Error(t, err, "no error returned while getting a volume")
 }
@@ -2030,13 +2023,13 @@ func TestGetSVMAggregateAttributes(t *testing.T) {
 	aggregateResponse := getAggregateInfo("aggr1", "fc", int64(1), nil)
 
 	// case 1: Get SVM aggregate
-	rsi.EXPECT().AggregateList(ctx, gomock.Any()).Return(aggregateResponse, nil)
+	rsi.EXPECT().AggregateList(ctx, gomock.Any(), gomock.Any()).Return(aggregateResponse, nil)
 	aggrList, err := oapi.GetSVMAggregateAttributes(ctx)
 	assert.NoError(t, err, "error returned while getting a svm aggregate")
 	assert.Equal(t, "fc", aggrList["aggr1"])
 
 	// case 2: Get SVM aggregate returned nil list
-	rsi.EXPECT().AggregateList(ctx, gomock.Any()).Return(nil, nil)
+	rsi.EXPECT().AggregateList(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
 	aggrList, err = oapi.GetSVMAggregateAttributes(ctx)
 	assert.Error(t, err, "no error returned while getting a svm aggregate")
 	assert.Nil(t, aggrList)
@@ -2044,14 +2037,14 @@ func TestGetSVMAggregateAttributes(t *testing.T) {
 	aggregateResponse = getAggregateInfo("", "fc", int64(1), nil)
 
 	// case 3: Get SVM aggregate returned empty list
-	rsi.EXPECT().AggregateList(ctx, gomock.Any()).Return(aggregateResponse, nil)
+	rsi.EXPECT().AggregateList(ctx, gomock.Any(), gomock.Any()).Return(aggregateResponse, nil)
 	aggrList, err = oapi.GetSVMAggregateAttributes(ctx)
 	assert.NoError(t, err, "error returned while getting a svm aggregate")
 	assert.Empty(t, aggrList)
 
 	// case 4: Get SVM aggregate returned error
 	aggregateResponse = getAggregateInfo("", "fc", int64(0), nil)
-	rsi.EXPECT().AggregateList(ctx, gomock.Any()).Return(aggregateResponse, nil)
+	rsi.EXPECT().AggregateList(ctx, gomock.Any(), gomock.Any()).Return(aggregateResponse, nil)
 	aggrList, err = oapi.GetSVMAggregateAttributes(ctx)
 	assert.Error(t, err, "no error returned while getting a svm aggregate")
 }
@@ -2119,7 +2112,7 @@ func TestGetSVMAggregateSpace(t *testing.T) {
 	aggrResponse := getAggregateInfo("aggr1", "fc", int64(0), &aggrSpace1)
 
 	// case 1: Get SVM aggregate space
-	rsi.EXPECT().AggregateList(ctx, "aggr1").Return(aggrResponse, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr1", gomock.Any()).Return(aggrResponse, nil)
 	aggrSpaceList, err := oapi.GetSVMAggregateSpace(ctx, "aggr1")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 	assert.Equal(t, size, aggrSpaceList[0].Size())
@@ -2135,7 +2128,7 @@ func TestGetSVMAggregateSpace(t *testing.T) {
 
 	// case 2: Get SVM aggregate space, Footprint nil
 	aggrResponse2 := getAggregateInfo("aggr1", "fc", int64(1), &aggrSpace2)
-	rsi.EXPECT().AggregateList(ctx, "aggr1").Return(aggrResponse2, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr1", gomock.Any()).Return(aggrResponse2, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr1")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 
@@ -2147,7 +2140,7 @@ func TestGetSVMAggregateSpace(t *testing.T) {
 
 	// case 3: Get SVM aggregate space, Footprint and used size nil
 	aggrResponse3 := getAggregateInfo("aggr1", "fc", int64(1), &aggrSpace3)
-	rsi.EXPECT().AggregateList(ctx, "aggr1").Return(aggrResponse3, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr1", gomock.Any()).Return(aggrResponse3, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr1")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 
@@ -2155,25 +2148,25 @@ func TestGetSVMAggregateSpace(t *testing.T) {
 
 	// case 4: Get SVM aggregate space, Size nil
 	aggrResponse4 := getAggregateInfo("aggr1", "fc", int64(1), &aggrSpace4)
-	rsi.EXPECT().AggregateList(ctx, "aggr1").Return(aggrResponse4, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr1", gomock.Any()).Return(aggrResponse4, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr1")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 
 	// case 5: Get SVM aggregate space, aggregate space nil
 	aggrResponse5 := getAggregateInfo("aggr1", "fc", int64(1), nil)
-	rsi.EXPECT().AggregateList(ctx, "aggr1").Return(aggrResponse5, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr1", gomock.Any()).Return(aggrResponse5, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr1")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 
 	// case 6: Get SVM aggregate space, aggregate name not present
 	aggrResponse6 := getAggregateInfo("aggr1", "fc", int64(1), nil)
-	rsi.EXPECT().AggregateList(ctx, "aggr2").Return(aggrResponse6, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr2", gomock.Any()).Return(aggrResponse6, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr2")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 
 	// case 7: Get SVM aggregate space, aggregate name is empty
 	aggrResponse7 := getAggregateInfo("", "fc", int64(1), nil)
-	rsi.EXPECT().AggregateList(ctx, "aggr2").Return(aggrResponse7, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr2", gomock.Any()).Return(aggrResponse7, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr2")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 
@@ -2181,18 +2174,18 @@ func TestGetSVMAggregateSpace(t *testing.T) {
 	aggrResponse8 := storage.AggregateCollectionGetOK{
 		Payload: &models.AggregateResponse{},
 	}
-	rsi.EXPECT().AggregateList(ctx, "aggr2").Return(&aggrResponse8, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr2", gomock.Any()).Return(&aggrResponse8, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr2")
 	assert.NoError(t, err, "error returned while getting a aggregate space")
 
 	// case 9: Get SVM aggregate space, payload is nil
 	aggrResponse9 := storage.AggregateCollectionGetOK{}
-	rsi.EXPECT().AggregateList(ctx, "aggr2").Return(&aggrResponse9, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr2", gomock.Any()).Return(&aggrResponse9, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr2")
 	assert.Error(t, err, "no error returned while getting a aggregate space")
 
 	// case 10: Get SVM aggregate space, aggregate list is nil
-	rsi.EXPECT().AggregateList(ctx, "aggr2").Return(nil, nil)
+	rsi.EXPECT().AggregateList(ctx, "aggr2", gomock.Any()).Return(nil, nil)
 	_, err = oapi.GetSVMAggregateSpace(ctx, "aggr2")
 	assert.Error(t, err, "no error returned while getting a aggregate space")
 }
@@ -2358,7 +2351,7 @@ func TestVolumeListByPrefix(t *testing.T) {
 
 	oapi, rsi := newMockOntapAPIREST(t)
 
-	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*").Return(&volumeResponse1, nil)
+	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*", gomock.Any()).Return(&volumeResponse1, nil)
 	volumeInfo, err := oapi.VolumeListByPrefix(ctx, *volume.Name)
 	assert.NoError(t, err, "error returned while getting list of volumes")
 	assert.Equal(t, *volume.Name, volumeInfo[0].Name)
@@ -2370,23 +2363,34 @@ func TestVolumeListByPrefix(t *testing.T) {
 	}
 
 	// case 1: Get volume positive test
-	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*").Return(&volumeResponse2, nil)
+	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*", gomock.Any()).Return(&volumeResponse2, nil)
 	_, err = oapi.VolumeListByPrefix(ctx, *volume.Name)
 	assert.Error(t, err, "no error returned while getting a volume info")
 
 	// case 2: Get volume negative test
-	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*").Return(nil, fmt.Errorf("failed to get volume"))
+	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*", gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
 	_, err = oapi.VolumeListByPrefix(ctx, *volume.Name)
 	assert.Error(t, err, "no error returned while getting a volume info")
 }
 
 func TestVolumeListByAttrs(t *testing.T) {
-	volume := api.Volume{Name: "vol1"}
-	volumes := []*api.Volume{&volume}
+	volName := "vol1"
+	volumeResponse := storage.VolumeCollectionGetOK{
+		Payload: &models.VolumeResponse{
+			VolumeResponseInlineRecords: []*models.Volume{
+				{
+					Name: &volName,
+				},
+			},
+		},
+	}
+	volume1 := api.Volume{
+		Name: volName,
+	}
 	oapi, rsi := newMockOntapAPIREST(t)
 
-	rsi.EXPECT().VolumeListByAttrs(ctx, &volume).Return(volumes, nil)
-	volumeList, err := oapi.VolumeListByAttrs(ctx, &volume)
+	rsi.EXPECT().VolumeListByAttrs(ctx, gomock.Any(), gomock.Any()).Return(&volumeResponse, nil)
+	volumeList, err := oapi.VolumeListByAttrs(ctx, &volume1)
 	assert.NoError(t, err, "error returned while getting a volume list by attribute")
 	assert.Equal(t, "vol1", volumeList[0].Name)
 }
@@ -2582,13 +2586,13 @@ func TestQtreeListByPrefix(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Get the Qtree list
-	rsi.EXPECT().QtreeList(ctx, gomock.Any(), gomock.Any()).Return(&qtreeResponse, nil)
+	rsi.EXPECT().QtreeList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(&qtreeResponse, nil)
 	volumeInfo, err := oapi.QtreeListByPrefix(ctx, *qtree.Name, *qtree.Volume.Name)
 	assert.NoError(t, err, "error returned while getting a Qtree list")
 	assert.Equal(t, *qtree.Name, volumeInfo[0].Name)
 
 	// case 2: Get the Qtree list failed. Backend returned an error
-	rsi.EXPECT().QtreeList(ctx, gomock.Any(), gomock.Any()).Return(nil,
+	rsi.EXPECT().QtreeList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil,
 		fmt.Errorf("failed to get qtree for given prefix"))
 	_, err = oapi.QtreeListByPrefix(ctx, *qtree.Name, *qtree.Volume.Name)
 	assert.Error(t, err, "no error returned while getting a Qtree list")
@@ -2710,26 +2714,26 @@ func TestQuotaStatus(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Quota status positive test
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	quotaStatus, err := oapi.QuotaStatus(ctx, "vol1")
 	assert.NoError(t, err, "error returned while getting a quota status")
 	assert.Equal(t, *volume.Quota.State, quotaStatus)
 
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(nil, fmt.Errorf("error enabling quota"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("error enabling quota"))
 	quotaStatus, err = oapi.QuotaStatus(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a quota status")
 
 	volume.Quota.State = nil
 
 	// case 2: Quota status in volume is nil
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	quotaStatus, err = oapi.QuotaStatus(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a quota status")
 
 	volume.Quota = nil
 
 	// case 3: Quota in volume is nil
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	quotaStatus, err = oapi.QuotaStatus(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a quota status")
 }
@@ -2802,18 +2806,18 @@ func TestVolumeSnapshotCreate(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1: Create volume snapshot
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotCreateAndWait(ctx, *volume.UUID, "fake-snapshot").Return(nil)
 	err := oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.NoError(t, err, "error returned while creating a snapshot")
 
 	// case 2: Create volume snapshot, parent volume verification returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(nil, fmt.Errorf("Failed to get flexgroup"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("Failed to get flexgroup"))
 	err = oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating a snapshot")
 
 	// case 3: Create volume snapshot returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotCreateAndWait(ctx, *volume.UUID, "fake-snapshot").Return(fmt.Errorf(
 		"snapshot creation failed"))
 	err = oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
@@ -2850,7 +2854,7 @@ func TestVolumeSnapshotList(t *testing.T) {
 	snapshotResponseOK := storage.SnapshotCollectionGetOK{Payload: &snapshotResponse}
 
 	// case 1: Get volume snapshot list
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(&snapshotResponseOK, nil)
 	snapshots, err := oapi.VolumeSnapshotList(ctx, "vol1")
 	assert.NoError(t, err, "error returned while getting a snapshot list")
@@ -2859,18 +2863,18 @@ func TestVolumeSnapshotList(t *testing.T) {
 	assert.Equal(t, createTime1.String(), snapshots[0].CreateTime, "snapshot creation time does not match")
 
 	// case 2: Get volume snapshot parent volume verification returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(nil, fmt.Errorf("failed to get flexgroup"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup"))
 	_, err = oapi.VolumeSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a snapshot list")
 
 	// case 3: Get volume snapshot returned nil response
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, nil)
 	snapshots, err = oapi.VolumeSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a snapshot list")
 
 	// case 4: Get volume snapshot returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, fmt.Errorf("failed to get snapshot info"))
 	snapshots, err = oapi.VolumeSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a snapshot list")
@@ -3006,7 +3010,7 @@ func TestFlexgroupSnapshotDelete(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1:  Flexgroup Snapshot delete
-	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume").Return(volume, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
 	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(&snapResponse, nil)
 	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(nil)
@@ -3014,12 +3018,12 @@ func TestFlexgroupSnapshotDelete(t *testing.T) {
 	assert.NoError(t, err, "error returned while deleting a snapshot")
 
 	// case 2:  Flexgroup Snapshot verification returned error
-	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume").Return(nil, fmt.Errorf("failed to get volume"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
 	err = oapi.FlexgroupSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while deleting a snapshot")
 
 	// case 3:  Flexgroup Snapshot verification returned nil
-	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume").Return(nil, nil)
+	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, nil)
 	err = oapi.FlexgroupSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while deleting a snapshot")
 }
@@ -3036,7 +3040,7 @@ func TestVolumeSnapshotDelete(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
 	// case 1:  Volume Snapshot delete
-	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume").Return(volume, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume", gomock.Any()).Return(volume, nil)
 	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
 	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(&snapResponse, nil)
 	rsi.EXPECT().PollJobStatus(ctx, &jobResponse).Return(nil)
@@ -3044,12 +3048,12 @@ func TestVolumeSnapshotDelete(t *testing.T) {
 	assert.NoError(t, err, "error returned while deleting a snapshot")
 
 	// case 2:  Volume Snapshot verification returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume").Return(nil, fmt.Errorf("failed to get volume"))
+	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
 	err = oapi.VolumeSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while deleting a snapshot")
 
 	// case 3:  Volume Snapshot verification returned nil
-	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume").Return(nil, nil)
+	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, nil)
 	err = oapi.VolumeSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while deleting a snapshot")
 }
@@ -3152,7 +3156,7 @@ func TestSnapMirrorGet(t *testing.T) {
 		TransferSchedule: &transferSchedule,
 	}
 	rsi.EXPECT().SnapmirrorGet(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
-		"fake-remoteSVM").Return(&snapmirrorRelationship, nil)
+		"fake-remoteSVM", gomock.Any()).Return(&snapmirrorRelationship, nil)
 	snapmirror, err := oapi.SnapmirrorGet(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
 		"fake-remoteSVM")
 	assert.NoError(t, err, "error returned while getting a SnapMirror")
@@ -3458,13 +3462,13 @@ func TestLunList(t *testing.T) {
 	}
 
 	// case 1: Get LUN list
-	rsi.EXPECT().LunList(ctx, "").Return(&lunResponse, nil)
+	rsi.EXPECT().LunList(ctx, "", gomock.Any()).Return(&lunResponse, nil)
 	luns, err := oapi.LunList(ctx, "")
 	assert.NoError(t, err, "error returned while getting a LUN info")
 	assert.Equal(t, *lun.Name, luns[0].Name, "LUN name does not match")
 
 	// case 2: Get LUN list returned error
-	rsi.EXPECT().LunList(ctx, "").Return(nil, fmt.Errorf("lun not found with given pattern"))
+	rsi.EXPECT().LunList(ctx, "", gomock.Any()).Return(nil, fmt.Errorf("lun not found with given pattern"))
 	luns, err = oapi.LunList(ctx, "")
 	assert.Error(t, err, "no error returned while getting a LUN info")
 
@@ -3472,7 +3476,7 @@ func TestLunList(t *testing.T) {
 	lunResponse1 := s_a_n.LunCollectionGetOK{
 		Payload: &models.LunResponse{LunResponseInlineRecords: []*models.Lun{nil}},
 	}
-	rsi.EXPECT().LunList(ctx, "").Return(&lunResponse1, nil)
+	rsi.EXPECT().LunList(ctx, "", gomock.Any()).Return(&lunResponse1, nil)
 	luns, err = oapi.LunList(ctx, "")
 	assert.Error(t, err, "no error returned while getting a LUN info")
 }
@@ -3528,25 +3532,25 @@ func TestLunDestroy(t *testing.T) {
 	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	// case 1: Delete LUN
-	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(lun, nil)
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name, gomock.Any()).Return(lun, nil)
 	rsi.EXPECT().LunDelete(ctx, *lun.UUID).Return(nil)
 	err := oapi.LunDestroy(ctx, "/"+*lun.Name)
 	assert.NoError(t, err, "error returned while deleting a LUN")
 
 	// case 2: Delete LUN returned error
-	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(lun, nil)
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name, gomock.Any()).Return(lun, nil)
 	rsi.EXPECT().LunDelete(ctx, *lun.UUID).Return(fmt.Errorf("failed to delete lun"))
 	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
 	assert.Error(t, err, "no error returned while deleting a LUN")
 
 	// case 3: Delete LUN, LUN verification returned error
-	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(nil, fmt.Errorf("failed to get lun"))
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name, gomock.Any()).Return(nil, fmt.Errorf("failed to get lun"))
 	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
 	assert.Error(t, err, "no error returned while deleting a LUN")
 
 	lun.UUID = nil
 	// case 4: LUN response contain LUN UUID nil
-	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name).Return(lun, nil)
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name, gomock.Any()).Return(lun, nil)
 	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
 	assert.Error(t, err, "no error returned while deleting a LUN")
 }
@@ -3608,17 +3612,17 @@ func TestLunCloneCreate(t *testing.T) {
 
 	// case 1, Positive test, create clone
 	rsi.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, nil)
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, nil)
 	err := oapi.LunCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", api.QosPolicyGroup{})
 	assert.NoError(t, err, "error returned while cloning a LUN")
 
 	// case 2, Negative test, Unable to get LUN info. Beckend returned error
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
 	err = oapi.LunCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", api.QosPolicyGroup{})
 	assert.Error(t, err, "no error returned while cloning a LUN")
 
 	// case 3, Negative test, Unable to get LUN info. Getting nil response.
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, nil)
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
 	err = oapi.LunCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", api.QosPolicyGroup{})
 	assert.Error(t, err, "no error returned while cloning a LUN")
 }
@@ -3662,18 +3666,18 @@ func TestLunGetByName(t *testing.T) {
 	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	// case 1: Positive test, get lun info by name
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, nil)
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, nil)
 	lunResponse, err := oapi.LunGetByName(ctx, "fake-lun")
 	assert.NoError(t, err, "error returned while getting a LUN by name")
 	assert.Equal(t, *lun.Name, lunResponse.Name, "Lun name does not match")
 
 	// case 2: Negative test, backend returned error
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
 	lunResponse, err = oapi.LunGetByName(ctx, "fake-lun")
 	assert.Error(t, err, "no error returned while getting a LUN by name")
 
 	// case 3: Negative test, backend returned nil response
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, nil)
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
 	lunResponse, err = oapi.LunGetByName(ctx, "fake-lun")
 	assert.Error(t, err, "no error returned while getting a LUN by name")
 }
@@ -3761,13 +3765,13 @@ func TestLunListIgroupsMapped(t *testing.T) {
 	lunMapResponseList := s_a_n.LunMapCollectionGetOK{Payload: &lunMapResponse}
 
 	// case 1: Positive test, get ia LUN list mapped with igroup
-	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(&lunMapResponseList, nil)
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(&lunMapResponseList, nil)
 	igroupNames, err := oapi.LunListIgroupsMapped(ctx, "/vol/lun0")
 	assert.NoError(t, err, "error returned while getting a LUN list mapped with igroup")
 	assert.Equal(t, igroupName, igroupNames[0])
 
 	// case 2: Negative test, get ia LUN list mapped with igroup
-	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
 	_, err = oapi.LunListIgroupsMapped(ctx, "/vol/lun0")
 	assert.Error(t, err, "no error returned while getting a LUN list mapped with igroup")
 }
@@ -3788,13 +3792,13 @@ func TestIgroupListLUNsMapped(t *testing.T) {
 	lunMapResponseList := s_a_n.LunMapCollectionGetOK{Payload: &lunMapResponse}
 
 	// case 1: Positive test, get igroup list mapped with LUN.
-	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(&lunMapResponseList, nil)
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(&lunMapResponseList, nil)
 	lunNames, err := oapi.IgroupListLUNsMapped(ctx, "/vol/lun0")
 	assert.NoError(t, err, "error returned while getting a igroup mapped with lun")
 	assert.Equal(t, lunName, lunNames[0])
 
 	// case 2: Negative test, get igroup list mapped with LUN.
-	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
 	_, err = oapi.IgroupListLUNsMapped(ctx, "/vol/lun0")
 	assert.Error(t, err, "no error returned while getting a igroup mapped with lun")
 }
@@ -3873,13 +3877,13 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 	}
 
 	// case 1: Get the iscsi initialor default auth.
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse, nil)
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(&iscsiCredResponse, nil)
 	iscsiInitiatorAuth, err := oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.NoError(t, err, "error returned while iscsi initiator default auth")
 	assert.Equal(t, iscsiInitiatorAuth.AuthType, authType, "authType does not match")
 
 	// case 2: Failed to get the iscsi initialor default auth.
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(nil, fmt.Errorf("failed to get iscsi initiator auth"))
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get iscsi initiator auth"))
 	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
@@ -3891,7 +3895,7 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 			NumRecords:                            &numRecords,
 		},
 	}
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse1, nil)
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(&iscsiCredResponse1, nil)
 	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
@@ -3903,7 +3907,7 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 			NumRecords:                            &numRecords2,
 		},
 	}
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse2, nil)
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(&iscsiCredResponse2, nil)
 	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
@@ -3913,7 +3917,7 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 			IscsiCredentialsResponseInlineRecords: nil,
 		},
 	}
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse3, nil)
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(&iscsiCredResponse3, nil)
 	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
@@ -3921,12 +3925,12 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 	iscsiCredResponse4 := s_a_n.IscsiCredentialsCollectionGetOK{
 		Payload: nil,
 	}
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(&iscsiCredResponse4, nil)
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(&iscsiCredResponse4, nil)
 	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
 	// case 7: iSCSI initiator response is nil
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(nil, nil)
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(nil, nil)
 	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 }
@@ -3963,18 +3967,18 @@ func TestIscsiInterfaceGet(t *testing.T) {
 	}
 
 	// case 1: Positive test, get the iscsi interface test.
-	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(&iscsiServiceResponse, nil)
+	rsi.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return(&iscsiServiceResponse, nil)
 	iscsiInterface, err := oapi.IscsiInterfaceGet(ctx, svmName)
 	assert.NoError(t, err, "error returned while getting iscsi interface")
 	assert.Equal(t, iscsiInterface[0], targetName)
 
 	// case 2: Negative test, backend return error in response.
-	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(nil, fmt.Errorf("failed to get iscsi interface service"))
+	rsi.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get iscsi interface service"))
 	_, err = oapi.IscsiInterfaceGet(ctx, svmName)
 	assert.Error(t, err, "no error returned while getting iscsi interface")
 
 	// case 3: Negative test, backend return nil response.
-	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(nil, nil)
+	rsi.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return(nil, nil)
 	_, err = oapi.IscsiInterfaceGet(ctx, svmName)
 	assert.NoError(t, err, "error returned while getting iscsi interface")
 
@@ -3982,7 +3986,7 @@ func TestIscsiInterfaceGet(t *testing.T) {
 	iscsiServiceResponse = s_a_n.IscsiServiceCollectionGetOK{
 		Payload: &models.IscsiServiceResponse{},
 	}
-	rsi.EXPECT().IscsiInterfaceGet(ctx).Return(&iscsiServiceResponse, nil)
+	rsi.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return(&iscsiServiceResponse, nil)
 	iscsiInterface, err = oapi.IscsiInterfaceGet(ctx, svmName)
 	assert.Error(t, err, "no error returned while getting iscsi interface")
 }
@@ -3999,7 +4003,7 @@ func TestIscsiNodeGetNameRequest(t *testing.T) {
 	}
 
 	// case 1: Get the iscsi node name.
-	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(&iscsiServiceResponse, nil)
 	iscsiInterface, err := oapi.IscsiNodeGetNameRequest(ctx)
 	assert.NoError(t, err, "error returned while getting node name")
 	assert.Equal(t, targetName, iscsiInterface)
@@ -4009,7 +4013,7 @@ func TestIscsiNodeGetNameRequest(t *testing.T) {
 	iscsiServiceResponse = s_a_n.IscsiServiceGetOK{
 		Payload: &iscsiService,
 	}
-	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(&iscsiServiceResponse, nil)
 	_, err = oapi.IscsiNodeGetNameRequest(ctx)
 	assert.Error(t, err, "no error returned while getting node name")
 
@@ -4018,7 +4022,7 @@ func TestIscsiNodeGetNameRequest(t *testing.T) {
 	iscsiServiceResponse = s_a_n.IscsiServiceGetOK{
 		Payload: &iscsiService,
 	}
-	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(&iscsiServiceResponse, nil)
 	_, err = oapi.IscsiNodeGetNameRequest(ctx)
 	assert.Error(t, err, "no error returned while getting node name")
 
@@ -4026,17 +4030,17 @@ func TestIscsiNodeGetNameRequest(t *testing.T) {
 	iscsiServiceResponse = s_a_n.IscsiServiceGetOK{
 		Payload: nil,
 	}
-	rsi.EXPECT().IscsiNodeGetName(ctx).Return(&iscsiServiceResponse, nil)
+	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(&iscsiServiceResponse, nil)
 	_, err = oapi.IscsiNodeGetNameRequest(ctx)
 	assert.Error(t, err, "no error returned while getting node name")
 
 	// case 5: backend returned a nil response.
-	rsi.EXPECT().IscsiNodeGetName(ctx).Return(nil, nil)
+	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(nil, nil)
 	_, err = oapi.IscsiNodeGetNameRequest(ctx)
 	assert.Error(t, err, "no error returned while getting node name")
 
 	// case 6: Unable to get the node name from backend.
-	rsi.EXPECT().IscsiNodeGetName(ctx).Return(nil, fmt.Errorf("iscsi node name not found"))
+	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(nil, fmt.Errorf("iscsi node name not found"))
 	_, err = oapi.IscsiNodeGetNameRequest(ctx)
 	assert.Error(t, err, "no error returned while getting node name")
 }
@@ -4073,30 +4077,30 @@ func TestIgroupCreate(t *testing.T) {
 	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	// Positive test, igroup created
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(&igroup, nil)
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(&igroup, nil)
 	err := oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
 	assert.NoError(t, err, "error while creating igroup")
 
 	// Negative test, Unoble to verify igroup exists
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, fmt.Errorf("failed to verify igroup"))
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, fmt.Errorf("failed to verify igroup"))
 	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
 	assert.Error(t, err, "no error while verifying igroup")
 
 	// Negative test, Unoble to verify igroup exists
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, nil)
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, nil)
 	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(nil)
 	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
 	assert.NoError(t, err, "error while verifying igroup")
 
 	// Negative test, igroup creation failed.
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, nil)
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, nil)
 	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(
 		fmt.Errorf("failed to create igroup"))
 	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
 	assert.Error(t, err, "No error while creating igroup")
 
 	// Negative test, igroup creation failed.
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup).Return(nil, nil)
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, nil)
 	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(
 		fmt.Errorf("404 failed to create igroup"))
 	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")

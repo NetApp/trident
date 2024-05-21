@@ -246,7 +246,7 @@ func TestOntapREST_IscsiInitiatorGetDefaultAuth(t *testing.T) {
 	rs := newRestClient(server.Listener.Addr().String(), server.Client())
 	assert.NotNil(t, rs)
 
-	_, err := rs.IscsiInitiatorGetDefaultAuth(ctx)
+	_, err := rs.IscsiInitiatorGetDefaultAuth(ctx, []string{""})
 	assert.NoError(t, err, "could not get the iscsi initiator default auth")
 
 	server.Close()
@@ -285,7 +285,7 @@ func TestOntapREST_IscsiInterfaceGet(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			iscsi, err := rs.IscsiInterfaceGet(ctx)
+			iscsi, err := rs.IscsiInterfaceGet(ctx, []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the iscsi interface")
 				assert.Equal(t, "fake-svm",
@@ -423,7 +423,7 @@ func TestOntapREST_IscsiNodeGetName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			iscsi, err := rs.IscsiNodeGetName(ctx)
+			iscsi, err := rs.IscsiNodeGetName(ctx, []string{""})
 
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the iscsi name")
@@ -538,7 +538,7 @@ func TestOntapREST_IgroupList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			igroup, err := rs.IgroupList(ctx, test.pattern)
+			igroup, err := rs.IgroupList(ctx, test.pattern, []string{""})
 
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get igroup")
@@ -691,7 +691,7 @@ func TestOntapREST_IgroupListHref(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			igroup, err := rs.IgroupList(ctx, "igroup")
+			igroup, err := rs.IgroupList(ctx, "igroup", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get igroup")
 				assert.Equal(t, "igroup1",
@@ -747,7 +747,7 @@ func TestOntapREST_IgroupGetByName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			igroup, err := rs.IgroupGetByName(ctx, "igroup")
+			igroup, err := rs.IgroupGetByName(ctx, "igroup", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get igroup")
 				assert.Equal(t, "igroup1", *igroup.Name, "igroup name does not match")
@@ -958,7 +958,7 @@ func TestOntapREST_LunListByPattern(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			lunResponse, err := rs.LunList(ctx, "*")
+			lunResponse, err := rs.LunList(ctx, "*", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get LUN")
 				assert.Equal(t, "fake-lunName",
@@ -1108,7 +1108,7 @@ func TestOntapREST_LunGetByName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			lunResponse, err := rs.LunGetByName(ctx, "fake-lunName")
+			lunResponse, err := rs.LunGetByName(ctx, "fake-lunName", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get LUN by name")
 				if !test.isResponseNil {
@@ -1740,7 +1740,7 @@ func TestOntapREST_LunMapList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			lumMapResponse, err := rs.LunMapList(ctx, "fake-initiatorGroupName", "/dev/sda")
+			lumMapResponse, err := rs.LunMapList(ctx, "fake-initiatorGroupName", "/dev/sda", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the LUN map")
 				assert.Equal(t, "initiatorGroup",
@@ -2936,7 +2936,8 @@ func TestOntapREST_AggregateList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			aggrList, err := rs.AggregateList(ctx, "aggr1")
+			aggrList, err := rs.AggregateList(ctx, "aggr1", []string{""})
+
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the aggregate list")
 				assert.Equal(t, "aggr1", *aggrList.Payload.AggregateResponseInlineRecords[0].Name)
@@ -2952,7 +2953,7 @@ func mockSVMList(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
 	svmUUID := "1234"
 	svmName := "svm0"
 
-	svm := models.Svm{
+	newSvm := models.Svm{
 		UUID:  &svmUUID,
 		Name:  &svmName,
 		State: utils.Ptr("running"),
@@ -2970,7 +2971,7 @@ func mockSVMList(hasNextLink bool, w http.ResponseWriter, r *http.Request) {
 	}
 
 	svmResponse := models.SvmResponse{
-		SvmResponseInlineRecords: []*models.Svm{&svm},
+		SvmResponseInlineRecords: []*models.Svm{&newSvm},
 		NumRecords:               utils.Ptr(int64(1)),
 		Links:                    hrefLink,
 	}
@@ -2982,7 +2983,7 @@ func mockSVMListInternalError(hasNextLink bool, w http.ResponseWriter, r *http.R
 	svmUUID := "1234"
 	svmName := "svm0"
 
-	svm := models.Svm{
+	newsvm := models.Svm{
 		UUID:  &svmUUID,
 		Name:  &svmName,
 		State: utils.Ptr("running"),
@@ -3002,7 +3003,7 @@ func mockSVMListInternalError(hasNextLink bool, w http.ResponseWriter, r *http.R
 	}
 
 	svmResponse := models.SvmResponse{
-		SvmResponseInlineRecords: []*models.Svm{&svm},
+		SvmResponseInlineRecords: []*models.Svm{&newsvm},
 		NumRecords:               utils.Ptr(int64(1)),
 		Links:                    hrefLink,
 	}
@@ -3030,10 +3031,10 @@ func TestOntapREST_SvmList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			svm, err := rs.SvmList(ctx, "svm0")
+			svmres, err := rs.SvmList(ctx, "svm0")
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get svm")
-				assert.Equal(t, "svm0", *svm.Payload.SvmResponseInlineRecords[0].Name)
+				assert.Equal(t, "svm0", *svmres.Payload.SvmResponseInlineRecords[0].Name)
 			} else {
 				assert.Error(t, err, "get the svm")
 			}
@@ -3058,10 +3059,10 @@ func TestOntapREST_SvmGetByName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			svm, err := rs.SvmGetByName(ctx, "svm0")
+			svmname, err := rs.SvmGetByName(ctx, "svm0")
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get svm by name")
-				assert.Equal(t, "svm0", *svm.Name)
+				assert.Equal(t, "svm0", *svmname.Name)
 			} else {
 				assert.Error(t, err, "get the svm by name")
 			}
@@ -3074,7 +3075,7 @@ func mockSVMSvmStateNil(w http.ResponseWriter, r *http.Request) {
 	svmUUID := "1234"
 	svmName := "svm0"
 
-	svm := models.Svm{
+	newsvm := models.Svm{
 		UUID: &svmUUID,
 		Name: &svmName,
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
@@ -3083,7 +3084,7 @@ func mockSVMSvmStateNil(w http.ResponseWriter, r *http.Request) {
 	}
 
 	setHTTPResponseHeader(w, http.StatusOK)
-	json.NewEncoder(w).Encode(svm)
+	json.NewEncoder(w).Encode(newsvm)
 }
 
 func TestOntapREST_GetSVMState(t *testing.T) {
@@ -3702,7 +3703,7 @@ func TestOntapRest_NVMeNamespaceList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			nvmeResponse, err := rs.NVMeNamespaceList(ctx, "namespace1")
+			nvmeResponse, err := rs.NVMeNamespaceList(ctx, "namespace1", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the NVMe namespace list")
 				assert.Equal(t, "namespace1", *nvmeResponse.Payload.NvmeNamespaceResponseInlineRecords[0].Name)
@@ -3731,7 +3732,7 @@ func TestOntapRest_NVMeNamespaceGetByName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			nvmeResponse, err := rs.NVMeNamespaceGetByName(ctx, "namespace1")
+			nvmeResponse, err := rs.NVMeNamespaceGetByName(ctx, "namespace1", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the NVMe namespace by name")
 				assert.Equal(t, "namespace1", *nvmeResponse.Name)
@@ -3868,7 +3869,7 @@ func TestOntapRest_NVMeSubsystemList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			_, err := rs.NVMeSubsystemList(ctx, test.pattern)
+			_, err := rs.NVMeSubsystemList(ctx, test.pattern, []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "failed to get NVMe subsystem list")
 			} else {
@@ -3894,7 +3895,7 @@ func TestOntapRest_NVMeSubsystemGetByName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			nvmeSubsystemList, err := rs.NVMeSubsystemGetByName(ctx, "subsystemUUID")
+			nvmeSubsystemList, err := rs.NVMeSubsystemGetByName(ctx, "subsystemUUID", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "failed to get NVMe subsystem by name")
 				assert.Equal(t, "subsystemName", *nvmeSubsystemList.Name)
@@ -4045,7 +4046,7 @@ func mockSVM(w http.ResponseWriter, r *http.Request) {
 	svmUUID := "1234"
 	svmName := "svm0"
 
-	svm := models.Svm{
+	mocksvm := models.Svm{
 		UUID:  &svmUUID,
 		Name:  &svmName,
 		State: utils.Ptr("running"),
@@ -4055,12 +4056,12 @@ func mockSVM(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/api/svm/svms/1234" {
 		setHTTPResponseHeader(w, http.StatusOK)
-		json.NewEncoder(w).Encode(svm)
+		json.NewEncoder(w).Encode(mocksvm)
 	}
 
 	if r.URL.Path == "/api/svm/svms" {
 		svmResponse := models.SvmResponse{
-			SvmResponseInlineRecords: []*models.Svm{&svm},
+			SvmResponseInlineRecords: []*models.Svm{&mocksvm},
 			NumRecords:               utils.Ptr(int64(1)),
 		}
 		setHTTPResponseHeader(w, http.StatusOK)
@@ -4069,7 +4070,7 @@ func mockSVM(w http.ResponseWriter, r *http.Request) {
 }
 
 func mockSVMNameNil(w http.ResponseWriter, r *http.Request) {
-	svm := models.Svm{
+	mocksvm := models.Svm{
 		UUID:  utils.Ptr("fake-uuid"),
 		State: utils.Ptr("running"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
@@ -4078,7 +4079,7 @@ func mockSVMNameNil(w http.ResponseWriter, r *http.Request) {
 	}
 
 	svmResponse := models.SvmResponse{
-		SvmResponseInlineRecords: []*models.Svm{&svm},
+		SvmResponseInlineRecords: []*models.Svm{&mocksvm},
 		NumRecords:               utils.Ptr(int64(1)),
 	}
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -4086,14 +4087,14 @@ func mockSVMNameNil(w http.ResponseWriter, r *http.Request) {
 }
 
 func mockSVMNumRecordsNil(w http.ResponseWriter, r *http.Request) {
-	svm := models.Svm{
+	mocksvm := models.Svm{
 		Name: utils.Ptr("svm0"),
 		SvmInlineAggregates: []*models.SvmInlineAggregatesInlineArrayItem{
 			{Name: utils.Ptr("aggr1")},
 		},
 	}
 	svmResponse := models.SvmResponse{
-		SvmResponseInlineRecords: []*models.Svm{&svm},
+		SvmResponseInlineRecords: []*models.Svm{&mocksvm},
 	}
 
 	setHTTPResponseHeader(w, http.StatusOK)
@@ -4482,7 +4483,10 @@ func TestGetAllVolumesByPatternStyleAndState_failure(t *testing.T) {
 
 			volumeParam := &storage.VolumeCollectionGetParams{}
 			volumeParam.Context = ctx
-			volume, err := rs.getAllVolumesByPatternStyleAndState(ctx, "trident", test.style, test.state)
+
+			fields := []string{"size", "type", "nas.unix_permissions", "aggregates"}
+			volume, err := rs.getAllVolumesByPatternStyleAndState(ctx, "trident", test.style, test.state, fields)
+
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the volume info")
 				assert.Equal(t, "fakeVolume", *volume.Payload.VolumeResponseInlineRecords[0].Name)
@@ -4520,7 +4524,7 @@ func TestOntapRestGetVolumeByNameAndStyle(t *testing.T) {
 
 			volumeParam := &storage.VolumeCollectionGetParams{}
 			volumeParam.Context = ctx
-			_, err := rs.getVolumeByNameAndStyle(ctx, "trident", models.VolumeStyleFlexgroup)
+			_, err := rs.getVolumeByNameAndStyle(ctx, "trident", models.VolumeStyleFlexgroup, []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the volume info")
 			} else {
@@ -5037,7 +5041,12 @@ func TestOntapRESTVolumeList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			volume, err := rs.VolumeList(ctx, "fakeVolume")
+			fields := []string{
+				"type", "size", "comment", "aggregates", "nas", "guarantee",
+				"snapshot_policy", "snapshot_directory_access_enabled",
+				"space.snapshot.used", "space.snapshot.reserve_percent",
+			}
+			volume, err := rs.VolumeList(ctx, "fakeVolume", fields)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get a volume")
 				assert.Equal(t, "fakeVolume", *volume.Payload.VolumeResponseInlineRecords[0].Name)
@@ -5098,7 +5107,9 @@ func TestOntapREST_VolumeGetByName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			volume, err := rs.VolumeGetByName(ctx, "fakeVolume")
+			fields := []string{"size", "type", "nas.unix_permissions", "aggregates"}
+			volume, err := rs.VolumeGetByName(ctx, "fakeVolume", fields)
+
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get a volume")
 				assert.Equal(t, "fakeVolume", *volume.Name)
@@ -5775,7 +5786,11 @@ func TestOntapREST_FlexGroupGetByName(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			volume, err := rs.FlexGroupGetByName(ctx, "fakeVolume")
+			fields := []string{
+				"type", "size", "comment", "aggregates", "nas", "guarantee", "snapshot_policy",
+				"snapshot_directory_access_enabled", "space.snapshot.used", "space.snapshot.reserve_percent",
+			}
+			volume, err := rs.FlexGroupGetByName(ctx, "fakeVolume", fields)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the flexgroup volume")
 				assert.Equal(t, "fakeVolume", *volume.Name)
@@ -5807,7 +5822,12 @@ func TestOntapREST_FlexGroupGetAll(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			volume, err := rs.FlexGroupGetAll(ctx, "fakeVolume")
+			fields := []string{
+				"type", "size", "comment", "aggregates", "nas", "guarantee",
+				"snapshot_policy", "snapshot_directory_access_enabled",
+				"space.snapshot.used", "space.snapshot.reserve_percent",
+			}
+			volume, err := rs.FlexGroupGetAll(ctx, "fakeVolume", fields)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the flexgroup volume")
 				assert.Equal(t, "fakeVolume", *volume.Payload.VolumeResponseInlineRecords[0].Name)
@@ -5945,11 +5965,11 @@ func TestOntapREST_VolumeListByAttrs(t *testing.T) {
 
 	volumeParam := &storage.VolumeCollectionGetParams{}
 	volumeParam.Context = ctx
-	volumes, err := rs.VolumeListByAttrs(ctx, &volume)
+	volumes, err := rs.VolumeListByAttrs(ctx, &volume, []string{""})
 	assert.NoError(t, err)
-	assert.Equal(t, volumeName, volumes[0].Name)
+	assert.Equal(t, volumeName, *volumes.Payload.VolumeResponseInlineRecords[0].Name)
 
-	volumes, err = rs.VolumeListByAttrs(ctx, &Volume{})
+	volumes, err = rs.VolumeListByAttrs(ctx, &Volume{}, []string{""})
 	assert.NoError(t, err)
 	server.Close()
 }
@@ -5962,10 +5982,10 @@ func getQtree() models.Qtree {
 	exportPolicy := "fake-export-policy"
 	volumeName := "vol1"
 	volumeUUID := "vol1UUID"
-	svm := "svm1"
+	svmname := "svm1"
 
 	qtreeExportPolicy := models.QtreeInlineExportPolicy{Name: &exportPolicy}
-	qtreeSVM := models.QtreeInlineSvm{Name: &svm}
+	qtreeSVM := models.QtreeInlineSvm{Name: &svmname}
 	qtreeVolume := models.QtreeInlineVolume{Name: &volumeName, UUID: &volumeUUID}
 
 	return models.Qtree{
@@ -6301,7 +6321,7 @@ func TestOntapREST_QtreeGetByPath(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			qtree, err := rs.QtreeGetByPath(ctx, "/vol1/qtree_vol1")
+			qtree, err := rs.QtreeGetByPath(ctx, "/vol1/qtree_vol1", []string{""})
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get qtree by name")
 				assert.Equal(t, "qtree_vol1", *qtree.Name)
@@ -6388,7 +6408,8 @@ func TestOntapREST_QtreeList(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			qtree, err := rs.QtreeList(ctx, "qtree_", "volume_")
+			fields := []string{"name", "volume"}
+			qtree, err := rs.QtreeList(ctx, "qtree_", "volume_", fields)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not get the qtree list")
 				assert.Equal(t, "qtree_vol1", *qtree.Payload.QtreeResponseInlineRecords[0].Name)
