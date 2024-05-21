@@ -630,7 +630,6 @@ func (d *SANEconomyStorageDriver) Create(
 				SpaceReserved:  utils.Ptr(false),
 				SpaceAllocated: utils.Ptr(spaceAllocation),
 			})
-
 		if err != nil {
 			if api.IsTooManyLunsError(err) {
 				Logc(ctx).WithError(err).Warn("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol")
@@ -1625,7 +1624,6 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 			UUID:            "",
 			DPVolume:        false,
 		})
-
 	if err != nil {
 		return "", fmt.Errorf("error creating volume: %v", err)
 	}

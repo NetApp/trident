@@ -4630,7 +4630,6 @@ func (o *TridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
 
 	// Re-run the volume bootstrapping code
 	err = o.bootstrapVolumes(ctx)
-
 	// If anything went wrong, reinstate the original volumes
 	if err != nil {
 		Logc(ctx).Errorf("Volume reload failed, restoring original volume list: %v", err)

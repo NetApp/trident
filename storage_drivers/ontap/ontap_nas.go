@@ -381,7 +381,6 @@ func (d *NASStorageDriver) Create(
 				UnixPermissions: unixPermissions,
 				DPVolume:        volConfig.IsMirrorDestination,
 			})
-
 		if err != nil {
 			if api.IsVolumeCreateJobExistsError(err) {
 				return nil

@@ -646,7 +646,6 @@ func (d *NASFlexGroupStorageDriver) Create(
 			UnixPermissions: unixPermissions,
 			DPVolume:        volConfig.IsMirrorDestination,
 		})
-
 	if err != nil {
 		errMessage := fmt.Sprintf("ONTAP-NAS-FLEXGROUP pool %s; error creating volume %s: %v", storagePool.Name(), name, err)
 		createErrors = append(createErrors, fmt.Errorf(errMessage))

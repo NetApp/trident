@@ -458,7 +458,6 @@ func (d *SANStorageDriver) Create(
 				UUID:            "",
 				DPVolume:        volConfig.IsMirrorDestination,
 			})
-
 		if err != nil {
 			if !api.IsVolumeCreateJobExistsError(err) {
 				errMessage := fmt.Sprintf(
@@ -491,7 +490,6 @@ func (d *SANStorageDriver) Create(
 					SpaceReserved:  utils.Ptr(false),
 					SpaceAllocated: utils.Ptr(spaceAllocation),
 				})
-
 			if err != nil {
 				errMessage := fmt.Sprintf(
 					"ONTAP-SAN pool %s/%s; error creating LUN %s: %v", storagePool.Name(),

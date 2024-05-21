@@ -1118,7 +1118,6 @@ func (i *Installer) createOrPatchTridentRoleBindings(
 
 		err = i.client.PutRoleBinding(currentRoleBindingMap[roleBindingName],
 			reuseRoleBindingMap[roleBindingName], newRoleBindingYAML, labelString)
-
 		if err != nil {
 			return fmt.Errorf("failed to create or patch Trident role binding; %v", err)
 		}

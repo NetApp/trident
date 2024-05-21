@@ -32,7 +32,7 @@ Container registry used to tag images and manifests, and optionally to push imag
 
 `GO_IMAGE`
 
-Default: `golang:1.21`
+Default: `golang:1.22`
 
 Container image used by default `$GO_SHELL` to run binary build scripts.
 

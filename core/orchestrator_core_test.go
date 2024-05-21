@@ -1699,7 +1699,6 @@ func TestBackendUpdateAndDelete(t *testing.T) {
 		}
 
 		_, err = orchestrator.UpdateBackend(ctx(), backendName, newConfigJSON, "")
-
 		if err != nil {
 			t.Errorf("%s: unable to update backend with a nonconflicting change: %v", c.name, err)
 			continue

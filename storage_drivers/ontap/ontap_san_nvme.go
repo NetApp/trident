@@ -407,7 +407,6 @@ func (d *NVMeStorageDriver) Create(
 				UUID:            "",
 				DPVolume:        volConfig.IsMirrorDestination,
 			})
-
 		if err != nil {
 			if api.IsVolumeCreateJobExistsError(err) {
 				// TODO(sphadnis): If it was decided that iSCSI has a bug here, make similar changes for NVMe.
