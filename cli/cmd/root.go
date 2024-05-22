@@ -262,13 +262,16 @@ func discoverKubernetesCLI() error {
 // getCurrentNamespace returns the default namespace from service account info
 func getCurrentNamespace() (string, error) {
 	// Get current namespace from service account info
-	out, err := execKubernetesCLI("get", "serviceaccount", "default", "-o=json")
+	cmd := execKubernetesCLIRaw("get", "serviceaccount", "default", "-o=json")
+	var outbuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	err := cmd.Run()
 	if err != nil {
 		return "", err
 	}
 
 	var serviceAccount k8s.ServiceAccount
-	if err := json.Unmarshal(out, &serviceAccount); err != nil {
+	if err := json.Unmarshal(outbuff.Bytes(), &serviceAccount); err != nil {
 		return "", err
 	}
 
@@ -297,19 +300,21 @@ func discoverAutosupportCollector() {
 // getTridentPod returns the name of the Trident pod in the specified namespace
 func getTridentPod(namespace, appLabel string) (string, error) {
 	// Get 'trident' pod info
-	out, err := execKubernetesCLI(
+	cmd := execKubernetesCLIRaw(
 		"get", "pod",
 		"-n", namespace,
 		"-l", appLabel,
 		"-o=json",
-		"--field-selector=status.phase=Running",
-	)
+		"--field-selector=status.phase=Running")
+	var outbuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	err := cmd.Run()
 	if err != nil {
 		return "", err
 	}
 
 	var tridentPod k8s.PodList
-	if err = json.Unmarshal(out, &tridentPod); err != nil {
+	if err = json.Unmarshal(outbuff.Bytes(), &tridentPod); err != nil {
 		return "", err
 	}
 
@@ -327,19 +332,22 @@ func getTridentPod(namespace, appLabel string) (string, error) {
 // getTridentOperatorPod returns the name and namespace of the Trident pod
 func getTridentOperatorPod(appLabel string) (string, string, error) {
 	// Get 'trident-operator' pod info
-	out, err := execKubernetesCLI(
+	cmd := execKubernetesCLIRaw(
 		"get", "pod",
 		"--all-namespaces",
 		"-l", appLabel,
 		"-o=json",
 		"--field-selector=status.phase=Running",
 	)
+	var outbuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	err := cmd.Run()
 	if err != nil {
 		return "", "", err
 	}
 
 	var tridentOperatorPod k8s.PodList
-	if err = json.Unmarshal(out, &tridentOperatorPod); err != nil {
+	if err = json.Unmarshal(outbuff.Bytes(), &tridentOperatorPod); err != nil {
 		return "", "", err
 	}
 
@@ -358,18 +366,16 @@ func getTridentOperatorPod(appLabel string) (string, string, error) {
 func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
 	// Get 'trident' pod info
 	var sidecarNames []string
-	out, err := execKubernetesCLI(
-		"get", "pod",
-		podName,
-		"-n", podNameSpace,
-		"-o=json",
-	)
+	cmd := execKubernetesCLIRaw("get", "pod", podName, "-n", podNameSpace, "-o=json")
+	var outbuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	err := cmd.Run()
 	if err != nil {
 		return sidecarNames, err
 	}
 
 	var tridentPod k8s.Pod
-	if err = json.Unmarshal(out, &tridentPod); err != nil {
+	if err = json.Unmarshal(outbuff.Bytes(), &tridentPod); err != nil {
 		return sidecarNames, err
 	}
 
@@ -385,19 +391,16 @@ func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
 
 func getTridentNode(nodeName, namespace string) (string, error) {
 	selector := fmt.Sprintf("--field-selector=spec.nodeName=%s", nodeName)
-	out, err := execKubernetesCLI(
-		"get", "pod",
-		"-n", namespace,
-		"-l", TridentNodeLabel,
-		"-o=json",
-		selector,
-	)
+	cmd := execKubernetesCLIRaw("get", "pod", "-n", namespace, "-l", TridentNodeLabel, "-o=json", selector)
+	var outbuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	err := cmd.Run()
 	if err != nil {
 		return "", err
 	}
 
 	var tridentPods k8s.PodList
-	if err = json.Unmarshal(out, &tridentPods); err != nil {
+	if err = json.Unmarshal(outbuff.Bytes(), &tridentPods); err != nil {
 		return "", err
 	}
 
@@ -416,19 +419,22 @@ func getTridentNode(nodeName, namespace string) (string, error) {
 func listTridentNodes(namespace string) (map[string]string, error) {
 	// Get trident node pods info
 	tridentNodes := make(map[string]string)
-	out, err := execKubernetesCLI(
+	cmd := execKubernetesCLIRaw(
 		"get", "pod",
 		"-n", namespace,
 		"-l", TridentNodeLabel,
 		"-o=json",
 		"--field-selector=status.phase=Running",
 	)
+	var outbuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	err := cmd.Run()
 	if err != nil {
 		return tridentNodes, err
 	}
 
 	var tridentPods k8s.PodList
-	if err = json.Unmarshal(out, &tridentPods); err != nil {
+	if err = json.Unmarshal(outbuff.Bytes(), &tridentPods); err != nil {
 		return tridentNodes, err
 	}
 
