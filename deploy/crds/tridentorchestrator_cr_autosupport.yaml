@@ -6,5 +6,5 @@ spec:
   debug: true
   namespace: trident
   silenceAutosupport: false
-  autosupportImage: "netapp/trident-autosupport:23.10"
+  autosupportImage: "netapp/trident-autosupport:24.06"
   autosupportProxy: "http://proxy.example.com:8888"

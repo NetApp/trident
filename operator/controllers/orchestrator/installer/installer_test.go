@@ -54,8 +54,8 @@ func createTestControllingCRDetails() map[string]string {
 func createTestLabels() map[string]string {
 	labels := make(map[string]string)
 	labels[appLabelKey] = appLabelValue
-	labels[K8sVersionLabelKey] = "v1.21.8"
-	labels[TridentVersionLabelKey] = "v24.05.0"
+	labels[K8sVersionLabelKey] = "v1.28.8"
+	labels[TridentVersionLabelKey] = "v24.06.0"
 
 	return labels
 }
