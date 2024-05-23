@@ -62,8 +62,10 @@ jobs:
         run: | 
           go tool cover -html=${{ runner.os }}-coverage.out -o ${{ runner.os }}-coverage.html
       - name: Get run details
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "PR_Title=${{ github.event.pull_request.title }}"
+          echo "PR_Title=$PR_TITLE"
           echo "Run_Number=${{ github.run_number }}"
           echo "PR_Number=${{ github.event.pull_request.number }}"
       - if: runner.os != 'Windows'    
