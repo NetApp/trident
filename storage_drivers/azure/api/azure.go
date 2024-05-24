@@ -631,6 +631,11 @@ func ParseSubvolumeID(
 	return
 }
 
+// CreateKeyVaultEndpoint to create KeyVault Endpoint ID
+func CreateKeyVaultEndpoint(subnet, resourceGroup, keyVaultEndpoint string) string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/privateEndpoints/%s", subnet, resourceGroup, keyVaultEndpoint)
+}
+
 // ///////////////////////////////////////////////////////////////////////////////
 // Functions to convert between ANF SDK & internal volume structs
 // ///////////////////////////////////////////////////////////////////////////////
@@ -737,29 +742,30 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 	}
 
 	return &FileSystem{
-		ID:                DerefString(vol.ID),
-		ResourceGroup:     resourceGroup,
-		NetAppAccount:     netappAccount,
-		CapacityPool:      cPoolName,
-		Name:              name,
-		FullName:          CreateVolumeFullName(resourceGroup, netappAccount, cPoolName, name),
-		Location:          DerefString(vol.Location),
-		Type:              DerefString(vol.Type),
-		ExportPolicy:      *exportPolicyImport(vol.Properties.ExportPolicy),
-		Labels:            c.getLabelsFromVolume(vol),
-		FileSystemID:      DerefString(vol.Properties.FileSystemID),
-		ProvisioningState: DerefString(vol.Properties.ProvisioningState),
-		CreationToken:     DerefString(vol.Properties.CreationToken),
-		ProtocolTypes:     DerefStringPtrArray(vol.Properties.ProtocolTypes),
-		QuotaInBytes:      DerefInt64(vol.Properties.UsageThreshold),
-		ServiceLevel:      cPool.ServiceLevel,
-		SnapshotDirectory: DerefBool(vol.Properties.SnapshotDirectoryVisible),
-		SubnetID:          DerefString(vol.Properties.SubnetID),
-		UnixPermissions:   DerefString(vol.Properties.UnixPermissions),
-		MountTargets:      c.getMountTargetsFromVolume(ctx, vol),
-		SubvolumesEnabled: c.getSubvolumesEnabledFromVolume(vol.Properties.EnableSubvolumes),
-		NetworkFeatures:   DerefNetworkFeatures(vol.Properties.NetworkFeatures),
-		KerberosEnabled:   DerefBool(vol.Properties.KerberosEnabled),
+		ID:                 DerefString(vol.ID),
+		ResourceGroup:      resourceGroup,
+		NetAppAccount:      netappAccount,
+		CapacityPool:       cPoolName,
+		Name:               name,
+		FullName:           CreateVolumeFullName(resourceGroup, netappAccount, cPoolName, name),
+		Location:           DerefString(vol.Location),
+		Type:               DerefString(vol.Type),
+		ExportPolicy:       *exportPolicyImport(vol.Properties.ExportPolicy),
+		Labels:             c.getLabelsFromVolume(vol),
+		FileSystemID:       DerefString(vol.Properties.FileSystemID),
+		ProvisioningState:  DerefString(vol.Properties.ProvisioningState),
+		CreationToken:      DerefString(vol.Properties.CreationToken),
+		ProtocolTypes:      DerefStringPtrArray(vol.Properties.ProtocolTypes),
+		QuotaInBytes:       DerefInt64(vol.Properties.UsageThreshold),
+		ServiceLevel:       cPool.ServiceLevel,
+		SnapshotDirectory:  DerefBool(vol.Properties.SnapshotDirectoryVisible),
+		SubnetID:           DerefString(vol.Properties.SubnetID),
+		UnixPermissions:    DerefString(vol.Properties.UnixPermissions),
+		MountTargets:       c.getMountTargetsFromVolume(ctx, vol),
+		SubvolumesEnabled:  c.getSubvolumesEnabledFromVolume(vol.Properties.EnableSubvolumes),
+		NetworkFeatures:    DerefNetworkFeatures(vol.Properties.NetworkFeatures),
+		KerberosEnabled:    DerefBool(vol.Properties.KerberosEnabled),
+		KeyVaultEndpointID: DerefString(vol.Properties.KeyVaultPrivateEndpointResourceID),
 	}, nil
 }
 
@@ -1136,6 +1142,14 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 	// Only send unix permissions if specified, since it is not yet a GA feature
 	if request.UnixPermissions != "" {
 		newVol.Properties.UnixPermissions = &request.UnixPermissions
+	}
+
+	encryptionKeySource := netapp.EncryptionKeySource(EncryptionKeyNetApp)
+	// Set Encryption Key Source and KeyVaultEndpointID if specified
+	if request.KeyVaultEndpointID != "" {
+		encryptionKeySource = netapp.EncryptionKeySource(EncryptionKeyVault)
+		newVol.Properties.EncryptionKeySource = &encryptionKeySource
+		newVol.Properties.KeyVaultPrivateEndpointResourceID = &request.KeyVaultEndpointID
 	}
 
 	Logc(ctx).WithFields(LogFields{

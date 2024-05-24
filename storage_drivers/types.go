@@ -446,15 +446,17 @@ func (d SolidfireStorageDriverConfig) SpecOnlyValidation() error {
 
 type AzureNASStorageDriverConfig struct {
 	*CommonStorageDriverConfig
-	SubscriptionID      string `json:"subscriptionID"`
-	TenantID            string `json:"tenantID"`
-	ClientID            string `json:"clientID"`
-	ClientSecret        string `json:"clientSecret"`
-	Location            string `json:"location"`
-	NfsMountOptions     string `json:"nfsMountOptions"`
-	VolumeCreateTimeout string `json:"volumeCreateTimeout"`
-	SDKTimeout          string `json:"sdkTimeout"`
-	MaxCacheAge         string `json:"maxCacheAge"`
+	SubscriptionID         string            `json:"subscriptionID"`
+	TenantID               string            `json:"tenantID"`
+	ClientID               string            `json:"clientID"`
+	ClientSecret           string            `json:"clientSecret"`
+	Location               string            `json:"location"`
+	NfsMountOptions        string            `json:"nfsMountOptions"`
+	VolumeCreateTimeout    string            `json:"volumeCreateTimeout"`
+	SDKTimeout             string            `json:"sdkTimeout"`
+	MaxCacheAge            string            `json:"maxCacheAge"`
+	CustomerEncryptionKeys map[string]string `json:"customerEncryptionKeys"`
+
 	AzureNASStorageDriverPool
 	Storage []AzureNASStorageDriverPool `json:"storage"`
 }

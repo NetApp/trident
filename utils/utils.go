@@ -1088,3 +1088,31 @@ func GetFormattedBool(value string) (string, error) {
 
 	return strconv.FormatBool(valBool), nil
 }
+
+func shiftTextRight(text string, count int) string {
+	if text == "" {
+		return ""
+	}
+	lines := strings.Split(text, "\n")
+	newLines := make([]string, len(lines))
+	for i, line := range lines {
+		if line != "" {
+			newLines[i] = strings.Repeat(" ", count) + line
+		}
+	}
+
+	return strings.Join(newLines, "\n")
+}
+
+func ReplaceMultilineYAMLTag(originalYAML, tag, tagText string) string {
+	for {
+		tagWithSpaces, spaceCount := GetYAMLTagWithSpaceCount(originalYAML, tag)
+
+		if tagWithSpaces == "" {
+			break
+		}
+		originalYAML = strings.Replace(originalYAML, tagWithSpaces, shiftTextRight(tagText, spaceCount), 1)
+	}
+
+	return originalYAML
+}

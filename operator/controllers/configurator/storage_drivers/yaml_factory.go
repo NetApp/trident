@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	sa "github.com/netapp/trident/storage_attribute"
+
+	"github.com/netapp/trident/utils"
 )
 
 func getANFTBCYaml(anf *ANF, vPools, nasType string) string {
@@ -23,6 +25,7 @@ func getANFTBCYaml(anf *ANF, vPools, nasType string) string {
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{SUBNET}", anf.Subnet)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{NAS_TYPE}", nasType)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{V_POOLS}", vPools)
+	tbcYaml = utils.ReplaceMultilineYAMLTag(tbcYaml, "CUSTOMER_ENCRYPTION_KEYS", constructEncryptionKeys(anf.CustomerEncryptionKeys))
 
 	if !anf.AMIEnabled && !anf.WorkloadIdentityEnabled {
 		tbcYaml = strings.ReplaceAll(tbcYaml, "{CLIENT_CREDENTIALS}", constructClientCredentials(anf.ClientCredentials))
@@ -55,9 +58,23 @@ spec:
     discovery: true
     method: true
     api: true
+  {CUSTOMER_ENCRYPTION_KEYS}
   storage:
   {V_POOLS}
 `
+
+func constructEncryptionKeys(m map[string]string) (encryptionKeys string) {
+	if len(m) == 0 {
+		return
+	}
+
+	encryptionKeys += "customerEncryptionKeys:\n"
+	for key, value := range m {
+		encryptionKeys += fmt.Sprintf("  %s: %s\n", key, value)
+	}
+
+	return encryptionKeys
+}
 
 func getANFVPoolYAML(serviceLevel, nasType, cPools string) string {
 	anfVPool := ANFVPoolYAML

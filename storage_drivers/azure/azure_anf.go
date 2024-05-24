@@ -635,6 +635,11 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		return err
 	}
 
+	// Ensure that networkFeatures is not set to Basic when customer encryption keys are passed
+	if err := validateNetworkFeatures(d.Config.NetworkFeatures, d.Config.CustomerEncryptionKeys); err != nil {
+		return err
+	}
+
 	// Validate pool-level attributes
 	for poolName, pool := range d.pools {
 
@@ -955,44 +960,56 @@ func (d *NASStorageDriver) Create(
 
 	// Try each capacity pool until one works
 	for _, cPool := range cPools {
+		keyVaultEndpointID := ""
+		if keyVaultEndpoint, ok := d.Config.CustomerEncryptionKeys[cPool.NetAppAccount]; ok {
+			if networkFeatures == "" {
+				networkFeatures = api.NetworkFeaturesStandard
+			}
+
+			keyVaultEndpointID = api.CreateKeyVaultEndpoint(d.Config.SubscriptionID, cPool.ResourceGroup,
+				keyVaultEndpoint)
+		}
 
 		if d.Config.NASType == sa.SMB {
 			Logc(ctx).WithFields(LogFields{
-				"capacityPool":    cPool.Name,
-				"creationToken":   name,
-				"size":            sizeBytes,
-				"serviceLevel":    serviceLevel,
-				"snapshotDir":     snapshotDirBool,
-				"protocolTypes":   protocolTypes,
-				"networkFeatures": networkFeatures,
+				"capacityPool":     cPool.Name,
+				"creationToken":    name,
+				"size":             sizeBytes,
+				"serviceLevel":     serviceLevel,
+				"snapshotDir":      snapshotDirBool,
+				"protocolTypes":    protocolTypes,
+				"networkFeatures":  networkFeatures,
+				"keyVaultEndpoint": keyVaultEndpointID,
 			}).Debug("Creating volume.")
 		} else {
 			Logc(ctx).WithFields(LogFields{
-				"capacityPool":    cPool.Name,
-				"creationToken":   name,
-				"size":            sizeBytes,
-				"unixPermissions": unixPermissions,
-				"serviceLevel":    serviceLevel,
-				"snapshotDir":     snapshotDirBool,
-				"protocolTypes":   protocolTypes,
-				"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
-				"networkFeatures": networkFeatures,
+				"capacityPool":     cPool.Name,
+				"creationToken":    name,
+				"size":             sizeBytes,
+				"unixPermissions":  unixPermissions,
+				"serviceLevel":     serviceLevel,
+				"snapshotDir":      snapshotDirBool,
+				"protocolTypes":    protocolTypes,
+				"exportPolicy":     fmt.Sprintf("%+v", exportPolicy),
+				"networkFeatures":  networkFeatures,
+				"keyVaultEndpoint": keyVaultEndpointID,
 			}).Debug("Creating volume.")
 		}
 
 		createRequest := &api.FilesystemCreateRequest{
-			ResourceGroup:     cPool.ResourceGroup,
-			NetAppAccount:     cPool.NetAppAccount,
-			CapacityPool:      cPool.Name,
-			Name:              volConfig.Name,
-			SubnetID:          subnet.ID,
-			CreationToken:     name,
-			Labels:            labels,
-			ProtocolTypes:     protocolTypes,
-			QuotaInBytes:      int64(sizeBytes),
-			SnapshotDirectory: snapshotDirBool,
-			NetworkFeatures:   networkFeatures,
-			KerberosEnabled:   kerberosEnabled,
+			ResourceGroup:      cPool.ResourceGroup,
+			NetAppAccount:      cPool.NetAppAccount,
+			CapacityPool:       cPool.Name,
+			Name:               volConfig.Name,
+			SubnetID:           subnet.ID,
+			CreationToken:      name,
+			Labels:             labels,
+			ProtocolTypes:      protocolTypes,
+			QuotaInBytes:       int64(sizeBytes),
+			SnapshotDirectory:  snapshotDirBool,
+			NetworkFeatures:    networkFeatures,
+			KerberosEnabled:    kerberosEnabled,
+			KeyVaultEndpointID: keyVaultEndpointID,
 		}
 
 		// Add unix permissions and export policy fields only to NFS volume
@@ -1183,27 +1200,43 @@ func (d *NASStorageDriver) CreateClone(
 		labels[storage.ProvisioningLabelTag] = poolLabels
 	}
 
+	keyVaultEndpointID := sourceVolume.KeyVaultEndpointID
+	networkFeatures := sourceVolume.NetworkFeatures
+	if _, ok := d.Config.CustomerEncryptionKeys[sourceVolume.NetAppAccount]; ok {
+		if networkFeatures == api.NetworkFeaturesBasic {
+			// Customer encryption keys are passed but the network feature is set to Basic.
+			Logc(ctx).WithFields(LogFields{
+				"snapshot": sourceSnapshot.Name,
+				"source":   sourceVolume.Name,
+			}).Debug("Source volume's network feature is set to Basic. Hence, " +
+				"falling back to volume encryption with Microsoft managed keys.")
+		} else {
+			networkFeatures = api.NetworkFeaturesStandard
+		}
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"creationToken":   name,
 		"sourceVolume":    sourceVolume.CreationToken,
 		"sourceSnapshot":  sourceSnapshot.Name,
 		"unixPermissions": sourceVolume.UnixPermissions,
-		"networkFeatures": sourceVolume.NetworkFeatures,
+		"networkFeatures": networkFeatures,
 	}).Debug("Cloning volume.")
 
 	createRequest := &api.FilesystemCreateRequest{
-		ResourceGroup:     sourceVolume.ResourceGroup,
-		NetAppAccount:     sourceVolume.NetAppAccount,
-		CapacityPool:      sourceVolume.CapacityPool,
-		Name:              cloneVolConfig.Name,
-		SubnetID:          sourceVolume.SubnetID,
-		CreationToken:     name,
-		Labels:            labels,
-		ProtocolTypes:     sourceVolume.ProtocolTypes,
-		QuotaInBytes:      sourceVolume.QuotaInBytes,
-		SnapshotDirectory: sourceVolume.SnapshotDirectory,
-		SnapshotID:        sourceSnapshot.SnapshotID,
-		NetworkFeatures:   sourceVolume.NetworkFeatures,
+		ResourceGroup:      sourceVolume.ResourceGroup,
+		NetAppAccount:      sourceVolume.NetAppAccount,
+		CapacityPool:       sourceVolume.CapacityPool,
+		Name:               cloneVolConfig.Name,
+		SubnetID:           sourceVolume.SubnetID,
+		CreationToken:      name,
+		Labels:             labels,
+		ProtocolTypes:      sourceVolume.ProtocolTypes,
+		QuotaInBytes:       sourceVolume.QuotaInBytes,
+		SnapshotDirectory:  sourceVolume.SnapshotDirectory,
+		SnapshotID:         sourceSnapshot.SnapshotID,
+		NetworkFeatures:    networkFeatures,
+		KeyVaultEndpointID: keyVaultEndpointID,
 	}
 
 	// Add unix permissions and export policy fields only to NFS volume
@@ -2269,6 +2302,14 @@ func (d *NASStorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*utils.N
 func validateStoragePrefix(storagePrefix string) error {
 	if !storagePrefixRegex.MatchString(storagePrefix) {
 		return fmt.Errorf("storage prefix may only contain letters and hyphens and must begin with a letter")
+	}
+	return nil
+}
+
+// validateNetworkFeatures ensures that networking is valid when customer encryption keys are passed.
+func validateNetworkFeatures(networking string, encryptionKeys map[string]string) error {
+	if len(encryptionKeys) > 0 && networking == api.NetworkFeaturesBasic {
+		return fmt.Errorf("customer encryption keys are not supported with Basic networking")
 	}
 	return nil
 }

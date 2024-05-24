@@ -914,6 +914,179 @@ func TestInitialize_FailsToGetBackendPools(t *testing.T) {
 	assert.Empty(t, driver.Config.BackendPools, "backend pools were not empty")
 }
 
+func TestInitialize_withEncryptionKeys(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "fake-location",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1",
+        "volumeCreateTimeout": "600",
+        "sdkTimeout": "60",
+        "maxCacheAge": "300",
+        "kerberos": "sec-krb5",
+		"customerEncryptionKeys": {"netappAccount1": "key1", "netappAccount2": "key2"}
+    }`
+
+	// Have to at least one CapacityPool for ANF backends.
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "fake-location",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
+	}
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config, "config is nil")
+	assert.Equal(t, "deadbeef-784c-4b35-8329-460f52a3ad50", driver.Config.ClientID)
+	assert.Equal(t, "myClientSecret", driver.Config.ClientSecret)
+	assert.Equal(t, "trident-", *driver.Config.StoragePrefix, "wrong storage prefix")
+	assert.Equal(t, 1, len(driver.pools), "wrong number of pools")
+	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID, "wrong backend UUID")
+	assert.Equal(t, driver.volumeCreateTimeout, 600*time.Second, "volume create timeout mismatch")
+	assert.True(t, driver.Initialized(), "not initialized")
+}
+
+func TestInitialize_withEncryptionKeysStandardNetworkFeatures(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "fake-location",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1",
+        "volumeCreateTimeout": "600",
+        "sdkTimeout": "60",
+        "maxCacheAge": "300",
+        "kerberos": "sec-krb5",
+		"customerEncryptionKeys": {"netappAccount1": "key1", "netappAccount2": "key2"},
+		"networkFeatures": "Standard"
+    }`
+
+	// Have to at least one CapacityPool for ANF backends.
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "fake-location",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
+	}
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config, "config is nil")
+	assert.Equal(t, "deadbeef-784c-4b35-8329-460f52a3ad50", driver.Config.ClientID)
+	assert.Equal(t, "myClientSecret", driver.Config.ClientSecret)
+	assert.Equal(t, "trident-", *driver.Config.StoragePrefix, "wrong storage prefix")
+	assert.Equal(t, 1, len(driver.pools), "wrong number of pools")
+	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID, "wrong backend UUID")
+	assert.Equal(t, driver.volumeCreateTimeout, 600*time.Second, "volume create timeout mismatch")
+	assert.True(t, driver.Initialized(), "not initialized")
+}
+
+func TestInitialize_FailureWithEncryptionKeysBasicNetworkFeatures(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "fake-location",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1", "RG1/NA1/CP2"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1",
+        "volumeCreateTimeout": "600",
+        "sdkTimeout": "60",
+        "maxCacheAge": "300",
+        "kerberos": "sec-krb5",
+		"customerEncryptionKeys": {"netappAccount1": "key1", "netappAccount2": "key2"},
+		"networkFeatures": "Basic"
+    }`
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialize should fail with Basic networkFeature")
+}
+
 func TestInitialized(t *testing.T) {
 	tests := []struct {
 		Expected bool
@@ -3276,6 +3449,94 @@ func getStructsForCreateSMBVolume(ctx context.Context, driver *NASStorageDriver,
 	return volConfig, capacityPool, subnet, createRequest, filesystem
 }
 
+func TestCreate_CMEKVolume(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.CustomerEncryptionKeys = map[string]string{"NA1": "k1"}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+
+	createRequest.KeyVaultEndpointID = api.CreateKeyVaultEndpoint(driver.Config.SubscriptionID,
+		createRequest.ResourceGroup, driver.Config.CustomerEncryptionKeys[createRequest.NetAppAccount])
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_CMEKVolumeNilNetworking(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = ""
+	driver.Config.NASType = "nfs"
+	driver.Config.CustomerEncryptionKeys = map[string]string{"NA1": "k1"}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+
+	createRequest.KeyVaultEndpointID = api.CreateKeyVaultEndpoint(driver.Config.SubscriptionID,
+		createRequest.ResourceGroup, driver.Config.CustomerEncryptionKeys[createRequest.NetAppAccount])
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
 func TestCreate_SMBVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
@@ -3600,6 +3861,112 @@ func TestCreateClone_Snapshot(t *testing.T) {
 		driver, storagePool)
 	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
 	sourceVolConfig.SnapshotDir = "false"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceFilesystem, "snap1").Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneFilesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, cloneFilesystem.ID, cloneVolConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreateClone_CMEK(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NASType = "nfs"
+	driver.Config.CustomerEncryptionKeys = map[string]string{"NA1": "k1"}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
+	sourceVolConfig.SnapshotDir = "false"
+	sourceFilesystem.NetworkFeatures = api.NetworkFeaturesStandard
+
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceFilesystem, "snap1").Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneFilesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, cloneFilesystem.ID, cloneVolConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreateClone_CMEKNilNetworking(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NASType = "nfs"
+	driver.Config.CustomerEncryptionKeys = map[string]string{"NA1": "k1"}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
+	sourceVolConfig.SnapshotDir = "false"
+	sourceFilesystem.NetworkFeatures = ""
+
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceFilesystem, "snap1").Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneFilesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, cloneFilesystem.ID, cloneVolConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreateClone_CMEKBasicNetworking(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NASType = "nfs"
+	driver.Config.CustomerEncryptionKeys = map[string]string{"NA1": "k1"}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
+	sourceVolConfig.SnapshotDir = "false"
+	sourceFilesystem.NetworkFeatures = ""
+	sourceFilesystem.NetworkFeatures = api.NetworkFeaturesBasic
+
+	createRequest.NetworkFeatures = api.NetworkFeaturesBasic
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
@@ -7465,6 +7832,63 @@ func TestValidateStoragePrefix(t *testing.T) {
 				assert.NoError(t, err, "should be valid")
 			} else {
 				assert.Error(t, err, "should be invalid")
+			}
+		})
+	}
+}
+
+func TestValidateNetworkFeatures(t *testing.T) {
+	tests := []struct {
+		name            string
+		networkFeatures string
+		encryptionKeys  map[string]string
+		expectedError   bool
+	}{
+		{
+			name:            "standard network feature and encryption keys",
+			networkFeatures: api.NetworkFeaturesStandard,
+			encryptionKeys:  map[string]string{"key1": "value1", "key2": "value2"},
+			expectedError:   false,
+		},
+		{
+			name:            "no network feature and encryption keys",
+			networkFeatures: "",
+			encryptionKeys:  map[string]string{"key1": "value1", "key2": "value2"},
+			expectedError:   false,
+		},
+		{
+			name:            "basic network feature and valid encryption keys",
+			networkFeatures: api.NetworkFeaturesBasic,
+			encryptionKeys:  map[string]string{"key1": "value1", "key2": "value2"},
+			expectedError:   true,
+		},
+		{
+			name:            "standard network feature and no encryption keys",
+			networkFeatures: api.NetworkFeaturesStandard,
+			encryptionKeys:  map[string]string{},
+			expectedError:   false,
+		},
+		{
+			name:            "no network feature and no encryption keys",
+			networkFeatures: "",
+			encryptionKeys:  map[string]string{},
+			expectedError:   false,
+		},
+		{
+			name:            "basic networking and no encryption keys",
+			networkFeatures: api.NetworkFeaturesBasic,
+			encryptionKeys:  map[string]string{},
+			expectedError:   false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateNetworkFeatures(test.networkFeatures, test.encryptionKeys)
+			if test.expectedError {
+				assert.Error(t, err, "expected error because of invalid combination")
+			} else {
+				assert.NoError(t, err, "unexpected error for a valid combination")
 			}
 		})
 	}

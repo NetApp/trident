@@ -27,5 +27,9 @@ spec:
     {{- range .Values.anfConfigurator.resourceGroups }}
     - {{ . }}
     {{- end }}
+  customerEncryptionKeys:
+    {{- range $key, $value := .Values.anfConfigurator.customerEncryptionKeys }}
+      {{ $key }}: {{ $value }}
+    {{- end }}
 {{- end }}
 

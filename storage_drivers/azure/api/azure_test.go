@@ -1161,3 +1161,15 @@ func TestIsTerminalStateError(t *testing.T) {
 	assert.False(t, IsTerminalStateError(nil))
 	assert.False(t, IsTerminalStateError(errors.New("not terminal")))
 }
+
+func TestCreateKeyVaultEndpoint(t *testing.T) {
+	subnet := "sub123"
+	resourceGroup := "resourceGrp123"
+	keyVaultEndpoint := "keyVaultEP123"
+
+	expected := "/subscriptions/sub123/resourceGroups/resourceGrp123/providers/Microsoft.Network/privateEndpoints/keyVaultEP123"
+
+	result := CreateKeyVaultEndpoint(subnet, resourceGroup, keyVaultEndpoint)
+
+	assert.Equal(t, expected, result, "endpoint mismatch")
+}

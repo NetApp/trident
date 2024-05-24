@@ -58,8 +58,8 @@ func GetServiceAccountYAML(
 	}
 
 	saYAML = strings.ReplaceAll(saYAML, "{NAME}", serviceAccountName)
-	saYAML = replaceMultilineYAMLTag(saYAML, "LABELS", constructLabels(labels))
-	saYAML = replaceMultilineYAMLTag(saYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	saYAML = utils.ReplaceMultilineYAMLTag(saYAML, "LABELS", constructLabels(labels))
+	saYAML = utils.ReplaceMultilineYAMLTag(saYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	// Log().service account YAML before the secrets are added.
 	Log().WithField("yaml", saYAML).Trace("Service account YAML.")
@@ -98,8 +98,8 @@ func GetClusterRoleYAML(clusterRoleName string, labels, controllingCRDetails map
 
 	clusterRoleYAML := controllerClusterRoleCSIYAMLTemplate
 	clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{CLUSTER_ROLE_NAME}", clusterRoleName)
-	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "LABELS", constructLabels(labels))
-	clusterRoleYAML = replaceMultilineYAMLTag(clusterRoleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	clusterRoleYAML = utils.ReplaceMultilineYAMLTag(clusterRoleYAML, "LABELS", constructLabels(labels))
+	clusterRoleYAML = utils.ReplaceMultilineYAMLTag(clusterRoleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	Log().WithField("yaml", clusterRoleYAML).Trace("Cluster role YAML.")
 	return clusterRoleYAML
 }
@@ -187,8 +187,8 @@ func GetRoleYAML(namespace, roleName string, labels, controllingCRDetails map[st
 
 	roleYAML = strings.ReplaceAll(roleYAML, "{ROLE_NAME}", roleName)
 	roleYAML = strings.ReplaceAll(roleYAML, "{NAMESPACE}", namespace)
-	roleYAML = replaceMultilineYAMLTag(roleYAML, "LABELS", constructLabels(labels))
-	roleYAML = replaceMultilineYAMLTag(roleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	roleYAML = utils.ReplaceMultilineYAMLTag(roleYAML, "LABELS", constructLabels(labels))
+	roleYAML = utils.ReplaceMultilineYAMLTag(roleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	return roleYAML
 }
@@ -231,8 +231,8 @@ func GetRoleBindingYAML(namespace, name string, labels, controllingCRDetails map
 	rbYAML := roleBindingKubernetesV1YAMLTemplate
 	rbYAML = strings.ReplaceAll(rbYAML, "{NAMESPACE}", namespace)
 	rbYAML = strings.ReplaceAll(rbYAML, "{NAME}", name)
-	rbYAML = replaceMultilineYAMLTag(rbYAML, "LABELS", constructLabels(labels))
-	rbYAML = replaceMultilineYAMLTag(rbYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	rbYAML = utils.ReplaceMultilineYAMLTag(rbYAML, "LABELS", constructLabels(labels))
+	rbYAML = utils.ReplaceMultilineYAMLTag(rbYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 	return rbYAML
 }
 
@@ -270,8 +270,8 @@ func GetClusterRoleBindingYAML(
 
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAMESPACE}", namespace)
 	crbYAML = strings.ReplaceAll(crbYAML, "{NAME}", name)
-	crbYAML = replaceMultilineYAMLTag(crbYAML, "LABELS", constructLabels(labels))
-	crbYAML = replaceMultilineYAMLTag(crbYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	crbYAML = utils.ReplaceMultilineYAMLTag(crbYAML, "LABELS", constructLabels(labels))
+	crbYAML = utils.ReplaceMultilineYAMLTag(crbYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	Log().WithField("yaml", crbYAML).Trace("Cluster role binding YAML.")
 	return crbYAML
@@ -304,8 +304,8 @@ func GetCSIServiceYAML(serviceName string, labels, controllingCRDetails map[stri
 
 	serviceYAML := strings.ReplaceAll(serviceYAMLTemplate, "{LABEL_APP}", labels[TridentAppLabelKey])
 	serviceYAML = strings.ReplaceAll(serviceYAML, "{SERVICE_NAME}", serviceName)
-	serviceYAML = replaceMultilineYAMLTag(serviceYAML, "LABELS", constructLabels(labels))
-	serviceYAML = replaceMultilineYAMLTag(serviceYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	serviceYAML = utils.ReplaceMultilineYAMLTag(serviceYAML, "LABELS", constructLabels(labels))
+	serviceYAML = utils.ReplaceMultilineYAMLTag(serviceYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	Log().WithField("yaml", serviceYAML).Trace("CSI Service YAML.")
 	return serviceYAML
@@ -343,8 +343,8 @@ func GetResourceQuotaYAML(resourceQuotaName, namespace string, labels, controlli
 
 	resourceQuotaYAML := strings.ReplaceAll(resourceQuotaYAMLTemplate, "{RESOURCEQUOTA_NAME}", resourceQuotaName)
 	resourceQuotaYAML = strings.ReplaceAll(resourceQuotaYAML, "{NAMESPACE}", namespace)
-	resourceQuotaYAML = replaceMultilineYAMLTag(resourceQuotaYAML, "LABELS", constructLabels(labels))
-	resourceQuotaYAML = replaceMultilineYAMLTag(resourceQuotaYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	resourceQuotaYAML = utils.ReplaceMultilineYAMLTag(resourceQuotaYAML, "LABELS", constructLabels(labels))
+	resourceQuotaYAML = utils.ReplaceMultilineYAMLTag(resourceQuotaYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	Log().WithField("yaml", resourceQuotaYAML).Trace("Resource Quota YAML.")
 	return resourceQuotaYAML
@@ -514,16 +514,16 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
-	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "LABELS", constructLabels(args.Labels))
-	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
-	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
-	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
+	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "LABELS", constructLabels(args.Labels))
+	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
+	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", enableACP)
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
-	deploymentYAML = replaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS",
+	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(args.ImagePullSecrets))
 
 	return deploymentYAML
@@ -815,13 +815,13 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", daemonSetYAML).Trace("CSI Daemonset Windows YAML.")
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(args.ImagePullSecrets))
 
 	return daemonSetYAML
@@ -891,14 +891,14 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{ISCSI_SELF_HEALING_INTERVAL}", args.ISCSISelfHealingInterval)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{ISCSI_SELF_HEALING_WAIT_TIME}", args.ISCSISelfHealingWaitTime)
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", daemonSetYAML).Trace("CSI Daemonset Linux YAML.")
-	daemonSetYAML = replaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
+	daemonSetYAML = utils.ReplaceMultilineYAMLTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(args.ImagePullSecrets))
 
 	return daemonSetYAML
@@ -1360,13 +1360,13 @@ func GetTridentVersionPodYAML(args *TridentVersionPodYAMLArguments) string {
 	versionPodYAML := strings.ReplaceAll(tridentVersionPodYAML, "{NAME}", args.TridentVersionPodName)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(args.Labels))
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
+	versionPodYAML = utils.ReplaceMultilineYAMLTag(versionPodYAML, "LABELS", constructLabels(args.Labels))
+	versionPodYAML = utils.ReplaceMultilineYAMLTag(versionPodYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	versionPodYAML = utils.ReplaceMultilineYAMLTag(versionPodYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", versionPodYAML).Trace("Trident Version Pod YAML.")
-	versionPodYAML = replaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS",
+	versionPodYAML = utils.ReplaceMultilineYAMLTag(versionPodYAML, "IMAGE_PULL_SECRETS",
 		constructImagePullSecrets(args.ImagePullSecrets))
 	versionPodYAML = strings.ReplaceAll(versionPodYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 
@@ -1422,8 +1422,8 @@ func GetOpenShiftSCCYAML(
 	sccYAML = strings.ReplaceAll(sccYAML, "{SCC}", sccName)
 	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", namespace)
 	sccYAML = strings.ReplaceAll(sccYAML, "{USER}", user)
-	sccYAML = replaceMultilineYAMLTag(sccYAML, "LABELS", constructLabels(labels))
-	sccYAML = replaceMultilineYAMLTag(sccYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	sccYAML = utils.ReplaceMultilineYAMLTag(sccYAML, "LABELS", constructLabels(labels))
+	sccYAML = utils.ReplaceMultilineYAMLTag(sccYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	Log().WithField("yaml", sccYAML).Trace("OpenShift SCC YAML.")
 	return sccYAML
@@ -1543,8 +1543,8 @@ func GetSecretYAML(
 
 	secretYAML := strings.ReplaceAll(secretYAMLTemplate, "{SECRET_NAME}", secretName)
 	secretYAML = strings.ReplaceAll(secretYAML, "{NAMESPACE}", namespace)
-	secretYAML = replaceMultilineYAMLTag(secretYAML, "LABELS", constructLabels(labels))
-	secretYAML = replaceMultilineYAMLTag(secretYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	secretYAML = utils.ReplaceMultilineYAMLTag(secretYAML, "LABELS", constructLabels(labels))
+	secretYAML = utils.ReplaceMultilineYAMLTag(secretYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	// Log before actual secrets are inserted into YAML.
 	Log().WithField("yaml", secretYAML).Trace("(Redacted) Secret YAML.")
@@ -2511,8 +2511,8 @@ func GetCSIDriverYAML(name string, labels, controllingCRDetails map[string]strin
 	defer func() { Log().Trace("<<<< GetCSIDriverYAML") }()
 
 	csiDriver := strings.ReplaceAll(CSIDriverYAMLv1, "{NAME}", name)
-	csiDriver = replaceMultilineYAMLTag(csiDriver, "LABELS", constructLabels(labels))
-	csiDriver = replaceMultilineYAMLTag(csiDriver, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	csiDriver = utils.ReplaceMultilineYAMLTag(csiDriver, "LABELS", constructLabels(labels))
+	csiDriver = utils.ReplaceMultilineYAMLTag(csiDriver, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	Log().WithField("yaml", csiDriver).Trace("CSI Driver YAML")
 	return csiDriver
@@ -2538,8 +2538,8 @@ func GetPrivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRDet
 	defer func() { Log().Trace("<<<< GetPrivilegedPodSecurityPolicyYAML") }()
 
 	pspYAML := strings.ReplaceAll(PrivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
-	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
-	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	pspYAML = utils.ReplaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
+	pspYAML = utils.ReplaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	Log().WithField("yaml", pspYAML).Trace("Privileged Pod Security Policy YAML")
 	return pspYAML
@@ -2583,8 +2583,8 @@ func GetUnprivilegedPodSecurityPolicyYAML(pspName string, labels, controllingCRD
 	defer func() { Log().Trace("<<<< GetUnprivilegedPodSecurityPolicyYAML") }()
 
 	pspYAML := strings.ReplaceAll(UnprivilegedPodSecurityPolicyYAML, "{PSP_NAME}", pspName)
-	pspYAML = replaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
-	pspYAML = replaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
+	pspYAML = utils.ReplaceMultilineYAMLTag(pspYAML, "LABELS", constructLabels(labels))
+	pspYAML = utils.ReplaceMultilineYAMLTag(pspYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
 	Log().WithField("yaml", pspYAML).Trace("Unprivileged Pod Security Policy YAML")
 	return pspYAML
@@ -2613,34 +2613,6 @@ spec:
   - projected
   - emptyDir
 `
-
-func shiftTextRight(text string, count int) string {
-	if text == "" {
-		return ""
-	}
-	lines := strings.Split(text, "\n")
-	newLines := make([]string, len(lines))
-	for i, line := range lines {
-		if line != "" {
-			newLines[i] = strings.Repeat(" ", count) + line
-		}
-	}
-
-	return strings.Join(newLines, "\n")
-}
-
-func replaceMultilineYAMLTag(originalYAML, tag, tagText string) string {
-	for {
-		tagWithSpaces, spaceCount := utils.GetYAMLTagWithSpaceCount(originalYAML, tag)
-
-		if tagWithSpaces == "" {
-			break
-		}
-		originalYAML = strings.Replace(originalYAML, tagWithSpaces, shiftTextRight(tagText, spaceCount), 1)
-	}
-
-	return originalYAML
-}
 
 func constructNodeSelector(nodeLabels map[string]string) string {
 	var nodeSelector string

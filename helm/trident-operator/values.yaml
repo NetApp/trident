@@ -160,3 +160,4 @@ anfConfigurator:
   capacityPools: []
   netappAccounts: []
   resourceGroups: []
+  customerEncryptionKeys: {}

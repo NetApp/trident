@@ -35,6 +35,9 @@ const (
 
 	NetworkFeaturesBasic    = "Basic"
 	NetworkFeaturesStandard = "Standard"
+
+	EncryptionKeyNetApp = "Microsoft.NetApp"
+	EncryptionKeyVault  = "Microsoft.KeyVault"
 )
 
 // AzureResources is the toplevel cache for the set of things we discover about our Azure environment.
@@ -107,49 +110,51 @@ type CapacityPool struct {
 
 // FileSystem records details of a discovered Azure Subnet.
 type FileSystem struct {
-	ID                string
-	ResourceGroup     string
-	NetAppAccount     string
-	CapacityPool      string
-	Name              string
-	FullName          string
-	Location          string
-	Type              string
-	ExportPolicy      ExportPolicy
-	Labels            map[string]string
-	FileSystemID      string
-	ProvisioningState string
-	CreationToken     string
-	ProtocolTypes     []string
-	QuotaInBytes      int64
-	ServiceLevel      string
-	SnapshotDirectory bool
-	UsedBytes         int
-	SubnetID          string
-	UnixPermissions   string
-	MountTargets      []MountTarget
-	SubvolumesEnabled bool
-	NetworkFeatures   string
-	KerberosEnabled   bool
+	ID                 string
+	ResourceGroup      string
+	NetAppAccount      string
+	CapacityPool       string
+	Name               string
+	FullName           string
+	Location           string
+	Type               string
+	ExportPolicy       ExportPolicy
+	Labels             map[string]string
+	FileSystemID       string
+	ProvisioningState  string
+	CreationToken      string
+	ProtocolTypes      []string
+	QuotaInBytes       int64
+	ServiceLevel       string
+	SnapshotDirectory  bool
+	UsedBytes          int
+	SubnetID           string
+	UnixPermissions    string
+	MountTargets       []MountTarget
+	SubvolumesEnabled  bool
+	NetworkFeatures    string
+	KerberosEnabled    bool
+	KeyVaultEndpointID string
 }
 
 // FilesystemCreateRequest embodies all the details of a volume to be created.
 type FilesystemCreateRequest struct {
-	ResourceGroup     string
-	NetAppAccount     string
-	CapacityPool      string
-	Name              string
-	SubnetID          string
-	CreationToken     string
-	ExportPolicy      ExportPolicy
-	Labels            map[string]string
-	ProtocolTypes     []string
-	QuotaInBytes      int64
-	SnapshotDirectory bool
-	SnapshotID        string
-	UnixPermissions   string
-	NetworkFeatures   string
-	KerberosEnabled   bool
+	ResourceGroup      string
+	NetAppAccount      string
+	CapacityPool       string
+	Name               string
+	SubnetID           string
+	CreationToken      string
+	ExportPolicy       ExportPolicy
+	Labels             map[string]string
+	ProtocolTypes      []string
+	QuotaInBytes       int64
+	SnapshotDirectory  bool
+	SnapshotID         string
+	UnixPermissions    string
+	NetworkFeatures    string
+	KerberosEnabled    bool
+	KeyVaultEndpointID string
 }
 
 // ExportPolicy records details of a discovered Azure volume export policy.

@@ -50,6 +50,9 @@ type ANFConfig struct {
 	ResourceGroups []string `json:"resourceGroups"`
 	VirtualNetwork string   `json:"virtualNetwork"`
 	Subnet         string   `json:"subnet"`
+
+	// Encryption: Map of NetApp accounts and customer keys.
+	CustomerEncryptionKeys map[string]string `json:"customerEncryptionKeys"`
 }
 
 func NewANFInstance(
