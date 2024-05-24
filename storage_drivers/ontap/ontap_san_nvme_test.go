@@ -32,7 +32,7 @@ func newNVMeDriver(apiOverride api.OntapAPI, awsApiOverride awsapi.AWSAPI, fsxId
 	config.Aggregate = "data"
 	config.Username = "ontap-san-user"
 	config.Password = "password1!"
-	config.UseREST = true
+	config.UseREST = func() *bool { b := true; return &b }()
 	config.CommonStorageDriverConfig = &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     &sPrefix,

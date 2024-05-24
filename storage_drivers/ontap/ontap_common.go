@@ -1059,7 +1059,7 @@ func InitializeOntapDriver(
 }
 
 // InitializeOntapAPI returns an ontap.Client ZAPI or REST client.  If the SVM isn't specified in the config
-// file, this method attempts to derive the one to use for ZAPI.
+// file, this method attempts to derive the one to use.
 func InitializeOntapAPI(
 	ctx context.Context, config *drivers.OntapStorageDriverConfig,
 ) (api.OntapAPI, error) {
@@ -1081,14 +1081,84 @@ func InitializeOntapAPI(
 		numRecords = api.MaxZapiRecords
 	}
 
-	if config.UseREST == true {
-		ontapAPI, err = api.NewRestClientFromOntapConfig(ctx, config)
-	} else {
-		ontapAPI, err = api.NewZAPIClientFromOntapConfig(ctx, config, numRecords)
-	}
-
+	// Initially, the 'ontapAPI' variable is set with a REST client.
+	// Based on user-configured options, we either keep the REST client or override it with a ZAPI client.
+	ontapAPI, err = api.NewRestClientFromOntapConfig(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
+	}
+
+	ontapVer, err := ontapAPI.APIVersion(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting ONTAP version: %v", err)
+	}
+	Logc(ctx).WithField("ontapVersion", ontapVer).Debug("ONTAP version.")
+
+	// Is the ONTAP version greater than or equal to "9.12.1"?
+	IsRESTSupported, err := api.IsRESTSupported(ontapVer)
+	if err != nil {
+		return nil, err
+	}
+
+	// Is the ONTAP version greater than or equal to "9.15.1"?
+	IsRESTSupportedDefault, err := api.IsRESTSupportedDefault(ontapVer)
+	if err != nil {
+		return nil, err
+	}
+
+	// Is the ONTAP version lesser than or equal to "9.17.x"?
+	IsZAPISupported, err := api.IsZAPISupported(ontapVer)
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		The following if-else code block is responsible for initializing the ONTAP API client
+			based on the ONTAP version and user configuration (numbering here is analogous to the if-else block below):
+		1. If the ONTAP version is below "9.12.1":
+				A. REST calls are not supported by Trident. In this case, if the user has set the useREST flag to true,
+					an error is returned.
+				B. Otherwise, a ZAPI client is created by default, overriding the `ontapAPI` var,
+					thereby discarding the previously created REST client above.
+		2. If the ONTAP version lies between "9.12.1" and "9.15.1" (this section of code is mainly for backward compatibility):
+				A. Existing or new users, who haven't set the useREST flag or set it to false, will use the ZAPI client by default,
+					overriding the `ontapAPI` var, thereby discarding the previously created REST client above.
+				B. If the user has set the useREST flag to true, the REST client created earlier is used.
+		3. If the ONTAP version lies between "9.15.1" and "9.17.x":
+				A. Both REST and ZAPI are supported. If the user has not set the useREST flag or set it to true,
+					the REST client created earlier is used.
+				B. If the user has set the useREST flag to false, a ZAPI client is created,
+					overriding the `ontapAPI` var, thereby discarding the previously created REST client above.
+		4. If the ONTAP version is greater than "9.17.x":
+				A. ZAPI calls are not supported by ONTAP. In this case, if the user has set the useREST flag to false,
+					an error is returned.
+				B. Otherwise, the REST client created earlier is used by default.
+	*/
+	if !IsRESTSupported {
+		if config.UseREST != nil && *config.UseREST == true {
+			return nil, fmt.Errorf("ONTAP version is %s, trident does not support REST calls, please remove `useRest=true` from the backend config", ontapVer)
+		} else {
+			if ontapAPI, err = api.NewZAPIClientFromOntapConfig(ctx, config, numRecords); err != nil {
+				return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
+			}
+		}
+	} else if !IsRESTSupportedDefault {
+		if config.UseREST == nil || (config.UseREST != nil && *config.UseREST == false) {
+			if ontapAPI, err = api.NewZAPIClientFromOntapConfig(ctx, config, numRecords); err != nil {
+				return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
+			}
+		}
+	} else if IsZAPISupported {
+		if config.UseREST != nil && *config.UseREST == false {
+			ontapAPI, err = api.NewZAPIClientFromOntapConfig(ctx, config, numRecords)
+			if err != nil {
+				return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
+			}
+		}
+	} else {
+		if config.UseREST != nil && *config.UseREST == false {
+			return nil, fmt.Errorf("ONTAP version %s does not support ZAPI calls, please remove `useRest=false` from the backend config", ontapVer)
+		}
 	}
 
 	Logc(ctx).WithField("SVM", ontapAPI.SVMName()).Debug("Using SVM.")

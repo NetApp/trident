@@ -129,7 +129,7 @@ type OntapStorageDriverConfig struct {
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
-	UseREST                   bool                     `json:"useREST"`
+	UseREST                   *bool                    `json:"useREST"`
 	ChapUsername              string                   `json:"chapUsername"`
 	ChapInitiatorSecret       string                   `json:"chapInitiatorSecret"`
 	ChapTargetUsername        string                   `json:"chapTargetUsername"`

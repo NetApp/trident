@@ -43,7 +43,7 @@ func newTestOntapNASFlexgroupDriver(
 	config.StorageDriverName = tridentconfig.OntapNASFlexGroupStorageDriverName
 	config.StoragePrefix = sp("test_")
 	config.DriverContext = driverContext
-	config.UseREST = useREST
+	config.UseREST = &useREST
 	config.FlexGroupAggregateList = []string{"aggr1", "aggr2"}
 
 	if fsxId != nil {
@@ -61,7 +61,7 @@ func newTestOntapNASFlexgroupDriver(
 
 	var ontapAPI api.OntapAPI
 
-	if config.UseREST == true {
+	if *config.UseREST == true {
 		ontapAPI, _ = api.NewRestClientFromOntapConfig(context.TODO(), config)
 	} else {
 		ontapAPI, _ = api.NewZAPIClientFromOntapConfig(context.TODO(), config, numRecords)

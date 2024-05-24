@@ -7961,3 +7961,105 @@ func TestExtractError(t *testing.T) {
 		})
 	}
 }
+
+func TestIsRESTSupported(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		name              string
+		version           string
+		isSupported       bool
+		isSupportedErrMsg string
+		wantErr           bool
+		wantErrMsg        string
+	}{
+		{
+			name:              "Supported version",
+			version:           "9.12.1",
+			isSupported:       true,
+			isSupportedErrMsg: "positive test, version 9.12.1 is supported, expected true but got false",
+			wantErr:           false,
+			wantErrMsg:        "9.12.1 is a correct semantics, error was not expected",
+		},
+		{
+			name:              "Unsupported version",
+			version:           "9.10.1",
+			isSupported:       false,
+			isSupportedErrMsg: "negative test, version 9.10.1 is not supported, expected false but got true",
+			wantErr:           false,
+			wantErrMsg:        "9.10.1 is a correct semantics, error was not expected",
+		},
+		{
+			name:              "Invalid version",
+			version:           "invalid",
+			isSupported:       false,
+			isSupportedErrMsg: "invalid version provided, expected false but got true",
+			wantErr:           true,
+			wantErrMsg:        "incorrect semantics, error was expected",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			isSupported, err := IsRESTSupported(tt.version)
+			assert.Equal(t, tt.isSupported, isSupported, tt.isSupportedErrMsg)
+			if tt.wantErr {
+				assert.Errorf(t, err, tt.wantErrMsg)
+			} else {
+				assert.NoError(t, err, tt.wantErrMsg)
+			}
+		})
+	}
+}
+
+func TestIsRESTSupportedDefault(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		name              string
+		version           string
+		isSupported       bool
+		isSupportedErrMsg string
+		wantErr           bool
+		wantErrMsg        string
+	}{
+		{
+			name:              "Supported version",
+			version:           "9.15.1",
+			isSupported:       true,
+			isSupportedErrMsg: "positive test, version 9.15.1 is supported, expected true but got false",
+			wantErr:           false,
+			wantErrMsg:        "9.15.1 is a correct semantics, error was not expected",
+		},
+		{
+			name:              "Unsupported version",
+			version:           "9.13.1",
+			isSupported:       false,
+			isSupportedErrMsg: "negative test, version 9.13.1 is not supported, expected false but got true",
+			wantErr:           false,
+			wantErrMsg:        "9.13.1 is a correct semantics, error was not expected",
+		},
+		{
+			name:              "Invalid version",
+			version:           "invalid",
+			isSupported:       false,
+			isSupportedErrMsg: "invalid version provided, expected false but got true",
+			wantErr:           true,
+			wantErrMsg:        "incorrect semantics, error was expected",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			isSupported, err := IsRESTSupportedDefault(tt.version)
+			assert.Equal(t, tt.isSupported, isSupported, tt.isSupportedErrMsg)
+			if tt.wantErr {
+				assert.Errorf(t, err, tt.wantErrMsg)
+			} else {
+				assert.NoError(t, err, tt.wantErrMsg)
+			}
+		})
+	}
+}

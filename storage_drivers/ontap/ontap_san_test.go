@@ -136,7 +136,7 @@ func newTestOntapSANDriver(
 	config.Password = "password1!"
 	config.StorageDriverName = "ontap-san"
 	config.StoragePrefix = sp("test_")
-	config.UseREST = useREST
+	config.UseREST = &useREST
 
 	if fsxId != nil {
 		config.AWSConfig = &drivers.AWSConfig{}
@@ -156,7 +156,7 @@ func newTestOntapSANDriver(
 	if apiOverride != nil {
 		ontapAPI = apiOverride
 	} else {
-		if config.UseREST {
+		if *config.UseREST {
 			ontapAPI, _ = api.NewRestClientFromOntapConfig(context.TODO(), config)
 		} else {
 			ontapAPI, _ = api.NewZAPIClientFromOntapConfig(context.TODO(), config, numRecords)

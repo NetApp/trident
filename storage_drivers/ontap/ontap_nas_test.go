@@ -119,7 +119,7 @@ func newTestOntapNASDriver(
 	config.StorageDriverName = "ontap-nas"
 	config.StoragePrefix = sp("test_")
 	config.DriverContext = driverContext
-	config.UseREST = useREST
+	config.UseREST = &useREST
 
 	if fsxId != nil {
 		config.AWSConfig = &drivers.AWSConfig{}

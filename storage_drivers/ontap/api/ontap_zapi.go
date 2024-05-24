@@ -221,6 +221,8 @@ var featuresByVersion = map[Feature]*versionutils.Version{
 	NVMeProtocol:              versionutils.MustParseSemantic("9.10.1"),
 }
 
+var MaximumONTAPIVersion = versionutils.MustParseMajorMinorVersion("9.17")
+
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
 func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
 	ontapiVersion, err := c.SystemGetOntapiVersion(ctx)
@@ -238,6 +240,19 @@ func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
 	} else {
 		return false
 	}
+}
+
+func IsZAPISupported(version string) (bool, error) {
+	ontapSemVer, err := versionutils.ParseSemantic(version)
+	if err != nil {
+		return false, err
+	}
+
+	if ontapSemVer.ToMajorMinorVersion().GreaterThan(MaximumONTAPIVersion) {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // API feature operations END
