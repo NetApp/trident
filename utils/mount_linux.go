@@ -56,13 +56,21 @@ func IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error)
 }
 
 // IsMounted verifies if the supplied device is attached at the supplied location.
-// IsMounted checks whether the specified device is attached at the given mountpoint.
 // If no source device is specified, any existing mount with the specified mountpoint returns true.
 // If no mountpoint is specified, any existing mount with the specified device returns true.
 func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error) {
 	logFields := LogFields{"source": sourceDevice, "target": mountpoint}
 	Logc(ctx).WithFields(logFields).Debug(">>>> mount_linux.IsMounted")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount_linux.IsMounted")
+
+	// Get device path if source is already linked
+	devicePath, err := filepath.EvalSymlinks(sourceDevice)
+	if err != nil {
+		Logc(ctx).WithError(err).WithFields(logFields).Debug("Could not resolve device symlink")
+		// Unset device path to try and find it from mountinfo
+		devicePath = ""
+	}
+	devicePath = strings.TrimPrefix(devicePath, "/dev/")
 
 	sourceDevice = strings.TrimPrefix(sourceDevice, "/dev/")
 
@@ -86,7 +94,7 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 			if !strings.Contains(procMount.MountPoint, mountpoint) {
 				continue
 			} else {
-				Logc(ctx).Debugf("Mountpoint found: %v", procMount)
+				Logc(ctx).WithFields(logFields).Debugf("Mountpoint found: %v", procMount)
 			}
 		}
 
@@ -97,21 +105,21 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 
 			if strings.HasPrefix(procMount.MountSource, "/dev/") {
 				procSourceDevice = strings.TrimPrefix(procMount.MountSource, "/dev/")
-				if sourceDevice != procSourceDevice {
-					// Resolve any symlinks to get the real device
+				if sourceDevice != procSourceDevice && devicePath != procSourceDevice {
+					// Resolve any symlinks to get the real device, if device path has not already been found
 					procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
 					if err != nil {
-						Logc(ctx).Error(err)
+						Logc(ctx).WithFields(logFields).WithError(err).Debug("Could not resolve device symlink")
 						continue
 					}
 					procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
 				}
 			}
 
-			if sourceDevice != procSourceDevice {
+			if sourceDevice != procSourceDevice && devicePath != procSourceDevice {
 				continue
 			} else {
-				Logc(ctx).Debugf("Device found: %v", sourceDevice)
+				Logc(ctx).WithFields(logFields).Debugf("Device found: %v", sourceDevice)
 
 				if err = CheckMountOptions(ctx, procMount, mountOptions); err != nil {
 					Logc(ctx).WithFields(logFields).WithError(err).Warning("Checking mount options failed.")
