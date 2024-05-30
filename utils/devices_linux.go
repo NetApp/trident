@@ -29,6 +29,14 @@ const (
 	luksType                         = "luks2"
 	// Return code for "no permission (bad passphrase)" from cryptsetup command
 	luksCryptsetupBadPassphraseReturnCode = 2
+
+	// Return codes for `cryptsetup status`
+	cryptsetupStatusDeviceDoesExistStatusCode    = 0
+	cryptsetupStatusDeviceDoesNotExistStatusCode = 4
+
+	// Return codes for `cryptsetup isLuks`
+	cryptsetupIsLuksDeviceIsLuksStatusCode    = 0
+	cryptsetupIsLuksDeviceIsNotLuksStatusCode = 1
 )
 
 // flushOneDevice flushes any outstanding I/O to a disk
@@ -84,20 +92,40 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 	if d.RawDevicePath() == "" {
 		return false, fmt.Errorf("no device path for LUKS device")
 	}
+	device := d.RawDevicePath()
+	fields := LogFields{"device": device}
+
+	Logc(ctx).WithFields(fields).Debug("Checking if device is a LUKS device.")
 	output, err := command.ExecuteWithTimeoutAndInput(
-		ctx, "cryptsetup", luksCommandTimeout, true, "", "isLuks", d.RawDevicePath(),
+		ctx, "cryptsetup", luksCommandTimeout, true, "", "isLuks", device,
 	)
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); !ok {
-			Logc(ctx).WithFields(LogFields{
-				"device": d.RawDevicePath(),
-				"error":  err.Error(),
-				"output": string(output),
-			}).Debug("Failed to check if device is LUKS.")
-			return false, fmt.Errorf("could not check if device is LUKS: %v", err)
+		fields = LogFields{
+			"device": device,
+			"output": string(output),
+			"error":  err.Error(),
 		}
+
+		// If the error isn't an exit error, then some other issue happened.
+		exitError, ok := err.(*exec.ExitError)
+		if !ok {
+			Logc(ctx).WithFields(fields).Debug("Failed to check if device is LUKS.")
+			return false, fmt.Errorf("could not check if device is a LUKS device: %v", err)
+		}
+
+		// If any status code aside from "0" and "1" occur, fail. Checking for "0" is an extra safety precaution.
+		status := exitError.ExitCode()
+		if status != cryptsetupIsLuksDeviceIsNotLuksStatusCode && status != cryptsetupIsLuksDeviceIsLuksStatusCode {
+			Logc(ctx).WithFields(fields).Debug("Failed to check if device is a LUKS device.")
+			return false, fmt.Errorf("unrecognized exit error from cryptsetup isLuks; %w", exitError)
+		}
+
+		// At this point we know the device is not LUKS formatted.
+		Logc(ctx).WithFields(fields).Info("Device is not a LUKS device.")
 		return false, nil
 	}
+
+	Logc(ctx).WithFields(fields).Debug("Device is a LUKS device.")
 	return true, nil
 }
 
@@ -108,29 +136,64 @@ func (d *LUKSDevice) IsOpen(ctx context.Context) (bool, error) {
 	return IsLUKSDeviceOpen(ctx, d.MappedDevicePath())
 }
 
-// LUKSFormat sets up LUKS headers on the device with the specified passphrase, this destroys data on the device
-func (d *LUKSDevice) LUKSFormat(ctx context.Context, luksPassphrase string) error {
+// luksFormat sets up LUKS headers on the device with the specified passphrase, this destroys data on the device
+func (d *LUKSDevice) luksFormat(ctx context.Context, luksPassphrase string) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	if d.RawDevicePath() == "" {
 		return fmt.Errorf("no device path for LUKS device")
 	}
 	device := d.RawDevicePath()
-	Logc(ctx).WithFields(LogFields{
-		"rawDevicePath": device,
-	}).Debug("Formatting LUKS device.")
-	output, err := command.ExecuteWithTimeoutAndInput(
+
+	Logc(ctx).WithField("device", device).Debug("Formatting LUKS device.")
+	if output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksFormat", device,
 		"--type", "luks2", "-c", "aes-xts-plain64",
-	)
-	if nil != err {
+	); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"device": device,
-			"error":  err.Error(),
 			"output": string(output),
-		}).Debug("Failed to format LUKS device.")
-		return fmt.Errorf("could not format LUKS device; %v", err)
+		}).WithError(err).Debug("Failed to format LUKS device.")
+		return fmt.Errorf("could not format LUKS device; %w", err)
 	}
+
+	return nil
+}
+
+// LUKSFormat attempts to set up LUKS headers on a device with the specified passphrase, but bails out if the
+// underlying device already has a format present.
+func (d *LUKSDevice) LUKSFormat(ctx context.Context, luksPassphrase string) error {
+	fields := LogFields{"device": d.RawDevicePath()}
+	Logc(ctx).WithFields(fields).Debug("Attempting to LUKS format device.")
+
+	// Check if the device is already LUKS formatted.
+	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
+		return fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
+	} else if luksFormatted {
+		Logc(ctx).WithFields(fields).Debug("Device is already LUKS formatted.")
+		return nil
+	}
+
+	// Ensure the device is empty before attempting LUKS format.
+	if unformatted, err := isDeviceUnformatted(ctx, d.RawDevicePath()); err != nil {
+		return fmt.Errorf("failed to check if device is unformatted; %w", err)
+	} else if !unformatted {
+		return fmt.Errorf("cannot LUKS format device; device is not empty")
+	}
+
+	// Attempt LUKS format.
+	if err := d.luksFormat(ctx, luksPassphrase); err != nil {
+		return fmt.Errorf("failed to LUKS format device; %w", err)
+	}
+
+	// At this point, the device should be LUKS formatted. If it still is not formatted, fail.
+	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
+		return fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
+	} else if !luksFormatted {
+		return fmt.Errorf("device is not LUKS formatted")
+	}
+
+	Logc(ctx).WithFields(fields).Debug("Device is LUKS formatted.")
 	return nil
 }
 
@@ -143,18 +206,19 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 	}
 	device := d.RawDevicePath()
 	luksDeviceName := d.MappedDeviceName()
-	Logc(ctx).WithFields(LogFields{
-		"rawDevicePath": device,
-	}).Debug("Opening LUKS device.")
+	fields := LogFields{"device": device, "luksDeviceName": luksDeviceName}
+
+	Logc(ctx).WithFields(fields).Debug("Opening LUKS device.")
 	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device,
 		luksDeviceName, "--type", "luks2",
 	)
 	if nil != err {
 		Logc(ctx).WithFields(LogFields{
-			"device": device,
-			"error":  err.Error(),
-			"output": string(output),
+			"device":         device,
+			"luksDeviceName": luksDeviceName,
+			"error":          err.Error(),
+			"output":         string(output),
 		}).Info("Failed to open LUKS device.")
 
 		// Exit code 2 means bad passphrase
@@ -165,6 +229,8 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 
 		return fmt.Errorf("could not open LUKS device; %v", err)
 	}
+
+	Logc(ctx).WithFields(fields).Debug("Opened LUKS device.")
 	return nil
 }
 
@@ -190,19 +256,45 @@ func closeLUKSDevice(ctx context.Context, luksDevicePath string) error {
 	return nil
 }
 
-// IsLUKSDeviceOpen returns whether the specific LUKS device is currently open
+// IsLUKSDeviceOpen returns whether the specific LUKS device is currently open.
 func IsLUKSDeviceOpen(ctx context.Context, luksDevicePath string) (bool, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
-	_, err := command.ExecuteWithTimeoutAndInput(
+	fields := LogFields{"luksDevicePath": luksDevicePath}
+	Logc(ctx).WithFields(fields).Debug("Checking if device is an open LUKS device.")
+
+	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, "", "status", luksDevicePath,
 	)
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); !ok {
+		fields := LogFields{
+			"luksDevicePath": luksDevicePath,
+			"error":          err.Error(),
+			"output":         string(output), // No sensitive information is returned from cryptsetup status.
+		}
+
+		exitError, ok := err.(*exec.ExitError)
+		if !ok {
 			return false, err
 		}
-		return false, nil
+
+		switch exitError.ExitCode() {
+		case cryptsetupStatusDeviceDoesNotExistStatusCode:
+			// Status code 4 from `cryptsetup status` means the device is not open.
+			Logc(ctx).WithFields(fields).WithError(err).Debug("LUKS device does not exist.")
+			return false, errors.NotFoundError("device at [%s] does not exist; %v", luksDevicePath, exitError)
+		case cryptsetupStatusDeviceDoesExistStatusCode:
+			// Status code 0 from `cryptsetup status` means this LUKS device has been formatted and opened before.
+			// Low probability that this will be hit, but keep it in as a safety precaution.
+			Logc(ctx).WithFields(fields).WithError(err).Debug("Encountered error but device is an open LUKS device.")
+			return true, nil
+		default:
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to check if device is open.")
+			return false, fmt.Errorf("failed to check if device is open: [%s]; %v", luksDevicePath, err)
+		}
 	}
+
+	Logc(ctx).WithFields(fields).Debug("Device is an open LUKS device.")
 	return true, nil
 }
 

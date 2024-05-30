@@ -123,11 +123,33 @@ func TestLUKSDevice_LUKSFormat(t *testing.T) {
 	assert.Equal(t, "/dev/sdb", luksDevice.RawDevicePath())
 
 	// Setup mock calls and reassign any clients to their mock counterparts.
-	mockCryptsetupLuksFormat(mockCommand).Return([]byte(""), nil)
+	mockCryptsetupIsLuks(mockCommand).Return([]byte(""), nil)
 	command = mockCommand
 
 	err := luksDevice.LUKSFormat(context.Background(), "passphrase")
 	assert.NoError(t, err)
+}
+
+func TestLUKSDevice_LUKSFormat_FailsCheckingIfDeviceIsLUKS(t *testing.T) {
+	defer func(previousCommand exec.Command) {
+		command = previousCommand
+	}(command)
+
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	// Create fake luks device.
+	luksDevice := LUKSDevice{mappingName: "pvc-test", rawDevicePath: "/dev/sdb"}
+	assert.Equal(t, "/dev/mapper/pvc-test", luksDevice.MappedDevicePath())
+	assert.Equal(t, "/dev/sdb", luksDevice.RawDevicePath())
+
+	// Mock any cryptsetup calls that may occur.
+	mockCryptsetupIsLuks(mockCommand).Return([]byte(""), luksError)
+	command = mockCommand
+
+	err := luksDevice.LUKSFormat(ctx, "mysecretlukspassphrase")
+	assert.Error(t, err)
 }
 
 func TestLUKSDevice_Open(t *testing.T) {
@@ -197,7 +219,7 @@ func TestLUKSDevice_MissingDevicePath(t *testing.T) {
 	assert.Error(t, err)
 	assert.False(t, isFormatted)
 
-	err = luksDevice.LUKSFormat(context.Background(), "passphrase")
+	err = luksDevice.luksFormat(context.Background(), "passphrase")
 	assert.Error(t, err)
 
 	err = luksDevice.Open(context.Background(), "passphrase")
@@ -228,7 +250,7 @@ func TestLUKSDevice_ExecErrors(t *testing.T) {
 	assert.Error(t, err)
 	assert.False(t, isFormatted)
 
-	err = luksDevice.LUKSFormat(context.Background(), "passphrase")
+	err = luksDevice.luksFormat(context.Background(), "passphrase")
 	assert.Error(t, err)
 
 	err = luksDevice.Open(context.Background(), "passphrase")
@@ -265,128 +287,21 @@ func TestEnsureLUKSDevice_IsOpen(t *testing.T) {
 
 	luksFormatted, err := ensureLUKSDevice(context.Background(), mockLUKSDevice, "mysecretlukspassphrase")
 	assert.NoError(t, err)
-	assert.Equal(t, false, luksFormatted)
+	assert.True(t, luksFormatted)
 }
 
-func TestEnsureLUKSDevice_FailsCheckingIfFormatted(t *testing.T) {
+func TestEnsureLUKSDevice_LUKSFormatFails(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockLUKSDevice := mockluks.NewMockLUKSDeviceInterface(mockCtrl)
 
 	// Setup mock calls and reassign any clients to their mock counterparts.
 	mockLUKSDevice.EXPECT().IsOpen(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().IsLUKSFormatted(ctx).Return(false, luksError)
+	mockLUKSDevice.EXPECT().LUKSFormat(ctx, "mysecretlukspassphrase").Return(luksError)
 
 	luksFormatted, err := ensureLUKSDevice(context.Background(), mockLUKSDevice, "mysecretlukspassphrase")
 	assert.Error(t, err)
-	assert.Equal(t, false, luksFormatted)
-}
-
-func TestEnsureLUKSDevice_FailsToFormat(t *testing.T) {
-	defer func(previousCommand exec.Command) {
-		command = previousCommand
-	}(command)
-
-	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockLUKSDevice := mockluks.NewMockLUKSDeviceInterface(mockCtrl)
-	mockCommand := mockexec.NewMockCommand(mockCtrl)
-
-	// Setup mock calls and reassign any clients to their mock counterparts.
-	mockLUKSDevice.EXPECT().IsOpen(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().IsLUKSFormatted(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().RawDevicePath().Return("/dev/")
-	mockDiscDump(mockCommand).Return([]byte(""), luksError)
-	command = mockCommand
-
-	luksFormatted, err := ensureLUKSDevice(context.Background(), mockLUKSDevice, "mysecretlukspassphrase")
-	assert.Error(t, err)
-	assert.Equal(t, false, luksFormatted)
-}
-
-func TestEnsureLUKSDevice_IsFormatted(t *testing.T) {
-	defer func(previousCommand exec.Command) {
-		command = previousCommand
-	}(command)
-
-	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockLUKSDevice := mockluks.NewMockLUKSDeviceInterface(mockCtrl)
-	mockCommand := mockexec.NewMockCommand(mockCtrl)
-
-	// Setup mock calls and reassign any clients to their mock counterparts.
-	mockLUKSDevice.EXPECT().IsOpen(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().IsLUKSFormatted(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().RawDevicePath().Return("/dev/")
-	mockDiscDump(mockCommand).Return([]byte("0"), nil)
-	command = mockCommand
-
-	luksFormatted, err := ensureLUKSDevice(context.Background(), mockLUKSDevice, "mysecretlukspassphrase")
-	assert.Error(t, err)
-	assert.Equal(t, false, luksFormatted)
-}
-
-func TestEnsureLUKSDevice_FailsToFormatDeviceForLUKS(t *testing.T) {
-	defer func(previousCommand exec.Command) {
-		command = previousCommand
-	}(command)
-
-	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockLUKSDevice := mockluks.NewMockLUKSDeviceInterface(mockCtrl)
-	mockCommand := mockexec.NewMockCommand(mockCtrl)
-
-	// This is needed for mocking out exec command calls within isDeviceUnformatted.
-	luksPassphrase := "mysecretlukspassphrase"
-	outSlice := make([]string, 2097152)
-	for i := range outSlice {
-		outSlice[i] = "\x00"
-	}
-	out := []byte(strings.Join(outSlice, ""))
-
-	// Setup mock calls and reassign any clients to their mock counterparts.
-	mockLUKSDevice.EXPECT().IsOpen(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().IsLUKSFormatted(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().RawDevicePath().Return("/dev/")
-	mockDiscDump(mockCommand).Return(out, nil)
-	command = mockCommand
-	mockLUKSDevice.EXPECT().LUKSFormat(ctx, luksPassphrase).Return(luksError)
-
-	luksFormatted, err := ensureLUKSDevice(context.Background(), mockLUKSDevice, luksPassphrase)
-	assert.Error(t, err)
-	assert.Equal(t, false, luksFormatted)
-}
-
-func TestEnsureLUKSDevice_FormatsDeviceForLUKS(t *testing.T) {
-	defer func(previousCommand exec.Command) {
-		command = previousCommand
-	}(command)
-
-	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockLUKSDevice := mockluks.NewMockLUKSDeviceInterface(mockCtrl)
-	mockCommand := mockexec.NewMockCommand(mockCtrl)
-
-	// This is needed for mocking out exec command calls within isDeviceUnformatted.
-	luksPassphrase := "mysecretlukspassphrase"
-	outSlice := make([]string, 2097152)
-	for i := range outSlice {
-		outSlice[i] = "\x00"
-	}
-	out := []byte(strings.Join(outSlice, ""))
-
-	// Setup mock calls and reassign any clients to their mock counterparts.
-	mockLUKSDevice.EXPECT().IsOpen(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().IsLUKSFormatted(ctx).Return(false, nil)
-	mockLUKSDevice.EXPECT().RawDevicePath().Return("/dev/")
-	mockDiscDump(mockCommand).Return(out, nil)
-	mockLUKSDevice.EXPECT().LUKSFormat(ctx, luksPassphrase).Return(nil)
-	mockLUKSDevice.EXPECT().Open(ctx, luksPassphrase).Return(nil)
-	command = mockCommand
-
-	luksFormatted, err := ensureLUKSDevice(context.Background(), mockLUKSDevice, luksPassphrase)
-	assert.NoError(t, err)
-	assert.Equal(t, true, luksFormatted)
+	assert.False(t, luksFormatted)
 }
 
 func TestEnsureLUKSDeviceClosed_DeviceDoesNotExist(t *testing.T) {

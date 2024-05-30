@@ -67,8 +67,9 @@ func (d *LUKSDevice) IsOpen(ctx context.Context) (bool, error) {
 	return false, errors.UnsupportedError("IsOpen is not supported for darwin")
 }
 
-// LUKSFormat sets up LUKS headers on the device with the specified passphrase, this destroys data on the device
-func (d *LUKSDevice) LUKSFormat(ctx context.Context, luksPassphrase string) error {
+// LUKSFormat attempts to set up LUKS headers on a device with the specified passphrase, but bails if the
+// underlying device already has a format present that is not LUKS.
+func (d *LUKSDevice) LUKSFormat(ctx context.Context, _ string) error {
 	Logc(ctx).Debug(">>>> devices_darwin.LUKSFormat")
 	defer Logc(ctx).Debug("<<<< devices_darwin.LUKSFormat")
 	return errors.UnsupportedError("LUKSFormat is not supported for darwin")
