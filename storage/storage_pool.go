@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"sort"
 	"strings"
 
@@ -170,6 +171,83 @@ func (p *StoragePool) GetLabelsJSON(ctx context.Context, key string, labelLimit 
 	}
 
 	return labelsJSON, nil
+}
+
+// GetTemplatizedLabelsJSON returns a JSON-formatted string containing the labels on this pool, suitable
+// for a label set on a storage volume.  The outer key may be customized.  For example:
+// {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}.
+func (p *StoragePool) GetTemplatizedLabelsJSON(
+	ctx context.Context, key string, labelLimit int, templateData map[string]interface{},
+) (string, error) {
+	labelOffer, ok := p.attributes[sa.Labels].(sa.LabelOffer)
+	if !ok {
+		return "", nil
+	}
+
+	labelOfferMap := labelOffer.Labels()
+	if len(labelOfferMap) == 0 {
+		return "", nil
+	}
+
+	labelOfferMap = p.GetLabelMapFromTemplate(ctx, templateData)
+
+	poolLabelMap := make(map[string]map[string]string)
+	poolLabelMap[key] = labelOfferMap
+
+	poolLabelJSON, err := json.Marshal(poolLabelMap)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to marshal pool labels: %+v", poolLabelMap)
+		return "", err
+	}
+
+	labelsJsonBytes := new(bytes.Buffer)
+	err = json.Compact(labelsJsonBytes, poolLabelJSON)
+	if err != nil {
+		Logc(ctx).Errorf("Failed to compact pool labels: %s", string(poolLabelJSON))
+		return "", err
+	}
+
+	labelsJSON := labelsJsonBytes.String()
+
+	if labelLimit != 0 && len(labelsJSON) > labelLimit {
+		Logc(ctx).WithFields(LogFields{
+			"labelsJSON":       labelsJSON,
+			"labelsJSONLength": len(labelsJSON),
+			"maxLabelLength":   labelLimit,
+		}).Error("label length exceeds the character limit")
+		return "", fmt.Errorf("label length %v exceeds the character limit of %v characters", len(labelsJSON),
+			labelLimit)
+	}
+
+	return labelsJSON, nil
+}
+
+// GetLabelMapFromTemplate generates labels from a template. The method retrieves the current labels of the storage pool
+// and iterates over them. If a label value contains template placeholders (i.e., "{{" and "}}"), it attempts to parse
+// and execute the template using the provided template data. The method returns a map of the generated labels.
+func (p *StoragePool) GetLabelMapFromTemplate(ctx context.Context, templateData map[string]interface{}) map[string]string {
+	labelMap := p.GetLabels(ctx, "")
+
+	for k, v := range labelMap {
+		if !(strings.Contains(v, "{{") && strings.Contains(v, "}}")) {
+			continue
+		}
+		tmpl, err := template.New("templatizedLabel").Parse(v)
+		if err != nil {
+			Logc(ctx).Errorf("Failed to parse label template %s:%s; %v", k, v, err)
+			continue
+		}
+
+		var tBuffer bytes.Buffer
+		err = tmpl.Execute(&tBuffer, templateData)
+		if err != nil {
+			Logc(ctx).Errorf("Failed to execute label template %s:%s; %v", k, v, err)
+			continue
+		}
+
+		labelMap[k] = tBuffer.String()
+	}
+	return labelMap
 }
 
 // GetLabels returns a map containing the labels on this pool, suitable for individual

@@ -159,6 +159,145 @@ func TestInitialize_Success(t *testing.T) {
 	assert.Equal(t, "trident_qtree_pool_t_e_s_t_", driver.flexvolNamePrefix, "Invalid FlexvolNamePrefix")
 }
 
+func TestInitializeWithNameTemplate_Success(t *testing.T) {
+	nameTemplate := "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+
+	// Get structs needed for initializing driver
+	commonConfig, _, secrets := getStructsForInitializeDriver()
+
+	// Use configJSON with the nameTemplate
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas-economy",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "aggr1",
+		"defaults": {
+				"nameTemplate": "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+		},
+		"username":          "dummyuser",
+		"password":          "dummypassword",
+		"qtreesPerFlexvol":  ""
+	}`
+
+	// Create mock driver and api
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	// Add various expect to mockAPI
+	addCommonExpectToMockApiForInitialize(mockAPI)
+	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(nil, nil)
+
+	// Initialize
+	result := driver.Initialize(ctx, driverContextCSI, configJSON,
+		commonConfig, secrets, BackendUUID)
+
+	// Assert that no error occurs and that driver is initialized
+	assert.NoError(t, result, "Expected nil in initialize, got error")
+	assert.True(t, driver.initialized, "Driver not initialized")
+	assert.Equal(t, "trident_qtree_pool_t_e_s_t_", driver.flexvolNamePrefix, "Invalid FlexvolNamePrefix")
+	for _, pool := range driver.physicalPools {
+		assert.Equal(t, nameTemplate, pool.InternalAttributes()[NameTemplate])
+	}
+}
+
+func TestInitializeWith_NameTemplateDefineInStoragePool(t *testing.T) {
+	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+
+	// Get structs needed for initializing driver
+	commonConfig, _, secrets := getStructsForInitializeDriver()
+
+	// Use configJSON with the nameTemplate
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas-economy",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "aggr1",
+		"storage": [
+	     {
+	        "defaults":
+	         {
+				"nameTemplate": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+	         }
+	     }
+	    ],
+		"username":          "dummyuser",
+		"password":          "dummypassword",
+		"qtreesPerFlexvol":  ""
+	}`
+
+	// Create mock driver and api
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	// Add various expect to mockAPI
+	addCommonExpectToMockApiForInitialize(mockAPI)
+	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(nil, nil)
+
+	// Initialize
+	result := driver.Initialize(ctx, driverContextCSI, configJSON,
+		commonConfig, secrets, BackendUUID)
+
+	// Assert that no error occurs and that driver is initialized
+	assert.NoError(t, result, "Expected nil in initialize, got error")
+	assert.True(t, driver.initialized, "Driver not initialized")
+	assert.Equal(t, "trident_qtree_pool_t_e_s_t_", driver.flexvolNamePrefix, "Invalid FlexvolNamePrefix")
+	for _, pool := range driver.virtualPools {
+		assert.Equal(t, expectedNameTemplate, pool.InternalAttributes()[NameTemplate])
+	}
+}
+
+func TestInitializeWith_NameTemplateDefineInBothPool(t *testing.T) {
+	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+
+	// Get structs needed for initializing driver
+	commonConfig, _, secrets := getStructsForInitializeDriver()
+
+	// Use configJSON with the nameTemplate
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas-economy",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "aggr1",
+		"defaults": {
+			"nameTemplate": "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+		},
+		"storage": [
+	     {
+	        "defaults":
+	         {
+				"nameTemplate": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+	         }
+	     }
+	    ],
+		"username":          "dummyuser",
+		"password":          "dummypassword",
+		"qtreesPerFlexvol":  ""
+	}`
+
+	// Create mock driver and api
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	// Add various expect to mockAPI
+	addCommonExpectToMockApiForInitialize(mockAPI)
+	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(nil, nil)
+
+	// Initialize
+	result := driver.Initialize(ctx, driverContextCSI, configJSON,
+		commonConfig, secrets, BackendUUID)
+
+	// Assert that no error occurs and that driver is initialized
+	assert.NoError(t, result, "Expected nil in initialize, got error")
+	assert.True(t, driver.initialized, "Driver not initialized")
+	assert.Equal(t, "trident_qtree_pool_t_e_s_t_", driver.flexvolNamePrefix, "Invalid FlexvolNamePrefix")
+	for _, pool := range driver.virtualPools {
+		assert.Equal(t, expectedNameTemplate, pool.InternalAttributes()[NameTemplate])
+	}
+}
+
 func TestInitialize_WithInvalidDriverAPI(t *testing.T) {
 	// Get structs needed for initializing driver
 	commonConfig, configJSON, secrets := getStructsForInitializeDriver()
@@ -2099,13 +2238,184 @@ func TestGetInternalVolumeName_WithDifferentInput(t *testing.T) {
 			// Set config
 			driver.Config.StoragePrefix = storagePrefix
 			driver.Config.DriverContext = driverContextCSI
+			volConfig := &storage.VolumeConfig{Name: test.inputName}
+			pool := storage.NewStoragePool(nil, "dummyPool")
 
 			// Get internal name
-			result := driver.GetInternalVolumeName(ctx, test.inputName)
+			result := driver.GetInternalVolumeName(ctx, volConfig, pool)
 
 			// Check if actual name contains expected name. Cannot assert on equal as new uuid is generated
 			// everytime in case the length of name is more than 64 characters, thus use assert on contains
 			assert.True(tt, strings.Contains(result, test.expectedName))
+		})
+	}
+}
+
+func TestInitialize_QtreeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
+	mockAPI, d := newMockOntapNasQtreeDriver(t)
+	flexVolPrefix := fmt.Sprintf("trident_qtree_pool_%s_", *d.Config.StoragePrefix)
+	d.flexvolNamePrefix = flexVolPrefix
+
+	volume := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	d.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "us_east_1",
+			Zone:   "us_east_1a",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			Labels: map[string]string{"lable": `{{.volume.Name}}`},
+			OntapStorageDriverConfigDefaults: drivers.OntapStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					NameTemplate: `{{.volume.Name}}`,
+				},
+			},
+		},
+	}
+
+	poolAttributes := map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(d.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{"aggr1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{"aggr1": "vmdisk"}, nil,
+	)
+
+	cases := []struct {
+		name                        string
+		physicalPoolLabels          map[string]string
+		virtualPoolLabels           map[string]string
+		physicalNameTemplate        string
+		virtualNameTemplate         string
+		physicalExpected            string
+		virtualExpected             string
+		volumeNamePhysicalExpected  string
+		volumeNameVirtualExpected   string
+		backendName                 string
+		physicalErrorMessage        string
+		virtualErrorMessage         string
+		physicalVolNameErrorMessage string
+		virtualVolNameErrorMessage  string
+	}{
+		{
+			"no name templates and labels",
+			nil,
+			nil,
+			"",
+			"",
+			"",
+			"",
+			"trident_newVolume",
+			"trident_newVolume",
+			"nas-eco-backend",
+			"Label is not empty",
+			"Label is not empty",
+			"",
+			"",
+		}, // no name templates and labels
+		{
+			"base name templates and label only",
+			map[string]string{"base-key": `{{.volume.Name}}_{{.volume.Namespace}}`},
+			nil,
+			`{{.volume.Name}}_{{.volume.Namespace}}`,
+			"",
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			"newVolume_testNamespace",
+			"newVolume_testNamespace",
+			"nas-eco-backend",
+			"Base label is not set correctly",
+			"Base label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not derived correctly",
+		}, // base name templates and label only
+		{
+			"virtual name templates and label only",
+			nil,
+			map[string]string{"virtual-key": `{{.volume.Name}}_{{.volume.StorageClass}}`},
+			"",
+			`{{.volume.Name}}_{{.volume.StorageClass}}`,
+			"",
+			`{"provisioning":{"virtual-key":"newVolume_testSC"}}`,
+			"trident_newVolume",
+			"newVolume_testSC",
+			"nas-eco-backend",
+			"Base label is not empty",
+			"Virtual pool label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not set correctly",
+		}, // virtual name templates and label only
+		{
+			"base and virtual labels",
+			map[string]string{"base-key": `{{.volume.Name}}_{{.volume.Namespace}}`},
+			map[string]string{"virtual-key": `{{.volume.Name}}_{{.volume.StorageClass}}`},
+			`{{.volume.Name}}_{{.volume.Namespace}}`,
+			`{{.volume.Name}}_{{.volume.StorageClass}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace","virtual-key":"newVolume_testSC"}}`,
+			"newVolume_testNamespace",
+			"newVolume_testSC",
+			"nas-eco-backend",
+			"Base label is not set correctly",
+			"Virtual pool label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not set correctly",
+		}, // base and virtual labels
+		{
+			"invalid physicalNameTemplate name",
+			map[string]string{"base-key": `{{.volume.Name}}_{{.volume.Namespace}}`},
+			map[string]string{"virtual-key": `{{.volume.Name}}_{{.volume.StorageClass}}`},
+			`{{.volume.Name}}_{{.volume.InvalidField}}`,
+			`{{.volume.Name}}_{{.volume.StorageClass}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace","virtual-key":"newVolume_testSC"}}`,
+			"trident_newVolume",
+			"newVolume_testSC",
+			"nas-eco-backend",
+			"Base label is not set correctly",
+			"Virtual pool label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not set correctly",
+		}, // invalid physicalNameTemplate name
+	}
+
+	for _, test := range cases {
+		t.Run(test.name, func(tt *testing.T) {
+			d.Config.Labels = test.physicalPoolLabels
+			d.Config.NameTemplate = test.physicalNameTemplate
+			d.Config.Storage[0].Labels = test.virtualPoolLabels
+			d.Config.Storage[0].NameTemplate = test.virtualNameTemplate
+			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+				test.backendName)
+			assert.NoError(t, err, "Error is not nil")
+
+			physicalPool := physicalPools["aggr1"]
+			label, err := physicalPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, test.physicalExpected, label, test.physicalErrorMessage)
+
+			d.CreatePrepare(ctx, &volume, physicalPool)
+			assert.Equal(t, volume.InternalName, test.volumeNamePhysicalExpected, test.physicalVolNameErrorMessage)
+
+			virtualPool := virtualPools["nas-eco-backend_pool_0"]
+			label, err = virtualPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, test.virtualExpected, label, test.virtualErrorMessage)
+
+			d.CreatePrepare(ctx, &volume, virtualPool)
+			assert.Equal(t, volume.InternalName, test.volumeNameVirtualExpected, test.virtualVolNameErrorMessage)
 		})
 	}
 }
@@ -2115,28 +2425,214 @@ func TestGetInternalVolumeName_WithPassthroughStore(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.StoragePrefix = validStoragePrefix
 	volName := "vol"
-	result := driver.GetInternalVolumeName(ctx, volName)
+	volConfig := &storage.VolumeConfig{Name: volName}
+	pool := storage.NewStoragePool(nil, "dummyPool")
+
+	result := driver.GetInternalVolumeName(ctx, volConfig, pool)
+
 	assert.Equal(t, *validStoragePrefix+volName, result, "Internal volume name incorrect")
+}
+
+func TestGetInternalVolumeName(t *testing.T) {
+	ctx := context.Background()
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.StoragePrefix = validStoragePrefix
+	// Test-1 UsingPassthroughStore == true
+	tridentconfig.UsingPassthroughStore = true
+	name := "Fake"
+
+	expected := "tridentFake"
+	volConfig := &storage.VolumeConfig{Name: name}
+	pool := storage.NewStoragePool(nil, "dummyPool")
+
+	out := driver.GetInternalVolumeName(ctx, volConfig, pool)
+
+	assert.Equal(t, expected, out)
+
+	// Test-2 UsingPassthroughStore == false
+	tridentconfig.UsingPassthroughStore = false
+	expected = "trident_Fake"
+
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+
+	assert.Equal(t, expected, out)
+
+	// Test-3 UsingPassthroughStore == false and valid name template
+	tridentconfig.UsingPassthroughStore = false
+	expected = "pool_dev_test_cluster_1"
+	pool = getValidOntapNASPool()
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-4 UsingPassthroughStore == false and invalid name template
+	tridentconfig.UsingPassthroughStore = false
+	// driver.GetInternalVolumeName returns an internal volume name if nameTemplate generation fails.
+	expected = "trident_Fake"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			// "Namespac" is an invalid field
+			NameTemplate: "pool_{{.labels.Cluster}}_{{.volume.Namespac}}_{{.volume.RequestName}}",
+		},
+	)
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-5 UsingPassthroughStore == false and valid name template with multiple underscore
+	tridentconfig.UsingPassthroughStore = false
+	expected = "pool_no_value"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_________{{.labels.Cluster}}_______{{.volume.Namespace}}______{{.volume." +
+				"RequestName}}_____",
+		},
+	)
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-6 UsingPassthroughStore == false and valid name template with special character
+	tridentconfig.UsingPassthroughStore = false
+	expected = "pool_no_value"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool$%^&*{{.labels.Cluster}}_______{{.volume.Namespace}}______{{.volume." +
+				"RequestName}}_____",
+		},
+	)
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-7 UsingPassthroughStore == false and valid name template with label exist in pool
+	tridentconfig.UsingPassthroughStore = false
+	// "dev_test_cluster_1" is the pool label set in function getValidOntapNASPool
+	expected = "pool_dev_test_cluster_1"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
+		},
+	)
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-8 UsingPassthroughStore == false and valid name template with volume namespace
+	tridentconfig.UsingPassthroughStore = false
+	volConfig.Namespace = "trident"
+	expected = "pool_dev_test_cluster_1_trident"
+	pool = getValidOntapNASPool()
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-9 UsingPassthroughStore == false and valid name template with volume requestName
+	tridentconfig.UsingPassthroughStore = false
+	volConfig.Namespace = "trident"
+	volConfig.RequestName = "volumeRequestName"
+	expected = "pool_dev_test_cluster_1_trident_volumeRequestName"
+	pool = getValidOntapNASPool()
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-10 invalid name template
+	expected = "trident_Fake"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName",
+		},
+	)
+	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
+	assert.Equal(t, expected, out)
 }
 
 func TestCreatePrepare_Success(t *testing.T) {
 	_, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.StoragePrefix = validStoragePrefix
-	volConfig := &storage.VolumeConfig{
-		Name: "testVol",
-	}
+	volConfig := &storage.VolumeConfig{Name: "testVol"}
+	pool := storage.NewStoragePool(nil, "dummyPool")
 
 	// CASE 1: With UsingPassthroughStore, expectedInternalName should be StoragePrefix + VolumeName
 	defer ScopedTridentConfigUsingPassthroughStore(true)()
 	expectedInternalName1 := "tridenttestVol"
-	driver.CreatePrepare(ctx, volConfig)
+	driver.CreatePrepare(ctx, volConfig, pool)
 	assert.Equal(t, expectedInternalName1, volConfig.InternalName, "Incorrect volume InternalName set by CreatePrepare")
 
 	// CASE 2: Without UsingPassthroughStore, expectedInternalName should be StoragePrefix-VolumeName with - replaced by _
 	defer ScopedTridentConfigUsingPassthroughStore(false)()
 	expectedInternalName2 := "trident_testVol"
-	driver.CreatePrepare(ctx, volConfig)
+	driver.CreatePrepare(ctx, volConfig, pool)
 	assert.Equal(t, expectedInternalName2, volConfig.InternalName, "Incorrect volume InternalName set by CreatePrepare")
+}
+
+func TestCreatePrepare_NilPool(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	flexVolPrefix := fmt.Sprintf("trident_qtree_pool_%s_", *driver.Config.StoragePrefix)
+	driver.flexvolNamePrefix = flexVolPrefix
+
+	volume := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	driver.Config.StoragePrefix = validStoragePrefix
+	driver.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}`
+
+	poolAttributes := map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(driver.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{"aggr1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{"aggr1": "vmdisk"}, nil,
+	)
+
+	var err error
+	driver.physicalPools, driver.virtualPools, err = InitializeStoragePoolsCommon(ctx, driver, poolAttributes,
+		"testBackend")
+	assert.NoError(t, err, "Error is not nil")
+
+	driver.CreatePrepare(ctx, &volume, nil)
+	assert.Equal(t, "newVolume_testNamespace", volume.InternalName, "Incorrect volume InternalName set by CreatePrepare")
+}
+
+func TestCreatePrepare_NilPool_templateNotContainVolumeName(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	flexVolPrefix := fmt.Sprintf("trident_qtree_pool_%s_", *driver.Config.StoragePrefix)
+	driver.flexvolNamePrefix = flexVolPrefix
+
+	volume := storage.VolumeConfig{Name: "pvc-1234567", Namespace: "testNamespace", StorageClass: "testSC"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	driver.Config.StoragePrefix = validStoragePrefix
+	driver.Config.NameTemplate = `{{.volume.Namespace}}_{{slice .volume.Name 4 9}}`
+
+	poolAttributes := map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(driver.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{"aggr1"}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{"aggr1": "vmdisk"}, nil,
+	)
+
+	var err error
+	driver.physicalPools, driver.virtualPools, err = InitializeStoragePoolsCommon(ctx, driver, poolAttributes,
+		"testBackend")
+	assert.NoError(t, err, "Error is not nil")
+
+	driver.CreatePrepare(ctx, &volume, nil)
+	assert.Equal(t, "testNamespace_12345", volume.InternalName, "Incorrect volume InternalName set by CreatePrepare")
 }
 
 func ScopedTridentConfigUsingPassthroughStore(newValue bool) func() {

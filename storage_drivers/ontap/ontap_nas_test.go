@@ -416,6 +416,193 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 	assert.NoError(t, result)
 }
 
+func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBackendConfig(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "myOntapNasBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	nameTemplate := "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"defaults": {
+			"nameTemplate": "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+		},
+		"username":          "dummyuser",
+		"password":          "dummypassword"
+	}`
+	secrets := map[string]string{
+		"clientcertificate": "dummy-certificate",
+	}
+	driver.telemetry = &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+	}
+	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	driver.telemetry.TridentBackendUUID = BackendUUID
+	hostname, _ := os.Hostname()
+	message, _ := json.Marshal(driver.GetTelemetry())
+
+	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
+		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+
+	assert.NoError(t, result)
+	for _, pool := range driver.physicalPools {
+		assert.Equal(t, nameTemplate, pool.InternalAttributes()[NameTemplate])
+	}
+}
+
+func TestOntapNasStorageDriverInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "myOntapNasBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"storage": [
+	     {
+	        "defaults":
+	         {
+				"nameTemplate": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+	         }
+	     }
+	    ],
+		"username":          "dummyuser",
+		"password":          "dummypassword"
+	}`
+	secrets := map[string]string{
+		"clientcertificate": "dummy-certificate",
+	}
+	driver.telemetry = &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+	}
+	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	driver.telemetry.TridentBackendUUID = BackendUUID
+	hostname, _ := os.Hostname()
+	message, _ := json.Marshal(driver.GetTelemetry())
+
+	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
+		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+
+	assert.NoError(t, result)
+	for _, pool := range driver.virtualPools {
+		assert.Equal(t, expectedNameTemplate, pool.InternalAttributes()[NameTemplate])
+	}
+}
+
+func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "ontap-nas",
+		BackendName:       "myOntapNasBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+	configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-nas",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"defaults": {
+			"nameTemplate": "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+		},
+		"storage": [
+	     {
+	        "defaults":
+	         {
+				"nameTemplate": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+	         }
+	     }
+	    ],
+		"username":          "dummyuser",
+		"password":          "dummypassword"
+	}`
+	secrets := map[string]string{
+		"clientcertificate": "dummy-certificate",
+	}
+	driver.telemetry = &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+	}
+	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	driver.telemetry.TridentBackendUUID = BackendUUID
+	hostname, _ := os.Hostname()
+	message, _ := json.Marshal(driver.GetTelemetry())
+
+	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return([]string{"dataLIF"}, nil)
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-nas", "1", false, "heartbeat", hostname, string(message), 1,
+		"trident", 5).AnyTimes()
+	mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+	result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+
+	assert.NoError(t, result)
+	for _, pool := range driver.virtualPools {
+		assert.Equal(t, expectedNameTemplate, pool.InternalAttributes()[NameTemplate])
+	}
+}
+
 func TestOntapNasStorageDriverInitialize_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -662,6 +849,9 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 	pool1.SetInternalAttributes(map[string]string{
 		"tieringPolicy": "none",
 	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.SplitOnClone = "false"
 
@@ -693,7 +883,7 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 				volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 				maxFlexvolCloneWait).Return("online", nil)
-			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
 				Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 
@@ -798,13 +988,60 @@ func TestOntapNasStorageDriverVolumeClone_StoragePoolUnset(t *testing.T) {
 	assert.Error(t, result)
 }
 
+func TestOntapNasStorageDriverVolumeClone_NameTemplateStoragePoolUnset(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:       "1g",
+		Encryption: "false",
+		FileSystem: "nfs",
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.Labels = pool1.GetLabels(ctx, "")
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		gomock.Any(), false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+		Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, nil)
+
+	assert.NoError(t, result)
+}
+
 func TestOntapNasStorageDriverVolumeClone_VolumeDoesNotExist(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
 		"tieringPolicy": "none",
+		"nameTemplate": "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+			"RequestName}}",
 	})
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	volConfig := &storage.VolumeConfig{
@@ -852,15 +1089,82 @@ func TestOntapNasStorageDriverVolumeClone_BothQosPolicy(t *testing.T) {
 	assert.Error(t, result)
 }
 
-func TestOntapNasStorageDriverVolumeClone_LabelLengthExceeding(t *testing.T) {
+func TestOntapNasStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
-	pool1 := storage.NewStoragePool(nil, "")
+	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
 		"tieringPolicy": "none",
 	})
-	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
 	driver.Config.SplitOnClone = "false"
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	tests := []struct {
+		labelTestName string
+		labelKey      string
+		labelValue    string
+		expectedLabel string
+	}{
+		{
+			"label", "nameTemplate", "dev-test-cluster-1",
+			"{\"provisioning\":{\"nameTemplate\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelKey", "", "dev-test-cluster-1",
+			"{\"provisioning\":{\"\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelValue", "nameTemplate", "",
+			"{\"provisioning\":{\"nameTemplate\":\"\"}}",
+		},
+		{
+			"labelValueSpecialCharacter", "nameTemplate^%^^\\u0026\\u0026^%_________", "dev-test-cluster-1%^%",
+			"{\"provisioning\":{\"nameTemplate^%^^\\\\u0026\\\\u0026^%_________\":\"dev-test-cluster-1%^%\"}}",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.labelTestName, func(t *testing.T) {
+			driver.Config.Labels = map[string]string{
+				test.labelKey: test.labelValue,
+			}
+			pool1.SetAttributes(map[string]sa.Offer{
+				sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+			})
+			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+			mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+			mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+				volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+				maxFlexvolCloneWait).Return("online", nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, test.expectedLabel).
+				Return(nil)
+			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+
+			result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+			assert.NoError(t, result)
+		})
+	}
+}
+
+func TestOntapNasStorageDriverVolumeClone_LabelLengthExceeding(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
 
 	longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
 		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
@@ -882,6 +1186,17 @@ func TestOntapNasStorageDriverVolumeClone_LabelLengthExceeding(t *testing.T) {
 		longLabel: "dev-test-cluster-1",
 	}
 
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{longLabel: "dev-test-cluster-1"})
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+
 	volConfig := &storage.VolumeConfig{
 		Size:                "1g",
 		Encryption:          "false",
@@ -897,6 +1212,65 @@ func TestOntapNasStorageDriverVolumeClone_LabelLengthExceeding(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_StoragePoolUnsetLabelLengthExceeding(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+		"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI" +
+		"9sHE9w5eRxpmTv0POpCB5xAqzmN6XCkxuXKc4yfNS9PRwcTSpvkA3PcKCF3TD1TJU3NYzcChsFQgm" +
+		"bAsR32cbJRdsOwx6BkHNfRCji0xSnBFUFUu1sGHfYCmzzd3OmChADIP6RwRtpnqNzvt0CU6uumBnl" +
+		"Lc5U7mBI1Ndmqhn0BBSh588thKOQcpD4bvnSBYU788tBeVxQtE8KkdUgKl8574eWldqWDiALwoiCS" +
+		"Ae2GuZzwG4ACw2uHdIkjb6FEwapSKCEogr4yWFAVCYPp2pA37Mj88QWN82BEpyoTV6BRAOsubNPfT" +
+		"N94X0qCcVaQp4L5bA4SPTQu0ag20a2k9LmVsocy5y11U3ewpzVGtENJmxyuyyAbxOFOkDxKLRMhgs" +
+		"uJMhhplD894tkEcPoiFhdsYZbBZ4MOBF6KkuBF5aqMrQbOCFt2vvTN843nRhomVMpY01SNuUeb5mh" +
+		"UN53wsqqHSGoYb1eUBDlTUDLFcCcNacxfsILqmthnrD1B5u85jRm1SfkFfuIDOgaaTM9UhxNQ1U6M" +
+		"mBaRYBkuGtTScoVTXyF4lij2sj1WWrKb7qWlaUUjxHiaxgLovPWErldCXXkNFsHgc7UYLQLF4j6lO" +
+		"I1QdTAyrtCcSxRwdkjBxj8mQy1HblHnaaBwP7Nax9FvIvxpeqyD6s3X1vfFNGAMuRsc9DKmPDfxjh" +
+		"qGzRQawFEbbURWij9xleKsUr0yCjukyKsxuaOlwbXnoFh4V3wtidrwrNXieFD608EANwvCp7u2S8Q" +
+		"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
+		"lthQFQfHVgPpUZdzZMjXry"
+	driver.Config.Labels = map[string]string{
+		"cloud":   "anf",
+		longLabel: "dev-test-cluster-1",
+	}
+
+	pool1 := storage.NewStoragePool(nil, "")
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{longLabel: "dev-test-cluster-1"})
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+
+	volConfig := &storage.VolumeConfig{
+		Size:                "1g",
+		Encryption:          "false",
+		FileSystem:          "nfs",
+		CloneSourceSnapshot: "flexvol",
+	}
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, nil)
+
+	assert.Error(t, result)
+
+	driver.physicalPools = nil
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+
+	result = driver.CreateClone(ctx, nil, volConfig, pool1)
 
 	assert.Error(t, result)
 }
@@ -942,6 +1316,9 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	pool1.SetInternalAttributes(map[string]string{
 		"tieringPolicy": "none",
 	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.SplitOnClone = "false"
 	driver.Config.NASType = sa.SMB
@@ -965,7 +1342,7 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
 	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
 		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "flexvol").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName,
@@ -1656,10 +2033,183 @@ func TestOntapNasStorageDriverGetStorageBackendPools(t *testing.T) {
 func TestOntapNasStorageDriverGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockOntapNASDriver(t)
 	driver.Config.StoragePrefix = utils.Ptr("storagePrefix_")
+	volConfig := &storage.VolumeConfig{Name: "vol1"}
+	pool := storage.NewStoragePool(nil, "dummyPool")
 
-	volName := driver.GetInternalVolumeName(ctx, "vol1")
+	volName := driver.GetInternalVolumeName(ctx, volConfig, pool)
 
 	assert.Equal(t, "storagePrefix_vol1", volName, "Strings not equal")
+}
+
+func TestOntapNasStorageDriverGetInternalVolumeNameTemplate(t *testing.T) {
+	_, driver := newMockOntapNASDriver(t)
+	driver.Config.StoragePrefix = utils.Ptr("storagePrefix_")
+	volConfig := &storage.VolumeConfig{Name: "vol1", Namespace: "testNamespace"}
+
+	pool := storage.NewStoragePool(nil, "dummyPool")
+	pool.InternalAttributes()[NameTemplate] = `{{.volume.Name}}_{{.volume.Namespace}}`
+
+	volName := driver.GetInternalVolumeName(ctx, volConfig, pool)
+
+	assert.Equal(t, "vol1_testNamespace", volName, "Strings not equal")
+}
+
+func TestInitializeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	fsxId := FSX_ID
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, &fsxId)
+	d.API = mockAPI
+
+	volume := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	d.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "us_east_1",
+			Zone:   "us_east_1a",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			Labels: map[string]string{"lable": `{{.volume.Name}}`},
+			OntapStorageDriverConfigDefaults: drivers.OntapStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					NameTemplate: `{{.volume.Name}}`,
+				},
+			},
+		},
+	}
+
+	poolAttributes := map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(d.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+
+	cases := []struct {
+		name                        string
+		physicalPoolLabels          map[string]string
+		virtualPoolLabels           map[string]string
+		physicalNameTemplate        string
+		virtualNameTemplate         string
+		physicalExpected            string
+		virtualExpected             string
+		volumeNamePhysicalExpected  string
+		volumeNameVirtualExpected   string
+		backendName                 string
+		physicalErrorMessage        string
+		virtualErrorMessage         string
+		physicalVolNameErrorMessage string
+		virtualVolNameErrorMessage  string
+	}{
+		{
+			"no name templates and labels",
+			nil,
+			nil,
+			"",
+			"",
+			"",
+			"",
+			"test_newVolume",
+			"test_newVolume",
+			"nas-backend",
+			"Label is not empty",
+			"Label is not empty",
+			"",
+			"",
+		}, // no name templates and labels
+		{
+			"base name templates and label only",
+			map[string]string{"base-key": `{{.volume.Name}}_{{.volume.Namespace}}`},
+			nil,
+			`{{.volume.Name}}_{{.volume.Namespace}}`,
+			"",
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			"newVolume_testNamespace",
+			"newVolume_testNamespace",
+			"nas-backend",
+			"Base label is not set correctly",
+			"Base label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not derived correctly",
+		}, // base name templates and label only
+		{
+			"virtual name templates and label only",
+			nil,
+			map[string]string{"virtual-key": `{{.volume.Name}}_{{.volume.StorageClass}}`},
+			"",
+			`{{.volume.Name}}_{{.volume.StorageClass}}`,
+			"",
+			`{"provisioning":{"virtual-key":"newVolume_testSC"}}`,
+			"test_newVolume",
+			"newVolume_testSC",
+			"nas-backend",
+			"Base label is not empty",
+			"Virtual pool label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not set correctly",
+		}, // virtual name templates and label only
+		{
+			"base and virtual labels",
+			map[string]string{"base-key": `{{.volume.Name}}_{{.volume.Namespace}}`},
+			map[string]string{"virtual-key": `{{.volume.Name}}_{{.volume.StorageClass}}`},
+			`{{.volume.Name}}_{{.volume.Namespace}}`,
+			`{{.volume.Name}}_{{.volume.StorageClass}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace","virtual-key":"newVolume_testSC"}}`,
+			"newVolume_testNamespace",
+			"newVolume_testSC",
+			"nas-backend",
+			"Base label is not set correctly",
+			"Virtual pool label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not set correctly",
+		}, // base and virtual labels
+	}
+
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			d.Config.Labels = test.physicalPoolLabels
+			d.Config.NameTemplate = test.physicalNameTemplate
+			d.Config.Storage[0].Labels = test.virtualPoolLabels
+			d.Config.Storage[0].NameTemplate = test.virtualNameTemplate
+			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+				test.backendName)
+			assert.NoError(t, err, "Error is not nil")
+
+			physicalPool := physicalPools["data"]
+			label, err := physicalPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, test.physicalExpected, label, test.physicalErrorMessage)
+
+			d.CreatePrepare(ctx, &volume, physicalPool)
+			assert.Equal(t, volume.InternalName, test.volumeNamePhysicalExpected, test.physicalVolNameErrorMessage)
+
+			virtualPool := virtualPools["nas-backend_pool_0"]
+			label, err = virtualPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, test.virtualExpected, label, test.virtualErrorMessage)
+
+			d.CreatePrepare(ctx, &volume, virtualPool)
+			assert.Equal(t, volume.InternalName, test.volumeNameVirtualExpected, test.virtualVolNameErrorMessage)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverGetProtocol(t *testing.T) {
@@ -1942,7 +2492,77 @@ func TestOntapNasStorageDriverCreatePrepare(t *testing.T) {
 		FileSystem:   "nfs",
 		InternalName: "vol1",
 	}
-	driver.CreatePrepare(ctx, volConfig)
+	pool := storage.NewStoragePool(nil, "dummyPool")
+
+	driver.CreatePrepare(ctx, volConfig, pool)
+}
+
+func TestOntapNasStorageDriverCreatePrepareNilPool(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	fsxId := FSX_ID
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, &fsxId)
+	d.API = mockAPI
+
+	d.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}`
+	volume := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
+
+	poolAttributes := map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(d.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+
+	var err error
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, poolAttributes, "testBackend")
+	assert.NoError(t, err, "Error is not nil")
+
+	d.CreatePrepare(ctx, &volume, nil)
+	assert.Equal(t, volume.InternalName, "newVolume_testNamespace_testSC")
+}
+
+func TestOntapNasStorageDriverCreatePrepareNilPool_templateNotContainVolumeName(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+	fsxId := FSX_ID
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	d := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName, "CSI", false, &fsxId)
+	d.API = mockAPI
+
+	d.Config.NameTemplate = `{{.volume.Namespace}}_{{.volume.StorageClass}}_{{slice .volume.Name 4 9}}`
+	volume := storage.VolumeConfig{Name: "pvc-1234567", Namespace: "testNamespace", StorageClass: "testSC"}
+
+	poolAttributes := map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(d.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+
+	var err error
+	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d, poolAttributes, "testBackend")
+	assert.NoError(t, err, "Error is not nil")
+
+	d.CreatePrepare(ctx, &volume, nil)
+	assert.Equal(t, volume.InternalName, "testNamespace_testSC_12345")
 }
 
 func TestOntapNasStorageDriverGetUpdateType(t *testing.T) {
@@ -3292,6 +3912,15 @@ func TestOntapNasStorageDriverVolumeImport_RenameFailed(t *testing.T) {
 
 func TestOntapNasStorageDriverVolumeImport_ModifyComment(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+		"nameTemplate":  "{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}",
+	})
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
 	volConfig := &storage.VolumeConfig{
 		Size:             "1g",
 		Encryption:       "false",
@@ -3446,6 +4075,186 @@ func TestOntapNasStorageDriverVolumeImport_SMBShareCreateFail(t *testing.T) {
 	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf("error creating SMB share"))
 
 	result := driver.Import(ctx, volConfig, "vol1")
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeImport_NameTemplateInvalidLabel(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+
+	driver.Config.SplitOnClone = "false"
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "SVM1:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	flexVol := &api.Volume{
+		Name:    "flexvol",
+		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
+		Size:    "1",
+	}
+
+	tests := []struct {
+		labelTestName string
+		labelKey      string
+		labelValue    string
+		expectedLabel string
+	}{
+		{
+			"label", "nameTemplate", "dev-test-cluster-1",
+			"{\"provisioning\":{\"nameTemplate\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelKey", "", "dev-test-cluster-1",
+			"{\"provisioning\":{\"\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelValue", "nameTemplate", "",
+			"{\"provisioning\":{\"nameTemplate\":\"\"}}",
+		},
+		{
+			"labelValueSpecialCharacter", "nameTemplate^%^^\\u0026\\u0026^%_________", "dev-test-cluster-1%^%",
+			"{\"provisioning\":{\"nameTemplate^%^^\\\\u0026\\\\u0026^%_________\":\"dev-test-cluster-1%^%\"}}",
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("Unix Permissions: %d", i), func(t *testing.T) {
+			driver.Config.Labels = map[string]string{
+				test.labelKey: test.labelValue,
+			}
+
+			pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{test.labelKey: test.labelValue})
+
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+			mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, "vol1", test.expectedLabel).
+				Return(nil)
+			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+
+			result := driver.Import(ctx, volConfig, "vol1")
+
+			assert.NoError(t, result)
+		})
+	}
+}
+
+func TestOntapNasStorageDriverVolumeImport_NameTemplate(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+
+	label := "nameTemplate"
+
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{label: "dev-test-cluster-1"})
+
+	driver.Config.SplitOnClone = "false"
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+
+	driver.Config.Labels = map[string]string{
+		label: "dev-test-cluster-1",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "SVM1:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	flexVol := &api.Volume{
+		Name:    "flexvol",
+		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
+		Size:    "1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, "vol1", "{\"provisioning\":{\"nameTemplate\":\"dev-test-cluster-1\"}}").
+		Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+
+	result := driver.Import(ctx, volConfig, "vol1")
+
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeImport_NameTemplateLabelLengthExceeding(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+
+	longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+		"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI" +
+		"9sHE9w5eRxpmTv0POpCB5xAqzmN6XCkxuXKc4yfNS9PRwcTSpvkA3PcKCF3TD1TJU3NYzcChsFQgm" +
+		"bAsR32cbJRdsOwx6BkHNfRCji0xSnBFUFUu1sGHfYCmzzd3OmChADIP6RwRtpnqNzvt0CU6uumBnl" +
+		"Lc5U7mBI1Ndmqhn0BBSh588thKOQcpD4bvnSBYU788tBeVxQtE8KkdUgKl8574eWldqWDiALwoiCS" +
+		"Ae2GuZzwG4ACw2uHdIkjb6FEwapSKCEogr4yWFAVCYPp2pA37Mj88QWN82BEpyoTV6BRAOsubNPfT" +
+		"N94X0qCcVaQp4L5bA4SPTQu0ag20a2k9LmVsocy5y11U3ewpzVGtENJmxyuyyAbxOFOkDxKLRMhgs" +
+		"uJMhhplD894tkEcPoiFhdsYZbBZ4MOBF6KkuBF5aqMrQbOCFt2vvTN843nRhomVMpY01SNuUeb5mh" +
+		"UN53wsqqHSGoYb1eUBDlTUDLFcCcNacxfsILqmthnrD1B5u85jRm1SfkFfuIDOgaaTM9UhxNQ1U6M" +
+		"mBaRYBkuGtTScoVTXyF4lij2sj1WWrKb7qWlaUUjxHiaxgLovPWErldCXXkNFsHgc7UYLQLF4j6lO" +
+		"I1QdTAyrtCcSxRwdkjBxj8mQy1HblHnaaBwP7Nax9FvIvxpeqyD6s3X1vfFNGAMuRsc9DKmPDfxjh" +
+		"qGzRQawFEbbURWij9xleKsUr0yCjukyKsxuaOlwbXnoFh4V3wtidrwrNXieFD608EANwvCp7u2S8Q" +
+		"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
+		"lthQFQfHVgPpUZdzZMjXry"
+
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{longLabel: "dev-test-cluster-1"})
+
+	driver.Config.SplitOnClone = "false"
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+
+	driver.Config.Labels = map[string]string{
+		longLabel: "dev-test-cluster-1",
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "SVM1:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	flexVol := &api.Volume{
+		Name:    "flexvol",
+		Comment: "{\"provisioning\": {\"storageDriverName\": \"ontap-nas\", \"backendName\": \"customBackendName\"}}",
+		Size:    "1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+
+	result := driver.Import(ctx, volConfig, "vol1")
+
 	assert.Error(t, result)
 }
 

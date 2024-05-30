@@ -111,15 +111,15 @@ func (mr *MockDriverMockRecorder) CreateFollowup(arg0, arg1 interface{}) *gomock
 }
 
 // CreatePrepare mocks base method.
-func (m *MockDriver) CreatePrepare(arg0 context.Context, arg1 *storage.VolumeConfig) {
+func (m *MockDriver) CreatePrepare(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 storage.Pool) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CreatePrepare", arg0, arg1)
+	m.ctrl.Call(m, "CreatePrepare", arg0, arg1, arg2)
 }
 
 // CreatePrepare indicates an expected call of CreatePrepare.
-func (mr *MockDriverMockRecorder) CreatePrepare(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockDriverMockRecorder) CreatePrepare(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrepare", reflect.TypeOf((*MockDriver)(nil).CreatePrepare), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrepare", reflect.TypeOf((*MockDriver)(nil).CreatePrepare), arg0, arg1, arg2)
 }
 
 // CreateSnapshot mocks base method.
@@ -208,17 +208,17 @@ func (mr *MockDriverMockRecorder) GetExternalConfig(arg0 interface{}) *gomock.Ca
 }
 
 // GetInternalVolumeName mocks base method.
-func (m *MockDriver) GetInternalVolumeName(arg0 context.Context, arg1 string) string {
+func (m *MockDriver) GetInternalVolumeName(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 storage.Pool) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetInternalVolumeName", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetInternalVolumeName", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // GetInternalVolumeName indicates an expected call of GetInternalVolumeName.
-func (mr *MockDriverMockRecorder) GetInternalVolumeName(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockDriverMockRecorder) GetInternalVolumeName(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInternalVolumeName", reflect.TypeOf((*MockDriver)(nil).GetInternalVolumeName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInternalVolumeName", reflect.TypeOf((*MockDriver)(nil).GetInternalVolumeName), arg0, arg1, arg2)
 }
 
 // GetProtocol mocks base method.

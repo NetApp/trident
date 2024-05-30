@@ -28,6 +28,230 @@ func TestGetLabelsJSONNoCharacterLimitSuccess(t *testing.T) {
 		"Label is not set correctly")
 }
 
+func TestGetTemplatizedLabelsJSONNoCharacterLimitSuccess(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `{{.volume.Name}}_{{.volume.Namespace}}`,
+	})
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label, err := pool.GetTemplatizedLabelsJSON(context.TODO(), "provisioning", 200, templateData)
+
+	assert.Nil(t, err, "Error is not nil")
+	// {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}} is 67 characters
+	assert.Equal(t, `{"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1","template":"newVolume_testNamespace"}}`, label,
+		"Label is not set correctly")
+}
+
+func TestGetTemplatizedLabelsJSONNoLabelSuccess(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(nil) // Label is nil
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label, err := pool.GetTemplatizedLabelsJSON(context.TODO(), "provisioning", 1023, templateData)
+
+	assert.Nil(t, err, "Error is not nil")
+	assert.Equal(t, label, "", "Label is set")
+}
+
+func TestGetTemplatizedLabelsJSONEmptyLabelSuccess(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{}) // Label is empty
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label, err := pool.GetTemplatizedLabelsJSON(context.TODO(), "provisioning", 1023, templateData)
+
+	assert.Nil(t, err, "Error is not nil")
+	assert.Equal(t, label, "", "Label is set")
+}
+
+func TestGetTemplatizedLabelsJSONExceedsCharacterLimitFail(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `{{.volume.Name}}_{{.volume.Namespace}}`,
+	})
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	_, err := pool.GetTemplatizedLabelsJSON(context.TODO(), "provisioning", 20, templateData)
+
+	assert.NotNil(t, err, "Error is nil")
+	assert.Contains(t, err.Error(), "exceeds the character limit", "character limit exceeded error not raised")
+}
+
+func TestGetTemplatizedLabelsJSONLabelLimitZero(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `{{.volume.Name}}_{{.volume.Namespace}}`,
+	})
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	expectedLabel := "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\",\"template\":\"newVolume_testNamespace\"}}"
+	labels, err := pool.GetTemplatizedLabelsJSON(context.TODO(), "provisioning", 0, templateData)
+
+	assert.Equal(t, expectedLabel, labels)
+
+	assert.NoError(t, err, "Error is not nil")
+}
+
+func TestGetTemplatizedLabelsJSONTemplateExecuteFail(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `{{.volume.Name}}_{{.volume.InvalidFeild}}`,
+	})
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label, err := pool.GetTemplatizedLabelsJSON(context.TODO(), "provisioning", 1023, templateData)
+
+	assert.Nil(t, err, "Error is not nil")
+	assert.Equal(t, `{"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1","template":"{{.volume.Name}}_{{.volume.InvalidFeild}}"}}`, label,
+		"Label is not set correctly")
+}
+
+func TestGetTemplatizedLabelsJSONPoolAttributesNil(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = nil
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label, err := pool.GetTemplatizedLabelsJSON(context.TODO(), "provisioning", 1023, templateData)
+
+	assert.Nil(t, err, "Error is not nil")
+	assert.Equal(t, label, "", "Label is set")
+}
+
+func TestGetLabelMapFromTemplate(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `{{.volume.Name}}_{{.volume.Namespace}}`,
+	})
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label := pool.GetLabelMapFromTemplate(context.TODO(), templateData)
+
+	expectedLabel := map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `newVolume_testNamespace`,
+	}
+	assert.Equal(t, expectedLabel, label, "Label is not set correctly")
+}
+
+func TestGetLabelMapFromTemplate_NoTemplate(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+	})
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label := pool.GetLabelMapFromTemplate(context.TODO(), templateData)
+
+	expectedLabel := map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+	}
+	assert.Equal(t, expectedLabel, label, "Label is not set correctly")
+}
+
+func TestGetLabelMapFromTemplate_NoLabelInPool(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+
+	// Test 1: label map is nil
+	pool.Attributes()["labels"] = sa.NewLabelOffer(nil)
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label := pool.GetLabelMapFromTemplate(context.TODO(), templateData)
+
+	expectedLabel := map[string]string{}
+	assert.Equal(t, expectedLabel, label, "Label is not set correctly")
+
+	// Test 2: label is nil
+	pool.Attributes()["labels"] = nil
+	label = pool.GetLabelMapFromTemplate(context.TODO(), templateData)
+
+	expectedLabel = map[string]string{}
+	assert.Equal(t, expectedLabel, label, "Label is not set correctly")
+
+	// Test 3: label is empty
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{})
+	label = pool.GetLabelMapFromTemplate(context.TODO(), templateData)
+
+	expectedLabel = map[string]string{}
+	assert.Equal(t, expectedLabel, label, "Label is not set correctly")
+}
+
+func TestGetLabelMapFromTemplate_InvalidTemplate(t *testing.T) {
+	pool := StoragePool{}
+	pool.SetAttributes(make(map[string]sa.Offer))
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `{{.volume.Name}}_{{.volume.Namespa}}`,
+	})
+
+	volume := VolumeConfig{Name: "newVolume", Namespace: "testNamespace"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	label := pool.GetLabelMapFromTemplate(context.TODO(), templateData)
+
+	expectedLabel := map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    "{{.volume.Name}}_{{.volume.Namespa}}",
+	}
+	assert.Equal(t, expectedLabel, label, "Label is not set correctly")
+}
+
 func TestGetLabelsJSONNoLabelSuccess(t *testing.T) {
 	pool := StoragePool{}
 	pool.SetAttributes(make(map[string]sa.Offer))

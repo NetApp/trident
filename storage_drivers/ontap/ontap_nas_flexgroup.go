@@ -210,6 +210,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 	}
 
 	pool.InternalAttributes()[Size] = config.Size
+	pool.InternalAttributes()[NameTemplate] = ensureUniquenessInNameTemplate(config.NameTemplate)
 	pool.InternalAttributes()[Region] = config.Region
 	pool.InternalAttributes()[Zone] = config.Zone
 	pool.InternalAttributes()[SpaceReserve] = config.SpaceReserve
@@ -246,6 +247,11 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 			size := config.Size
 			if vpool.Size != "" {
 				size = vpool.Size
+			}
+
+			nameTemplate := config.NameTemplate
+			if vpool.NameTemplate != "" {
+				nameTemplate = vpool.NameTemplate
 			}
 
 			spaceReserve := config.SpaceReserve
@@ -346,6 +352,7 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 			}
 
 			pool.InternalAttributes()[Size] = size
+			pool.InternalAttributes()[NameTemplate] = ensureUniquenessInNameTemplate(nameTemplate)
 			pool.InternalAttributes()[Region] = region
 			pool.InternalAttributes()[Zone] = zone
 			pool.InternalAttributes()[SpaceReserve] = spaceReserve
@@ -623,9 +630,11 @@ func (d *NASFlexGroupStorageDriver) Create(
 	physicalPoolNames := make([]string, 0)
 	physicalPoolNames = append(physicalPoolNames, d.physicalPool.Name())
 
-	labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxNASLabelLength)
-	if err != nil {
-		return err
+	// Make comment field from labels
+	labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+		d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength)
+	if labelErr != nil {
+		return labelErr
 	}
 
 	// Create the FlexGroup
@@ -824,17 +833,21 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 
 	labels := flexgroup.Comment
 
+	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.StoragePool{}
-		storagePoolTemp.SetAttributes(map[string]sa.Offer{
-			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
-		})
-		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxNASLabelLength)
-		if err != nil {
-			return err
+		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+
+		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
+			return labelErr
 		}
 	} else {
+		labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePool, cloneVolConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength)
+		if labelErr != nil {
+			return labelErr
+		}
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
 	}
 
@@ -903,7 +916,18 @@ func (d *NASFlexGroupStorageDriver) Import(
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexgroup.Comment) {
-			if err := d.API.FlexgroupSetComment(ctx, volConfig.InternalName, originalName, ""); err != nil {
+			storagePool := d.physicalPool
+
+			var labels string
+			var labelErr error
+			if storagePool != nil {
+				// Make comment field from labels
+				if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+					d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
+					return labelErr
+				}
+			}
+			if err := d.API.FlexgroupSetComment(ctx, volConfig.InternalName, originalName, labels); err != nil {
 				return err
 			}
 		}
@@ -1404,12 +1428,20 @@ func (d *NASFlexGroupStorageDriver) GetVolumeOpts(
 	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
-func (d *NASFlexGroupStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
-	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
+func (d *NASFlexGroupStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) string {
+	return getInternalVolumeNameCommon(ctx, &d.Config, volConfig, pool)
 }
 
-func (d *NASFlexGroupStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	createPrepareCommon(ctx, d, volConfig)
+func (d *NASFlexGroupStorageDriver) CreatePrepare(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) {
+	// The process of generating a custom volume name necessitates a name template and label.
+	if storage.IsStoragePoolUnset(pool) && d.physicalPool.InternalAttributes()[NameTemplate] != "" {
+		pool = d.physicalPool
+	}
+	createPrepareCommon(ctx, d, volConfig, pool)
 }
 
 func (d *NASFlexGroupStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {

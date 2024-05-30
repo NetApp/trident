@@ -2321,7 +2321,7 @@ func runRecoveryTests(
 			t.Fatalf("%e", errors.TypeAssertionError("backend.Driver().(*fakedriver.StorageDriver)"))
 		}
 		// Destroy should be always called on the backend
-		if _, ok := f.DestroyedVolumes[f.GetInternalVolumeName(ctx(), c.volumeConfig.Name)]; !ok && c.expectDestroy {
+		if _, ok := f.DestroyedVolumes[f.GetInternalVolumeName(ctx(), c.volumeConfig, nil)]; !ok && c.expectDestroy {
 			t.Errorf("%s: Destroy not called on volume.", c.name)
 		}
 		_, err = newOrchestrator.storeClient.GetVolume(ctx(), c.volumeConfig.Name)

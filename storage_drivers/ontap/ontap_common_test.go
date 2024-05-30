@@ -805,6 +805,7 @@ func getValidOntapNASPool() *storage.StoragePool {
 			SplitOnClone:    "false",
 			TieringPolicy:   "",
 			Size:            "1Gi",
+			NameTemplate:    "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
 		},
 	)
 	return pool
@@ -1243,6 +1244,70 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriverSAN, 0)
 
 	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Volume name template invalid, ontap NAS
+	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false, nil)
+	physicalPools = map[string]storage.Pool{}
+	pool1 := getValidOntapNASPool()
+	poolAttribute := pool1.InternalAttributes()
+	poolAttribute[NameTemplate] = "pool_{{.labels.Cluster}}_{{.volume.Namespac}_.volume." +
+		"RequestName}}" // invalid template
+	pool1.SetInternalAttributes(poolAttribute)
+	pool1.SetName("test")
+
+	virtualPools = map[string]storage.Pool{"test": pool1}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+
+	assert.Error(t, err, "template is invalid, expected an error")
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: label template invalid
+	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false, nil)
+	physicalPools = map[string]storage.Pool{}
+	storagePool := getValidOntapNASPool()
+
+	poolAttribute = storagePool.InternalAttributes()
+	poolAttribute[NameTemplate] = "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_.volume.RequestName}}"
+	storagePool.SetInternalAttributes(poolAttribute)
+	storagePool.SetName("test")
+
+	virtualPools = map[string]storage.Pool{"test": storagePool}
+	virtualPools["test"].Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"template": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName",
+	})
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	assert.Error(t, err, "template is invalid, expected an error")
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Postive case: Name and label template valid
+	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false, nil)
+	physicalPools = map[string]storage.Pool{}
+	storagePool = getValidOntapNASPool()
+
+	poolAttribute = storagePool.InternalAttributes()
+	poolAttribute[NameTemplate] = "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_.volume.RequestName}}"
+	storagePool.SetInternalAttributes(poolAttribute)
+	storagePool.SetName("test")
+
+	virtualPools = map[string]storage.Pool{"test": storagePool}
+	virtualPools["test"].Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"template": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
+	})
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+
+	err = ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+	assert.NoError(t, err, "template is valid, expected no error")
 }
 
 func TestValidateStoragePools_LUKS(t *testing.T) {
@@ -3833,6 +3898,7 @@ func TestValidateBidirectionalChapCredentials_DifferntCHAPUsers(t *testing.T) {
 }
 
 func TestGetInternalVolumeNameCommon(t *testing.T) {
+	ctx := context.Background()
 	// Test-1 UsingPassthroughStore == true
 	tridentconfig.UsingPassthroughStore = true
 	storagePrefix := "trident"
@@ -3841,9 +3907,14 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 		DebugTraceFlags: map[string]bool{"method": true},
 		StoragePrefix:   &storagePrefix,
 	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+	}
 	expected := "tridentFake"
+	volConfig := &storage.VolumeConfig{Name: name}
+	pool := storage.NewStoragePool(nil, "dummyPool")
 
-	out := getInternalVolumeNameCommon(commonConfig, name)
+	out := getInternalVolumeNameCommon(ctx, config, volConfig, pool)
 
 	assert.Equal(t, expected, out)
 
@@ -3851,9 +3922,151 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 	tridentconfig.UsingPassthroughStore = false
 	expected = "trident_Fake"
 
-	out = getInternalVolumeNameCommon(commonConfig, name)
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
 
 	assert.Equal(t, expected, out)
+
+	// Test-3 UsingPassthroughStore == false and valid name template
+	tridentconfig.UsingPassthroughStore = false
+	expected = "pool_dev_test_cluster_1"
+	pool = getValidOntapNASPool()
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-4 UsingPassthroughStore == false and invalid name template
+	tridentconfig.UsingPassthroughStore = false
+	// getInternalVolumeNameCommon returns an internal volume name if nameTemplate generation fails.
+	expected = "trident_Fake"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			// "Namespac" is an invalid field
+			NameTemplate: "pool_{{.labels.Cluster}}_{{.volume.Namespac}}_{{.volume.RequestName}}",
+		},
+	)
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-5 UsingPassthroughStore == false and valid name template with multiple underscore
+	tridentconfig.UsingPassthroughStore = false
+	expected = "pool_no_value"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_________{{.labels.Cluster}}_______{{.volume.Namespace}}______{{.volume." +
+				"RequestName}}_____",
+		},
+	)
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-6 UsingPassthroughStore == false and valid name template with special character
+	tridentconfig.UsingPassthroughStore = false
+	expected = "pool_no_value"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool$%^&*{{.labels.Cluster}}_______{{.volume.Namespace}}______{{.volume." +
+				"RequestName}}_____",
+		},
+	)
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-7 UsingPassthroughStore == false and valid name template with label exist in pool
+	tridentconfig.UsingPassthroughStore = false
+	// "dev_test_cluster_1" is the pool label set in function getValidOntapNASPool
+	expected = "pool_dev_test_cluster_1"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
+		},
+	)
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-8 UsingPassthroughStore == false and valid name template with volume namespace
+	tridentconfig.UsingPassthroughStore = false
+	volConfig.Namespace = "trident"
+	expected = "pool_dev_test_cluster_1_trident"
+	pool = getValidOntapNASPool()
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-9 UsingPassthroughStore == false and valid name template with volume requestName
+	tridentconfig.UsingPassthroughStore = false
+	volConfig.Namespace = "trident"
+	volConfig.RequestName = "volumeRequestName"
+	expected = "pool_dev_test_cluster_1_trident_volumeRequestName"
+	pool = getValidOntapNASPool()
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+
+	// Test-10 invalid name template
+	expected = "trident_Fake"
+	pool = getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_{{.labels.clusterName}}_{{.volume.Namespace}}_{{.volume.RequestName",
+		},
+	)
+	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
+	assert.Equal(t, expected, out)
+}
+
+func TestEnsureUniquenessInNameTemplate(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "name template contains .volume.Name",
+			input:    "test_{{.volume.Name}}",
+			expected: "test_{{.volume.Name}}",
+		},
+		{
+			name:     "name template empty",
+			input:    "",
+			expected: "",
+		},
+		{
+			name:     "name template does not contain .volume.Name",
+			input:    "test",
+			expected: "test_{{slice .volume.Name 4 9}}",
+		},
+		{
+			name:     "name template has slice function",
+			input:    "test_{{slice .volume.Name 4 9}}",
+			expected: "test_{{slice .volume.Name 4 9}}",
+		},
+		{
+			name:     "name template contains .volume.Name outside a curly brackets ",
+			input:    "test.volume.Name",
+			expected: "test.volume.Name_{{slice .volume.Name 4 9}}",
+		},
+		{
+			name:     "name template contains .volume.Name outside a curly brackets",
+			input:    "test_{{test}}.volume.Name{{test}}",
+			expected: "test_{{test}}.volume.Name{{test}}_{{slice .volume.Name 4 9}}",
+		},
+		{
+			name:  "name template contains .volume.Namespace, does not contain .volume.Name",
+			input: "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
+			expected: "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_" +
+				"{{slice .volume.Name 4 9}}",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			output := ensureUniquenessInNameTemplate(test.input)
+			if output != test.expected {
+				t.Errorf("expected %s, got %s", test.expected, output)
+			}
+		})
+	}
 }
 
 func MockModifyVolumeExportPolicy(ctx context.Context, volName, policyName string) error {
@@ -4927,7 +5140,8 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	storageDriver.Config.Region = "dummyRegion"
 	storageDriver.Config.Zone = "dummyZone"
 	CommonConfigDefault := &drivers.CommonStorageDriverConfigDefaults{
-		Size: "10000",
+		Size:         "10000",
+		NameTemplate: "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
 	}
 	defaults := &drivers.OntapStorageDriverConfigDefaults{
 		SpaceAllocation:                   "fake",
@@ -5714,4 +5928,288 @@ func TestGetSVMState(t *testing.T) {
 	state, code = getSVMState(ctx, mockAPI, "", existingPools)
 	assert.Empty(t, state, "There should not be any state reason")
 	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should be online and no state reason change")
+}
+
+func TestConstructLabelsFromConfigs(t *testing.T) {
+	ctx := context.Background()
+
+	pool := storage.NewStoragePool(nil, "dummyPool")
+	volConfig := &storage.VolumeConfig{Name: "testVol"}
+	storagePrefix := "trident"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   &storagePrefix,
+	}
+
+	_, err := ConstructLabelsFromConfigs(ctx, pool, volConfig, commonConfig, api.MaxNASLabelLength)
+
+	assert.Nil(t, err)
+}
+
+func TestConstructLabelsFromConfigs_LablelTemplate(t *testing.T) {
+	ctx := context.Background()
+
+	pool1 := storage.NewStoragePool(nil, "dummyPool")
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"template": `{{.volume.Name}}`,
+	})
+	volConfig := &storage.VolumeConfig{
+		Name: "testVol",
+	}
+	storagePrefix := "trident"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   &storagePrefix,
+	}
+
+	// Test 1: Positive test
+	expectedLabel := "{\"provisioning\":{\"template\":\"testVol\"}}"
+	label, err := ConstructLabelsFromConfigs(ctx, pool1, volConfig, commonConfig, api.MaxSANLabelLength)
+
+	// Test 2: Template has invalid volume field. The template execution failed.
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLabel, label)
+
+	pool2 := storage.NewStoragePool(nil, "dummyPool")
+	pool2.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"template": `pool_{{.volume.Name}}_{{.volume.InvalidFeild}}`,
+	})
+
+	expectedLabel = "{\"provisioning\":{\"template\":\"pool_{{.volume.Name}}_{{.volume.InvalidFeild}}\"}}"
+	label, err = ConstructLabelsFromConfigs(ctx, pool2, volConfig, commonConfig, api.MaxNASLabelLength)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLabel, label)
+
+	// Test 3: The template is missing curly bracket. Template execution fail and label contain string in
+	pool3 := storage.NewStoragePool(nil, "dummyPool")
+	pool3.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"template": `{{.volume.Name}}_{{.volume.InvalidFeild`,
+	})
+
+	expectedLabel = "{\"provisioning\":{\"template\":\"{{.volume.Name}}_{{.volume.InvalidFeild\"}}"
+	label, err = ConstructLabelsFromConfigs(ctx, pool3, volConfig, commonConfig, api.MaxNASLabelLength)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedLabel, label)
+
+	pool4 := storage.NewStoragePool(nil, "dummyPool")
+	pool4.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"template": `pool_{{.volume.Name}}_{{.volume.Namespace}}_tridentSanVolumethisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+			"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+			"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI"`,
+	})
+	volConfig = &storage.VolumeConfig{
+		Name:      "testVol",
+		Namespace: "Trident",
+	}
+	storagePrefix = "trident"
+	commonConfig = &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   &storagePrefix,
+	}
+
+	expectedLabel = "{\"provisioning\":{\"template\":\"testVol\"}}"
+	label, err = ConstructLabelsFromConfigs(ctx, pool4, volConfig, commonConfig, api.MaxSANLabelLength)
+
+	assert.Error(t, err)
+}
+
+func TestValidateStoragePools_Tempatizedlabels_virtualPool(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false, nil)
+
+	physicalPools := map[string]storage.Pool{}
+	virtualPools := map[string]storage.Pool{"test": getValidOntapNASPool()}
+
+	cases := []struct {
+		Name          string
+		labelValue    string
+		expectedError bool
+	}{
+		{"stringLabel", "1_cluster_pool", false},
+		{"IntLabel", "1234", false},
+		{"specialCharachterLabel", "1_cluster_pool&$#", false},
+		{"lableValueEmpty", "", false},
+		{"ValidTemplate", "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}", false},
+		{"InvalidTemplateLabel", "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName", true},
+	}
+
+	for _, c := range cases {
+		t.Run(fmt.Sprintf(c.Name), func(t *testing.T) {
+			virtualPools["test"].Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+				"template": c.labelValue,
+			})
+
+			storageDriver.virtualPools = virtualPools
+			storageDriver.physicalPools = physicalPools
+
+			err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+			if !c.expectedError {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateStoragePools_Tempatizedlabels_physicalPool(t *testing.T) {
+	vserverAdminHost := ONTAPTEST_LOCALHOST
+	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
+
+	storageDriver := newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
+		tridentconfig.DriverContext("CSI"), false, nil)
+
+	virtualPools := map[string]storage.Pool{}
+	physicalPools := map[string]storage.Pool{"test": getValidOntapNASPool()}
+
+	cases := []struct {
+		Name          string
+		labelValue    string
+		expectedError bool
+	}{
+		{"stringLabel", "1_cluster_pool", false},
+		{"IntLabel", "1234", false},
+		{"specialCharachterLabel", "1_cluster_pool&$#", false},
+		{"ValidTemplate", "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}", false},
+		{"InvalidTemplateLabel", "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName", true},
+	}
+
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("test%v", i), func(t *testing.T) {
+			physicalPools["test"].Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+				"template": c.labelValue,
+			})
+
+			storageDriver.virtualPools = virtualPools
+			storageDriver.physicalPools = physicalPools
+
+			err := ValidateStoragePools(context.Background(), physicalPools, virtualPools, storageDriver, 0)
+			if !c.expectedError {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestGetVolumeNameFromTemplate(t *testing.T) {
+	ctx := context.Background()
+	tridentconfig.UsingPassthroughStore = false
+
+	storagePrefix := "trident"
+	name := "Fake"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   &storagePrefix,
+	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+	}
+
+	volConfig := &storage.VolumeConfig{Name: name}
+
+	expected := "pool_dev_test_cluster_1"
+	pool := getValidOntapNASPool()
+	out, err := GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	assert.NoError(t, err, "Error is not nil, expected no error")
+	assert.Equal(t, expected, out)
+}
+
+func TestGetVolumeNameFromTemplate_invalidNameTemplate(t *testing.T) {
+	ctx := context.Background()
+	tridentconfig.UsingPassthroughStore = false
+
+	storagePrefix := "trident"
+	name := "pvc-123456"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   &storagePrefix,
+	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+	}
+
+	volConfig := &storage.VolumeConfig{Name: name}
+
+	expected := ""
+	pool := getValidOntapNASPool()
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_{{.volume.Invalid}}",
+		},
+	)
+	out, err := GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	assert.Error(t, err, "Error is nil, expected an error")
+	assert.Equal(t, expected, out)
+
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_{{.volume.Name",
+		},
+	)
+	out, err = GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	assert.Error(t, err, "Error is nil, expected an error")
+	assert.Equal(t, expected, out)
+}
+
+func TestGetVolumeNameFromTemplateWithLabel(t *testing.T) {
+	ctx := context.Background()
+	tridentconfig.UsingPassthroughStore = false
+
+	storagePrefix := "trident"
+	name := "Fake"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   &storagePrefix,
+	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+	}
+	expected := "tridentFake"
+	volConfig := &storage.VolumeConfig{Name: name, Namespace: "trident", RequestName: "pvc"}
+
+	expected = "pool_Fake_trident_trident_pvc"
+	pool := getValidOntapNASPool()
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cloud":       "anf",
+		"clusterName": "dev-test-cluster-1",
+		"template":    `{{.volume.Name}}_{{.volume.Namespace}}`,
+	})
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "pool_{{.labels.template}}_{{.volume.Namespace}}_{{.volume.RequestName}}",
+		},
+	)
+	out, err := GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	assert.NoError(t, err, "Error is not nil, expected no error")
+	assert.Equal(t, expected, out)
+}
+
+func TestConstructPoolForLabels(t *testing.T) {
+	nameTemplate := "testTemplate"
+	labels := map[string]string{
+		"label1": "value1",
+		"label2": "value2",
+	}
+
+	pool := ConstructPoolForLabels(nameTemplate, labels)
+
+	assert.Equal(t, nameTemplate, pool.InternalAttributes()[NameTemplate])
+	assert.Equal(t, sa.NewLabelOffer(labels), pool.Attributes()["labels"])
+
+	pool = ConstructPoolForLabels("", labels)
+	assert.Equal(t, sa.NewLabelOffer(labels), pool.Attributes()["labels"])
+
+	pool = ConstructPoolForLabels("", nil)
+	assert.Equal(t, sa.NewLabelOffer(nil), pool.Attributes()["labels"])
 }

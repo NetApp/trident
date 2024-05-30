@@ -108,5 +108,7 @@ type Pool interface {
 	RemoveStorageClass(class string) bool
 	ConstructExternal() *PoolExternal
 	GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error)
+	GetTemplatizedLabelsJSON(ctx context.Context, key string, labelLimit int, templateData map[string]interface{}) (string, error)
 	GetLabels(ctx context.Context, prefix string) map[string]string
+	GetLabelMapFromTemplate(ctx context.Context, templateData map[string]interface{}) map[string]string
 }

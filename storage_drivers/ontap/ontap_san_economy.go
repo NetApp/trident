@@ -73,19 +73,11 @@ func (o *LUNHelper) GetSnapPath(bucketName, internalVolName, snapName string) st
 	return snapPath
 }
 
-// parameter: bucketName=my-Bucket
-// output: /vol/my_Bucket/storagePrefix_*_snapshot_*
-func (o *LUNHelper) GetSnapPathPattern(bucketName string) string {
-	bucketName = strings.ReplaceAll(bucketName, "-", "_")
-	snapPattern := fmt.Sprintf("/vol/%v/%v*"+snapshotNameSeparator+"*", bucketName, *o.Config.StoragePrefix)
-	return snapPattern
-}
-
 // parameter: volName=my-Vol
 // output: /vol/*/storagePrefix_my_Vol_snapshot_*
 func (o *LUNHelper) GetSnapPathPatternForVolume(externalVolumeName string) string {
 	externalVolumeName = strings.ReplaceAll(externalVolumeName, "-", "_")
-	snapPattern := fmt.Sprintf("/vol/*/%v%v"+snapshotNameSeparator+"*", *o.Config.StoragePrefix, externalVolumeName)
+	snapPattern := fmt.Sprintf("/vol/*/*%v"+snapshotNameSeparator+"*", externalVolumeName)
 	return snapPattern
 }
 
@@ -94,12 +86,7 @@ func (o *LUNHelper) GetSnapPathPatternForVolume(externalVolumeName string) strin
 // parameter: volName=storagePrefix_my-Lun
 // output: storagePrefix_my_Lun
 func (o *LUNHelper) GetInternalVolumeName(volName string) string {
-	volName = strings.ReplaceAll(volName, "-", "_")
-	if !strings.HasPrefix(volName, *o.Config.StoragePrefix) {
-		name := fmt.Sprintf("%v%v", *o.Config.StoragePrefix, volName)
-		return name
-	}
-	return volName
+	return strings.ReplaceAll(volName, "-", "_")
 }
 
 // parameter: /vol/my_Bucket/storagePrefix_my-Lun
@@ -1818,16 +1805,26 @@ func (d *SANEconomyStorageDriver) GetVolumeOpts(
 	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
-func (d *SANEconomyStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
-	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
+func (d *SANEconomyStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) string {
+	return getInternalVolumeNameCommon(ctx, &d.Config, volConfig, pool)
 }
 
-func (d *SANEconomyStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+func (d *SANEconomyStorageDriver) CreatePrepare(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) {
 	if !volConfig.ImportNotManaged && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		// All new CSI ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
 		volConfig.AccessInfo.PublishEnforcement = true
 	}
-	createPrepareCommon(ctx, d, volConfig)
+
+	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
+	// The process of generating a custom volume name necessitates a name template and label.
+	if storage.IsStoragePoolUnset(pool) {
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+	}
+	createPrepareCommon(ctx, d, volConfig, pool)
 }
 
 func (d *SANEconomyStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {

@@ -7200,9 +7200,10 @@ func TestCreatePrepare(t *testing.T) {
 	storagePrefix := "myPrefix-"
 	driver.Config.StoragePrefix = &storagePrefix
 
+	storagePool := driver.pools["anf_pool"]
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
 
-	driver.CreatePrepare(ctx, volConfig)
+	driver.CreatePrepare(ctx, volConfig, storagePool)
 
 	assert.Equal(t, "myPrefix-testvol1", volConfig.InternalName)
 }
@@ -7222,7 +7223,10 @@ func TestGetInternalVolumeName_PassthroughStore(t *testing.T) {
 	storagePrefix := "myPrefix-"
 	driver.Config.StoragePrefix = &storagePrefix
 
-	result := driver.GetInternalVolumeName(ctx, "testvol1")
+	storagePool := driver.pools["anf_pool"]
+	volConfig := &storage.VolumeConfig{Name: "testvol1"}
+
+	result := driver.GetInternalVolumeName(ctx, volConfig, storagePool)
 
 	assert.Equal(t, "myPrefix-testvol1", result, "internal name mismatch")
 }
@@ -7234,7 +7238,10 @@ func TestGetInternalVolumeName_CSI(t *testing.T) {
 	storagePrefix := "myPrefix-"
 	driver.Config.StoragePrefix = &storagePrefix
 
-	result := driver.GetInternalVolumeName(ctx, "pvc-5e522901-b891-41d8-9e83-5496d2e62e71")
+	storagePool := driver.pools["anf_pool"]
+	volConfig := &storage.VolumeConfig{Name: "pvc-5e522901-b891-41d8-9e83-5496d2e62e71"}
+
+	result := driver.GetInternalVolumeName(ctx, volConfig, storagePool)
 
 	assert.Equal(t, "pvc-5e522901-b891-41d8-9e83-5496d2e62e71", result, "internal name mismatch")
 }
@@ -7246,7 +7253,10 @@ func TestGetInternalVolumeName_NonCSI(t *testing.T) {
 	storagePrefix := "myPrefix-"
 	driver.Config.StoragePrefix = &storagePrefix
 
-	result := driver.GetInternalVolumeName(ctx, "testvol1")
+	storagePool := driver.pools["anf_pool"]
+	volConfig := &storage.VolumeConfig{Name: "testvol1"}
+
+	result := driver.GetInternalVolumeName(ctx, volConfig, storagePool)
 
 	anfRegex := regexp.MustCompile(`^anf-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 	assert.True(t, anfRegex.MatchString(result), "internal name mismatch")

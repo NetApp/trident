@@ -1919,7 +1919,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		}
 
 		// CreatePrepare has a side effect that updates the mutableConfig with the backend-specific internal name
-		backend.Driver().CreatePrepare(ctx, mutableConfig)
+		backend.Driver().CreatePrepare(ctx, mutableConfig, pool)
 
 		// Update transaction with updated mutableConfig
 		txn = &storage.VolumeTransaction{
@@ -2330,6 +2330,8 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		cloneConfig.SplitOnClone = volumeConfig.SplitOnClone
 	}
 	cloneConfig.ReadOnlyClone = volumeConfig.ReadOnlyClone
+	cloneConfig.Namespace = volumeConfig.Namespace
+	cloneConfig.RequestName = volumeConfig.RequestName
 
 	// If it's from snapshot, we need the LUKS passphrases value from the snapshot
 	isLUKS, err := strconv.ParseBool(cloneConfig.LUKSEncryption)
@@ -2391,7 +2393,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	}
 
 	// Create the backend-specific internal names so they are saved in the transaction
-	backend.Driver().CreatePrepare(ctx, cloneConfig)
+	backend.Driver().CreatePrepare(ctx, cloneConfig, pool)
 
 	// Add transaction in case the operation must be rolled back later
 	txn = &storage.VolumeTransaction{

@@ -1835,8 +1835,8 @@ func (d *NFSStorageDriver) GetStorageBackendSpecs(_ context.Context, backend sto
 	return nil
 }
 
-func (d *NFSStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
+func (d *NFSStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
@@ -1868,7 +1868,11 @@ func (d *NFSStorageDriver) getStorageBackendPools(ctx context.Context) []drivers
 	return backendPools
 }
 
-func (d *NFSStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
+func (d *NFSStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
+) string {
+	name := volConfig.Name
+
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name

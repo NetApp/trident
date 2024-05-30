@@ -2272,8 +2272,9 @@ func TestGetStorageBackendSpecs(t *testing.T) {
 func TestCreatePrepare(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	d := newTestGCPDriver(nil)
-	d.CreatePrepare(ctx(), volConfig)
-	name := d.GetInternalVolumeName(ctx(), volConfig.Name)
+	pool := storage.NewStoragePool(nil, "pool1")
+	d.CreatePrepare(ctx(), volConfig, pool)
+	name := d.GetInternalVolumeName(ctx(), volConfig, pool)
 	assert.Equal(t, volConfig.InternalName, name, "Different internal name for volume")
 }
 
@@ -2302,16 +2303,20 @@ func TestGetStorageBackendPools(t *testing.T) {
 }
 
 func TestGetInternalVolumeName(t *testing.T) {
+	volConfig, _ := getCreateVolumeStructs()
 	d := newTestGCPDriver(nil)
+	pool := storage.NewStoragePool(nil, "pool1")
 
 	// Using pass through store
 	tridentconfig.UsingPassthroughStore = true
-	name := d.GetInternalVolumeName(ctx(), "test-vol")
+	volConfig.Name = "test-vol"
+	name := d.GetInternalVolumeName(ctx(), volConfig, pool)
 	assert.Equal(t, name, "test_test-vol", "Wrong internal name")
 
 	// Using existing UUID as volume name
 	tridentconfig.UsingPassthroughStore = false
-	name = d.GetInternalVolumeName(ctx(), "pvc-9d77b6f75f24")
+	volConfig.Name = "pvc-9d77b6f75f24"
+	name = d.GetInternalVolumeName(ctx(), volConfig, pool)
 	assert.Equal(t, name, "pvc-9d77b6f75f24", "Wrong internal name")
 }
 

@@ -1638,11 +1638,26 @@ func (d *NASQtreeStorageDriver) GetVolumeOpts(
 	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
-func (d *NASQtreeStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
+func (d *NASQtreeStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) string {
+	name := volConfig.Name
+
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
 	} else {
+		if pool != nil && pool.InternalAttributes()[NameTemplate] != "" {
+			internal, err := GetVolumeNameFromTemplate(ctx, &d.Config, volConfig, pool)
+			if err == nil {
+				if len(internal) > 64 {
+					Logc(ctx).Error("Custom volume name length for ontap-nas-economy volume is " +
+						"exceeding the 64 character limit. Created volume with UUID-based name.")
+				} else {
+					return internal
+				}
+			}
+		}
 		// With an external store, any transformation of the name is fine
 		internal := drivers.GetCommonInternalVolumeName(d.Config.CommonStorageDriverConfig, name)
 		internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
@@ -1668,8 +1683,15 @@ func (d *NASQtreeStorageDriver) GetInternalVolumeName(ctx context.Context, name 
 	}
 }
 
-func (d *NASQtreeStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	createPrepareCommon(ctx, d, volConfig)
+func (d *NASQtreeStorageDriver) CreatePrepare(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) {
+	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
+	// The process of generating a custom volume name necessitates a name template and label.
+	if storage.IsStoragePoolUnset(pool) {
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+	}
+	createPrepareCommon(ctx, d, volConfig, pool)
 }
 
 func (d *NASQtreeStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {

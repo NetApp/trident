@@ -3868,8 +3868,9 @@ func TestSubvolumeGetStorageBackendSpecs_VirtualPoolExists(t *testing.T) {
 func TestSubvolumeCreatePrepare(t *testing.T) {
 	_, driver := newMockANFSubvolumeDriver(t)
 	volConfig := &storage.VolumeConfig{Name: "testvol1"}
+	pool := storage.NewStoragePool(nil, "dummyPool")
 
-	driver.CreatePrepare(ctx, volConfig)
+	driver.CreatePrepare(ctx, volConfig, pool)
 }
 
 func TestSubvolumeGetStorageBackendPhysicalPoolNames(t *testing.T) {
@@ -3907,7 +3908,10 @@ func TestSubvolumeGetStorageBackendPools(t *testing.T) {
 func TestSubvolumeGetInternalVolumeName(t *testing.T) {
 	_, driver := newMockANFSubvolumeDriver(t)
 	tridentconfig.UsingPassthroughStore = true
-	result := driver.GetInternalVolumeName(ctx, "testvol1")
+	volConfig := &storage.VolumeConfig{Name: "testvol1"}
+	pool := storage.NewStoragePool(nil, "dummyPool")
+
+	result := driver.GetInternalVolumeName(ctx, volConfig, pool)
 
 	assert.Equal(t, "trident-testvol1", result, "internal name mismatch")
 }

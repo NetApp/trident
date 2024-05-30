@@ -429,11 +429,12 @@ func (d *SANStorageDriver) Create(
 			continue
 		}
 
-		labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
-		if err != nil {
-			return err
+		// Make comment field from labels
+		labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
+		if labelErr != nil {
+			return labelErr
 		}
-
 		// Create the volume
 		err = d.API.VolumeCreate(
 			ctx, api.Volume{
@@ -579,33 +580,36 @@ func (d *SANStorageDriver) CreateClone(
 
 	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
-	var err error
+
+	// Ensure the volume exists
+	sourceFlexvol, err := d.API.VolumeInfo(ctx, cloneVolConfig.CloneSourceVolumeInternal)
+	if err != nil {
+		return err
+	} else if sourceFlexvol == nil {
+		return fmt.Errorf("volume %s not found", cloneVolConfig.CloneSourceVolumeInternal)
+	}
+
+	// Get the source volume's label
 	labels := ""
+	if sourceFlexvol.Comment != "" {
+		labels = sourceFlexvol.Comment
+	}
+
+	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.StoragePool{}
-		storagePoolTemp.SetAttributes(map[string]sa.Offer{
-			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
-		})
-		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
-		if err != nil {
-			return err
-		}
+		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
 
+		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
+			return labelErr
+		}
 	} else {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
 
-		// Ensure the volume exists
-		flexvol, err := d.API.VolumeInfo(ctx, cloneVolConfig.CloneSourceVolumeInternal)
-		if err != nil {
-			return err
-		} else if flexvol == nil {
-			return fmt.Errorf("volume %s not found", cloneVolConfig.CloneSourceVolumeInternal)
-		}
-
-		// Get the source volume's label
-		if flexvol.Comment != "" {
-			labels = flexvol.Comment
+		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePool, cloneVolConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength); labelErr != nil {
+			return labelErr
 		}
 	}
 
@@ -709,7 +713,17 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
 		}
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexvol.Comment) {
-			err = d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, "")
+			// Set the base label
+			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+
+			// Make comment field from labels
+			labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
+				d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength)
+			if labelErr != nil {
+				return labelErr
+			}
+
+			err = d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, labels)
 			if err != nil {
 				Logc(ctx).WithField("originalName", originalName).Warnf("Modifying comment failed: %v", err)
 				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
@@ -1104,16 +1118,24 @@ func (d *SANStorageDriver) GetVolumeOpts(
 	return getVolumeOptsCommon(ctx, volConfig, requests)
 }
 
-func (d *SANStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
-	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
+func (d *SANStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) string {
+	return getInternalVolumeNameCommon(ctx, &d.Config, volConfig, pool)
 }
 
-func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
 	if !volConfig.ImportNotManaged && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		// All new CSI ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
 		volConfig.AccessInfo.PublishEnforcement = true
 	}
-	createPrepareCommon(ctx, d, volConfig)
+
+	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
+	// The process of generating a custom volume name necessitates a name template and label.
+	if storage.IsStoragePoolUnset(pool) {
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+	}
+	createPrepareCommon(ctx, d, volConfig, pool)
 }
 
 func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {

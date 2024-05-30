@@ -1,8 +1,9 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
@@ -61,6 +63,7 @@ const (
 
 	// Constants for internal pool attributes
 	Size                  = "size"
+	NameTemplate          = "nameTemplate"
 	Region                = "region"
 	Zone                  = "zone"
 	Media                 = "media"
@@ -106,6 +109,11 @@ const (
 	StateReasonSVMStopped     = "SVM is not in 'running' state"
 	StateReasonDataLIFsDown   = "No data LIFs present or all of them are 'down'"
 	StateReasonSVMUnreachable = "SVM is not reachable"
+)
+
+var (
+	volumeCharRegex = regexp.MustCompile(`[^a-zA-Z0-9_]`)
+	volumeNameRegex = regexp.MustCompile(`\{+.*\.volume.Name[^{a-z]*\}+`)
 )
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
@@ -490,7 +498,8 @@ func resizeValidation(
 	}
 
 	if requestedSizeBytes == volConfigSizeBytes {
-		Logc(ctx).Debugf("Requested volume size %s is the same as the current volume size %s.", requestedSizeBytes, volSizeBytes)
+		Logc(ctx).Debugf("Requested volume size %s is the same as current volume size %s.", requestedSizeBytes,
+			volSizeBytes)
 		// nothing to do
 		return 0, nil
 	}
@@ -503,7 +512,8 @@ func resizeValidation(
 	// Ensure the final effective volume size is larger than the current volume size
 	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	if newFlexvolSize < volSizeBytes {
-		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf("effective volume size %d including any snapshot reserve is less than the existing volume size %d", newFlexvolSize, volSizeBytes))
+		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf("effective volume size %d including any "+
+			"snapshot reserve is less than the existing volume size %d", newFlexvolSize, volSizeBytes))
 	}
 
 	return newFlexvolSize, nil
@@ -1447,6 +1457,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 
+	if config.NameTemplate != "" {
+		config.NameTemplate = ensureUniquenessInNameTemplate(config.NameTemplate)
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"StoragePrefix":          *config.StoragePrefix,
 		"SpaceAllocation":        config.SpaceAllocation,
@@ -1472,6 +1486,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"AutoExportPolicy":       config.AutoExportPolicy,
 		"AutoExportCIDRs":        config.AutoExportCIDRs,
 		"FlexgroupAggregateList": config.FlexGroupAggregateList,
+		"NameTemplate":           config.NameTemplate,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -1972,6 +1987,20 @@ func poolName(name, backendName string) string {
 	return fmt.Sprintf("%s_%s", backendName, strings.Replace(name, "-", "", -1))
 }
 
+// ensureUniquenessInNameTemplate ensure the volume name should present in the name template.
+// Trident wants to provide unique custom volume name from template. The volume name generates with the random UUID.
+// That is the reason Trident is making volume name mandatory in the name template.
+func ensureUniquenessInNameTemplate(nameTemplate string) string {
+	match := volumeNameRegex.MatchString(nameTemplate)
+
+	if match || nameTemplate == "" {
+		return nameTemplate
+	} else {
+		// Suffix Nametemplate with unique ID derived from volume name.
+		return nameTemplate + "_{{slice .volume.Name 4 9}}"
+	}
+}
+
 func InitializeStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
 ) (map[string]storage.Pool, map[string]storage.Pool, error) {
@@ -2052,6 +2081,7 @@ func InitializeStoragePoolsCommon(
 		pool.Attributes()[sa.SANType] = sa.NewStringOffer(config.SANType)
 
 		pool.InternalAttributes()[Size] = config.Size
+		pool.InternalAttributes()[NameTemplate] = config.NameTemplate
 		pool.InternalAttributes()[Region] = config.Region
 		pool.InternalAttributes()[Zone] = config.Zone
 		pool.InternalAttributes()[SpaceReserve] = config.SpaceReserve
@@ -2095,6 +2125,12 @@ func InitializeStoragePoolsCommon(
 		if vpool.Size != "" {
 			size = vpool.Size
 		}
+
+		nameTemplate := config.NameTemplate
+		if vpool.NameTemplate != "" {
+			nameTemplate = vpool.NameTemplate
+		}
+
 		supportedTopologies := config.SupportedTopologies
 		if vpool.SupportedTopologies != nil {
 			supportedTopologies = vpool.SupportedTopologies
@@ -2224,6 +2260,7 @@ func InitializeStoragePoolsCommon(
 		}
 
 		pool.InternalAttributes()[Size] = size
+		pool.InternalAttributes()[NameTemplate] = ensureUniquenessInNameTemplate(nameTemplate)
 		pool.InternalAttributes()[Region] = region
 		pool.InternalAttributes()[Zone] = zone
 		pool.InternalAttributes()[SpaceReserve] = spaceReserve
@@ -2387,6 +2424,30 @@ func ValidateStoragePools(
 					"Requested volume size ("+
 					"%d bytes) is too small; the minimum volume size is %d bytes", poolName, sizeBytes,
 					MinimumVolumeSizeBytes)
+			}
+		}
+
+		// Validate name template
+		if pool.InternalAttributes()[NameTemplate] != "" {
+			if _, err = template.New(poolName).Parse(pool.InternalAttributes()[NameTemplate]); err != nil {
+				return fmt.Errorf("invalid value for volume name template in pool %s; %v", pool.Name(), err)
+			}
+		}
+
+		if pool.Attributes()[sa.Labels] != nil {
+			// make an array of map of string to string
+			labelOffer, ok := pool.Attributes()[sa.Labels].(sa.LabelOffer)
+			if !ok {
+				return fmt.Errorf("invalid value for labels in pool %s; %v", poolName, err)
+			}
+
+			labelOfferMap := labelOffer.Labels()
+			if len(labelOfferMap) != 0 {
+				for _, v := range labelOfferMap {
+					if _, err = template.New(poolName).Parse(v); err != nil {
+						return fmt.Errorf("invalid labels template in pool %s; %v", poolName, err)
+					}
+				}
 			}
 		}
 
@@ -2610,22 +2671,66 @@ func getPoolsForCreate(
 	return candidatePools, nil
 }
 
-func getInternalVolumeNameCommon(commonConfig *drivers.CommonStorageDriverConfig, name string) string {
+func getInternalVolumeNameCommon(
+	ctx context.Context, config *drivers.OntapStorageDriverConfig, volConfig *storage.VolumeConfig,
+	pool storage.Pool,
+) string {
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
-		return *commonConfig.StoragePrefix + name
+		return *config.StoragePrefix + volConfig.Name
+	}
+
+	if pool != nil && pool.InternalAttributes()[NameTemplate] != "" {
+		internal, err := GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+		if err == nil {
+			return internal
+		}
+	}
+	// With an external store, any transformation of the name is fine
+	internal := drivers.GetCommonInternalVolumeName(config.CommonStorageDriverConfig, volConfig.Name)
+	internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
+	internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
+	internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
+	return internal
+}
+
+// GetVolumeNameFromTemplate function generates a volume name from a template. The function parses the name template
+// from the pool's internal attributes and creates a map of template data. If the template execution is successful,
+// it processes the resulting string to replace any non-alphanumeric characters with underscores,
+// remove multiple underscores, and remove any underscores at the beginning or end of the string.
+// The function returns the processed string as the generated volume name.
+func GetVolumeNameFromTemplate(ctx context.Context, config *drivers.OntapStorageDriverConfig, volConfig *storage.VolumeConfig,
+	pool storage.Pool,
+) (string, error) {
+	t, err := template.New("templatizedVolumeName").Parse(pool.InternalAttributes()[NameTemplate])
+	if err != nil {
+		Logc(ctx).WithError(err).Error("invalid name template in pool %s: %v", pool.Name(), err)
+		return "", fmt.Errorf("invalid name template in pool")
 	} else {
-		// With an external store, any transformation of the name is fine
-		internal := drivers.GetCommonInternalVolumeName(commonConfig, name)
-		internal = strings.Replace(internal, "-", "_", -1)  // ONTAP disallows hyphens
-		internal = strings.Replace(internal, ".", "_", -1)  // ONTAP disallows periods
-		internal = strings.Replace(internal, "__", "_", -1) // Remove any double underscores
-		return internal
+		templateData := make(map[string]interface{})
+		templateData["volume"] = volConfig
+		templateData["config"] = *config.CommonStorageDriverConfig
+		templateData["labels"] = pool.GetLabelMapFromTemplate(ctx, templateData)
+
+		var tBuffer bytes.Buffer
+		if err := t.Execute(&tBuffer, templateData); err != nil {
+			Logc(ctx).WithError(err).Error("Volume name template execution failed, using default name rules.")
+			return "", fmt.Errorf("Volume name template execution failed")
+		} else {
+			internal := tBuffer.String()
+			internal = volumeCharRegex.ReplaceAllString(internal, "_")
+
+			volumeNameRegex := regexp.MustCompile("__*")
+			internal = volumeNameRegex.ReplaceAllString(internal, "_") // Remove any double underscores
+			internal = strings.TrimPrefix(internal, "_")               // Remove any underscores at the beginning
+			internal = strings.TrimSuffix(internal, "_")               // Remove any underscores at the end
+			return internal, nil
+		}
 	}
 }
 
-func createPrepareCommon(ctx context.Context, d storage.Driver, volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
+func createPrepareCommon(ctx context.Context, d storage.Driver, volConfig *storage.VolumeConfig, pool storage.Pool) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
 }
 
 func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverConfig) interface{} {
@@ -3180,7 +3285,8 @@ func ConstructOntapNASVolumeAccessPath(
 				// For an imported volume, use junction path for the mount
 				return fmt.Sprintf("/%s/%s/%s", volumeName, ".snapshot", volConfig.CloneSourceSnapshot)
 			}
-			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot", volConfig.CloneSourceSnapshot)
+			return fmt.Sprintf("/%s/%s/%s", volConfig.CloneSourceVolumeInternal, ".snapshot",
+				volConfig.CloneSourceSnapshot)
 		} else if volumeName != utils.UnixPathSeparator+volConfig.InternalName && strings.HasPrefix(volumeName,
 			utils.UnixPathSeparator) {
 			// For managed import, return the original junction path
@@ -3268,4 +3374,48 @@ func ConstructOntapNASQTreeVolumePath(
 	}
 
 	return
+}
+
+// ConstructLabelsFromConfigs  constructs labels from the name templates.
+// If there is an error in constructing labels from templates, fall back to earlier method of constructing labels
+// Function accepts parameters in following way:
+// 1. pool: storage pool from which the template is read.
+// 2. volConfig: volume config from which the values are read for .volume options in template.
+// 3. driverConfig: driver config from which values are read for .config option in template.
+func ConstructLabelsFromConfigs(
+	ctx context.Context, pool storage.Pool, volConfig *storage.VolumeConfig,
+	driverConfig *drivers.CommonStorageDriverConfig, labelLimit int,
+) (string, error) {
+	Logc(ctx).Debug(">>>> ConstructLabelsFromConfigs")
+	defer Logc(ctx).Debug("<<<< ConstructLabelsFromConfigs")
+
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volConfig
+	templateData["config"] = driverConfig
+	labels, labelErr := pool.GetTemplatizedLabelsJSON(
+		ctx, storage.ProvisioningLabelTag, labelLimit, templateData)
+	if labelErr != nil {
+		labels, labelErr = pool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, labelLimit)
+		if labelErr != nil {
+			return "", labelErr
+		}
+	}
+
+	return labels, labelErr
+}
+
+// ConstructPoolForLabels creates a new storage pool with a given name template and labels. It sets the internal
+// attributes of the pool with the provided name template and sets the pool's attributes with the provided labels.
+// The function returns the newly created storage pool.
+func ConstructPoolForLabels(nameTemplate string, labels map[string]string) *storage.StoragePool {
+	pool := &storage.StoragePool{}
+	pool.SetInternalAttributes(map[string]string{
+		NameTemplate: nameTemplate,
+	},
+	)
+	pool.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(labels),
+	})
+
+	return pool
 }

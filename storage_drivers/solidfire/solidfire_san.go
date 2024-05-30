@@ -1607,7 +1607,11 @@ func (d *SANStorageDriver) getStorageBackendPools(ctx context.Context) []drivers
 	return []drivers.SolidfireStorageBackendPool{{AccountID: d.AccountID, TenantName: d.Config.TenantName}}
 }
 
-func (d *SANStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
+func (d *SANStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
+) string {
+	name := volConfig.Name
+
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return strings.Replace(name, "_", "-", -1)
@@ -1635,8 +1639,8 @@ func (d *SANStorageDriver) GetInternalVolumeName(ctx context.Context, name strin
 	}
 }
 
-func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
+func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
 }
 
 func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {

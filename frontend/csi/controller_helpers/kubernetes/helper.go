@@ -90,8 +90,7 @@ func (h *helper) GetVolumeConfig(
 
 	// Create the volume config
 	annotations := processPVCAnnotations(pvc, fsType)
-	volumeConfig := getVolumeConfig(ctx, pvc.Spec.AccessModes, pvc.Spec.VolumeMode, pvName, pvcSize,
-		annotations, sc, requisiteTopology, preferredTopology)
+	volumeConfig := getVolumeConfig(ctx, pvc, pvName, pvcSize, annotations, sc, requisiteTopology, preferredTopology)
 
 	// Check if we're cloning a PVC, and if so, do some further validation
 	if cloneSourcePVName, err := h.getCloneSourceInfo(ctx, pvc); err != nil {
@@ -562,18 +561,19 @@ func mapEventType(eventType string) string {
 // getVolumeConfig accepts the attributes of a new volume and assembles them into a
 // VolumeConfig structure as needed by Trident to create a new volume.
 func getVolumeConfig(
-	ctx context.Context, pvcAccessModes []v1.PersistentVolumeAccessMode, volumeMode *v1.PersistentVolumeMode,
-	name string, size resource.Quantity, annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
+	ctx context.Context, pvc *v1.PersistentVolumeClaim, name string, size resource.Quantity,
+	annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
 	requisiteTopology, preferredTopology []map[string]string,
 ) *storage.VolumeConfig {
 	var accessModes []config.AccessMode
 
-	for _, pvcAccessMode := range pvcAccessModes {
+	for _, pvcAccessMode := range pvc.Spec.AccessModes {
 		accessModes = append(accessModes, config.AccessMode(pvcAccessMode))
 	}
 
 	accessMode := frontendcommon.CombineAccessModes(ctx, accessModes)
 
+	volumeMode := pvc.Spec.VolumeMode
 	if volumeMode == nil {
 		volumeModeVal := v1.PersistentVolumeFilesystem
 		volumeMode = &volumeModeVal
@@ -644,6 +644,8 @@ func getVolumeConfig(
 		MountOptions:        strings.Join(storageClass.MountOptions, ","),
 		RequisiteTopologies: requisiteTopology,
 		PreferredTopologies: preferredTopology,
+		Namespace:           pvc.Namespace,
+		RequestName:         pvc.Name,
 	}
 }
 

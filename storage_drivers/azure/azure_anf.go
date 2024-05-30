@@ -2023,8 +2023,8 @@ func (d *NASStorageDriver) GetStorageBackendSpecs(_ context.Context, backend sto
 }
 
 // CreatePrepare is called prior to volume creation.  Currently its only role is to create the internal volume name.
-func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
+func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
@@ -2063,14 +2063,16 @@ func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers
 
 // GetInternalVolumeName accepts the name of a volume being created and returns what the internal name
 // should be, depending on backend requirements and Trident's operating context.
-func (d *NASStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
+func (d *NASStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) string {
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
-		return *d.Config.StoragePrefix + name
-	} else if csiRegex.MatchString(name) {
+		return *d.Config.StoragePrefix + volConfig.Name
+	} else if csiRegex.MatchString(volConfig.Name) {
 		// If the name is from CSI (i.e. contains a UUID), just use it as-is
-		Logc(ctx).WithField("volumeInternal", name).Debug("Using volume name as internal name.")
-		return name
+		Logc(ctx).WithField("volumeInternal", volConfig.Name).Debug("Using volume name as internal name.")
+		return volConfig.Name
 	} else {
 		// Cloud volumes have strict limits on volume mount paths, so for cloud
 		// infrastructure like Trident, the simplest approach is to generate a

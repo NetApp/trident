@@ -1295,6 +1295,11 @@ func TestOntapSanVolumeClone(t *testing.T) {
 		SplitOnClone:      "false",
 	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+
+	driver.Config.Labels = pool1.GetLabels(ctx, "")
 
 	volConfig := getVolumeConfig()
 	volume := api.Volume{
@@ -1533,7 +1538,160 @@ func TestOntapSanVolumeClone_LabelLengthExceeding(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 
+	volume := api.Volume{Name: "vol1"}
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolume).Return(&volume, nil)
+
 	err := driver.CreateClone(ctx, volConfig, volConfig, nil)
+
+	assert.Error(t, err, "Clone of a volume is created.")
+}
+
+func TestOntapSanVolumeClone_NameTemplate(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapSANDriver(t)
+	luks := "true"
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		SpaceReserve:      "none",
+		SnapshotPolicy:    "fake-snap-policy",
+		SnapshotReserve:   "10",
+		UnixPermissions:   "0755",
+		SnapshotDir:       "true",
+		ExportPolicy:      "fake-export-policy",
+		SecurityStyle:     "mixed",
+		Encryption:        "false",
+		TieringPolicy:     "none",
+		QosPolicy:         "fake-qos-policy",
+		AdaptiveQosPolicy: "",
+		LUKSEncryption:    luks,
+		SplitOnClone:      "false",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	volConfig := getVolumeConfig()
+	volume := api.Volume{
+		Name:    "vol1",
+		Comment: "iscsi volume",
+	}
+
+	tests := []struct {
+		labelTestName string
+		labelKey      string
+		labelValue    string
+		expectedLabel string
+	}{
+		{
+			"label", "nameTemplate", "dev-test-cluster-1",
+			"{\"provisioning\":{\"nameTemplate\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelKey", "", "dev-test-cluster-1",
+			"{\"provisioning\":{\"\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelValue", "nameTemplate", "",
+			"{\"provisioning\":{\"nameTemplate\":\"\"}}",
+		},
+		{
+			"labelValueSpecialCharacter", "nameTemplate^%^^\\u0026\\u0026^%_________", "dev-test-cluster-1%^%",
+			"{\"provisioning\":{\"nameTemplate^%^^\\\\u0026\\\\u0026^%_________\":\"dev-test-cluster-1%^%\"}}",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.labelTestName, func(t *testing.T) {
+			driver.Config.Labels = map[string]string{
+				test.labelKey: test.labelValue,
+			}
+			pool1.SetAttributes(map[string]sa.Offer{
+				sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+			})
+
+			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+			mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolume).Return(&volume, nil)
+			mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
+				func(ctx context.Context, volumeName string) (bool, error) {
+					return false, nil
+				},
+			).MaxTimes(1)
+
+			mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any()).Return(nil)
+			mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, []string{"online"}, []string{"error"},
+				maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+			err := driver.CreateClone(ctx, volConfig, volConfig, pool1)
+
+			assert.NoError(t, err, "Clone creation failed. Expected no error")
+		})
+	}
+}
+
+func TestOntapSanVolumeClone_NameTemplateLabelLengthExceeding(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	pool1 := storage.NewStoragePool(nil, "")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+		"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI" +
+		"9sHE9w5eRxpmTv0POpCB5xAqzmN6XCkxuXKc4yfNS9PRwcTSpvkA3PcKCF3TD1TJU3NYzcChsFQgm" +
+		"bAsR32cbJRdsOwx6BkHNfRCji0xSnBFUFUu1sGHfYCmzzd3OmChADIP6RwRtpnqNzvt0CU6uumBnl" +
+		"Lc5U7mBI1Ndmqhn0BBSh588thKOQcpD4bvnSBYU788tBeVxQtE8KkdUgKl8574eWldqWDiALwoiCS" +
+		"Ae2GuZzwG4ACw2uHdIkjb6FEwapSKCEogr4yWFAVCYPp2pA37Mj88QWN82BEpyoTV6BRAOsubNPfT" +
+		"N94X0qCcVaQp4L5bA4SPTQu0ag20a2k9LmVsocy5y11U3ewpzVGtENJmxyuyyAbxOFOkDxKLRMhgs" +
+		"uJMhhplD894tkEcPoiFhdsYZbBZ4MOBF6KkuBF5aqMrQbOCFt2vvTN843nRhomVMpY01SNuUeb5mh" +
+		"UN53wsqqHSGoYb1eUBDlTUDLFcCcNacxfsILqmthnrD1B5u85jRm1SfkFfuIDOgaaTM9UhxNQ1U6M" +
+		"mBaRYBkuGtTScoVTXyF4lij2sj1WWrKb7qWlaUUjxHiaxgLovPWErldCXXkNFsHgc7UYLQLF4j6lO" +
+		"I1QdTAyrtCcSxRwdkjBxj8mQy1HblHnaaBwP7Nax9FvIvxpeqyD6s3X1vfFNGAMuRsc9DKmPDfxjh" +
+		"qGzRQawFEbbURWij9xleKsUr0yCjukyKsxuaOlwbXnoFh4V3wtidrwrNXieFD608EANwvCp7u2S8Q" +
+		"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
+		"lthQFQfHVgPpUZdzZMjXry"
+	driver.Config.SplitOnClone = "false"
+	driver.Config.Labels = map[string]string{
+		"cloud":   "anf",
+		longLabel: "dev-test-cluster-1",
+	}
+
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+	})
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.NameTemplate = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+
+	volConfig := getVolumeConfig()
+
+	volume := api.Volume{Name: "vol1"}
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolume).Return(&volume, nil)
+
+	err := driver.CreateClone(ctx, volConfig, volConfig, nil)
+
+	assert.Error(t, err, "Clone of a volume is created.")
+
+	// Storage pool is not unset
+
+	pool1.SetName("pool1")
+	volume = api.Volume{
+		AccessType: "rw",
+		Comment:    "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\"}}",
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&volume, nil)
+
+	err = driver.CreateClone(ctx, volConfig, volConfig, pool1)
 
 	assert.Error(t, err, "Clone of a volume is created.")
 }
@@ -1543,6 +1701,19 @@ func TestOntapSanVolumeImport(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.Config.Labels = map[string]string{
+		"cloud": "san",
+		"label": "dev-test-cluster-1",
+	}
+
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	originalVolumeName := "originalVolume"
 	volConfig := getVolumeConfig()
@@ -1563,7 +1734,8 @@ func TestOntapSanVolumeImport(t *testing.T) {
 	mockAPI.EXPECT().LunRename(ctx, "/vol/"+originalVolumeName+"/lun1",
 		"/vol/"+originalVolumeName+"/lun0").Return(nil)
 	mockAPI.EXPECT().VolumeRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalVolumeName, "").Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalVolumeName,
+		"{\"provisioning\":{\"cloud\":\"san\",\"label\":\"dev-test-cluster-1\"}}").Return(nil)
 	mockAPI.EXPECT().LunListIgroupsMapped(ctx, "/vol/trident-pvc-1234/lun0").Return(nil, nil)
 
 	err := driver.Import(ctx, volConfig, originalVolumeName)
@@ -1822,6 +1994,142 @@ func TestOntapSanVolumeImport_ImportNotManaged(t *testing.T) {
 	err := driver.Import(ctx, volConfig, originalVolumeName)
 
 	assert.Error(t, err, "Volume is imported, expected to fail")
+}
+
+func TestOntapSanVolumeImport_NameTemplateLabel(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+
+	originalVolumeName := "originalVolume"
+	volConfig := getVolumeConfig()
+	volConfig.ImportNotManaged = false
+
+	volume := api.Volume{
+		AccessType: "rw",
+		Comment:    "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\"}}",
+	}
+	lun := api.Lun{
+		Size:  "1g",
+		Name:  "/vol/" + originalVolumeName + "/lun1",
+		State: "online",
+	}
+
+	tests := []struct {
+		labelTestName string
+		labelKey      string
+		labelValue    string
+		expectedLabel string
+	}{
+		{
+			"label", "nameTemplate", "dev-test-cluster-1",
+			"{\"provisioning\":{\"nameTemplate\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelKey", "", "dev-test-cluster-1",
+			"{\"provisioning\":{\"\":\"dev-test-cluster-1\"}}",
+		},
+		{
+			"emptyLabelValue", "nameTemplate", "",
+			"{\"provisioning\":{\"nameTemplate\":\"\"}}",
+		},
+		{
+			"labelValueSpecialCharacter", "nameTemplate^%^^\\u0026\\u0026^%_________", "dev-test-cluster-1%^%",
+			"{\"provisioning\":{\"nameTemplate^%^^\\\\u0026\\\\u0026^%_________\":\"dev-test-cluster-1%^%\"}}",
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("Unix Permissions: %d", i), func(t *testing.T) {
+			driver.Config.Labels = map[string]string{
+				test.labelKey: test.labelValue,
+			}
+			pool1.SetAttributes(map[string]sa.Offer{
+				sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+			})
+			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+			mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
+			mockAPI.EXPECT().LunGetByName(ctx, "/vol/"+originalVolumeName+"/*").Return(&lun, nil)
+			mockAPI.EXPECT().LunRename(ctx, "/vol/"+originalVolumeName+"/lun1",
+				"/vol/"+originalVolumeName+"/lun0").Return(nil)
+			mockAPI.EXPECT().VolumeRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
+			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, originalVolumeName,
+				test.expectedLabel).Return(nil)
+			mockAPI.EXPECT().LunListIgroupsMapped(ctx, "/vol/trident-pvc-1234/lun0").Return(
+				nil, nil)
+
+			err := driver.Import(ctx, volConfig, originalVolumeName)
+
+			assert.NoError(t, err, "Volume import fail")
+		})
+	}
+}
+
+func TestOntapSanVolumeImport_NameTemplateLabelLengthExceeding(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+		"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI" +
+		"9sHE9w5eRxpmTv0POpCB5xAqzmN6XCkxuXKc4yfNS9PRwcTSpvkA3PcKCF3TD1TJU3NYzcChsFQgm" +
+		"bAsR32cbJRdsOwx6BkHNfRCji0xSnBFUFUu1sGHfYCmzzd3OmChADIP6RwRtpnqNzvt0CU6uumBnl" +
+		"Lc5U7mBI1Ndmqhn0BBSh588thKOQcpD4bvnSBYU788tBeVxQtE8KkdUgKl8574eWldqWDiALwoiCS" +
+		"Ae2GuZzwG4ACw2uHdIkjb6FEwapSKCEogr4yWFAVCYPp2pA37Mj88QWN82BEpyoTV6BRAOsubNPfT" +
+		"N94X0qCcVaQp4L5bA4SPTQu0ag20a2k9LmVsocy5y11U3ewpzVGtENJmxyuyyAbxOFOkDxKLRMhgs" +
+		"uJMhhplD894tkEcPoiFhdsYZbBZ4MOBF6KkuBF5aqMrQbOCFt2vvTN843nRhomVMpY01SNuUeb5mh" +
+		"UN53wsqqHSGoYb1eUBDlTUDLFcCcNacxfsILqmthnrD1B5u85jRm1SfkFfuIDOgaaTM9UhxNQ1U6M" +
+		"mBaRYBkuGtTScoVTXyF4lij2sj1WWrKb7qWlaUUjxHiaxgLovPWErldCXXkNFsHgc7UYLQLF4j6lO" +
+		"I1QdTAyrtCcSxRwdkjBxj8mQy1HblHnaaBwP7Nax9FvIvxpeqyD6s3X1vfFNGAMuRsc9DKmPDfxjh" +
+		"qGzRQawFEbbURWij9xleKsUr0yCjukyKsxuaOlwbXnoFh4V3wtidrwrNXieFD608EANwvCp7u2S8Q" +
+		"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
+		"lthQFQfHVgPpUZdzZMjXry"
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.Config.Labels = map[string]string{
+		"cloud":   "san",
+		longLabel: "dev-test-cluster-1",
+	}
+
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	originalVolumeName := "originalVolume"
+	volConfig := getVolumeConfig()
+	volConfig.ImportNotManaged = false
+
+	volume := api.Volume{
+		AccessType: "rw",
+		Comment:    "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\"}}",
+	}
+	lun := api.Lun{
+		Size:  "1g",
+		Name:  "/vol/" + originalVolumeName + "/lun1",
+		State: "online",
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, "/vol/"+originalVolumeName+"/*").Return(&lun, nil)
+	mockAPI.EXPECT().LunRename(ctx, "/vol/"+originalVolumeName+"/lun1",
+		"/vol/"+originalVolumeName+"/lun0").Return(nil)
+	mockAPI.EXPECT().VolumeRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
+
+	err := driver.Import(ctx, volConfig, originalVolumeName)
+
+	assert.Error(t, err, "Volume imported, expected an error")
 }
 
 func TestOntapSanVolumeRename(t *testing.T) {
@@ -2318,8 +2626,10 @@ func TestOntapSanVolumeGetInternalVolumeName(t *testing.T) {
 
 	commonConfig := getCommonConfig()
 	driver.Config.CommonStorageDriverConfig = commonConfig
+	volConfig := &storage.VolumeConfig{Name: "vol1"}
+	pool := storage.NewStoragePool(nil, "dummyPool")
 
-	internalName := driver.GetInternalVolumeName(ctx, "vol1")
+	internalName := driver.GetInternalVolumeName(ctx, volConfig, pool)
 
 	assert.Equal(t, "trident_vol1", internalName)
 }
@@ -2331,8 +2641,69 @@ func TestOntapSanVolumeCreatePrepare(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 	volConfig := getVolumeConfig()
+	pool := storage.NewStoragePool(nil, "dummyPool")
 
-	driver.CreatePrepare(ctx, volConfig)
+	driver.CreatePrepare(ctx, volConfig, pool)
+}
+
+func TestOntapSanVolumeCreatePrepare_NilPool(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	driver.API = mockAPI
+	driver.ips = []string{"127.0.0.1"}
+
+	defer mockCtrl.Finish()
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	driver.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}`
+	volConfig := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
+
+	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+
+	driver.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, driver,
+		driver.getStoragePoolAttributes(ctx), driver.BackendName())
+
+	driver.CreatePrepare(ctx, &volConfig, nil)
+	assert.Equal(t, volConfig.InternalName, "newVolume_testNamespace_testSC", "volume name is not set correctly")
+}
+
+func TestOntapSanVolumeCreatePrepare_NilPool_templateNotContainVolumeName(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	driver.API = mockAPI
+	driver.ips = []string{"127.0.0.1"}
+
+	defer mockCtrl.Finish()
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	driver.Config.NameTemplate = `{{.volume.Namespace}}_{{.volume.StorageClass}}_{{slice .volume.Name 4 9}}`
+	volConfig := storage.VolumeConfig{Name: "pvc-1234567", Namespace: "testNamespace", StorageClass: "testSC"}
+
+	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+
+	driver.physicalPools, _, _ = InitializeStoragePoolsCommon(ctx, driver,
+		driver.getStoragePoolAttributes(ctx), driver.BackendName())
+
+	driver.CreatePrepare(ctx, &volConfig, nil)
+	assert.Equal(t, volConfig.InternalName, "testNamespace_testSC_12345", "volume name is not set correctly")
 }
 
 func TestOntapSanVolumeCreateFollowup(t *testing.T) {
@@ -2976,6 +3347,252 @@ func TestOntapSANStorageDriverInitialize_WithTwoAuthMethods(t *testing.T) {
 	assert.Contains(t, result.Error(), "more than one authentication method", "expected error string not found")
 }
 
+func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
+	{
+		ctx := context.Background()
+
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+		driver.API = mockAPI
+		driver.ips = []string{"127.0.0.1"}
+
+		defer mockCtrl.Finish()
+
+		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+		commonConfig := getCommonConfig()
+
+		configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-san",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"defaults": {
+				"nameTemplate": "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+		},
+		"username":          "dummyuser",
+		"password":          "dummypassword"
+	}`
+		secrets := map[string]string{
+			"clientcertificate": "dummy-certificate",
+		}
+		driver.telemetry = &Telemetry{
+			Plugin: driver.Name(),
+			SVM:    "SVM1",
+			Driver: driver,
+			done:   make(chan struct{}),
+		}
+
+		iscsiInitiatorAuth := api.IscsiInitiatorAuth{
+			SVMName:                "SVM1",
+			ChapUser:               "dummyuser",
+			ChapPassphrase:         "dummypassword",
+			ChapOutboundUser:       "",
+			ChapOutboundPassphrase: "",
+			Initiator:              "iqn",
+			AuthType:               "none",
+		}
+
+		driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+		driver.telemetry.TridentBackendUUID = BackendUUID
+		hostname, _ := os.Hostname()
+		message, _ := json.Marshal(driver.GetTelemetry())
+
+		mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+		mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+			map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+		)
+		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
+		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+			string(message), 1, "trident", 5).AnyTimes()
+		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+		result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+		assert.NoError(t, result, "Ontap SAN storage driver initialization failed")
+
+		nameTemplate := "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+		assert.Equal(t, nameTemplate, driver.physicalPools["data"].InternalAttributes()[NameTemplate])
+	}
+}
+
+func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
+	{
+		ctx := context.Background()
+
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+		driver.API = mockAPI
+		driver.ips = []string{"127.0.0.1"}
+
+		defer mockCtrl.Finish()
+
+		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+		commonConfig := getCommonConfig()
+
+		configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-san",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"storage": [
+	     {
+	        "defaults":
+	         {
+	               "nameTemplate": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+	         }
+	     }
+	    ],
+		"username":          "dummyuser",
+		"password":          "dummypassword"
+	}`
+		secrets := map[string]string{
+			"clientcertificate": "dummy-certificate",
+		}
+		driver.telemetry = &Telemetry{
+			Plugin: driver.Name(),
+			SVM:    "SVM1",
+			Driver: driver,
+			done:   make(chan struct{}),
+		}
+
+		iscsiInitiatorAuth := api.IscsiInitiatorAuth{
+			SVMName:                "SVM1",
+			ChapUser:               "dummyuser",
+			ChapPassphrase:         "dummypassword",
+			ChapOutboundUser:       "",
+			ChapOutboundPassphrase: "",
+			Initiator:              "iqn",
+			AuthType:               "none",
+		}
+
+		driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+		driver.telemetry.TridentBackendUUID = BackendUUID
+		hostname, _ := os.Hostname()
+		message, _ := json.Marshal(driver.GetTelemetry())
+
+		mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+		mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+			map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+		)
+		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
+		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+			string(message), 1, "trident", 5).AnyTimes()
+		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+		result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+		assert.NoError(t, result, "Ontap SAN storage driver initialization failed")
+
+		expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+
+		assert.NoError(t, result)
+		for _, pool := range driver.virtualPools {
+			assert.Equal(t, expectedNameTemplate, pool.InternalAttributes()[NameTemplate])
+		}
+	}
+}
+
+func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing.T) {
+	{
+		ctx := context.Background()
+
+		mockCtrl := gomock.NewController(t)
+		mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+		driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+		driver.API = mockAPI
+		driver.ips = []string{"127.0.0.1"}
+
+		defer mockCtrl.Finish()
+
+		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+		commonConfig := getCommonConfig()
+
+		configJSON := `
+	{
+		"version":           1,
+		"storageDriverName": "ontap-san",
+		"managementLIF":     "127.0.0.1:0",
+		"svm":               "SVM1",
+		"aggregate":         "data",
+		"defaults": {
+				"nameTemplate": "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+		},
+		"storage": [
+	     {
+	        "defaults":
+	         {
+	               "nameTemplate": "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}"
+	         }
+	     }
+	    ],
+		"username":          "dummyuser",
+		"password":          "dummypassword"
+	}`
+		secrets := map[string]string{
+			"clientcertificate": "dummy-certificate",
+		}
+		driver.telemetry = &Telemetry{
+			Plugin: driver.Name(),
+			SVM:    "SVM1",
+			Driver: driver,
+			done:   make(chan struct{}),
+		}
+
+		iscsiInitiatorAuth := api.IscsiInitiatorAuth{
+			SVMName:                "SVM1",
+			ChapUser:               "dummyuser",
+			ChapPassphrase:         "dummypassword",
+			ChapOutboundUser:       "",
+			ChapOutboundPassphrase: "",
+			Initiator:              "iqn",
+			AuthType:               "none",
+		}
+
+		driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+		driver.telemetry.TridentBackendUUID = BackendUUID
+		hostname, _ := os.Hostname()
+		message, _ := json.Marshal(driver.GetTelemetry())
+
+		mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+		mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+		mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+			map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+		)
+		mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
+		mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(iscsiInitiatorAuth, nil)
+		mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"1.1.1.1"}, nil)
+		mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san", "1", false, "heartbeat", hostname,
+			string(message), 1, "trident", 5).AnyTimes()
+		mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid")
+
+		result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
+		assert.NoError(t, result, "Ontap SAN storage driver initialization failed")
+
+		expectedNameTemplate := "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
+
+		assert.NoError(t, result)
+		for _, pool := range driver.physicalPools {
+			assert.Equal(t, expectedNameTemplate, pool.InternalAttributes()[NameTemplate])
+		}
+	}
+}
+
 func TestOntapSANStorageDriverInitialize_WithTwoAuthMethodsWithSecrets(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAdminPort := "0"
@@ -3233,6 +3850,171 @@ func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 			result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
 			assert.Error(t, result, test.assertMessage)
+		})
+	}
+}
+
+func TestOntapSANStorageDriverInitializeStoragePools_NameTemplatesAndLabels(t *testing.T) {
+	ctx := context.Background()
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	d.API = mockAPI
+	d.ips = []string{"127.0.0.1"}
+
+	defer mockCtrl.Finish()
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	d.Config.Storage = []drivers.OntapStorageDriverPool{
+		{
+			Region: "us_east_1",
+			Zone:   "us_east_1a",
+			SupportedTopologies: []map[string]string{
+				{
+					"topology.kubernetes.io/region": "us_east_1",
+					"topology.kubernetes.io/zone":   "us_east_1a",
+				},
+			},
+			Labels: map[string]string{"lable": `{{.volume.Name}}`},
+			OntapStorageDriverConfigDefaults: drivers.OntapStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					NameTemplate: `{{.volume.Name}}`,
+				},
+			},
+		},
+	}
+
+	d.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	d.telemetry.TridentBackendUUID = BackendUUID
+
+	poolAttributes := map[string]sa.Offer{
+		sa.BackendType:      sa.NewStringOffer(d.Name()),
+		sa.Snapshots:        sa.NewBoolOffer(true),
+		sa.Clones:           sa.NewBoolOffer(true),
+		sa.Encryption:       sa.NewBoolOffer(true),
+		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
+		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
+	)
+
+	volume := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
+	templateData := make(map[string]interface{})
+	templateData["volume"] = volume
+
+	cases := []struct {
+		testName                    string
+		physicalPoolLabels          map[string]string
+		virtualPoolLabels           map[string]string
+		physicalNameTemplate        string
+		virtualNameTemplate         string
+		physicalExpected            string
+		virtualExpected             string
+		volumeNamePhysicalExpected  string
+		volumeNameVirtualExpected   string
+		backendName                 string
+		physicalErrorMessage        string
+		virtualErrorMessage         string
+		physicalVolNameErrorMessage string
+		virtualVolNameErrorMessage  string
+	}{
+		{
+			"no name templates and labels",
+			nil,
+			nil,
+			"",
+			"",
+			"",
+			"",
+			"test_newVolume",
+			"test_newVolume",
+			"san-backend",
+			"Label is not empty",
+			"Label is not empty",
+			"",
+			"",
+		}, // no name templates and labels
+		{
+			"base name templates and label only",
+			map[string]string{"base-key": `{{.volume.Name}}_{{.volume.Namespace}}`},
+			nil,
+			`{{.volume.Name}}_{{.volume.Namespace}}`,
+			"",
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			"newVolume_testNamespace",
+			"newVolume_testNamespace",
+			"san-backend",
+			"Base label is not set correctly",
+			"Base label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not derived correctly",
+		}, // base name templates and label only
+		{
+			"virtual name templates and label only",
+			nil,
+			map[string]string{"virtual-key": `{{.volume.Name}}_{{.volume.StorageClass}}`},
+			"",
+			`{{.volume.Name}}_{{.volume.StorageClass}}`,
+			"",
+			`{"provisioning":{"virtual-key":"newVolume_testSC"}}`,
+			"test_newVolume",
+			"newVolume_testSC",
+			"san-backend",
+			"Base label is not empty",
+			"Virtual pool label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not set correctly",
+		}, // virtual name templates and label only
+		{
+			"base and virtual labels",
+			map[string]string{"base-key": `{{.volume.Name}}_{{.volume.Namespace}}`},
+			map[string]string{"virtual-key": `{{.volume.Name}}_{{.volume.StorageClass}}`},
+			`{{.volume.Name}}_{{.volume.Namespace}}`,
+			`{{.volume.Name}}_{{.volume.StorageClass}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace"}}`,
+			`{"provisioning":{"base-key":"newVolume_testNamespace","virtual-key":"newVolume_testSC"}}`,
+			"newVolume_testNamespace",
+			"newVolume_testSC",
+			"san-backend",
+			"Base label is not set correctly",
+			"Virtual pool label is not set correctly",
+			"volume name is not set correctly",
+			"volume name is not set correctly",
+		}, // base and virtual labels
+	}
+
+	for _, c := range cases {
+		t.Run(c.testName, func(t *testing.T) {
+			d.Config.Labels = c.physicalPoolLabels
+			d.Config.NameTemplate = c.physicalNameTemplate
+			d.Config.Storage[0].Labels = c.virtualPoolLabels
+			d.Config.Storage[0].NameTemplate = c.virtualNameTemplate
+			physicalPools, virtualPools, err := InitializeStoragePoolsCommon(ctx, d, poolAttributes,
+				c.backendName)
+			assert.NoError(t, err, "Error is not nil")
+
+			physicalPool := physicalPools["data"]
+			label, err := physicalPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, c.physicalExpected, label, c.physicalErrorMessage)
+
+			d.CreatePrepare(ctx, &volume, physicalPool)
+			assert.Equal(t, volume.InternalName, c.volumeNamePhysicalExpected, c.physicalVolNameErrorMessage)
+
+			virtualPool := virtualPools["san-backend_pool_0"]
+			label, err = virtualPool.GetTemplatizedLabelsJSON(ctx, "provisioning", 1023, templateData)
+			assert.NoError(t, err, "Error is not nil")
+			assert.Equal(t, c.virtualExpected, label, c.virtualErrorMessage)
+
+			d.CreatePrepare(ctx, &volume, virtualPool)
+			assert.Equal(t, volume.InternalName, c.volumeNameVirtualExpected, c.virtualVolNameErrorMessage)
 		})
 	}
 }
@@ -3802,6 +4584,7 @@ func TestOntapSanVolumeCreatePrepare_EnablePublishEnforcement(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volConfig.ImportNotManaged = false
+	pool := storage.NewStoragePool(nil, "dummyPool")
 
 	commonConfig := getCommonConfig()
 
@@ -3809,7 +4592,7 @@ func TestOntapSanVolumeCreatePrepare_EnablePublishEnforcement(t *testing.T) {
 
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
 
-	driver.CreatePrepare(ctx, volConfig)
+	driver.CreatePrepare(ctx, volConfig, pool)
 	assert.Equal(t, true, volConfig.AccessInfo.PublishEnforcement)
 }
 

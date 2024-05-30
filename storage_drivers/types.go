@@ -80,7 +80,8 @@ type CommonStorageDriverConfig struct {
 }
 
 type CommonStorageDriverConfigDefaults struct {
-	Size string `json:"size"`
+	Size         string `json:"size"`
+	NameTemplate string `json:"nameTemplate"`
 }
 
 // Implement stringer interface for the CommonStorageDriverConfig driver

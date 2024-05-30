@@ -378,9 +378,11 @@ func (d *NVMeStorageDriver) Create(
 			continue
 		}
 
-		labels, err := storagePool.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
-		if err != nil {
-			return err
+		// Make comment field from labels
+		labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
+		if labelErr != nil {
+			return labelErr
 		}
 
 		// Create the volume.
@@ -516,17 +518,15 @@ func (d *NVMeStorageDriver) CreateClone(
 	var storagePoolSplitOnCloneVal string
 	var err error
 	labels := ""
+	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := &storage.StoragePool{}
-		storagePoolTemp.SetAttributes(map[string]sa.Offer{
-			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
-		})
-		labels, err = storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxSANLabelLength)
-		if err != nil {
-			return err
-		}
+		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
 
+		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
+			return labelErr
+		}
 	} else {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
 
@@ -541,6 +541,11 @@ func (d *NVMeStorageDriver) CreateClone(
 		// Get the source volume's label
 		if flexvol.Comment != "" {
 			labels = flexvol.Comment
+		}
+
+		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePool, cloneVolConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength); labelErr != nil {
+			return labelErr
 		}
 	}
 
@@ -641,7 +646,17 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
 		}
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexvol.Comment) {
-			err = d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, "")
+			// Set the base label
+			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+
+			// Make comment field from labels
+			labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
+				d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength)
+			if labelErr != nil {
+				return labelErr
+			}
+
+			err = d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, labels)
 			if err != nil {
 				Logc(ctx).WithField("originalName", originalName).Warnf("Modifying comment failed: %v", err)
 				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
@@ -1033,17 +1048,25 @@ func (d *NVMeStorageDriver) GetVolumeOpts(
 }
 
 // GetInternalVolumeName returns ONTAP specific volume name.
-func (d *NVMeStorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
-	return getInternalVolumeNameCommon(d.Config.CommonStorageDriverConfig, name)
+func (d *NVMeStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) string {
+	return getInternalVolumeNameCommon(ctx, &d.Config, volConfig, pool)
 }
 
 // CreatePrepare sets appropriate config/attributes values before calling volume create.
-func (d *NVMeStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
+func (d *NVMeStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
 	if !volConfig.ImportNotManaged && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		// All new CSI ONTAP SAN volumes start with publish enforcement on, unless they're unmanaged imports
 		volConfig.AccessInfo.PublishEnforcement = true
 	}
-	createPrepareCommon(ctx, d, volConfig)
+
+	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
+	// The process of generating a custom volume name necessitates a name template and label.
+	if storage.IsStoragePoolUnset(pool) {
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+	}
+	createPrepareCommon(ctx, d, volConfig, pool)
 }
 
 // CreateFollowup sets up additional attributes once a volume is created.

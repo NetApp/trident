@@ -915,6 +915,20 @@ func (mr *MockPoolMockRecorder) ConstructExternal() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternal", reflect.TypeOf((*MockPool)(nil).ConstructExternal))
 }
 
+// GetLabelMapFromTemplate mocks base method.
+func (m *MockPool) GetLabelMapFromTemplate(arg0 context.Context, arg1 map[string]interface{}) map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLabelMapFromTemplate", arg0, arg1)
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// GetLabelMapFromTemplate indicates an expected call of GetLabelMapFromTemplate.
+func (mr *MockPoolMockRecorder) GetLabelMapFromTemplate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelMapFromTemplate", reflect.TypeOf((*MockPool)(nil).GetLabelMapFromTemplate), arg0, arg1)
+}
+
 // GetLabels mocks base method.
 func (m *MockPool) GetLabels(arg0 context.Context, arg1 string) map[string]string {
 	m.ctrl.T.Helper()
@@ -942,6 +956,21 @@ func (m *MockPool) GetLabelsJSON(arg0 context.Context, arg1 string, arg2 int) (s
 func (mr *MockPoolMockRecorder) GetLabelsJSON(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelsJSON", reflect.TypeOf((*MockPool)(nil).GetLabelsJSON), arg0, arg1, arg2)
+}
+
+// GetTemplatizedLabelsJSON mocks base method.
+func (m *MockPool) GetTemplatizedLabelsJSON(arg0 context.Context, arg1 string, arg2 int, arg3 map[string]interface{}) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTemplatizedLabelsJSON", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTemplatizedLabelsJSON indicates an expected call of GetTemplatizedLabelsJSON.
+func (mr *MockPoolMockRecorder) GetTemplatizedLabelsJSON(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplatizedLabelsJSON", reflect.TypeOf((*MockPool)(nil).GetTemplatizedLabelsJSON), arg0, arg1, arg2, arg3)
 }
 
 // InternalAttributes mocks base method.

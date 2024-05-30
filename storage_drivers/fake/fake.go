@@ -1090,7 +1090,11 @@ func (d *StorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) []st
 	return physicalPoolNames
 }
 
-func (d *StorageDriver) GetInternalVolumeName(_ context.Context, name string) string {
+func (d *StorageDriver) GetInternalVolumeName(
+	_ context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
+) string {
+	name := volConfig.Name
+
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name
@@ -1104,8 +1108,8 @@ func (d *StorageDriver) GetInternalVolumeName(_ context.Context, name string) st
 	}
 }
 
-func (d *StorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
+func (d *StorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
 }
 
 func (d *StorageDriver) CreateFollowup(_ context.Context, volConfig *storage.VolumeConfig) error {

@@ -1750,8 +1750,10 @@ func (d *NASBlockStorageDriver) GetStorageBackendSpecs(_ context.Context, backen
 }
 
 // CreatePrepare is called prior to volume creation. Currently its only role is to create the internal volume name.
-func (d *NASBlockStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig.Name)
+func (d *NASBlockStorageDriver) CreatePrepare(
+	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
 }
 
 // GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools
@@ -1790,7 +1792,11 @@ func (d *NASBlockStorageDriver) getStorageBackendPools(ctx context.Context) []dr
 
 // GetInternalVolumeName accepts the name of a volume being created and returns what the internal name
 // should be, depending on backend requirements and Trident's operating context.
-func (d *NASBlockStorageDriver) GetInternalVolumeName(ctx context.Context, name string) string {
+func (d *NASBlockStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
+) string {
+	name := volConfig.Name
+
 	if tridentconfig.UsingPassthroughStore {
 		// With a passthrough store, the name mapping must remain reversible
 		return *d.Config.StoragePrefix + name

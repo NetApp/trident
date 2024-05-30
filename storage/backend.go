@@ -37,7 +37,7 @@ type Driver interface {
 	// Terminate tells the driver to clean up, as it won't be called again.
 	Terminate(ctx context.Context, backendUUID string)
 	Create(ctx context.Context, volConfig *VolumeConfig, storagePool Pool, volAttributes map[string]sa.Request) error
-	CreatePrepare(ctx context.Context, volConfig *VolumeConfig)
+	CreatePrepare(ctx context.Context, volConfig *VolumeConfig, storagePool Pool)
 	// CreateFollowup adds necessary information for accessing the volume to VolumeConfig.
 	CreateFollowup(ctx context.Context, volConfig *VolumeConfig) error
 	CreateClone(ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool) error
@@ -46,7 +46,7 @@ type Driver interface {
 	Rename(ctx context.Context, name, newName string) error
 	Resize(ctx context.Context, volConfig *VolumeConfig, sizeBytes uint64) error
 	Get(ctx context.Context, name string) error
-	GetInternalVolumeName(ctx context.Context, name string) string
+	GetInternalVolumeName(ctx context.Context, volConfig *VolumeConfig, storagePool Pool) string
 	GetStorageBackendSpecs(ctx context.Context, backend Backend) error
 	GetStorageBackendPhysicalPoolNames(ctx context.Context) []string
 	GetProtocol(ctx context.Context) tridentconfig.Protocol
@@ -694,7 +694,7 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 		volConfig.InternalName = volConfig.ImportOriginalName
 	} else {
 		// Sanitize the volume name
-		b.driver.CreatePrepare(ctx, volConfig)
+		b.driver.CreatePrepare(ctx, volConfig, nil)
 	}
 
 	err := b.driver.Import(ctx, volConfig, volConfig.ImportOriginalName)

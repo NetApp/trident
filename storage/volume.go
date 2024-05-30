@@ -65,6 +65,8 @@ type VolumeConfig struct {
 	InternalID         string                 `json:"internalID,omitempty"`
 	ShareSourceVolume  string                 `json:"shareSourceVolume"`
 	SubordinateVolumes map[string]interface{} `json:"-"`
+	Namespace          string                 `json:"namespace"`
+	RequestName        string                 `json:"requestName"`
 }
 
 type VolumeCreatingConfig struct {
