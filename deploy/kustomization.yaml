@@ -1,0 +1,15 @@
+# To regenerate bundle.yaml, from deploy directory run:
+# $ kubectl kustomize . > kustomization.yaml
+# 
+# Kustomize will merge the specified files also in the correct order.
+# Namespace needs to be created before this is applied. 
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - crds/trident.netapp.io_tridentorchestrators_crd.yaml
+  - serviceaccount.yaml
+  - clusterrole_post_1_25.yaml
+  - clusterrolebinding.yaml
+  - operator.yaml
