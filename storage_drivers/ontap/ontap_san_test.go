@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -312,7 +312,6 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 		SnapshotPolicy:    "fake-snap-policy",
 		SnapshotReserve:   "10",
 		UnixPermissions:   "0755",
-		SnapshotDir:       "true",
 		ExportPolicy:      "fake-export-policy",
 		SecurityStyle:     "mixed",
 		Encryption:        "false",
@@ -333,7 +332,6 @@ func TestOntapSanVolumeCreate(t *testing.T) {
 	assert.Equal(t, "fake-snap-policy", volConfig.SnapshotPolicy)
 	assert.Equal(t, "10", volConfig.SnapshotReserve)
 	assert.Equal(t, "0755", volConfig.UnixPermissions)
-	assert.Equal(t, "false", volConfig.SnapshotDir)
 	assert.Equal(t, "fake-export-policy", volConfig.ExportPolicy)
 	assert.Equal(t, "mixed", volConfig.SecurityStyle)
 	assert.Equal(t, "false", volConfig.Encryption)
@@ -745,7 +743,6 @@ func TestOntapSanVolumeCreate_LabelLengthExceeding(t *testing.T) {
 		SnapshotPolicy:    "fake-snap-policy",
 		SnapshotReserve:   "10",
 		UnixPermissions:   "0755",
-		SnapshotDir:       "true",
 		ExportPolicy:      "fake-export-policy",
 		SecurityStyle:     "mixed",
 		Encryption:        "false",
@@ -1284,7 +1281,6 @@ func TestOntapSanVolumeClone(t *testing.T) {
 		SnapshotPolicy:    "fake-snap-policy",
 		SnapshotReserve:   "10",
 		UnixPermissions:   "0755",
-		SnapshotDir:       "true",
 		ExportPolicy:      "fake-export-policy",
 		SecurityStyle:     "mixed",
 		Encryption:        "false",
@@ -2715,7 +2711,7 @@ func TestOntapSanVolumeCreateFollowup(t *testing.T) {
 	driver.CreateFollowup(ctx, volConfig)
 }
 
-func TestOntapSanVolumeGetVolumeExternal(t *testing.T) {
+func TestOntapSanVolumeGetVolumeForImport(t *testing.T) {
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapSANDriver(t)
@@ -2740,7 +2736,7 @@ func TestOntapSanVolumeGetVolumeExternal(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&volume, nil)
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/"+originalVolumeName+"/*").Return(&lun, nil)
 
-	volumeExternal, err := driver.GetVolumeExternal(ctx, "trident-vol1")
+	volumeExternal, err := driver.GetVolumeForImport(ctx, "trident-vol1")
 
 	assert.NoError(t, err, "Failed to get the external volume")
 	assert.Equal(t, "svm1", volumeExternal.Pool)
@@ -2751,7 +2747,7 @@ func TestOntapSanVolumeGetVolumeExternal(t *testing.T) {
 	assert.Equal(t, "none", volumeExternal.Config.SnapshotPolicy)
 }
 
-func TestOntapSanVolumeGetVolumeExternal_Fail(t *testing.T) {
+func TestOntapSanVolumeGetVolumeForImport_Fail(t *testing.T) {
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapSANDriver(t)
@@ -2798,7 +2794,7 @@ func TestOntapSanVolumeGetVolumeExternal_Fail(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			test.mocks(mockAPI)
 
-			_, err := driver.GetVolumeExternal(ctx, "vol1")
+			_, err := driver.GetVolumeForImport(ctx, "vol1")
 			if !test.wantErr(t, err, test.assertMessage) {
 				return
 			}

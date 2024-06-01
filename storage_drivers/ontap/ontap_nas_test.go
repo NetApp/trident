@@ -921,7 +921,7 @@ func TestOntapNasStorageDriverVolumeClone_ROClone(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: true,
+		SnapshotDir: utils.Ptr(true),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -954,7 +954,7 @@ func TestOntapNasStorageDriverVolumeClone_ROClone_Failure(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: false,
+		SnapshotDir: utils.Ptr(false),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -3074,7 +3074,7 @@ func TestOntapNasStorageDriverStoreConfig(t *testing.T) {
 	assert.Equal(t, &driver.Config, backendConfig.OntapConfig)
 }
 
-func TestOntapNasStorageDriverGetVolumeExternal(t *testing.T) {
+func TestOntapNasStorageDriverGetVolumeForImport(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	flexVol := api.Volume{
 		Name:    "flexvol",
@@ -3084,19 +3084,19 @@ func TestOntapNasStorageDriverGetVolumeExternal(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(&flexVol, nil)
 
-	volExt, err := driver.GetVolumeExternal(ctx, "vol1")
+	volExt, err := driver.GetVolumeForImport(ctx, "vol1")
 
 	assert.NotNil(t, volExt)
 	assert.NoError(t, err)
 }
 
-func TestOntapNasStorageDriverGetVolumeExternal_Failure(t *testing.T) {
+func TestOntapNasStorageDriverGetVolumeForImport_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(nil, fmt.Errorf("error fetching volume info"))
 
-	volExt, err := driver.GetVolumeExternal(ctx, "vol1")
+	volExt, err := driver.GetVolumeForImport(ctx, "vol1")
 
 	assert.Nil(t, volExt)
 	assert.Error(t, err)

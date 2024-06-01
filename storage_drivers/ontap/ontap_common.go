@@ -1842,6 +1842,10 @@ func getVolumeExternalCommon(
 		name = internalName[len(storagePrefix):]
 	}
 
+	snapshotDir := false
+	if volume.SnapshotDir != nil {
+		snapshotDir = *volume.SnapshotDir
+	}
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
@@ -1851,7 +1855,7 @@ func getVolumeExternalCommon(
 		SnapshotPolicy:  volume.SnapshotPolicy,
 		SnapshotReserve: strconv.Itoa(volume.SnapshotReserve),
 		ExportPolicy:    volume.ExportPolicy,
-		SnapshotDir:     strconv.FormatBool(volume.SnapshotDir),
+		SnapshotDir:     strconv.FormatBool(snapshotDir),
 		UnixPermissions: volume.UnixPermissions,
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,

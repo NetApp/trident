@@ -53,7 +53,7 @@ type Backend interface {
 	) error
 	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
 	UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo) (map[string]*Volume, error)
-	GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error)
+	GetVolumeForImport(ctx context.Context, volumeID string) (*VolumeExternal, error)
 	ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error)
 	ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error
 	RenameVolume(ctx context.Context, volConfig *VolumeConfig, newName string) error

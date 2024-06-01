@@ -515,9 +515,12 @@ func (d *NASQtreeStorageDriver) CreateClone(
 		}
 
 		// Return error, if snapshot directory visibility is not enabled for the source volume
-		if !storageVolume.SnapshotDir {
+		if storageVolume.SnapshotDir == nil {
+			return fmt.Errorf("snapshot directory access is undefined on storage volume %s", storageVolume.Name)
+		}
+		if *storageVolume.SnapshotDir == false {
 			return fmt.Errorf("snapshot directory access is set to %t and readOnly clone is set to %t ",
-				storageVolume.SnapshotDir, cloneVolConfig.ReadOnlyClone)
+				*storageVolume.SnapshotDir, cloneVolConfig.ReadOnlyClone)
 		}
 	} else {
 		return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
@@ -1128,7 +1131,7 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 		Qos:             api.QosPolicyGroup{},
 		SecurityStyle:   securityStyle,
 		Size:            size,
-		SnapshotDir:     enableSnapshotDir,
+		SnapshotDir:     utils.Ptr(enableSnapshotDir),
 		SnapshotPolicy:  snapshotPolicy,
 		SnapshotReserve: snapshotReserveInt,
 		SpaceReserve:    spaceReserve,
@@ -1192,7 +1195,7 @@ func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 		Aggregates:      []string{aggregate},
 		Encrypt:         enableEncryption,
 		Name:            d.FlexvolNamePrefix() + "*",
-		SnapshotDir:     enableSnapshotDir,
+		SnapshotDir:     utils.Ptr(enableSnapshotDir),
 		SnapshotPolicy:  snapshotPolicy,
 		SpaceReserve:    spaceReserve,
 		SnapshotReserve: snapshotReserveInt,
@@ -1755,11 +1758,14 @@ func (d *NASQtreeStorageDriver) GetExternalConfig(ctx context.Context) interface
 	return getExternalConfig(ctx, d.Config)
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *NASQtreeStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-	qtree, err := d.API.QtreeGetByName(ctx, name, d.FlexvolNamePrefix())
+// representation of the volume.  For this driver, volumeID is the name of the
+// Qtree on the storage system.
+func (d *NASQtreeStorageDriver) GetVolumeForImport(
+	ctx context.Context, volumeID string,
+) (*storage.VolumeExternal, error) {
+	qtree, err := d.API.QtreeGetByName(ctx, volumeID, d.FlexvolNamePrefix())
 	if err != nil {
 		return nil, err
 	}
@@ -1873,7 +1879,10 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 	}
 
 	size := quota.DiskLimitBytes
-
+	snapshotDir := false
+	if volume.SnapshotDir != nil {
+		snapshotDir = *volume.SnapshotDir
+	}
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
@@ -1882,7 +1891,7 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 		Protocol:        tridentconfig.File,
 		SnapshotPolicy:  volume.SnapshotPolicy,
 		ExportPolicy:    qtree.ExportPolicy,
-		SnapshotDir:     strconv.FormatBool(volume.SnapshotDir),
+		SnapshotDir:     strconv.FormatBool(snapshotDir),
 		UnixPermissions: qtree.UnixPermissions,
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,

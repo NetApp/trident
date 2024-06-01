@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -12,6 +12,7 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 
+	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -130,7 +131,7 @@ func (o *LUNHelper) GetLUNPathPattern(volName string) string {
 	return snapPattern
 }
 
-// identifies if the given snapLunPath has a valid snapshot name
+// IsValidSnapLUNPath identifies if the given snapLunPath has a valid snapshot name
 func (o *LUNHelper) IsValidSnapLUNPath(snapLunPath string) bool {
 	snapLunPath = strings.ReplaceAll(snapLunPath, "-", "_")
 	snapshotName := o.GetSnapshotNameFromSnapLUNPath(snapLunPath)
@@ -473,7 +474,6 @@ func (d *SANEconomyStorageDriver) Create(
 		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
 		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
 		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
-		snapshotDir       = "false"
 		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
 		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
@@ -516,7 +516,6 @@ func (d *SANEconomyStorageDriver) Create(
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve
 	volConfig.UnixPermissions = unixPermissions
-	volConfig.SnapshotDir = snapshotDir
 	volConfig.ExportPolicy = exportPolicy
 	volConfig.SecurityStyle = securityStyle
 	volConfig.Encryption = configEncryption
@@ -556,7 +555,6 @@ func (d *SANEconomyStorageDriver) Create(
 			Aggregates:      []string{aggregate},
 			Encrypt:         enableEncryption,
 			Name:            d.FlexvolNamePrefix() + "*",
-			SnapshotDir:     false,
 			SnapshotPolicy:  snapshotPolicy,
 			SpaceReserve:    spaceReserve,
 			SnapshotReserve: snapshotReserveInt,
@@ -846,7 +844,112 @@ func (d *SANEconomyStorageDriver) Import(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
-	return errors.New("import is not implemented")
+	if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureSANEconomyVolumeImport); err != nil {
+		Logc(ctx).WithField("feature", acp.FeatureSANEconomyVolumeImport).
+			WithError(err).Error("Failed to import volume.")
+		return fmt.Errorf("feature %s requires ACP; %w", acp.FeatureSANEconomyVolumeImport, err)
+	}
+
+	pathElements := strings.Split(originalName, "/")
+	if len(pathElements) < 2 {
+		return fmt.Errorf("%s is not a valid import vol/LUN path", originalName)
+	}
+	originalFlexvolName := pathElements[0]
+	originalLUNName := pathElements[1]
+
+	flexvol, err := d.API.VolumeInfo(ctx, originalFlexvolName)
+	if err != nil {
+		return err
+	} else if flexvol == nil {
+		return fmt.Errorf("volume %s from vol/LUN %s is not found", originalFlexvolName, originalName)
+	}
+
+	// Validate the volume is what it should be.
+	if flexvol.AccessType != "" && flexvol.AccessType != "rw" {
+		Logc(ctx).WithField("originalName", originalFlexvolName).Error("Could not import volume, type is not rw.")
+		return fmt.Errorf("volume %s type is %s, expects rw", originalFlexvolName, flexvol.AccessType)
+	}
+
+	// Set the volume to LUKS if backend has LUKS set to true as default.
+	if volConfig.LUKSEncryption == "" {
+		volConfig.LUKSEncryption = d.Config.LUKSEncryption
+	}
+
+	// Ensure LUN found.
+	extantLUN, err := d.API.LunGetByName(ctx, "/vol/"+originalFlexvolName+"/"+originalLUNName)
+	if err != nil {
+		return err
+	} else if extantLUN == nil {
+		return fmt.Errorf("LUN %s not found in volume %s", originalLUNName, originalFlexvolName)
+	}
+	Logc(ctx).WithField("LUN", extantLUN.Name).Trace("Import - LUN found.")
+
+	// LUN should be online.
+	if extantLUN.State != "online" {
+		return fmt.Errorf("LUN %s is not online", extantLUN.Name)
+	}
+	volConfig.Size = extantLUN.Size
+
+	if volConfig.ImportNotManaged {
+		// Volume/LUN import is not managed by Trident
+		if !strings.HasPrefix(flexvol.Name, d.FlexvolNamePrefix()) {
+			// Reject import if the Flexvol is not following naming conventions.
+			return fmt.Errorf("could not import volume/LUN, volume is named incorrectly: %s, expected pattern: %s*",
+				flexvol.Name, d.FlexvolNamePrefix())
+		}
+		// Adjust internalName to LUN name. Trim the Flexvol name.
+		volConfig.InternalName = d.helper.GetInternalVolumeNameFromPath(volConfig.InternalName)
+		return nil
+	}
+
+	targetPath := "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
+	newFlexvolName := d.FlexvolNamePrefix() + utils.RandomString(10)
+	volRenamed := false
+	if extantLUN.Name != targetPath {
+		err = d.API.LunRename(ctx, extantLUN.Name, targetPath)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"path":    extantLUN.Name,
+				"newPath": targetPath,
+				"error":   err,
+			}).Debug("Could not import volume, renaming LUN failed.")
+			return fmt.Errorf("LUN path %s rename failed: %v", extantLUN.Name, err)
+		}
+
+		// Rename Flexvol if it does not follow naming convention
+		if !strings.Contains(flexvol.Name, d.FlexvolNamePrefix()) {
+			err = d.API.VolumeRename(ctx, originalFlexvolName, newFlexvolName)
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"originalName": originalFlexvolName,
+					"newName":      newFlexvolName,
+					"error":        err,
+				}).Debug("Could not import volume, rename Flexvol failed.")
+
+				// Restore LUN to old name.
+				if ok := d.API.LunRename(ctx, targetPath, extantLUN.Name); ok != nil {
+					Logc(ctx).WithFields(LogFields{
+						"originalName": extantLUN.Name,
+						"newName":      targetPath,
+						"error":        ok,
+					}).Warn("Failed restoring LUN name to original name.")
+				}
+				return fmt.Errorf("volume %s rename failed: %v", originalFlexvolName, err)
+			}
+			volRenamed = true
+		}
+	}
+
+	// Unmap from all iGroups
+	if volRenamed {
+		targetPath = "/vol/" + newFlexvolName + "/" + volConfig.InternalName
+	}
+	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), targetPath); err != nil {
+		Logc(ctx).WithField("LUN", targetPath).WithError(err).Warn("Unmapping of igroups failed.")
+		return fmt.Errorf("failed to unmap igroups for LUN %s: %v", targetPath, err)
+	}
+
+	return nil
 }
 
 func (d *SANEconomyStorageDriver) Rename(ctx context.Context, name, newName string) error {
@@ -1035,11 +1138,15 @@ func (d *SANEconomyStorageDriver) Publish(
 		return fmt.Errorf("error LUN %v does not exist", name)
 	}
 
-	lunPath := d.helper.GetLUNPath(bucketVol, name)
+	extantLUNPath := d.helper.GetLUNPath(bucketVol, name)
+	if volConfig.ImportNotManaged {
+		// In case of unmanaged Import, we should not change the name.
+		extantLUNPath = GetLUNPathEconomy(bucketVol, name)
+	}
 	igroupName := d.Config.IgroupName
 
 	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
-	if volConfig.AccessInfo.PublishEnforcement && tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+	if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName)
 	}
@@ -1050,7 +1157,7 @@ func (d *SANEconomyStorageDriver) Publish(
 		return err
 	}
 
-	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, extantLUNPath, igroupName, iSCSINodeName)
 	if err != nil {
 		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
 	}
@@ -1580,7 +1687,6 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 			"snapshotPolicy":  volumeAttributes.SnapshotPolicy,
 			"snapshotReserve": snapshotReserveInt,
 			"unixPermissions": unixPermissions,
-			"snapshotDir":     volumeAttributes.SnapshotDir,
 			"exportPolicy":    exportPolicy,
 			"securityStyle":   securityStyle,
 			"encryption":      utils.GetPrintableBoolPtrValue(encryption),
@@ -1602,7 +1708,6 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 			Qos:             api.QosPolicyGroup{},
 			SecurityStyle:   securityStyle,
 			Size:            size,
-			SnapshotDir:     false,
 			SnapshotPolicy:  volumeAttributes.SnapshotPolicy,
 			SnapshotReserve: snapshotReserveInt,
 			SpaceReserve:    volumeAttributes.SpaceReserve,
@@ -1615,15 +1720,6 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 		return "", fmt.Errorf("error creating volume: %v", err)
 	}
 
-	if !volumeAttributes.SnapshotDir {
-		err := d.API.VolumeModifySnapshotDirectoryAccess(ctx, flexvol, false)
-		if err != nil {
-			if err := d.API.VolumeDestroy(ctx, flexvol, true); err != nil {
-				Logc(ctx).Error(err)
-			}
-			return "", fmt.Errorf("error disabling snapshot directory access: %v", err)
-		}
-	}
 	return flexvol, nil
 }
 
@@ -1854,27 +1950,37 @@ func (d *SANEconomyStorageDriver) GetExternalConfig(ctx context.Context) interfa
 	return getExternalConfig(ctx, d.Config)
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *SANEconomyStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-	_, flexvol, err := d.LUNExists(ctx, name, d.FlexvolNamePrefix())
+// representation of the volume.  For this driver, volumeID is the path of the
+// LUN on the storage system in the format <flexvol>/<lun>.
+func (d *SANEconomyStorageDriver) GetVolumeForImport(
+	ctx context.Context, volumeID string,
+) (*storage.VolumeExternal, error) {
+	pathElements := strings.Split(volumeID, "/")
+	if len(pathElements) < 2 {
+		return nil, fmt.Errorf("%s is not a valid import vol/LUN path", volumeID)
+	}
+	originalFlexvolName := pathElements[0]
+	originalLUNName := pathElements[1]
+
+	volumeAttrs, err := d.API.VolumeInfo(ctx, originalFlexvolName)
 	if err != nil {
 		return nil, err
 	}
 
-	volumeAttrs, err := d.API.VolumeInfo(ctx, name)
+	ecoLUNPath := GetLUNPathEconomy(originalFlexvolName, originalLUNName)
+	extantLUN, err := d.API.LunGetByName(ctx, ecoLUNPath)
 	if err != nil {
 		return nil, err
 	}
+	Logc(ctx).WithFields(LogFields{
+		"name":   extantLUN.Name,
+		"volume": extantLUN.VolumeName,
+		"size":   extantLUN.Size,
+	}).Trace("SANEconomyStorageDriver#GetVolumeForImport - LUN found.")
 
-	lunPath := GetLUNPathEconomy(flexvol, name)
-	lunAttrs, err := d.API.LunGetByName(ctx, lunPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return d.getVolumeExternal(lunAttrs, volumeAttrs), nil
+	return d.getVolumeExternal(extantLUN, volumeAttrs), nil
 }
 
 // GetVolumeExternalWrappers queries the storage backend for all relevant info about
@@ -1953,7 +2059,6 @@ func (d *SANEconomyStorageDriver) getVolumeExternal(
 		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  volume.SnapshotPolicy,
 		ExportPolicy:    "",
-		SnapshotDir:     "",
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteOnce,

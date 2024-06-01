@@ -61,9 +61,9 @@ type Driver interface {
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
 	GetExternalConfig(ctx context.Context) interface{}
-	// GetVolumeExternal accepts the internal name of a volume and returns a VolumeExternal
-	// object.  This method is only available if using the passthrough store (i.e. Docker).
-	GetVolumeExternal(ctx context.Context, name string) (*VolumeExternal, error)
+	// GetVolumeForImport accepts a string that uniquely identifies a volume in a backend-specific
+	// format and returns a VolumeExternal object.
+	GetVolumeForImport(ctx context.Context, volumeID string) (*VolumeExternal, error)
 	// GetVolumeExternalWrappers reads all volumes owned by this driver from the storage backend and
 	// writes them to the supplied channel as VolumeExternalWrapper objects.  This method is only
 	// available if using the passthrough store (i.e. Docker).
@@ -653,19 +653,15 @@ func (b *StorageBackend) UnpublishVolume(
 	}
 }
 
-func (b *StorageBackend) GetVolumeExternal(ctx context.Context, volumeName string) (*VolumeExternal, error) {
+func (b *StorageBackend) GetVolumeForImport(ctx context.Context, volumeID string) (*VolumeExternal, error) {
 	// Ensure backend is ready
 	if err := b.ensureOnline(ctx); err != nil {
 		return nil, err
 	}
 
-	if err := b.driver.Get(ctx, volumeName); err != nil {
-		return nil, fmt.Errorf("failed to get volume %s: %v", volumeName, err)
-	}
-
-	volExternal, err := b.driver.GetVolumeExternal(ctx, volumeName)
+	volExternal, err := b.driver.GetVolumeForImport(ctx, volumeID)
 	if err != nil {
-		return nil, fmt.Errorf("error requesting volume size: %v", err)
+		return nil, fmt.Errorf("error seeking volume for import: %v", err)
 	}
 	volExternal.Backend = b.name
 	volExternal.BackendUUID = b.backendUUID

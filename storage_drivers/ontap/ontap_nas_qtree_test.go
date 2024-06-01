@@ -763,7 +763,7 @@ func TestCreateClone_Success_ROClone(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: true,
+		SnapshotDir: utils.Ptr(true),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -855,7 +855,7 @@ func TestCreateClone_FailureNoVolInfo(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: true,
+		SnapshotDir: utils.Ptr(true),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -891,7 +891,7 @@ func TestCreateClone_FailureSnapDirFalse(t *testing.T) {
 	flexVol := api.Volume{
 		Name:        "flexvol",
 		Comment:     "flexvol",
-		SnapshotDir: false,
+		SnapshotDir: utils.Ptr(false),
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -1539,7 +1539,7 @@ func TestFindFlexvolForQtree_Success_ZeroEligibleVolume(t *testing.T) {
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     false,
+		SnapshotDir:     utils.Ptr(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -1569,7 +1569,7 @@ func TestFindFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     false,
+		SnapshotDir:     utils.Ptr(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -1604,7 +1604,7 @@ func TestFindFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     false,
+		SnapshotDir:     utils.Ptr(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -1643,7 +1643,7 @@ func TestFindFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 		Aggregates:      []string{"aggr1"},
 		Encrypt:         isEncrypt,
 		Name:            "test_*",
-		SnapshotDir:     false,
+		SnapshotDir:     utils.Ptr(false),
 		SnapshotPolicy:  "snapshotPolicy",
 		SpaceReserve:    "none",
 		SnapshotReserve: 10,
@@ -2813,7 +2813,7 @@ func TestStoreConfig_Success(t *testing.T) {
 	assert.Equal(t, &driver.Config, backendConfig.OntapConfig, "Incorrect backend config")
 }
 
-func TestGetVolumeExternal_Success(t *testing.T) {
+func TestGetVolumeForImport_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.flexvolNamePrefix = "test"
 
@@ -2831,7 +2831,7 @@ func TestGetVolumeExternal_Success(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).AnyTimes().Return(volInfo, nil)
 	mockAPI.EXPECT().QuotaGetEntry(ctx, volName, volNameInternal, gomock.Any()).AnyTimes().Return(quotaEntry, nil)
 
-	volumeExternal, result := driver.GetVolumeExternal(ctx, volName)
+	volumeExternal, result := driver.GetVolumeForImport(ctx, volName)
 
 	// Expect no error and external volume attributes are set
 	assert.NoError(t, result, "Expected no error in getting external volume, got error")
@@ -2845,7 +2845,7 @@ func TestGetVolumeExternal_Success(t *testing.T) {
 	assert.Equal(t, volInfo.Aggregates[0], volumeExternal.Pool, "Volume pool not correct")
 }
 
-func TestGetVolumeExternal_WithErrorInApiOperation(t *testing.T) {
+func TestGetVolumeForImport_WithErrorInApiOperation(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
 	volInfo, _ := MockGetVolumeInfo(ctx, volName)
@@ -2855,7 +2855,7 @@ func TestGetVolumeExternal_WithErrorInApiOperation(t *testing.T) {
 	driver.flexvolNamePrefix = "test"
 	mockAPI.EXPECT().QtreeGetByName(ctx, volName, driver.flexvolNamePrefix).AnyTimes().Return(nil, mockError)
 
-	volumeExternal1, result1 := driver.GetVolumeExternal(ctx, volName)
+	volumeExternal1, result1 := driver.GetVolumeForImport(ctx, volName)
 
 	assert.Error(t, result1, "Expected error when api failed to get qtree, got nil")
 	assert.Nil(t, volumeExternal1, "Expected nil volume when error occurs, got non-nil")
@@ -2867,7 +2867,7 @@ func TestGetVolumeExternal_WithErrorInApiOperation(t *testing.T) {
 		newMockQtree(volNameInternal, volName), nil)
 	mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).AnyTimes().Return(nil, mockError)
 
-	volumeExternal2, result2 := driver.GetVolumeExternal(ctx, volName)
+	volumeExternal2, result2 := driver.GetVolumeForImport(ctx, volName)
 
 	assert.Error(t, result2, "Expected error when api failed to get volume info, got nil")
 	assert.Nil(t, volumeExternal2, "Expected nil volume when error occurs, got non-nil")
@@ -2880,7 +2880,7 @@ func TestGetVolumeExternal_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).AnyTimes().Return(volInfo, nil)
 	mockAPI.EXPECT().QuotaGetEntry(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil, mockError)
 
-	volumeExternal3, result3 := driver.GetVolumeExternal(ctx, volName)
+	volumeExternal3, result3 := driver.GetVolumeForImport(ctx, volName)
 
 	assert.Error(t, result3, "Expected error when api failed to get quota entry, got nil")
 	assert.Nil(t, volumeExternal3, "Expected nil volume when error occurs, got non-nil")

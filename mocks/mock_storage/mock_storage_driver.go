@@ -307,21 +307,6 @@ func (mr *MockDriverMockRecorder) GetUpdateType(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpdateType", reflect.TypeOf((*MockDriver)(nil).GetUpdateType), arg0, arg1)
 }
 
-// GetVolumeExternal mocks base method.
-func (m *MockDriver) GetVolumeExternal(arg0 context.Context, arg1 string) (*storage.VolumeExternal, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeExternal", arg0, arg1)
-	ret0, _ := ret[0].(*storage.VolumeExternal)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetVolumeExternal indicates an expected call of GetVolumeExternal.
-func (mr *MockDriverMockRecorder) GetVolumeExternal(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeExternal", reflect.TypeOf((*MockDriver)(nil).GetVolumeExternal), arg0, arg1)
-}
-
 // GetVolumeExternalWrappers mocks base method.
 func (m *MockDriver) GetVolumeExternalWrappers(arg0 context.Context, arg1 chan *storage.VolumeExternalWrapper) {
 	m.ctrl.T.Helper()
@@ -332,6 +317,21 @@ func (m *MockDriver) GetVolumeExternalWrappers(arg0 context.Context, arg1 chan *
 func (mr *MockDriverMockRecorder) GetVolumeExternalWrappers(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeExternalWrappers", reflect.TypeOf((*MockDriver)(nil).GetVolumeExternalWrappers), arg0, arg1)
+}
+
+// GetVolumeForImport mocks base method.
+func (m *MockDriver) GetVolumeForImport(arg0 context.Context, arg1 string) (*storage.VolumeExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVolumeForImport", arg0, arg1)
+	ret0, _ := ret[0].(*storage.VolumeExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVolumeForImport indicates an expected call of GetVolumeForImport.
+func (mr *MockDriverMockRecorder) GetVolumeForImport(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeForImport", reflect.TypeOf((*MockDriver)(nil).GetVolumeForImport), arg0, arg1)
 }
 
 // Import mocks base method.

@@ -1083,34 +1083,34 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 	assert.NoError(t, err, "Failed to destroy volume.")
 }
 
-func TestNVMeGetVolumeExternal_GetVolumeError(t *testing.T) {
+func TestNVMeGetVolumeForImport_GetVolumeError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
 
-	_, err := d.GetVolumeExternal(ctx, "vol")
+	_, err := d.GetVolumeForImport(ctx, "vol")
 
 	assert.ErrorContains(t, err, "failed to get volume")
 }
 
-func TestNVMeGetVolumeExternal_GetNamespaceError(t *testing.T) {
+func TestNVMeGetVolumeForImport_GetNamespaceError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get ns"))
 
-	_, err := d.GetVolumeExternal(ctx, "vol")
+	_, err := d.GetVolumeForImport(ctx, "vol")
 
 	assert.ErrorContains(t, err, "failed to get ns")
 }
 
-func TestNVMeGetVolumeExternal_Success(t *testing.T) {
+func TestNVMeGetVolumeForImport_Success(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	v := &api.Volume{Name: "test_vol", SnapshotPolicy: "pol", Aggregates: []string{"data"}}
 
 	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(v, nil)
 	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(&api.NVMeNamespace{Size: "10"}, nil)
 
-	vol, err := d.GetVolumeExternal(ctx, "vol")
+	vol, err := d.GetVolumeForImport(ctx, "vol")
 
 	assert.NoError(t, err, "Failed to get Volume External struct.")
 	assert.Equal(t, "vol", vol.Config.Name, "Found different volume.")

@@ -46,7 +46,7 @@ type Orchestrator interface {
 	DeleteVolume(ctx context.Context, volume string) error
 	GetVolume(ctx context.Context, volumeName string) (*storage.VolumeExternal, error)
 	GetVolumeByInternalName(ctx context.Context, volumeInternal string) (volume string, err error)
-	GetVolumeExternal(ctx context.Context, volumeName, backendName string) (*storage.VolumeExternal, error)
+	GetVolumeForImport(ctx context.Context, volumeID, backendName string) (*storage.VolumeExternal, error)
 	ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
 	PublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error

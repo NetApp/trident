@@ -1822,16 +1822,17 @@ func (d *SANStorageDriver) AddMissingVolumesToVag(ctx context.Context, vagID int
 	return d.Client.AddVolumesToAccessGroup(ctx, &addReq)
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-	volume, err := d.GetVolume(ctx, name)
+// representation of the volume.  For this driver, volumeID is the name of the
+// LUN on the storage system.
+func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	volume, err := d.GetVolume(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}
 
-	return d.getVolumeExternal(name, &volume), nil
+	return d.getVolumeExternal(volumeID, &volume), nil
 }
 
 // String implements stringer interface for the SANStorageDriver driver

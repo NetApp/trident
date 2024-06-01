@@ -400,7 +400,6 @@ func (d *NVMeStorageDriver) Create(
 				Qos:             qosPolicyGroup,
 				SecurityStyle:   securityStyle,
 				Size:            volumeSize,
-				SnapshotDir:     false,
 				SnapshotPolicy:  snapshotPolicy,
 				SnapshotReserve: snapshotReserveInt,
 				SpaceReserve:    spaceReserve,
@@ -1104,16 +1103,17 @@ func (d *NVMeStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	return getExternalConfig(ctx, d.Config)
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *NVMeStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-	volumeAttrs, err := d.API.VolumeInfo(ctx, name)
+// representation of the volume.  For this driver, volumeID is the name of the
+// Flexvol on the storage system.
+func (d *NVMeStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	volumeAttrs, err := d.API.VolumeInfo(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}
 
-	nsAttrs, err := d.API.NVMeNamespaceGetByName(ctx, "/vol/"+name+"/*")
+	nsAttrs, err := d.API.NVMeNamespaceGetByName(ctx, "/vol/"+volumeID+"/*")
 	if err != nil {
 		return nil, err
 	}

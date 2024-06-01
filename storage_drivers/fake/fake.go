@@ -800,6 +800,7 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 	volConfig.Size = strconv.FormatUint(importVolume.SizeBytes, 10)
 
 	if !volConfig.ImportNotManaged {
+		importVolume.Name = volConfig.InternalName
 		d.Volumes[volConfig.InternalName] = importVolume
 		delete(d.Volumes, originalName)
 	}
@@ -1165,10 +1166,10 @@ func (d *StorageDriver) GetExternalConfig(context.Context) interface{} {
 	return d.Config
 }
 
-func (d *StorageDriver) GetVolumeExternal(_ context.Context, name string) (*storage.VolumeExternal, error) {
-	volume, ok := d.Volumes[name]
+func (d *StorageDriver) GetVolumeForImport(_ context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	volume, ok := d.Volumes[volumeID]
 	if !ok {
-		return nil, fmt.Errorf("fake volume %s not found", name)
+		return nil, fmt.Errorf("fake volume %s not found", volumeID)
 	}
 
 	return d.getVolumeExternal(volume), nil

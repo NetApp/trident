@@ -4037,7 +4037,7 @@ func TestSubvolumeGetExternalConfig(t *testing.T) {
 	assert.NotNil(t, result, "unable to get the config")
 }
 
-func TestSubvolumeGetVolumeExternal(t *testing.T) {
+func TestSubvolumeGetVolumeForImport(t *testing.T) {
 	config, _, subVolume := getStructsForSubvolumeImport()
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
@@ -4049,13 +4049,13 @@ func TestSubvolumeGetVolumeExternal(t *testing.T) {
 	mockAPI.EXPECT().SubvolumeByCreationToken(ctx, originalName, driver.getAllFilePoolVolumes(), true).Return(subVolume,
 		nil).Times(1)
 
-	result, resultErr := driver.GetVolumeExternal(ctx, originalName)
+	result, resultErr := driver.GetVolumeForImport(ctx, originalName)
 
 	assert.NotNil(t, result, "unable to get container volume")
 	assert.NoError(t, resultErr, "error")
 }
 
-func TestSubvolumeGetVolumeExternal_Error(t *testing.T) {
+func TestSubvolumeGetVolumeForImport_Error(t *testing.T) {
 	config, _, _ := getStructsForSubvolumeImport()
 
 	mockAPI, driver := newMockANFSubvolumeDriver(t)
@@ -4067,7 +4067,7 @@ func TestSubvolumeGetVolumeExternal_Error(t *testing.T) {
 	mockAPI.EXPECT().SubvolumeByCreationToken(ctx, originalName, driver.getAllFilePoolVolumes(), true).Return(nil,
 		errFailed).Times(1)
 
-	result, resultErr := driver.GetVolumeExternal(ctx, originalName)
+	result, resultErr := driver.GetVolumeForImport(ctx, originalName)
 
 	assert.Nil(t, result, "not nil")
 	assert.Error(t, resultErr, "no error")

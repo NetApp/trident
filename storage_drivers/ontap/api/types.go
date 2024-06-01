@@ -17,7 +17,7 @@ type Volume struct {
 	Qos               QosPolicyGroup
 	SecurityStyle     string
 	Size              string
-	SnapshotDir       bool
+	SnapshotDir       *bool
 	SnapshotPolicy    string
 	SnapshotReserve   int
 	SnapshotSpaceUsed int

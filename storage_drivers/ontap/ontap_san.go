@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -318,7 +318,6 @@ func (d *SANStorageDriver) Create(
 		snapshotPolicy    = utils.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
 		snapshotReserve   = utils.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
 		unixPermissions   = utils.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
-		snapshotDir       = "false"
 		exportPolicy      = utils.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
 		securityStyle     = utils.GetV(opts, "securityStyle", storagePool.InternalAttributes()[SecurityStyle])
 		encryption        = utils.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
@@ -384,7 +383,6 @@ func (d *SANStorageDriver) Create(
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve
 	volConfig.UnixPermissions = unixPermissions
-	volConfig.SnapshotDir = snapshotDir
 	volConfig.ExportPolicy = exportPolicy
 	volConfig.SecurityStyle = securityStyle
 	volConfig.Encryption = configEncryption
@@ -402,7 +400,6 @@ func (d *SANStorageDriver) Create(
 		"snapshotPolicy":    snapshotPolicy,
 		"snapshotReserve":   snapshotReserveInt,
 		"unixPermissions":   unixPermissions,
-		"snapshotDir":       snapshotDir,
 		"exportPolicy":      exportPolicy,
 		"securityStyle":     securityStyle,
 		"LUKSEncryption":    luksEncryption,
@@ -450,7 +447,6 @@ func (d *SANStorageDriver) Create(
 				Qos:             api.QosPolicyGroup{},
 				SecurityStyle:   securityStyle,
 				Size:            volumeSize,
-				SnapshotDir:     false,
 				SnapshotPolicy:  snapshotPolicy,
 				SnapshotReserve: snapshotReserveInt,
 				SpaceReserve:    spaceReserve,
@@ -1165,16 +1161,17 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	return getExternalConfig(ctx, d.Config)
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *SANStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-	volumeAttrs, err := d.API.VolumeInfo(ctx, name)
+// representation of the volume.  For this driver, volumeID is the name of the
+// Flexvol on the storage system.
+func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	volumeAttrs, err := d.API.VolumeInfo(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}
 
-	lunPath := fmt.Sprintf("/vol/%v/*", name)
+	lunPath := fmt.Sprintf("/vol/%v/*", volumeID)
 	lunAttrs, err := d.API.LunGetByName(ctx, lunPath)
 	if err != nil {
 		return nil, err
@@ -1250,7 +1247,6 @@ func (d *SANStorageDriver) getVolumeExternal(
 		Protocol:        tridentconfig.Block,
 		SnapshotPolicy:  volume.SnapshotPolicy,
 		ExportPolicy:    "",
-		SnapshotDir:     "false",
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteOnce,

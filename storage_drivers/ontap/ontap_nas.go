@@ -482,9 +482,12 @@ func (d *NASStorageDriver) CreateClone(
 	}
 
 	if cloneVolConfig.ReadOnlyClone {
-		if !flexvol.SnapshotDir {
+		if flexvol.SnapshotDir == nil {
+			return fmt.Errorf("snapshot directory access is undefined on flexvol %s", flexvol.Name)
+		}
+		if *flexvol.SnapshotDir == false {
 			return fmt.Errorf("snapshot directory access is set to %t and readOnly clone is set to %t ",
-				flexvol.SnapshotDir, cloneVolConfig.ReadOnlyClone)
+				*flexvol.SnapshotDir, cloneVolConfig.ReadOnlyClone)
 		}
 		return nil
 	}
@@ -1144,13 +1147,12 @@ func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	return getExternalConfig(ctx, d.Config)
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *NASStorageDriver) GetVolumeExternal(
-	ctx context.Context, name string,
-) (*storage.VolumeExternal, error) {
-	volume, err := d.API.VolumeInfo(ctx, name)
+// representation of the volume.  For this driver, volumeID is the name of the
+// Flexvol on the storage system.
+func (d *NASStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	volume, err := d.API.VolumeInfo(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}

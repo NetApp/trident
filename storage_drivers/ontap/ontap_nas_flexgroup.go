@@ -1515,13 +1515,14 @@ func (d *NASFlexGroupStorageDriver) GetExternalConfig(ctx context.Context) inter
 	return getExternalConfig(ctx, d.Config)
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *NASFlexGroupStorageDriver) GetVolumeExternal(ctx context.Context, name string) (
-	*storage.VolumeExternal, error,
-) {
-	flexgroup, err := d.API.FlexgroupInfo(ctx, name)
+// representation of the volume.  For this driver, volumeID is the name of the
+// Flexgroup on the storage system.
+func (d *NASFlexGroupStorageDriver) GetVolumeForImport(
+	ctx context.Context, volumeID string,
+) (*storage.VolumeExternal, error) {
+	flexgroup, err := d.API.FlexgroupInfo(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}

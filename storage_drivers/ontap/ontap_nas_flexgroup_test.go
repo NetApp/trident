@@ -4058,7 +4058,7 @@ func TestOntapNasFlexgroupStorageDriverReconcileNodeAccess(t *testing.T) {
 	assert.NoError(t, result)
 }
 
-func TestOntapNasFlexgroupStorageDriverGetVolumeExternal(t *testing.T) {
+func TestOntapNasFlexgroupStorageDriverGetVolumeForImport(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	flexgroup := api.Volume{
 		Name:    "flexgroup",
@@ -4068,19 +4068,19 @@ func TestOntapNasFlexgroupStorageDriverGetVolumeExternal(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
 
-	volExt, err := driver.GetVolumeExternal(ctx, "vol1")
+	volExt, err := driver.GetVolumeForImport(ctx, "vol1")
 
 	assert.NotNil(t, volExt)
 	assert.NoError(t, err)
 }
 
-func TestOntapNasFlexgroupStorageDriverGetVolumeExternal_Failure(t *testing.T) {
+func TestOntapNasFlexgroupStorageDriverGetVolumeForImport_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(nil, fmt.Errorf("error fetching volume info"))
 
-	volExt, err := driver.GetVolumeExternal(ctx, "vol1")
+	volExt, err := driver.GetVolumeForImport(ctx, "vol1")
 
 	assert.Nil(t, volExt)
 	assert.Error(t, err, "Get the flexgroup volume info")

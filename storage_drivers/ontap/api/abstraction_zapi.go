@@ -138,7 +138,7 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 		responseJunctionPath         string
 		responseName                 string
 		responseSize                 string
-		responseSnapdirAccessEnabled bool
+		responseSnapdirAccessEnabled *bool
 		responseSnapshotPolicy       string
 		responseSnapshotReserveInt   int
 		responseSnapshotSpaceUsed    int
@@ -215,9 +215,7 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 			responseSnapshotPolicy = volumeGetResponse.VolumeSnapshotAttributesPtr.SnapshotPolicy()
 		}
 
-		if volumeGetResponse.VolumeSnapshotAttributesPtr.SnapdirAccessEnabledPtr != nil {
-			responseSnapdirAccessEnabled = volumeGetResponse.VolumeSnapshotAttributesPtr.SnapdirAccessEnabled()
-		}
+		responseSnapdirAccessEnabled = volumeGetResponse.VolumeSnapshotAttributesPtr.SnapdirAccessEnabledPtr
 	}
 
 	volumeInfo := &Volume{

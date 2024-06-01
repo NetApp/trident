@@ -7522,7 +7522,7 @@ func TestStoreConfig(t *testing.T) {
 	assert.Equal(t, driver.Config, *persistentConfig.AzureConfig, "azure config mismatch")
 }
 
-func TestGetVolumeExternal(t *testing.T) {
+func TestGetVolumeForImport(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -7537,7 +7537,7 @@ func TestGetVolumeExternal(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, "testvol1").Return(filesystem, nil).Times(1)
 
-	result, resultErr := driver.GetVolumeExternal(ctx, "testvol1")
+	result, resultErr := driver.GetVolumeForImport(ctx, "testvol1")
 
 	assert.Nil(t, resultErr, "not nil")
 	assert.IsType(t, &storage.VolumeExternal{}, result, "type mismatch")
@@ -7546,7 +7546,7 @@ func TestGetVolumeExternal(t *testing.T) {
 	assert.Equal(t, "myPrefix-testvol1", result.Config.InternalName)
 }
 
-func TestGetVolumeExternal_DiscoveryFailed(t *testing.T) {
+func TestGetVolumeForImport_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -7554,13 +7554,13 @@ func TestGetVolumeExternal_DiscoveryFailed(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 
-	result, resultErr := driver.GetVolumeExternal(ctx, "testvol1")
+	result, resultErr := driver.GetVolumeForImport(ctx, "testvol1")
 
 	assert.Nil(t, result, "not nil")
 	assert.NotNil(t, resultErr, "error expected")
 }
 
-func TestGetVolumeExternal_GetFailed(t *testing.T) {
+func TestGetVolumeForImport_GetFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 
 	storagePrefix := "myPrefix-"
@@ -7569,7 +7569,7 @@ func TestGetVolumeExternal_GetFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, "testvol1").Return(nil, errFailed).Times(1)
 
-	result, resultErr := driver.GetVolumeExternal(ctx, "testvol1")
+	result, resultErr := driver.GetVolumeForImport(ctx, "testvol1")
 
 	assert.Nil(t, result, "not nil")
 	assert.NotNil(t, resultErr, "error expected")

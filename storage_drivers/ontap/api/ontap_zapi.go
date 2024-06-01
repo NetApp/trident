@@ -1626,7 +1626,7 @@ func (c Client) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 
 // VolumeListByAttrs returns the names of all Flexvols matching the specified attributes
 func (c Client) VolumeListByAttrs(
-	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir bool, encrypt *bool,
+	prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir, encrypt *bool,
 	snapReserve int,
 ) (*azgo.VolumeGetIterResponse, error) {
 	// Limit the Flexvols to those matching the specified attributes
@@ -1640,9 +1640,11 @@ func (c Client) VolumeListByAttrs(
 	if snapReserve >= 0 {
 		queryVolSpaceAttrs.SetPercentageSnapshotReserve(snapReserve)
 	}
-	queryVolSnapshotAttrs := azgo.NewVolumeSnapshotAttributesType().
-		SetSnapshotPolicy(snapshotPolicy).
-		SetSnapdirAccessEnabled(snapshotDir)
+	queryVolSnapshotAttrs := azgo.NewVolumeSnapshotAttributesType().SetSnapshotPolicy(snapshotPolicy)
+	if snapshotDir != nil {
+		queryVolSnapshotAttrs.SetSnapdirAccessEnabled(*snapshotDir)
+	}
+
 	queryVolStateAttrs := azgo.NewVolumeStateAttributesType().
 		SetState("online")
 	queryVolCompAggrAttrs := azgo.NewVolumeCompAggrAttributesType().

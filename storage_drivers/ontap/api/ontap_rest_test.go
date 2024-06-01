@@ -5952,7 +5952,7 @@ func TestOntapREST_VolumeListByAttrs(t *testing.T) {
 		Qos:               QosPolicyGroup{Name: "qosPolicy", Kind: QosPolicyGroupKind},
 		SecurityStyle:     "unix",
 		Size:              size,
-		SnapshotDir:       snapshotDir,
+		SnapshotDir:       utils.Ptr(snapshotDir),
 		SnapshotPolicy:    snapshotPolicy,
 		SnapshotReserve:   0,
 		SnapshotSpaceUsed: 1073741810,

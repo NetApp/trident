@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -11,11 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/cenkalti/backoff/v4"
 
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
@@ -42,12 +41,6 @@ func (h *helper) ImportVolume(
 		return nil, fmt.Errorf("the pvcData field does not contain valid base64-encoded data: %v", err)
 	}
 
-	existingVol, err := h.orchestrator.GetVolumeByInternalName(ctx, request.InternalName)
-	if err == nil {
-		return nil, errors.FoundError("PV %s already exists for volume %s",
-			existingVol, request.InternalName)
-	}
-
 	claim := &v1.PersistentVolumeClaim{}
 	err = json.Unmarshal(jsonData, &claim)
 	if err != nil {
@@ -63,15 +56,17 @@ func (h *helper) ImportVolume(
 		"PVC_requestedSize": claim.Spec.Resources.Requests[v1.ResourceStorage],
 	}).Trace()
 
+	// Ensure the new PVC specified a storage class
 	if err = h.checkValidStorageClassReceived(ctx, claim); err != nil {
 		return nil, err
 	}
 
+	// Ensure the new PVC specified a namespace
 	if len(claim.Namespace) == 0 {
 		return nil, fmt.Errorf("a valid PVC namespace is required for volume import")
 	}
 
-	// Lookup backend ID from given name
+	// Lookup backend from given name
 	backend, err := h.orchestrator.GetBackend(ctx, request.Backend)
 	if err != nil {
 		return nil, fmt.Errorf("could not find backend %s; %v", request.Backend, err)
@@ -86,24 +81,31 @@ func (h *helper) ImportVolume(
 	claim.Annotations[AnnImportBackendUUID] = backend.BackendUUID
 	claim.Annotations[AnnStorageProvisioner] = csi.Provisioner
 
-	// Set the PVC's storage field to the actual volume data size
-	volExternal, err := h.orchestrator.GetVolumeExternal(ctx, request.InternalName, request.Backend)
+	// Find the volume on the storage system
+	extantVol, err := h.orchestrator.GetVolumeForImport(ctx, request.InternalName, request.Backend)
 	if err != nil {
 		return nil, fmt.Errorf("volume import failed to get size of volume: %v", err)
 	}
 
-	totalSize, err := strconv.ParseUint(volExternal.Config.Size, 10, 64)
+	// Ensure this volume isn't already managed
+	managedVol, err := h.orchestrator.GetVolumeByInternalName(ctx, extantVol.Config.InternalName)
+	if err == nil {
+		return nil, errors.FoundError("PV %s already exists for volume %s", managedVol, request.InternalName)
+	}
+
+	// Set the PVC's storage field to the actual volume data size
+	totalSize, err := strconv.ParseUint(extantVol.Config.Size, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("volume import failed as volume %v has invalid size %v: %v",
-			request.InternalName, volExternal.Config.Size, err)
+			request.InternalName, extantVol.Config.Size, err)
 	}
 
 	snapshotReserve := 0
-	if volExternal.Config.SnapshotReserve != "" {
-		snapshotReserve, err = strconv.Atoi(volExternal.Config.SnapshotReserve)
+	if extantVol.Config.SnapshotReserve != "" {
+		snapshotReserve, err = strconv.Atoi(extantVol.Config.SnapshotReserve)
 		if err != nil {
 			return nil, fmt.Errorf("volume import failed as volume %v has invalid snapshot reserve %v: %v",
-				request.InternalName, volExternal.Config.SnapshotReserve, err)
+				request.InternalName, extantVol.Config.SnapshotReserve, err)
 		}
 	}
 
@@ -115,7 +117,7 @@ func (h *helper) ImportVolume(
 	claim.Spec.Resources.Requests[v1.ResourceStorage] = resource.MustParse(strconv.FormatUint(dataSize, 10))
 
 	Logc(ctx).WithFields(LogFields{
-		"total size":       volExternal.Config.Size,
+		"total size":       extantVol.Config.Size,
 		"snapshot reserve": snapshotReserve,
 		"data size":        dataSize,
 		"claimSize":        claim.Spec.Resources.Requests[v1.ResourceStorage],
@@ -144,6 +146,7 @@ func (h *helper) ImportVolume(
 	if err != nil {
 		return nil, fmt.Errorf("error getting volume %s; %v", pvName, err)
 	}
+
 	return volume, nil
 }
 
@@ -176,7 +179,7 @@ func checkAndHandleUnrecoverableError(ctx context.Context, h *helper, pvc *v1.Pe
 	var appendString string
 	if pvError != nil {
 		events, err := h.kubeClient.CoreV1().Events(pvc.Namespace).List(ctx, metav1.ListOptions{
-			FieldSelector: fmt.Sprintf("involvedObject.name=%s,involvedObject.kind=PersistentVolumeClaim", pvc.Name),
+			FieldSelector: fmt.Sprintf("involvedObject.uid=%s,involvedObject.kind=PersistentVolumeClaim", pvc.UID),
 		})
 		if err != nil {
 			return false, err

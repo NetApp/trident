@@ -2166,16 +2166,17 @@ func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	return cloneConfig
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *NASStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
+// representation of the volume.  For this driver, volumeID is the unique creation
+// token used when creating the volume.
+func (d *NASStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
 	// Update resource cache as needed
 	if err := d.SDK.RefreshAzureResources(ctx); err != nil {
 		return nil, fmt.Errorf("could not update ANF resource cache; %v", err)
 	}
 
-	filesystem, err := d.SDK.VolumeByCreationToken(ctx, name)
+	filesystem, err := d.SDK.VolumeByCreationToken(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}

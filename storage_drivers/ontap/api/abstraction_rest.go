@@ -219,9 +219,9 @@ func FlexVolInfoFromRestAttrsHelper(volume *models.Volume) (*Volume, error) {
 		}
 	}
 
-	snapshotDirAccessEnabled := false
+	snapshotDirAccessEnabled := utils.Ptr(false)
 	if volume.SnapshotDirectoryAccessEnabled != nil {
-		snapshotDirAccessEnabled = *volume.SnapshotDirectoryAccessEnabled
+		snapshotDirAccessEnabled = volume.SnapshotDirectoryAccessEnabled
 	}
 
 	tieringPolicy := models.VolumeInlineTieringPolicyNone
@@ -260,7 +260,7 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 	var responseExportPolicy string
 	var responseJunctionPath string
 	var responseSize string
-	// var responseSnapdirAccessEnabled bool
+	var responseSnapdirAccessEnabled *bool
 	var responseSnapshotPolicy string
 	var responseSnapshotReserveInt int
 	var responseSnapshotSpaceUsed int
@@ -329,9 +329,8 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		}
 	}
 
-	snapshotDir := false
 	if volumeGetResponse.SnapshotDirectoryAccessEnabled != nil {
-		snapshotDir = *volumeGetResponse.SnapshotDirectoryAccessEnabled
+		responseSnapdirAccessEnabled = volumeGetResponse.SnapshotDirectoryAccessEnabled
 	}
 
 	volumeInfo := &Volume{
@@ -341,7 +340,7 @@ func VolumeInfoFromRestAttrsHelper(volumeGetResponse *models.Volume) (*Volume, e
 		ExportPolicy:      responseExportPolicy,
 		JunctionPath:      responseJunctionPath,
 		Size:              responseSize,
-		SnapshotDir:       snapshotDir,
+		SnapshotDir:       responseSnapdirAccessEnabled,
 		SnapshotPolicy:    responseSnapshotPolicy,
 		SnapshotReserve:   responseSnapshotReserveInt,
 		SnapshotSpaceUsed: responseSnapshotSpaceUsed,

@@ -2094,7 +2094,7 @@ func (mr *MockZapiClientInterfaceMockRecorder) VolumeListAllBackedBySnapshot(arg
 }
 
 // VolumeListByAttrs mocks base method.
-func (m *MockZapiClientInterface) VolumeListByAttrs(arg0, arg1, arg2, arg3, arg4 string, arg5 bool, arg6 *bool, arg7 int) (*azgo.VolumeGetIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeListByAttrs(arg0, arg1, arg2, arg3, arg4 string, arg5, arg6 *bool, arg7 int) (*azgo.VolumeGetIterResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VolumeListByAttrs", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	ret0, _ := ret[0].(*azgo.VolumeGetIterResponse)

@@ -1410,12 +1410,10 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume, 
 	}
 
 	params.SetSpaceSnapshotReservePercent(utils.Ptr(int64(volumeAttrs.SnapshotReserve)))
-	params.SetSnapshotDirectoryAccessEnabled(utils.Ptr(volumeAttrs.SnapshotDir))
+	params.SetSnapshotDirectoryAccessEnabled(volumeAttrs.SnapshotDir)
 	params.SetEncryptionEnabled(volumeAttrs.Encrypt)
 
-	if state != "" {
-		params.SetState(utils.Ptr(state))
-	}
+	params.SetState(utils.Ptr(state))
 	params.SetStyle(utils.Ptr(style))
 	params.SetFields(fields)
 

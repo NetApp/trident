@@ -2380,14 +2380,14 @@ func TestGetExternalConfig(t *testing.T) {
 		d.Config.StorageDriverName, "Incorrect config")
 }
 
-func TestGetVolumeExternal_GetVolumeError(t *testing.T) {
+func TestGetVolumeForImport_GetVolumeError(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, errors.New("failed to get volume"))
-	_, err := d.GetVolumeExternal(ctx(), "vol-name")
+	_, err := d.GetVolumeForImport(ctx(), "vol-name")
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
-func TestGetVolumeExternal(t *testing.T) {
+func TestGetVolumeForImport(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 	volume := api.Volume{
 		Name:              "vol-name",
@@ -2397,7 +2397,7 @@ func TestGetVolumeExternal(t *testing.T) {
 		QuotaInBytes:      100,
 	}
 	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	extVol, err := d.GetVolumeExternal(ctx(), "vol-name")
+	extVol, err := d.GetVolumeForImport(ctx(), "vol-name")
 	assert.NoError(t, err, "Failed to get external volume")
 	assert.Equal(t, extVol.Config.Name, volume.Name)
 }

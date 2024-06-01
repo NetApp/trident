@@ -2516,11 +2516,12 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	return o.addVolumeFinish(ctx, txn, vol, backend, pool)
 }
 
-// GetVolumeExternal is used by volume import so it doesn't check core's o.volumes to see if the
+// GetVolumeForImport is used by volume import so it doesn't check core's o.volumes to see if the
 // volume exists or not. Instead it asks the driver if the volume exists before requesting
-// the volume size. Returns the VolumeExternal representation of the volume.
-func (o *TridentOrchestrator) GetVolumeExternal(
-	ctx context.Context, volumeName, backendName string,
+// the volume size.  Accepts a backend-specific string that a driver may use to find a volume.
+// Returns the VolumeExternal representation of the volume.
+func (o *TridentOrchestrator) GetVolumeForImport(
+	ctx context.Context, volumeID, backendName string,
 ) (volExternal *storage.VolumeExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -2528,15 +2529,15 @@ func (o *TridentOrchestrator) GetVolumeExternal(
 		return nil, o.bootstrapError
 	}
 
-	defer recordTiming("volume_get_external", &err)()
+	defer recordTiming("volume_get_for_import", &err)()
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
 
 	Logc(ctx).WithFields(LogFields{
-		"originalName": volumeName,
-		"backendName":  backendName,
-	}).Debug("Orchestrator#GetVolumeExternal")
+		"volumeID":    volumeID,
+		"backendName": backendName,
+	}).Debug("Orchestrator#GetVolumeForImport")
 
 	backendUUID, err := o.getBackendUUIDByBackendName(backendName)
 	if err != nil {
@@ -2547,7 +2548,7 @@ func (o *TridentOrchestrator) GetVolumeExternal(
 		return nil, errors.NotFoundError("backend %s not found", backendName)
 	}
 
-	volExternal, err = backend.GetVolumeExternal(ctx, volumeName)
+	volExternal, err = backend.GetVolumeForImport(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}
@@ -2583,8 +2584,13 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 	originalName := volumeConfig.ImportOriginalName
 	backendUUID := volumeConfig.ImportBackendUUID
 
-	for volumeName, volume := range o.volumes {
-		if volume.Config.InternalName == originalName && volume.BackendUUID == backendUUID {
+	extantVol, err := backend.GetVolumeForImport(ctx, originalName)
+	if err != nil {
+		return errors.NotFoundError("volume %s was not found", originalName)
+	}
+
+	for volumeName, managedVol := range o.volumes {
+		if managedVol.Config.InternalName == extantVol.Config.InternalName && managedVol.BackendUUID == backendUUID {
 			return errors.FoundError("PV %s already exists for volume %s", originalName, volumeName)
 		}
 	}
@@ -2597,10 +2603,6 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 	if !sc.IsAddedToBackend(backend, volumeConfig.StorageClass) {
 		return fmt.Errorf("storageClass %s does not match any storage pools for backend %s",
 			volumeConfig.StorageClass, backend.Name())
-	}
-
-	if backend.Driver().Get(ctx, originalName) != nil {
-		return errors.NotFoundError("volume %s was not found", originalName)
 	}
 
 	// Identify the resultant protocol based on the VolumeMode, AccessMode and the Protocol. Fro a valid case

@@ -1883,13 +1883,16 @@ func (d *NASBlockStorageDriver) GetExternalConfig(ctx context.Context) interface
 	return cloneConfig
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *NASBlockStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-	subvolumeWithMetadata, err := d.SDK.SubvolumeByCreationToken(ctx, name, d.getAllFilePoolVolumes(), true)
+// representation of the volume.  For this driver, volumeID is the unique creation
+// token used when creating the subvolume.
+func (d *NASBlockStorageDriver) GetVolumeForImport(
+	ctx context.Context, volumeID string,
+) (*storage.VolumeExternal, error) {
+	subvolumeWithMetadata, err := d.SDK.SubvolumeByCreationToken(ctx, volumeID, d.getAllFilePoolVolumes(), true)
 	if err != nil {
-		return nil, fmt.Errorf("could not find subvolume %s: %v", name, err)
+		return nil, fmt.Errorf("could not find subvolume %s: %v", volumeID, err)
 	}
 
 	return d.getSubvolumeExternal(subvolumeWithMetadata), nil

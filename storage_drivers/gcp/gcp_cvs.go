@@ -1965,12 +1965,12 @@ func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	return cloneConfig
 }
 
-// GetVolumeExternal queries the storage backend for all relevant info about
+// GetVolumeForImport queries the storage backend for all relevant info about
 // a single container volume managed by this driver and returns a VolumeExternal
-// representation of the volume.
-func (d *NFSStorageDriver) GetVolumeExternal(ctx context.Context, name string) (*storage.VolumeExternal, error) {
-	creationToken := name
-	volumeAttrs, err := d.API.GetVolumeByCreationToken(ctx, creationToken)
+// representation of the volume.  For this driver, volumeID is the unique creation
+// token used when creating the volume.
+func (d *NFSStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	volumeAttrs, err := d.API.GetVolumeByCreationToken(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}
