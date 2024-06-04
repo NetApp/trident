@@ -1944,6 +1944,34 @@ func TestOntapSanEconomyVolumeImport_Unsupported(t *testing.T) {
 	assert.Error(t, err, "Import is supported")
 }
 
+func TestOntapSanEconomyVolumeImport_UnsupportedNameLength(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+
+	mockController := gomock.NewController(t)
+	mockACP := mock_acp.NewMockTridentACP(mockController)
+	acp.SetAPI(mockACP)
+	// Mock out any expected calls on the ACP API.
+	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSANEconomyVolumeImport).Return(nil).AnyTimes()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName: "my_vol" +
+			"/VOLUME_NAME_BIGGER_THAN_SUPPORTED_LENGTH_wsvawgwasvsdgadsfbadsvadsfhbadvbsDFASBsdvsvsdvsdvsvs" +
+			"dvsvsbsdvasdvsdvshdbvjsdvgaisuhvASDJKBVsjvglaIvbsKJAhvsJLhvbAHJLSbvcALJSvbjlv" +
+			"dsvSJHcbaJScbkajhsvcljhasvfjahsvcljkASBcljaScvh;jkABCjlhavclakcvlJHASVClAKJSCvb." +
+			"AKvjlHASHCvAKLHHVCAKLcvlKHvlJAvclvcklASVckASVlkAVclkASVclkSHVlkSHVlkASVclKASVcLKAHSvkSHcvLKvlkSVklhvlaksV",
+		Size:       "1g",
+		Encryption: "false",
+		FileSystem: "xfs",
+	}
+
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).Return(&api.Volume{AccessType: "rw"}, nil)
+	mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
+		Return(&api.Lun{Name: "/vol/my_vol/my_LUN", State: "online", Size: "1073741824"}, nil)
+
+	err := d.Import(ctx, volConfig, volConfig.InternalName)
+	assert.Error(t, err, "Import should fail with name length exceeding limits")
+}
+
 func TestOntapSanEconomyVolumeRename(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 

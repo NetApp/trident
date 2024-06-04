@@ -3902,7 +3902,7 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 	// Test-1 UsingPassthroughStore == true
 	tridentconfig.UsingPassthroughStore = true
 	storagePrefix := "trident"
-	name := "Fake"
+	name := "pvc_123456789"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
 		StoragePrefix:   &storagePrefix,
@@ -3910,7 +3910,7 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: commonConfig,
 	}
-	expected := "tridentFake"
+	expected := "tridentpvc_123456789"
 	volConfig := &storage.VolumeConfig{Name: name}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
@@ -3920,7 +3920,7 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 
 	// Test-2 UsingPassthroughStore == false
 	tridentconfig.UsingPassthroughStore = false
-	expected = "trident_Fake"
+	expected = "trident_pvc_123456789"
 
 	out = getInternalVolumeNameCommon(ctx, config, volConfig, pool)
 
@@ -3936,7 +3936,7 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 	// Test-4 UsingPassthroughStore == false and invalid name template
 	tridentconfig.UsingPassthroughStore = false
 	// getInternalVolumeNameCommon returns an internal volume name if nameTemplate generation fails.
-	expected = "trident_Fake"
+	expected = "trident_pvc_123456789"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{
@@ -3949,7 +3949,7 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 
 	// Test-5 UsingPassthroughStore == false and valid name template with multiple underscore
 	tridentconfig.UsingPassthroughStore = false
-	expected = "pool_no_value"
+	expected = "pool"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{
@@ -3962,7 +3962,7 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 
 	// Test-6 UsingPassthroughStore == false and valid name template with special character
 	tridentconfig.UsingPassthroughStore = false
-	expected = "pool_no_value"
+	expected = "pool"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{
@@ -4004,7 +4004,7 @@ func TestGetInternalVolumeNameCommon(t *testing.T) {
 	assert.Equal(t, expected, out)
 
 	// Test-10 invalid name template
-	expected = "trident_Fake"
+	expected = "trident_pvc_123456789"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{
@@ -6103,7 +6103,7 @@ func TestGetVolumeNameFromTemplate(t *testing.T) {
 	tridentconfig.UsingPassthroughStore = false
 
 	storagePrefix := "trident"
-	name := "Fake"
+	name := "pvc_123456789"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
 		StoragePrefix:   &storagePrefix,
@@ -6166,7 +6166,7 @@ func TestGetVolumeNameFromTemplateWithLabel(t *testing.T) {
 	tridentconfig.UsingPassthroughStore = false
 
 	storagePrefix := "trident"
-	name := "Fake"
+	name := "pvc_123456789"
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
 		StoragePrefix:   &storagePrefix,
@@ -6177,7 +6177,7 @@ func TestGetVolumeNameFromTemplateWithLabel(t *testing.T) {
 	expected := "tridentFake"
 	volConfig := &storage.VolumeConfig{Name: name, Namespace: "trident", RequestName: "pvc"}
 
-	expected = "pool_Fake_trident_trident_pvc"
+	expected = "pool_pvc_123456789_trident_trident_pvc"
 	pool := getValidOntapNASPool()
 	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"cloud":       "anf",
@@ -6191,6 +6191,81 @@ func TestGetVolumeNameFromTemplateWithLabel(t *testing.T) {
 	)
 	out, err := GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
 
+	assert.NoError(t, err, "Error is not nil, expected no error")
+	assert.Equal(t, expected, out)
+}
+
+func TestGetVolumeNameFromTemplate_NameStartWithDigit(t *testing.T) {
+	ctx := context.Background()
+	tridentconfig.UsingPassthroughStore = false
+
+	storagePrefix := "trident"
+	name := "pvc_123456789"
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   &storagePrefix,
+	}
+	config := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: commonConfig,
+	}
+
+	volConfig := &storage.VolumeConfig{Name: name, Namespace: "trident", RequestName: "pvc-nas"}
+
+	// Test 1: Name template starts with a digit.
+	pool := getValidOntapNASPool()
+
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "1234_{{.volume.RequestName}}",
+		},
+	)
+	out, err := GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	assert.Error(t, err, "Error is nil, volume name should not start with number")
+
+	// Test 2: Generated name start with digit.
+	pool = getValidOntapNASPool()
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cluster": "1_cluster",
+	})
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "{{.labels.cluster}}",
+		},
+	)
+	out, err = GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	assert.Error(t, err, "Error is nil, volume name should not start with number")
+
+	// Test 3: user defined template is empty. The pvc UUID start with digit
+	pool = getValidOntapNASPool()
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cluster": "1_cluster",
+	})
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "{{.labels.NotExist}}_{{slice .volume.Name 4 9}}",
+		},
+	)
+	out, err = GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	expected := "tridentFake"
+	assert.Error(t, err, "Error is nil, volume name should not start with number")
+
+	// Test 4: user defined template is empty. The pvc UUID start with a letter
+	volConfig = &storage.VolumeConfig{Name: "pvc-a1b2c3", RequestName: "pvc-nas"}
+	pool = getValidOntapNASPool()
+	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cluster": "1_cluster",
+	})
+	pool.SetInternalAttributes(
+		map[string]string{
+			NameTemplate: "{{.labels.NotExist}}_{{slice .volume.Name 4 9}}",
+		},
+	)
+	out, err = GetVolumeNameFromTemplate(ctx, config, volConfig, pool)
+
+	expected = "a1b2c"
 	assert.NoError(t, err, "Error is not nil, expected no error")
 	assert.Equal(t, expected, out)
 }

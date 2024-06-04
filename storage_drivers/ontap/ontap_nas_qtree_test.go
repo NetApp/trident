@@ -2439,9 +2439,9 @@ func TestGetInternalVolumeName(t *testing.T) {
 	driver.Config.StoragePrefix = validStoragePrefix
 	// Test-1 UsingPassthroughStore == true
 	tridentconfig.UsingPassthroughStore = true
-	name := "Fake"
+	name := "pvc_123456789"
 
-	expected := "tridentFake"
+	expected := "tridentpvc_123456789"
 	volConfig := &storage.VolumeConfig{Name: name}
 	pool := storage.NewStoragePool(nil, "dummyPool")
 
@@ -2451,7 +2451,7 @@ func TestGetInternalVolumeName(t *testing.T) {
 
 	// Test-2 UsingPassthroughStore == false
 	tridentconfig.UsingPassthroughStore = false
-	expected = "trident_Fake"
+	expected = "trident_pvc_123456789"
 
 	out = driver.GetInternalVolumeName(ctx, volConfig, pool)
 
@@ -2467,7 +2467,7 @@ func TestGetInternalVolumeName(t *testing.T) {
 	// Test-4 UsingPassthroughStore == false and invalid name template
 	tridentconfig.UsingPassthroughStore = false
 	// driver.GetInternalVolumeName returns an internal volume name if nameTemplate generation fails.
-	expected = "trident_Fake"
+	expected = "trident_pvc_123456789"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{
@@ -2480,7 +2480,7 @@ func TestGetInternalVolumeName(t *testing.T) {
 
 	// Test-5 UsingPassthroughStore == false and valid name template with multiple underscore
 	tridentconfig.UsingPassthroughStore = false
-	expected = "pool_no_value"
+	expected = "pool"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{
@@ -2493,7 +2493,7 @@ func TestGetInternalVolumeName(t *testing.T) {
 
 	// Test-6 UsingPassthroughStore == false and valid name template with special character
 	tridentconfig.UsingPassthroughStore = false
-	expected = "pool_no_value"
+	expected = "pool"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{
@@ -2535,7 +2535,7 @@ func TestGetInternalVolumeName(t *testing.T) {
 	assert.Equal(t, expected, out)
 
 	// Test-10 invalid name template
-	expected = "trident_Fake"
+	expected = "trident_pvc_123456789"
 	pool = getValidOntapNASPool()
 	pool.SetInternalAttributes(
 		map[string]string{

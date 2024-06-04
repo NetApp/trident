@@ -906,6 +906,12 @@ func (d *SANEconomyStorageDriver) Import(
 	newFlexvolName := d.FlexvolNamePrefix() + utils.RandomString(10)
 	volRenamed := false
 	if extantLUN.Name != targetPath {
+		// Ensure LUN name isn't too long
+		if len(volConfig.InternalName) > maxLunNameLength {
+			return fmt.Errorf("volume %s name exceeds the limit of %d characters", volConfig.InternalName,
+				maxLunNameLength)
+		}
+
 		err = d.API.LunRename(ctx, extantLUN.Name, targetPath)
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{

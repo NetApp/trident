@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"math/rand"
 	"net"
 	"os"
@@ -16,7 +17,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/RoaringBitmap/roaring"
@@ -112,8 +112,9 @@ const (
 )
 
 var (
-	volumeCharRegex = regexp.MustCompile(`[^a-zA-Z0-9_]`)
-	volumeNameRegex = regexp.MustCompile(`\{+.*\.volume.Name[^{a-z]*\}+`)
+	volumeCharRegex          = regexp.MustCompile(`[^a-zA-Z0-9_]`)
+	volumeNameRegex          = regexp.MustCompile(`\{+.*\.volume.Name[^{a-z]*\}+`)
+	volumeNameStartWithRegex = regexp.MustCompile(`^[A-Za-z_].*`)
 )
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
@@ -2713,7 +2714,8 @@ func GetVolumeNameFromTemplate(ctx context.Context, config *drivers.OntapStorage
 	} else {
 		templateData := make(map[string]interface{})
 		templateData["volume"] = volConfig
-		templateData["config"] = *config.CommonStorageDriverConfig
+		// Redacted the sensitive data from the backend config
+		templateData["config"] = getExternalConfig(ctx, *config).(drivers.OntapStorageDriverConfig)
 		templateData["labels"] = pool.GetLabelMapFromTemplate(ctx, templateData)
 
 		var tBuffer bytes.Buffer
@@ -2728,6 +2730,19 @@ func GetVolumeNameFromTemplate(ctx context.Context, config *drivers.OntapStorage
 			internal = volumeNameRegex.ReplaceAllString(internal, "_") // Remove any double underscores
 			internal = strings.TrimPrefix(internal, "_")               // Remove any underscores at the beginning
 			internal = strings.TrimSuffix(internal, "_")               // Remove any underscores at the end
+
+			// ONTAP flexvol volume name must begin with an alphabet or an underscore. If the name generated from the
+			// user-defined name template is start other than an alphabet or an underscore Trident will fall back to the
+			// old naming method.
+			matched := volumeNameStartWithRegex.MatchString(internal)
+
+			if !matched {
+				err = fmt.Errorf("invalid volume name: %s is generated from template, it must begin with "+
+					"letter/underscore", internal)
+				Logc(ctx).Error(err)
+				return "", err
+			}
+
 			return internal, nil
 		}
 	}
