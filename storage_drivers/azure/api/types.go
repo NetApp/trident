@@ -61,4 +61,6 @@ type Azure interface {
 	CreateSnapshot(context.Context, *FileSystem, string) (*Snapshot, error)
 	RestoreSnapshot(context.Context, *FileSystem, *Snapshot) error
 	DeleteSnapshot(context.Context, *FileSystem, *Snapshot) error
+
+	AvailabilityZones(ctx context.Context) ([]string, error)
 }

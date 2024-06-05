@@ -40,3 +40,40 @@ func TestConstructEncryptionKeys_MultiElementMap(t *testing.T) {
 	result := constructEncryptionKeys(input)
 	assert.True(t, result == expected1 || result == expected2, "Incorrect string returned")
 }
+
+func TestConstructANFSupportedTopologies(t *testing.T) {
+	testCases := []struct {
+		name     string
+		region   string
+		zones    []string
+		expected string
+	}{
+		{
+			name:     "Empty Zones",
+			region:   "region1",
+			zones:    []string{},
+			expected: "",
+		},
+		{
+			name:   "Single Zone",
+			region: "region1",
+			zones:  []string{"zone1"},
+			expected: "supportedTopologies:\n  - topology.kubernetes.io/region: region1\n" +
+				"    topology.kubernetes.io/zone: region1-zone1\n",
+		},
+		{
+			name:   "Single Zone with Region Prefix",
+			region: "region1",
+			zones:  []string{"region1-zone1"},
+			expected: "supportedTopologies:\n  - topology.kubernetes.io/region: region1\n" +
+				"    topology.kubernetes.io/zone: region1-zone1\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := constructANFSupportedTopologies(tc.region, tc.zones)
+			assert.Equal(t, tc.expected, result, "Incorrect supported topology string returned")
+		})
+	}
+}

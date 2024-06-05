@@ -26,6 +26,8 @@ func getANFTBCYaml(anf *ANF, vPools, nasType string) string {
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{NAS_TYPE}", nasType)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{V_POOLS}", vPools)
 	tbcYaml = utils.ReplaceMultilineYAMLTag(tbcYaml, "CUSTOMER_ENCRYPTION_KEYS", constructEncryptionKeys(anf.CustomerEncryptionKeys))
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{SUPPORTED_TOPOLOGIES}",
+		constructANFSupportedTopologies(anf.Location, anf.AvailabilityZones))
 
 	if !anf.AMIEnabled && !anf.WorkloadIdentityEnabled {
 		tbcYaml = strings.ReplaceAll(tbcYaml, "{CLIENT_CREDENTIALS}", constructClientCredentials(anf.ClientCredentials))
@@ -59,6 +61,7 @@ spec:
     method: true
     api: true
   {CUSTOMER_ENCRYPTION_KEYS}
+  {SUPPORTED_TOPOLOGIES}
   storage:
   {V_POOLS}
 `
@@ -93,6 +96,22 @@ const ANFVPoolYAML = `
       serviceLevel: {SERVICE_LEVEL}
       nasType: {NAS_TYPE}
 `
+
+func constructANFSupportedTopologies(region string, zones []string) string {
+	if len(zones) == 0 {
+		return ""
+	}
+
+	supportedTopologiesYAML := "supportedTopologies:\n"
+	for _, zone := range zones {
+		if !strings.HasPrefix(zone, region+"-") {
+			zone = region + "-" + zone
+		}
+		supportedTopologiesYAML += fmt.Sprintf("  - topology.kubernetes.io/region: %s\n", region)
+		supportedTopologiesYAML += fmt.Sprintf("    topology.kubernetes.io/zone: %s\n", zone)
+	}
+	return supportedTopologiesYAML
+}
 
 func constructClientCredentials(clientCred string) string {
 	cred := "credentials:\n"

@@ -325,6 +325,21 @@ func TestANF_Validate_PopulateAZResourcesError(t *testing.T) {
 	assert.ErrorContains(t, err, "no ANF subnets discovered after filtering")
 }
 
+func TestANF_Validate_AvailabilityZoneError(t *testing.T) {
+	anf, mClient, mAzure := getTestANFInstanceAndClients(t)
+	cMap, sMap := getFilteredANFResources()
+
+	mClient.EXPECT().GetANFSecrets(gomock.Any()).Return("fake-uuid", "fake-secret", nil)
+	mAzure.EXPECT().DiscoverAzureResources(ctx).Return(nil)
+	mAzure.EXPECT().FilteredCapacityPoolMap(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(cMap)
+	mAzure.EXPECT().FilteredSubnetMap(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(sMap)
+	mAzure.EXPECT().AvailabilityZones(gomock.Any()).Return([]string{}, fmt.Errorf("failed to get availability zones"))
+
+	err := anf.Validate()
+
+	assert.ErrorContains(t, err, "failed to get availability zones", "Got the availability zones")
+}
+
 func TestANF_Validate_Success(t *testing.T) {
 	anf, mClient, mAzure := getTestANFInstanceAndClients(t)
 	cMap, sMap := getFilteredANFResources()
@@ -333,6 +348,7 @@ func TestANF_Validate_Success(t *testing.T) {
 	mAzure.EXPECT().DiscoverAzureResources(ctx).Return(nil)
 	mAzure.EXPECT().FilteredCapacityPoolMap(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(cMap)
 	mAzure.EXPECT().FilteredSubnetMap(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(sMap)
+	mAzure.EXPECT().AvailabilityZones(gomock.Any()).Return([]string{"1", "2", "3"}, nil)
 
 	err := anf.Validate()
 
@@ -345,6 +361,8 @@ func TestANF_Create(t *testing.T) {
 	anf.FilteredCapacityPoolMap = cpMap
 	anf.FilteredSubnetMap = sMap
 	anf.CapacityPools = []string{"cp1"}
+	anf.Location = "fake-location"
+	anf.AvailabilityZones = []string{"1", "2", "3"}
 
 	// Test1: ANF NFS backend create error.
 	mClient.EXPECT().CreateOrPatchObject(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).

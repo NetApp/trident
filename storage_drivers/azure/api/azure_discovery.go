@@ -1105,3 +1105,24 @@ func (c Client) FilteredSubnetMap(
 
 	return newSubnetMap
 }
+
+func (c Client) AvailabilityZones(ctx context.Context) ([]string, error) {
+	logFields := LogFields{
+		"API": "ResourceClient.QueryRegionInfo",
+	}
+
+	var availableZones []string
+	regionInfoResponse, err := c.sdkClient.ResourceClient.QueryRegionInfo(ctx, c.config.Location, nil)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Failed to get availability zones.")
+		return availableZones, err
+	}
+
+	for _, azMapping := range regionInfoResponse.RegionInfo.AvailabilityZoneMappings {
+		if azMapping.IsAvailable != nil && *azMapping.IsAvailable && azMapping.AvailabilityZone != nil {
+			availableZones = append(availableZones, *azMapping.AvailabilityZone)
+		}
+	}
+
+	return availableZones, nil
+}

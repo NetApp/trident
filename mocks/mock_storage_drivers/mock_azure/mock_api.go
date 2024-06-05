@@ -37,6 +37,21 @@ func (m *MockAzure) EXPECT() *MockAzureMockRecorder {
 	return m.recorder
 }
 
+// AvailabilityZones mocks base method.
+func (m *MockAzure) AvailabilityZones(arg0 context.Context) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AvailabilityZones", arg0)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AvailabilityZones indicates an expected call of AvailabilityZones.
+func (mr *MockAzureMockRecorder) AvailabilityZones(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailabilityZones", reflect.TypeOf((*MockAzure)(nil).AvailabilityZones), arg0)
+}
+
 // CapacityPools mocks base method.
 func (m *MockAzure) CapacityPools() *[]*api.CapacityPool {
 	m.ctrl.T.Helper()

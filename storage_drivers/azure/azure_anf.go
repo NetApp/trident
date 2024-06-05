@@ -604,8 +604,9 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 				return errors.New("error parsing azureAuthConfig: " + err.Error())
 			}
 
-			// Set SubscriptionID
+			// Set SubscriptionID and Location.
 			d.Config.SubscriptionID = clientConfig.SubscriptionID
+			d.Config.Location = clientConfig.Location
 		}
 	}
 

@@ -28,6 +28,7 @@ type ANF struct {
 
 	FilteredCapacityPoolMap map[string]*api.CapacityPool
 	FilteredSubnetMap       map[string]*api.Subnet
+	AvailabilityZones       []string
 
 	AMIEnabled              bool
 	WorkloadIdentityEnabled bool
@@ -122,8 +123,9 @@ func (a *ANF) Validate() error {
 				return fmt.Errorf("error parsing azureAuthConfig: " + err.Error())
 			}
 
-			// Set SubscriptionID
+			// Set SubscriptionID and Location.
 			a.ANFConfig.SubscriptionID = clientConfig.SubscriptionID
+			a.ANFConfig.Location = clientConfig.Location
 		}
 	} else {
 		a.ClientID, a.ClientSecret, err = a.ConfClient.GetANFSecrets(a.ClientCredentials)
@@ -151,6 +153,10 @@ func (a *ANF) Validate() error {
 	}
 
 	if err = a.populateAndValidateAZResources(); err != nil {
+		return err
+	}
+
+	if a.AvailabilityZones, err = a.AZClient.AvailabilityZones(context.TODO()); err != nil {
 		return err
 	}
 

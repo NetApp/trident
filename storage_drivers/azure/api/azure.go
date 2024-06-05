@@ -77,6 +77,7 @@ type AzureClient struct {
 	VolumesClient    *netapp.VolumesClient
 	SnapshotsClient  *netapp.SnapshotsClient
 	SubvolumesClient *netapp.SubvolumesClient
+	ResourceClient   *netapp.ResourceClient
 	AzureResources
 }
 
@@ -313,6 +314,10 @@ func NewDriver(config ClientConfig) (Azure, error) {
 	if err != nil {
 		return nil, err
 	}
+	resourceClient, err := netapp.NewResourceClient(config.SubscriptionID, credential, clientOptions)
+	if err != nil {
+		return nil, err
+	}
 
 	sdkClient := &AzureClient{
 		Credential:       credential,
@@ -321,6 +326,7 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		VolumesClient:    volumesClient,
 		SnapshotsClient:  snapshotsClient,
 		SubvolumesClient: subvolumesClient,
+		ResourceClient:   resourceClient,
 	}
 
 	return Client{
