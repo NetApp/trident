@@ -255,6 +255,15 @@ var (
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
 	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:24.06.0"
+
+	// TopologyKeyPrefixes contains well-known topology label prefixes
+	TopologyKeyPrefixes = []string{"topology.kubernetes.io"}
+
+	// TopologyRegionKeys contains well-known keys for topology region labels
+	TopologyRegionKeys = []string{"topology.kubernetes.io/region"}
+
+	// TopologyZoneKeys contains well-known keys for topology zone labels
+	TopologyZoneKeys = []string{"topology.kubernetes.io/zone"}
 )
 
 func IsValidProtocol(p Protocol) bool {

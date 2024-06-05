@@ -772,6 +772,7 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 		NetworkFeatures:    DerefNetworkFeatures(vol.Properties.NetworkFeatures),
 		KerberosEnabled:    DerefBool(vol.Properties.KerberosEnabled),
 		KeyVaultEndpointID: DerefString(vol.Properties.KeyVaultPrivateEndpointResourceID),
+		Zones:              DerefStringPtrArray(vol.Zones),
 	}, nil
 }
 
@@ -1140,6 +1141,11 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 		},
 	}
 
+	// Only set the zone if specified
+	if request.Zone != "" {
+		newVol.Zones = []*string{utils.Ptr(request.Zone)}
+	}
+
 	// Only set the snapshot ID if we are cloning
 	if request.SnapshotID != "" {
 		newVol.Properties.SnapshotID = &request.SnapshotID
@@ -1167,6 +1173,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 		"subnetID":      request.SubnetID,
 		"snapshotID":    request.SnapshotID,
 		"snapshotDir":   request.SnapshotDirectory,
+		"zone":          request.Zone,
 	}).Debug("Issuing create request.")
 
 	logFields := LogFields{

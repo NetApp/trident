@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -11,13 +11,11 @@ import (
 	"sort"
 	"strings"
 
-	drivers "github.com/netapp/trident/storage_drivers"
-
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
+	drivers "github.com/netapp/trident/storage_drivers"
 )
 
-// TODO: Try moving all ProvisioningLabelTag related code here
 const ProvisioningLabelTag = "provisioning"
 
 type StoragePool struct {

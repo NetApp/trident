@@ -1929,7 +1929,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2035,7 +2035,7 @@ func TestCreate_NFSVolume_Kerberos_type5_FailsEntitlementCheck(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create suceeded")
+	assert.Error(t, result, "create did not fail")
 }
 
 func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
@@ -2137,7 +2137,7 @@ func TestCreate_NFSVolume_Kerberos_type5I_FailsEntitlementCheck(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create succeeded")
+	assert.Error(t, result, "create did not fail")
 }
 
 func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
@@ -2239,7 +2239,7 @@ func TestCreate_NFSVolume_Kerberos_type5P_FailsEntitlementCheck(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create succeeded")
+	assert.Error(t, result, "create did not fail")
 }
 
 func TestCreate_NFSVolume_Kerberos_type5P_failure(t *testing.T) {
@@ -2277,7 +2277,7 @@ func TestCreate_NFSVolume_Kerberos_type5P_failure(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "unsupported kerberos type: sec=krb5P", "create succeeded")
+	assert.Error(t, result, "unsupported kerberos type: sec=krb5P", "did not fail")
 	assert.NotNil(t, result, "expected nil")
 }
 
@@ -2511,7 +2511,7 @@ func TestCreate_InvalidSize(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2534,7 +2534,7 @@ func TestCreate_NegativeSize(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2590,7 +2590,7 @@ func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2614,7 +2614,7 @@ func TestCreate_AboveMaximumSize(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2638,7 +2638,7 @@ func TestCreate_InvalidSnapshotDir(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2666,7 +2666,7 @@ func TestCreate_InvalidLabel(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2692,7 +2692,7 @@ func TestCreate_NoCapacityPool(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2716,7 +2716,7 @@ func TestCreate_NoSubnet(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -2740,7 +2740,7 @@ func TestCreate_NFSVolume_InvalidMountOptions(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -3341,7 +3341,7 @@ func TestCreate_NFSVolume_CreateFailed(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -3376,6 +3376,96 @@ func TestCreate_NFSVolume_BelowANFMinimumSize(t *testing.T) {
 	assert.Equal(t, uint64(createRequest.QuotaInBytes), MinimumANFVolumeSizeBytes, "request size mismatch")
 	assert.Equal(t, volConfig.Size, strconv.FormatUint(MinimumANFVolumeSizeBytes, 10), "config size mismatch")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreate_NFSVolume_ZoneSelectionSucceeds(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.SupportedTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+	}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.RequisiteTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "2"},
+	}
+	volConfig.PreferredTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+	}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+	createRequest.Zone = "1"
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, strconv.FormatInt(createRequest.QuotaInBytes, 10), volConfig.Size, "request size mismatch")
+	assert.Equal(t, api.ServiceLevelUltra, volConfig.ServiceLevel)
+	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_ZoneSelectionFails(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.SupportedTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "3"},
+	}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, _, _, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.RequisiteTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "2"},
+	}
+	volConfig.PreferredTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+	}
+	createRequest.UnixPermissions = "0777"
+	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+	createRequest.Zone = "1"
+	filesystem.UnixPermissions = "0777"
+	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create did not fail")
 }
 
 func getStructsForCreateSMBVolume(ctx context.Context, driver *NASStorageDriver, storagePool storage.Pool) (
@@ -3596,7 +3686,7 @@ func TestCreate_SMBVolume_CreateFailed(t *testing.T) {
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -3659,7 +3749,7 @@ func TestCreate_NFSVolumeOnSMBPool_CreateFailed(t *testing.T) {
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
 	assert.NotEqual(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type matches")
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -3689,7 +3779,7 @@ func TestCreate_SMBVolumeOnNFSPool_CreateFailed(t *testing.T) {
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
 	assert.NotEqual(t, createRequest.ProtocolTypes, filesystem.ProtocolTypes, "protocol type matches")
-	assert.Error(t, result, "create failed")
+	assert.Error(t, result, "create did not fail")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
@@ -4469,6 +4559,60 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
 }
 
+func TestCreateClone_ZoneSelectionSucceeds(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+	driver.Config.NASType = "nfs"
+	driver.Config.SupportedTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "2"},
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "3"},
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "4"},
+	}
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	sourceVolConfig, cloneVolConfig, createRequest, sourceFilesystem, cloneFilesystem, snapshot := getStructsForCreateClone(ctx,
+		driver, storagePool)
+	sourceVolConfig.RequisiteTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "3"},
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "4"},
+	}
+	sourceVolConfig.PreferredTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "3"},
+	}
+	sourceVolConfig.Zone = "3"
+	cloneVolConfig.CloneSourceSnapshotInternal = "snap1"
+	cloneVolConfig.RequisiteTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "2"},
+	}
+	cloneVolConfig.PreferredTopologies = []map[string]string{
+		{"topology.kubernetes.io/region": "eastus", "topology.kubernetes.io/zone": "1"},
+	}
+	sourceVolConfig.SnapshotDir = "false"
+	createRequest.Zone = "3"
+	sourceFilesystem.Zones = []string{"3"}
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceFilesystem, nil).Times(1)
+	mockAPI.EXPECT().VolumeExistsByID(ctx, cloneFilesystem.ID).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceFilesystem, "snap1").Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneFilesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneFilesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, cloneFilesystem.ID, cloneVolConfig.InternalID, "internal ID not set on volConfig")
+}
+
 func getStructsForImport(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *api.FileSystem) {
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 
@@ -5127,7 +5271,7 @@ func TestImport_DualProtocolVolume(t *testing.T) {
 
 	result := driver.Import(ctx, volConfig, originalName)
 
-	assert.Error(t, result, "import failed")
+	assert.Error(t, result, "import did not fail")
 }
 
 func TestImport_ManagedWithLabels(t *testing.T) {
@@ -5405,7 +5549,7 @@ func TestImport_BackendVolumeMismatch(t *testing.T) {
 
 	result := driver.Import(ctx, volConfig, originalName)
 
-	assert.Error(t, result, "import should fail")
+	assert.Error(t, result, "import did not fail")
 }
 
 func TestRename(t *testing.T) {

@@ -24,6 +24,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
+	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/utils"
@@ -939,11 +940,23 @@ func (d *NASStorageDriver) Create(
 
 	networkFeatures := pool.InternalAttributes()[NetworkFeatures]
 
+	// Get topology, if any, and determine the matched Azure zone.  If the pool has no zones, assume none are in use.
+	var region, zone string
+	if len(pool.SupportedTopologies()) > 0 {
+		if topology, topologyErr := sc.GetTopologyForVolume(ctx, volConfig, pool); topologyErr != nil {
+			return topologyErr
+		} else {
+			region, zone = sc.GetRegionZoneForTopology(topology)
+			zone, _ = strings.CutPrefix(zone, region+"-")
+		}
+	}
+
 	// Update config to reflect values used to create volume
 	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
 	volConfig.ServiceLevel = serviceLevel
 	volConfig.SnapshotDir = strconv.FormatBool(snapshotDirBool)
 	volConfig.UnixPermissions = unixPermissions
+	volConfig.Zone = zone
 
 	// Find a subnet
 	subnet := d.SDK.RandomSubnetForStoragePool(ctx, pool)
@@ -981,6 +994,7 @@ func (d *NASStorageDriver) Create(
 				"protocolTypes":    protocolTypes,
 				"networkFeatures":  networkFeatures,
 				"keyVaultEndpoint": keyVaultEndpointID,
+				"zone":             zone,
 			}).Debug("Creating volume.")
 		} else {
 			Logc(ctx).WithFields(LogFields{
@@ -994,6 +1008,7 @@ func (d *NASStorageDriver) Create(
 				"exportPolicy":     fmt.Sprintf("%+v", exportPolicy),
 				"networkFeatures":  networkFeatures,
 				"keyVaultEndpoint": keyVaultEndpointID,
+				"zone":             zone,
 			}).Debug("Creating volume.")
 		}
 
@@ -1011,6 +1026,7 @@ func (d *NASStorageDriver) Create(
 			NetworkFeatures:    networkFeatures,
 			KerberosEnabled:    kerberosEnabled,
 			KeyVaultEndpointID: keyVaultEndpointID,
+			Zone:               zone,
 		}
 
 		// Add unix permissions and export policy fields only to NFS volume
@@ -1216,12 +1232,18 @@ func (d *NASStorageDriver) CreateClone(
 		}
 	}
 
+	zone := ""
+	if len(sourceVolume.Zones) > 0 {
+		zone = sourceVolume.Zones[0]
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"creationToken":   name,
 		"sourceVolume":    sourceVolume.CreationToken,
 		"sourceSnapshot":  sourceSnapshot.Name,
 		"unixPermissions": sourceVolume.UnixPermissions,
 		"networkFeatures": networkFeatures,
+		"zone":            zone,
 	}).Debug("Cloning volume.")
 
 	createRequest := &api.FilesystemCreateRequest{
@@ -1238,6 +1260,7 @@ func (d *NASStorageDriver) CreateClone(
 		SnapshotID:         sourceSnapshot.SnapshotID,
 		NetworkFeatures:    networkFeatures,
 		KeyVaultEndpointID: keyVaultEndpointID,
+		Zone:               zone,
 	}
 
 	// Add unix permissions and export policy fields only to NFS volume

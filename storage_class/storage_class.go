@@ -15,6 +15,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
+	"github.com/netapp/trident/utils"
 )
 
 type BackendPoolInfo struct {
@@ -312,50 +313,6 @@ func (s *StorageClass) GetStoragePoolsForProtocol(
 	return ret
 }
 
-// isTopologySupportedByPool returns whether the specific pool can create volumes accessible by the given topology
-func isTopologySupportedByPool(_ context.Context, pool storage.Pool, topology map[string]string) bool {
-	requisiteFound := false
-	for _, supported := range pool.SupportedTopologies() {
-		eachFound := true
-		for k, v := range topology {
-			if sup, ok := supported[k]; ok && sup != v {
-				eachFound = false
-				break
-			}
-		}
-		if eachFound {
-			requisiteFound = true
-		}
-	}
-	return requisiteFound
-}
-
-// FilterPoolsOnTopology returns a subset of the provided pools that can support any of the requisiteTopologies.
-func FilterPoolsOnTopology(
-	ctx context.Context, pools []storage.Pool, requisiteTopologies []map[string]string,
-) []storage.Pool {
-	filteredPools := make([]storage.Pool, 0)
-
-	if len(requisiteTopologies) == 0 {
-		return pools
-	}
-
-	for _, pool := range pools {
-		if len(pool.SupportedTopologies()) > 0 {
-			for _, topology := range requisiteTopologies {
-				if isTopologySupportedByPool(ctx, pool, topology) {
-					filteredPools = append(filteredPools, pool)
-					break
-				}
-			}
-		} else {
-			filteredPools = append(filteredPools, pool)
-		}
-	}
-
-	return filteredPools
-}
-
 // FilterPoolsOnNasType returns pools filtered over nasType SMB. If not found returns the provided pool list as it is.
 func FilterPoolsOnNasType(
 	ctx context.Context, pools []storage.Pool, scAttributes map[string]storageattribute.Request,
@@ -395,51 +352,6 @@ func FilterPoolsOnNasType(
 
 	Logc(ctx).Debugf("Got %d pools filtered for nasType=%s", len(filteredPools), nasType)
 	return filteredPools
-}
-
-// SortPoolsByPreferredTopologies returns a list of pools ordered by the pools supportedTopologies field against
-// the provided list of preferredTopologies. If 2 or more pools can support a given preferredTopology, they are shuffled
-// randomly within that segment of the list, in order to prevent hotspots.
-func SortPoolsByPreferredTopologies(
-	ctx context.Context, pools []storage.Pool, preferredTopologies []map[string]string,
-) []storage.Pool {
-	remainingPools := make([]storage.Pool, len(pools))
-	copy(remainingPools, pools)
-	orderedPools := make([]storage.Pool, 0)
-
-	for _, preferred := range preferredTopologies {
-
-		newRemainingPools := make([]storage.Pool, 0)
-		poolBucket := make([]storage.Pool, 0)
-
-		for _, pool := range remainingPools {
-			// If it supports topology, pop it and add to bucket. Otherwise, add it to newRemaining pools to be
-			// addressed in future loop iterations.
-			if isTopologySupportedByPool(ctx, pool, preferred) {
-				poolBucket = append(poolBucket, pool)
-			} else {
-				newRemainingPools = append(newRemainingPools, pool)
-			}
-		}
-
-		// make new list of remaining pools
-		remainingPools = make([]storage.Pool, len(newRemainingPools))
-		copy(remainingPools, newRemainingPools)
-
-		// shuffle bucket
-		rand.Shuffle(len(poolBucket), func(i, j int) {
-			poolBucket[i], poolBucket[j] = poolBucket[j], poolBucket[i]
-		})
-
-		// add all in bucket to final list
-		orderedPools = append(orderedPools, poolBucket...)
-	}
-
-	// shuffle and add leftover pools the did not match any preference
-	rand.Shuffle(len(remainingPools), func(i, j int) {
-		remainingPools[i], remainingPools[j] = remainingPools[j], remainingPools[i]
-	})
-	return append(orderedPools, remainingPools...)
 }
 
 // GetStoragePoolsForProtocolByBackend returns an ordered list of pools, where
@@ -529,4 +441,154 @@ func (s *StorageClass) ConstructPersistent() *Persistent {
 
 func (s *Persistent) GetName() string {
 	return s.Config.Name
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Topology functions
+// ///////////////////////////////////////////////////////////////////////////////
+
+// isTopologySupportedByTopology returns true if requisiteTopology is supported by availableTopology.  Either topology
+// may have keys not present in the other, but all keys that are present in both must match.
+func isTopologySupportedByTopology(requisiteTopology, availableTopology map[string]string) bool {
+	for requisiteKey, requisiteValue := range requisiteTopology {
+		if availableValue, ok := availableTopology[requisiteKey]; ok && requisiteValue != availableValue {
+			return false
+		}
+	}
+	return true
+}
+
+// isTopologySupportedByPool returns whether the specific pool can create volumes accessible by the given topology.
+func isTopologySupportedByPool(pool storage.Pool, requisiteTopology map[string]string) bool {
+	for _, supportedTopology := range pool.SupportedTopologies() {
+		if isTopologySupportedByTopology(requisiteTopology, supportedTopology) {
+			return true
+		}
+	}
+	return false
+}
+
+// FilterPoolsOnTopology returns a subset of the provided pools that can support any of the requisiteTopologies.
+func FilterPoolsOnTopology(
+	ctx context.Context, pools []storage.Pool, requisiteTopologies []map[string]string,
+) []storage.Pool {
+	filteredPools := make([]storage.Pool, 0)
+
+	if len(requisiteTopologies) == 0 {
+		return pools
+	}
+
+	for _, pool := range pools {
+		if len(pool.SupportedTopologies()) > 0 {
+			for _, topology := range requisiteTopologies {
+				if isTopologySupportedByPool(pool, topology) {
+					filteredPools = append(filteredPools, pool)
+					break
+				}
+			}
+		} else {
+			filteredPools = append(filteredPools, pool)
+		}
+	}
+
+	return filteredPools
+}
+
+// SortPoolsByPreferredTopologies returns a list of pools ordered by the pools supportedTopologies field against
+// the provided list of preferredTopologies. If 2 or more pools can support a given preferredTopology, they are shuffled
+// randomly within that segment of the list, in order to prevent hotspots.
+func SortPoolsByPreferredTopologies(
+	ctx context.Context, pools []storage.Pool, preferredTopologies []map[string]string,
+) []storage.Pool {
+	remainingPools := make([]storage.Pool, len(pools))
+	copy(remainingPools, pools)
+	orderedPools := make([]storage.Pool, 0)
+
+	for _, preferred := range preferredTopologies {
+
+		newRemainingPools := make([]storage.Pool, 0)
+		poolBucket := make([]storage.Pool, 0)
+
+		for _, pool := range remainingPools {
+			// If it supports topology, pop it and add to bucket. Otherwise, add it to newRemaining pools to be
+			// addressed in future loop iterations.
+			if isTopologySupportedByPool(pool, preferred) {
+				poolBucket = append(poolBucket, pool)
+			} else {
+				newRemainingPools = append(newRemainingPools, pool)
+			}
+		}
+
+		// make new list of remaining pools
+		remainingPools = make([]storage.Pool, len(newRemainingPools))
+		copy(remainingPools, newRemainingPools)
+
+		// shuffle bucket
+		rand.Shuffle(len(poolBucket), func(i, j int) {
+			poolBucket[i], poolBucket[j] = poolBucket[j], poolBucket[i]
+		})
+
+		// add all in bucket to final list
+		orderedPools = append(orderedPools, poolBucket...)
+	}
+
+	// shuffle and add leftover pools the did not match any preference
+	rand.Shuffle(len(remainingPools), func(i, j int) {
+		remainingPools[i], remainingPools[j] = remainingPools[j], remainingPools[i]
+	})
+	return append(orderedPools, remainingPools...)
+}
+
+// GetTopologyForVolume correlates the topology requirements of a new volume (if any) with the known topologies
+// of a backend pool (either physical or virtual) and determines the best topology for the volume.  If one or more
+// topologies were requested but no such choice is possible, an error is returned.
+func GetTopologyForVolume(
+	_ context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
+) (map[string]string, error) {
+	// If no topologies were requested, return none
+	if len(volConfig.RequisiteTopologies) == 0 {
+		return nil, nil
+	}
+
+	// First see if any preferred topologies are satisfied by the pool.  If so, return the first match.
+	for _, preferredTopology := range volConfig.PreferredTopologies {
+		if isTopologySupportedByPool(pool, preferredTopology) {
+			return preferredTopology, nil
+		}
+	}
+
+	// Next see if any requisite topologies are satisfied by the pool.  If so, return the first match.
+	for _, requisiteTopology := range volConfig.RequisiteTopologies {
+		if isTopologySupportedByPool(pool, requisiteTopology) {
+			return requisiteTopology, nil
+		}
+	}
+
+	// If no topologies match, return an error
+	return nil, fmt.Errorf("no matching topologies exist on the selected pool for volume %s", volConfig.Name)
+}
+
+// GetRegionZoneForTopology searches a topology map for well-known keys and returns the region & zone, if any.
+// This function may be called with a nil map, in which case it returns empty strings.
+func GetRegionZoneForTopology(topology map[string]string) (string, string) {
+	region := ""
+	zone := ""
+
+	// Extract region
+	for k, v := range topology {
+		if utils.SliceContainsString(config.TopologyRegionKeys, k) {
+			region = v
+			break
+		}
+	}
+
+	// Extract zone
+	for k, v := range topology {
+		if utils.SliceContainsString(config.TopologyZoneKeys, k) {
+			zone = v
+			break
+		}
+	}
+
+	return region, zone
 }

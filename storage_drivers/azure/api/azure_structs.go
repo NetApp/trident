@@ -135,6 +135,7 @@ type FileSystem struct {
 	NetworkFeatures    string
 	KerberosEnabled    bool
 	KeyVaultEndpointID string
+	Zones              []string
 }
 
 // FilesystemCreateRequest embodies all the details of a volume to be created.
@@ -155,6 +156,7 @@ type FilesystemCreateRequest struct {
 	NetworkFeatures    string
 	KerberosEnabled    bool
 	KeyVaultEndpointID string
+	Zone               string
 }
 
 // ExportPolicy records details of a discovered Azure volume export policy.

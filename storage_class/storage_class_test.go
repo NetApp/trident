@@ -319,7 +319,76 @@ func TestConstructExternal(t *testing.T) {
 	assert.Equal(t, "sc1", ext.GetName(), "storage class name does not match")
 }
 
-func TestDoesPoolSupportTopology(t *testing.T) {
+func TestIsTopologySupportedByTopology(t *testing.T) {
+	tests := map[string]struct {
+		requisiteTopology, availableTopology map[string]string
+		expected                             bool
+	}{
+		"No entries": {
+			requisiteTopology: map[string]string{},
+			availableTopology: map[string]string{},
+			expected:          true,
+		},
+		"Identical single entry": {
+			requisiteTopology: map[string]string{"region": "R1"},
+			availableTopology: map[string]string{"region": "R1"},
+			expected:          true,
+		},
+		"Empty requisite single entry": {
+			requisiteTopology: map[string]string{},
+			availableTopology: map[string]string{"region": "R1"},
+			expected:          true,
+		},
+		"Empty available single entry": {
+			requisiteTopology: map[string]string{"region": "R1"},
+			availableTopology: map[string]string{},
+			expected:          true,
+		},
+		"Identical multiple entries": {
+			requisiteTopology: map[string]string{"region": "R1", "zone": "Z1"},
+			availableTopology: map[string]string{"region": "R1", "zone": "Z1"},
+			expected:          true,
+		},
+		"Fewer requisite entries": {
+			requisiteTopology: map[string]string{"region": "R1"},
+			availableTopology: map[string]string{"region": "R1", "zone": "Z1"},
+			expected:          true,
+		},
+		"Fewer available entries": {
+			requisiteTopology: map[string]string{"region": "R1", "zone": "Z1"},
+			availableTopology: map[string]string{"region": "R1"},
+			expected:          true,
+		},
+		"Non-overlapping entries": {
+			requisiteTopology: map[string]string{"zone": "Z1"},
+			availableTopology: map[string]string{"region": "R1"},
+			expected:          true,
+		},
+		"Mismatch single entry": {
+			requisiteTopology: map[string]string{"region": "R1"},
+			availableTopology: map[string]string{"region": "R2"},
+			expected:          false,
+		},
+		"Mismatch region, multiple entries": {
+			requisiteTopology: map[string]string{"region": "R1", "zone": "Z1"},
+			availableTopology: map[string]string{"region": "R2", "zone": "Z1"},
+			expected:          false,
+		},
+		"Mismatch zone, multiple entries": {
+			requisiteTopology: map[string]string{"region": "R1", "zone": "Z1"},
+			availableTopology: map[string]string{"region": "R1", "zone": "Z2"},
+			expected:          false,
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			result := isTopologySupportedByTopology(test.requisiteTopology, test.availableTopology)
+			assert.Equal(t, test.expected, result, fmt.Sprintf("%s failed", testName))
+		})
+	}
+}
+
+func TestIsTopologySupportedByPool(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 
 	supportedTopologies := make([]map[string]string, 0)
@@ -329,19 +398,19 @@ func TestDoesPoolSupportTopology(t *testing.T) {
 	fakePool1.EXPECT().Name().Return("fake pool 1").AnyTimes()
 	fakePool1.EXPECT().SupportedTopologies().Return(supportedTopologies).AnyTimes()
 
-	supported := isTopologySupportedByPool(context.TODO(), fakePool1,
+	supported := isTopologySupportedByPool(fakePool1,
 		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	if !supported {
 		t.Error("pool should support topology")
 	}
 
-	supported = isTopologySupportedByPool(context.TODO(), fakePool1,
+	supported = isTopologySupportedByPool(fakePool1,
 		map[string]string{"topology.kubernetes.io/region": "R1"})
 	if !supported {
 		t.Error("pool should support topology")
 	}
 
-	supported = isTopologySupportedByPool(context.TODO(), fakePool1,
+	supported = isTopologySupportedByPool(fakePool1,
 		map[string]string{"topology.kubernetes.io/region": "Not supported"})
 	if supported {
 		t.Error("pool should not support topology")
@@ -356,7 +425,7 @@ func TestDoesPoolSupportTopology(t *testing.T) {
 	fakePool2.EXPECT().Name().Return("fake pool 2").AnyTimes()
 	fakePool2.EXPECT().SupportedTopologies().Return(supportedTopologies).AnyTimes()
 
-	supported = isTopologySupportedByPool(context.Background(), fakePool2,
+	supported = isTopologySupportedByPool(fakePool2,
 		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	if !supported {
 		t.Error("pool should support topology")
@@ -368,7 +437,7 @@ func TestDoesPoolSupportTopology(t *testing.T) {
 	fakePool3.EXPECT().Name().Return("fake pool 3").AnyTimes()
 	fakePool3.EXPECT().SupportedTopologies().Return(supportedTopologies).AnyTimes()
 
-	supported = isTopologySupportedByPool(context.Background(), fakePool3,
+	supported = isTopologySupportedByPool(fakePool3,
 		map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"})
 	if !supported {
 		t.Error("pool should support topology")
@@ -488,6 +557,246 @@ func TestFilterPoolsOnTopology(t *testing.T) {
 		requisiteTopologies)
 	if len(filteredPools) == 0 {
 		t.Error("all pools should be returned")
+	}
+}
+
+func makeFakePool(mockCtrl *gomock.Controller, name string, topologies []map[string]string) storage.Pool {
+	fakePool := mockstorage.NewMockPool(mockCtrl)
+	fakePool.EXPECT().Name().Return(name).AnyTimes()
+	fakePool.EXPECT().SupportedTopologies().Return(topologies).AnyTimes()
+	return fakePool
+}
+
+func TestGetTopologyForVolume(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+
+	topologyEmpty := map[string]string{}
+	topologyR1 := map[string]string{"topology.kubernetes.io/region": "R1"}
+	topologyR2 := map[string]string{"topology.kubernetes.io/region": "R2"}
+	topologyR1Z1 := map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z1"}
+	topologyR1Z2 := map[string]string{"topology.kubernetes.io/region": "R1", "topology.kubernetes.io/zone": "Z2"}
+	topologyR2Z1 := map[string]string{"topology.kubernetes.io/region": "R2", "topology.kubernetes.io/zone": "Z1"}
+
+	poolNil := makeFakePool(mockCtrl, "poolEmpty", nil)
+	poolEmpty := makeFakePool(mockCtrl, "poolEmpty", []map[string]string{})
+	poolR1 := makeFakePool(mockCtrl, "poolR1", []map[string]string{topologyR1})
+	poolR1Z1 := makeFakePool(mockCtrl, "poolR1", []map[string]string{topologyR1Z1})
+	poolR2Z1 := makeFakePool(mockCtrl, "poolR1", []map[string]string{topologyR2Z1})
+
+	tests := map[string]struct {
+		volConfig        *storage.VolumeConfig
+		pool             storage.Pool
+		expectedTopology map[string]string
+		expectedError    bool
+	}{
+		"No entries": {
+			volConfig:        &storage.VolumeConfig{},
+			pool:             poolEmpty,
+			expectedTopology: nil,
+			expectedError:    false,
+		},
+		"Identical requisite, single entry, region only": {
+			volConfig:        &storage.VolumeConfig{RequisiteTopologies: []map[string]string{topologyR1}},
+			pool:             poolR1,
+			expectedTopology: topologyR1,
+			expectedError:    false,
+		},
+		"Identical requisite, single entry, region & zone": {
+			volConfig:        &storage.VolumeConfig{RequisiteTopologies: []map[string]string{topologyR1Z1}},
+			pool:             poolR1Z1,
+			expectedTopology: topologyR1Z1,
+			expectedError:    false,
+		},
+		"Empty requisite, single entry, region only": {
+			volConfig:        &storage.VolumeConfig{RequisiteTopologies: []map[string]string{topologyEmpty}},
+			pool:             poolR1,
+			expectedTopology: topologyEmpty,
+			expectedError:    false,
+		},
+		"Empty requisite, single entry, region & zone": {
+			volConfig:        &storage.VolumeConfig{RequisiteTopologies: []map[string]string{topologyEmpty}},
+			pool:             poolR1Z1,
+			expectedTopology: topologyEmpty,
+			expectedError:    false,
+		},
+		"Empty available, single entry, region only": {
+			volConfig:        &storage.VolumeConfig{RequisiteTopologies: []map[string]string{topologyR1}},
+			pool:             poolNil,
+			expectedTopology: nil,
+			expectedError:    true,
+		},
+		"Empty available, single entry, region & zone": {
+			volConfig:        &storage.VolumeConfig{RequisiteTopologies: []map[string]string{topologyR1Z1}},
+			pool:             poolNil,
+			expectedTopology: nil,
+			expectedError:    true,
+		},
+		"Multiple requisite, single preferred, region only": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2, topologyR1},
+				PreferredTopologies: []map[string]string{topologyR1},
+			},
+			pool:             poolR1,
+			expectedTopology: topologyR1,
+			expectedError:    false,
+		},
+		"Multiple requisite, single preferred, region & zone": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2, topologyR1Z1},
+				PreferredTopologies: []map[string]string{topologyR1Z1},
+			},
+			pool:             poolR1Z1,
+			expectedTopology: topologyR1Z1,
+			expectedError:    false,
+		},
+		"Multiple requisite, multiple preferred, region only": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2, topologyR1},
+				PreferredTopologies: []map[string]string{topologyR1, topologyR2},
+			},
+			pool:             poolR1,
+			expectedTopology: topologyR1,
+			expectedError:    false,
+		},
+		"Multiple requisite, multiple preferred, region & zone": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2Z1, topologyR1Z1},
+				PreferredTopologies: []map[string]string{topologyR1Z1, topologyR2Z1},
+			},
+			pool:             poolR1Z1,
+			expectedTopology: topologyR1Z1,
+			expectedError:    false,
+		},
+		"Multiple requisite, multiple preferred, less specific pool": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2, topologyR1},
+				PreferredTopologies: []map[string]string{topologyR2Z1, topologyR1Z1},
+			},
+			pool:             poolR1,
+			expectedTopology: topologyR1Z1,
+			expectedError:    false,
+		},
+		"Multiple requisite, multiple preferred, more specific pool": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2, topologyR1},
+				PreferredTopologies: []map[string]string{topologyR2, topologyR1},
+			},
+			pool:             poolR1Z1,
+			expectedTopology: topologyR1,
+			expectedError:    false,
+		},
+		"Multiple requisite, no preferred, region only": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2, topologyR1},
+				PreferredTopologies: []map[string]string{},
+			},
+			pool:             poolR1,
+			expectedTopology: topologyR1,
+			expectedError:    false,
+		},
+		"Multiple requisite, no preferred, region & zone": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR2Z1, topologyR1Z1},
+				PreferredTopologies: []map[string]string{},
+			},
+			pool:             poolR1Z1,
+			expectedTopology: topologyR1Z1,
+			expectedError:    false,
+		},
+		"Multiple requisite, single preferred, region & zone, no match": {
+			volConfig: &storage.VolumeConfig{
+				RequisiteTopologies: []map[string]string{topologyR1Z1, topologyR1Z2},
+				PreferredTopologies: []map[string]string{topologyR1Z1},
+			},
+			pool:             poolR2Z1,
+			expectedTopology: nil,
+			expectedError:    true,
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			resultTopology, resultError := GetTopologyForVolume(context.TODO(), test.volConfig, test.pool)
+			assert.Equal(t, test.expectedTopology, resultTopology, fmt.Sprintf("%s topology mismatch", testName))
+			assert.Equal(t, test.expectedError, resultError != nil, fmt.Sprintf("%s error mismatch", testName))
+		})
+	}
+}
+
+func TestGetRegionZoneForTopology(t *testing.T) {
+	tests := map[string]struct {
+		topology       map[string]string
+		expectedRegion string
+		expectedZone   string
+	}{
+		"Nil topology": {
+			topology:       nil,
+			expectedRegion: "",
+			expectedZone:   "",
+		},
+		"Empty topology": {
+			topology:       map[string]string{},
+			expectedRegion: "",
+			expectedZone:   "",
+		},
+		"Region only": {
+			topology:       map[string]string{"topology.kubernetes.io/region": "R1"},
+			expectedRegion: "R1",
+			expectedZone:   "",
+		},
+		"Zone only": {
+			topology:       map[string]string{"topology.kubernetes.io/zone": "Z1"},
+			expectedRegion: "",
+			expectedZone:   "Z1",
+		},
+		"Region & zone": {
+			topology: map[string]string{
+				"topology.kubernetes.io/region": "R1",
+				"topology.kubernetes.io/zone":   "Z1",
+			},
+			expectedRegion: "R1",
+			expectedZone:   "Z1",
+		},
+		"Unsupported region & zone": {
+			topology: map[string]string{
+				"other/region": "R1",
+				"other/zone":   "Z1",
+			},
+			expectedRegion: "",
+			expectedZone:   "",
+		},
+		"Region & unsupported zone": {
+			topology: map[string]string{
+				"topology.kubernetes.io/region": "R1",
+				"other/zone":                    "Z1",
+			},
+			expectedRegion: "R1",
+			expectedZone:   "",
+		},
+		"Zone & unsupported region": {
+			topology: map[string]string{
+				"other/region":                "R1",
+				"topology.kubernetes.io/zone": "Z1",
+			},
+			expectedRegion: "",
+			expectedZone:   "Z1",
+		},
+		"Region & zone, other unsupported keys": {
+			topology: map[string]string{
+				"other/region":                  "R2",
+				"other/zone":                    "Z1",
+				"topology.kubernetes.io/region": "R1",
+				"topology.kubernetes.io/zone":   "Z1",
+			},
+			expectedRegion: "R1",
+			expectedZone:   "Z1",
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			resultRegion, resultZone := GetRegionZoneForTopology(test.topology)
+			assert.Equal(t, test.expectedRegion, resultRegion, fmt.Sprintf("%s region match failed", testName))
+			assert.Equal(t, test.expectedZone, resultZone, fmt.Sprintf("%s zone match failed", testName))
+		})
 	}
 }
 

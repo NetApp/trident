@@ -1280,8 +1280,10 @@ func (h *helper) GetNodeTopologyLabels(ctx context.Context, nodeName string) (ma
 	}
 	topologyLabels := make(map[string]string)
 	for k, v := range node.Labels {
-		if strings.HasPrefix(k, "topology.kubernetes.io") {
-			topologyLabels[k] = v
+		for _, prefix := range config.TopologyKeyPrefixes {
+			if strings.HasPrefix(k, prefix) {
+				topologyLabels[k] = v
+			}
 		}
 	}
 	return topologyLabels, err
