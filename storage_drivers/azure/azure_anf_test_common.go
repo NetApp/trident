@@ -14,7 +14,8 @@ const (
 	ClientSecret     = "client-secret-23456789876454321"
 	Location         = "fake-location"
 	BackendUUID      = "deadbeef-03af-4394-ace4-e177cdbcaf28"
-	SnapshotUUID     = "deadbeef-5c0d-4afa-8cd8-afa3fba5665c"
+	SnapshotID       = "deadbeef-5c0d-4afa-8cd8-afa3fba5665c"
+	SnapshotName     = "snapshot-deadbeef-5c0d-4afa-8cd8-afa3fba5665c"
 	VolumeSizeI64    = int64(107374182400)
 	VolumeSizeStr    = "107374182400"
 	SubvolumeSizeI64 = int64(20971520)

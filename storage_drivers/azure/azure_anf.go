@@ -1257,7 +1257,7 @@ func (d *NASStorageDriver) CreateClone(
 		ProtocolTypes:      sourceVolume.ProtocolTypes,
 		QuotaInBytes:       sourceVolume.QuotaInBytes,
 		SnapshotDirectory:  sourceVolume.SnapshotDirectory,
-		SnapshotID:         sourceSnapshot.SnapshotID,
+		SnapshotID:         sourceSnapshot.ID,
 		NetworkFeatures:    networkFeatures,
 		KeyVaultEndpointID: keyVaultEndpointID,
 		Zone:               zone,

@@ -3839,7 +3839,7 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 		ProtocolTypes:     []string{api.ProtocolTypeNFSv3},
 		QuotaInBytes:      VolumeSizeI64,
 		SnapshotDirectory: snapshotDir,
-		SnapshotID:        SnapshotUUID,
+		SnapshotID:        SnapshotName,
 		UnixPermissions:   defaultUnixPermissions,
 	}
 
@@ -3883,6 +3883,7 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 	}
 
 	snapshot := &api.Snapshot{
+		ID:                SnapshotName,
 		ResourceGroup:     "RG1",
 		NetAppAccount:     "NA1",
 		CapacityPool:      "CP1",
@@ -3891,7 +3892,7 @@ func getStructsForCreateClone(ctx context.Context, driver *NASStorageDriver, sto
 		FullName:          "RG1/NA1/CP1/testvol1/snap1",
 		Location:          Location,
 		Created:           time.Now(),
-		SnapshotID:        SnapshotUUID,
+		SnapshotID:        SnapshotID,
 		ProvisioningState: api.StateAvailable,
 	}
 
@@ -6154,7 +6155,7 @@ func TestPublish_ROClone_NFSVolume(t *testing.T) {
 	driver.Config.NASType = "nfs"
 
 	volConfig, filesystem, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
-	volConfig.AccessInfo.NfsPath = "/trident-testvol1/.snapshot/" + SnapshotUUID
+	volConfig.AccessInfo.NfsPath = "/trident-testvol1/.snapshot/" + SnapshotID
 	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
 	volConfig.ReadOnlyClone = true
@@ -6256,7 +6257,7 @@ func TestPublish_ROClone_NonexistentVolume(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 
 	volConfig, _, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
-	volConfig.AccessInfo.NfsPath = "/trident-testvol1/.snapshot/" + SnapshotUUID
+	volConfig.AccessInfo.NfsPath = "/trident-testvol1/.snapshot/" + SnapshotID
 	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
 	volConfig.ReadOnlyClone = true
@@ -6347,7 +6348,7 @@ func getStructsForCreateSnapshot(ctx context.Context, driver *NASStorageDriver, 
 		FullName:          "RG1/NA1/CP1/testvol1/snap1",
 		Location:          Location,
 		Created:           snapTime,
-		SnapshotID:        SnapshotUUID,
+		SnapshotID:        SnapshotID,
 		ProvisioningState: api.StateAvailable,
 	}
 
@@ -6496,7 +6497,7 @@ func getSnapshotsForList(snapTime time.Time) *[]*api.Snapshot {
 			FullName:          "RG1/NA1/CP1/testvol1/snap1",
 			Location:          Location,
 			Created:           snapTime,
-			SnapshotID:        SnapshotUUID,
+			SnapshotID:        SnapshotID,
 			ProvisioningState: api.StateAvailable,
 		},
 		{
@@ -6508,7 +6509,7 @@ func getSnapshotsForList(snapTime time.Time) *[]*api.Snapshot {
 			FullName:          "RG1/NA1/CP1/testvol1/snap2",
 			Location:          Location,
 			Created:           snapTime,
-			SnapshotID:        SnapshotUUID,
+			SnapshotID:        SnapshotID,
 			ProvisioningState: api.StateAvailable,
 		},
 		{
@@ -7477,7 +7478,7 @@ func TestCreateFollowup_ROClone_NFSVolume(t *testing.T) {
 
 	volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
-	volConfig.CloneSourceSnapshot = SnapshotUUID
+	volConfig.CloneSourceSnapshot = SnapshotID
 	volConfig.ReadOnlyClone = true
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -7518,7 +7519,7 @@ func TestCreateFollowup_ROClone_SMBVolume(t *testing.T) {
 
 	volConfig, filesystem, _ := getStructsForPublishNFSVolume(ctx, driver)
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
-	volConfig.CloneSourceSnapshot = SnapshotUUID
+	volConfig.CloneSourceSnapshot = SnapshotID
 	volConfig.ReadOnlyClone = true
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
