@@ -1077,9 +1077,14 @@ func InitializeOntapAPI(
 	var ontapAPI api.OntapAPI
 	var err error
 
+	useRESTValue := "<nil>"
+	if config.UseREST != nil {
+		useRESTValue = strconv.FormatBool(*config.UseREST)
+	}
 	fields := LogFields{
-		"Method": "InitializeOntapAPI", "Type": "ontap_common",
-		"useREST": config.UseREST,
+		"Method":  "InitializeOntapAPI",
+		"Type":    "ontap_common",
+		"useREST": useRESTValue,
 	}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> InitializeOntapAPI")
@@ -1170,6 +1175,19 @@ func InitializeOntapAPI(
 		if config.UseREST != nil && *config.UseREST == false {
 			return nil, fmt.Errorf("ONTAP version %s does not support ZAPI calls, please remove `useRest=false` from the backend config", ontapVer)
 		}
+	}
+
+	fields = LogFields{
+		"Backend": config.BackendName,
+	}
+	switch ontapAPI.(type) {
+	case api.OntapAPIREST:
+		Logc(ctx).WithFields(fields).Info("Using REST client")
+	case api.OntapAPIZAPI:
+		Logc(ctx).WithFields(fields).Info("Using ZAPI client")
+	default:
+		// We should never reach this point, but putting this here just in case.
+		Logc(ctx).WithFields(fields).Warn("Unknown ONTAP API client type.")
 	}
 
 	Logc(ctx).WithField("SVM", ontapAPI.SVMName()).Debug("Using SVM.")
@@ -2770,6 +2788,14 @@ func getExternalConfig(ctx context.Context, config drivers.OntapStorageDriverCon
 		drivers.KeyName: utils.REDACTED,
 		drivers.KeyType: utils.REDACTED,
 	} // redact the credentials
+
+	// https://github.com/golang/go/issues/4609
+	// It's how gob encoding-decoding works, it flattens the pointer while encoding,
+	// and during the decoding phase, if the default value is encountered, it is assigned as nil.
+	if config.UseREST != nil {
+		cloneConfig.UseREST = utils.Ptr(*config.UseREST)
+	}
+
 	return cloneConfig
 }
 
