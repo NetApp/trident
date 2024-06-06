@@ -10,7 +10,7 @@ operator/trident-operator
 operator/operator
 trident-installer.tar.gz
 trident
-trident-operator
+trident-operator-*.tgz
 !trident-operator/
 !trident/
 *.pem
