@@ -43,12 +43,27 @@ var (
 	publishedISCSISessions, currentISCSISessions utils.ISCSISessions
 )
 
+func attemptLock(ctx context.Context, lockContext string) bool {
+	startTime := time.Now()
+	utils.Lock(ctx, lockContext, lockID)
+	
+	// Fail if the gRPC call came in a long time ago to avoid kubelet 120s timeout
+	if time.Since(startTime) > defaultNodeReconciliationPeriod {
+		return false
+	}
+
+	return true
+}
+
 func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 	lockContext := "NodeStageVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext) {
+		return nil, status.Error(codes.Aborted, "too long since request start time")
+	}
 
 	fields := LogFields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
 	ctx = SetContextWorkflow(ctx, WorkflowNodeStage)
@@ -86,8 +101,11 @@ func (p *Plugin) nodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	lockContext := "NodeUnstageVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext) {
+		return nil, status.Error(codes.Aborted, "too long since request start time")
+	}
 
 	fields := LogFields{
 		"Method": "NodeUnstageVolume",
@@ -165,8 +183,11 @@ func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
 	lockContext := "NodePublishVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext) {
+		return nil, status.Error(codes.Aborted, "too long since request start time")
+	}
 
 	ctx = SetContextWorkflow(ctx, WorkflowNodePublish)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
@@ -203,8 +224,11 @@ func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
 ) (*csi.NodeUnpublishVolumeResponse, error) {
 	lockContext := "NodeUnpublishVolume-" + req.GetVolumeId()
-	utils.Lock(ctx, lockContext, lockID)
 	defer utils.Unlock(ctx, lockContext, lockID)
+
+	if !attemptLock(ctx, lockContext) {
+		return nil, status.Error(codes.Aborted, "too long since request start time")
+	}
 
 	ctx = SetContextWorkflow(ctx, WorkflowNodeUnpublish)
 	fields := LogFields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}

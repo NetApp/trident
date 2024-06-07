@@ -57,6 +57,13 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 	Logc(ctx).WithFields(logFields).Debug(">>>> mount_linux.IsMounted")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount_linux.IsMounted")
 
+	rawPath, err := filepath.EvalSymlinks(sourceDevice)
+	if err != nil {
+		Logc(ctx).Error(err)
+		rawPath = ""
+	}
+	rawPath = strings.TrimPrefix(rawPath, "/dev/")
+
 	sourceDevice = strings.TrimPrefix(sourceDevice, "/dev/")
 
 	// Ensure at least one arg was specified
@@ -90,7 +97,7 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 
 			if strings.HasPrefix(procMount.MountSource, "/dev/") {
 				procSourceDevice = strings.TrimPrefix(procMount.MountSource, "/dev/")
-				if sourceDevice != procSourceDevice {
+				if sourceDevice != procSourceDevice && rawPath != procSourceDevice {
 					// Resolve any symlinks to get the real device
 					procSourceDevice, err = filepath.EvalSymlinks(procMount.MountSource)
 					if err != nil {
@@ -101,7 +108,7 @@ func IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions strin
 				}
 			}
 
-			if sourceDevice != procSourceDevice {
+			if sourceDevice != procSourceDevice && rawPath != procSourceDevice {
 				continue
 			} else {
 				Logc(ctx).Debugf("Device found: %v", sourceDevice)
