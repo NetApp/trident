@@ -1101,7 +1101,26 @@ func InitializeOntapAPI(
 	// Based on user-configured options, we either keep the REST client or override it with a ZAPI client.
 	ontapAPI, err = api.NewRestClientFromOntapConfig(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
+		// The creation of a REST client may fail due to various reasons.
+		// One of the primary reasons could be the lack of authorization for the REST client.
+		// In such cases, we attempt to fall back to ZAPI.
+
+		Logc(ctx).WithField("error", err).Error("Error creating ONTAP REST API client for initial call. Falling back to ZAPI.")
+
+		// If the user has set the useREST flag to true, return an error.
+		if config.UseREST != nil && *config.UseREST == true {
+			Logc(ctx).Error("useREST is set to true. Returning error, instead of falling back to ZAPI.")
+			return nil, fmt.Errorf("error creating ONTAP REST API client: %v", err)
+		}
+
+		ontapAPI, err = api.NewZAPIClientFromOntapConfig(ctx, config, numRecords)
+		if err != nil {
+			return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
+		}
+
+		Logc(ctx).WithField("Backend", config.BackendName).Info("Using ZAPI client")
+		Logc(ctx).WithField("SVM", ontapAPI.SVMName()).Debug("Using SVM.")
+		return ontapAPI, nil
 	}
 
 	ontapVer, err := ontapAPI.APIVersion(ctx)
