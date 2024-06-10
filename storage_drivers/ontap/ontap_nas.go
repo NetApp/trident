@@ -278,7 +278,7 @@ func (d *NASStorageDriver) Create(
 	sizeBytes = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
 
 	// Get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
+	flexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 
 	size := strconv.FormatUint(flexvolSize, 10)
 

@@ -30,40 +30,14 @@ import (
 )
 
 const (
-	MinimumVolumeSizeBytes       = uint64(1073741824)   // 1 GiB
 	MinimumCVSVolumeSizeBytesHW  = uint64(107374182400) // 100 GiB
 	MaximumVolumesPerStoragePool = 50
 	MinimumAPIVersion            = "1.4.0"
 	MinimumSDEVersion            = "2023.1.2"
 
-	defaultHWServiceLevel  = api.UserServiceLevel1
-	defaultSWServiceLevel  = api.PoolServiceLevel1
-	defaultNfsMountOptions = "-o nfsvers=3"
-	defaultSecurityStyle   = "unix"
-	defaultSnapshotDir     = "false"
-	defaultSnapshotReserve = ""
-	defaultUnixPermissions = "0777"
-	defaultStorageClass    = api.StorageClassHardware
-	defaultLimitVolumeSize = ""
-	defaultExportRule      = "0.0.0.0/0"
-	defaultNetwork         = "default"
-
-	// Constants for internal pool attributes
-	Size            = "size"
-	ServiceLevel    = "serviceLevel"
-	SnapshotDir     = "snapshotDir"
-	SnapshotReserve = "snapshotReserve"
-	ExportRule      = "exportRule"
-	Network         = "network"
-	Region          = "region"
-	Zone            = "zone"
-	StorageClass    = "storageClass"
-	UnixPermissions = "unixPermissions"
-	StoragePools    = "storagePools"
-
-	// Topology label names
-	topologyZoneLabel   = drivers.TopologyLabelPrefix + "/" + Zone
-	topologyRegionLabel = drivers.TopologyLabelPrefix + "/" + Region
+	defaultHWServiceLevel = api.UserServiceLevel1
+	defaultSWServiceLevel = api.PoolServiceLevel1
+	defaultCVSNetwork     = "default"
 
 	// discovery debug log constant
 	discovery = "discovery"
@@ -82,11 +56,6 @@ type NFSStorageDriver struct {
 	apiRegions          []string
 	pools               map[string]storage.Pool
 	volumeCreateTimeout time.Duration
-}
-
-type Telemetry struct {
-	tridentconfig.Telemetry
-	Plugin string `json:"plugin"`
 }
 
 func (d *NFSStorageDriver) GetConfig() *drivers.GCPNFSStorageDriverConfig {
@@ -306,7 +275,7 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 	}
 
 	if config.Network == "" {
-		config.Network = defaultNetwork
+		config.Network = defaultCVSNetwork
 	}
 
 	// VolumeCreateTimeoutSeconds is the timeout value in seconds.

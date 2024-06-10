@@ -2435,7 +2435,7 @@ func TestConstructOntapNASQTreeVolumePath(t *testing.T) {
 			"test_share",
 			"flex-vol",
 			&storage.VolumeConfig{
-				Name:                      "volmeConfig",
+				Name:                      "volumeConfig",
 				InternalName:              "trident_pvc_vol",
 				CloneSourceVolumeInternal: "cloneSourceInternal",
 				CloneSourceSnapshot:       "sourceSnapShot",
@@ -2448,7 +2448,7 @@ func TestConstructOntapNASQTreeVolumePath(t *testing.T) {
 			"",
 			"flex-vol",
 			&storage.VolumeConfig{
-				Name:                      "volmeConfig",
+				Name:                      "volumeConfig",
 				InternalName:              "trident_pvc_vol",
 				CloneSourceVolumeInternal: "cloneSourceInternal",
 				CloneSourceSnapshot:       "sourceSnapShot",

@@ -345,7 +345,7 @@ func (d *SANStorageDriver) Create(
 
 	lunSize := strconv.FormatUint(lunSizeBytes, 10)
 	// Get the flexvol size based on the snapshot reserve
-	flexvolSize := calculateFlexvolSizeBytes(ctx, name, lunSizeBytes, snapshotReserveInt)
+	flexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, lunSizeBytes, snapshotReserveInt)
 	// Add extra 10% to the Flexvol to account for LUN metadata
 	flexvolBufferSize := uint64(LUNMetadataBufferMultiplier * float64(flexvolSize))
 
@@ -1349,7 +1349,7 @@ func (d *SANStorageDriver) Resize(
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
-	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	newFlexvolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexvolSize))
 
 	sameLUNSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),

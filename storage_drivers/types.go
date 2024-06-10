@@ -52,6 +52,8 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 		storageDriverConfig = &AzureNASStorageDriverConfig{}
 	case trident.GCPNFSStorageDriverName:
 		storageDriverConfig = &GCPNFSStorageDriverConfig{}
+	case trident.GCNVNASStorageDriverName:
+		storageDriverConfig = &GCNVNASStorageDriverConfig{}
 	case trident.FakeStorageDriverName:
 		storageDriverConfig = &FakeStorageDriverConfig{}
 	default:
@@ -166,7 +168,8 @@ type AWSConfig struct {
 // within a backend.
 type StorageBackendPool interface {
 	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
-		ANFStorageBackendPool | ANFSubvolumeStorageBackendPool | SolidfireStorageBackendPool | GCPNFSStorageBackendPool
+		ANFStorageBackendPool | ANFSubvolumeStorageBackendPool | SolidfireStorageBackendPool |
+		GCPNFSStorageBackendPool | GCNVNASStorageBackendPool
 }
 
 // OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
@@ -697,6 +700,122 @@ func (d GCPNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []
 }
 
 func (d GCPNFSStorageDriverConfig) SpecOnlyValidation() error {
+	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
+		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
+	}
+
+	if !d.HasCredentials() {
+		return fmt.Errorf("input is missing the credentials field")
+	}
+
+	return nil
+}
+
+type GCNVNASStorageDriverConfig struct {
+	*CommonStorageDriverConfig
+	ProjectNumber       string        `json:"projectNumber"`
+	Location            string        `json:"location"`
+	APIKey              GCPPrivateKey `json:"apiKey"`
+	NFSMountOptions     string        `json:"nfsMountOptions"`
+	VolumeCreateTimeout string        `json:"volumeCreateTimeout"`
+	SDKTimeout          string        `json:"sdkTimeout"`
+	MaxCacheAge         string        `json:"maxCacheAge"`
+	NASType             string        `json:"nasType"`
+	GCNVNASStorageDriverPool
+	Storage []GCNVNASStorageDriverPool `json:"storage"`
+}
+
+type GCNVNASStorageDriverPool struct {
+	Labels                             map[string]string   `json:"labels"`
+	Region                             string              `json:"region"`
+	Zone                               string              `json:"zone"`
+	ServiceLevel                       string              `json:"serviceLevel"`
+	StorageClass                       string              `json:"storageClass"`
+	StoragePools                       []string            `json:"storagePools"`
+	Network                            string              `json:"network"`
+	SupportedTopologies                []map[string]string `json:"supportedTopologies"`
+	GCNVNASStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// GCNVNASStorageBackendPool is a non-overlapping section of a GCNV backend that may be used for provisioning storage.
+type GCNVNASStorageBackendPool struct {
+	ProjectNumber string `json:"projectNumber"`
+	Location      string `json:"location"`
+	StoragePool   string `json:"storagePool"`
+}
+
+type GCNVNASStorageDriverConfigDefaults struct {
+	ExportRule      string `json:"exportRule"`
+	SnapshotDir     string `json:"snapshotDir"`
+	SnapshotReserve string `json:"snapshotReserve"`
+	UnixPermissions string `json:"unixPermissions"`
+	CommonStorageDriverConfigDefaults
+}
+
+// Implement stringer interface for the GCNVNASStorageDriverConfig driver
+func (d GCNVNASStorageDriverConfig) String() string {
+	return utils.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
+}
+
+// Implement GoStringer interface for the GCNVNASStorageDriverConfig driver
+func (d GCNVNASStorageDriverConfig) GoString() string {
+	return d.String()
+}
+
+// InjectSecrets function replaces sensitive fields in the config with the field values in the map
+func (d *GCNVNASStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+
+	var ok bool
+	if d.APIKey.PrivateKey, ok = secretMap[strings.ToLower("Private_Key")]; !ok {
+		return injectionError("Private_Key")
+	}
+	if d.APIKey.PrivateKeyID, ok = secretMap[strings.ToLower("Private_Key_ID")]; !ok {
+		return injectionError("Private_Key_ID")
+	}
+
+	return nil
+}
+
+// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
+// and returns the the map.
+func (d *GCNVNASStorageDriverConfig) ExtractSecrets() map[string]string {
+	secretMap := make(map[string]string)
+
+	secretMap["Private_Key"] = d.APIKey.PrivateKey
+	secretMap["Private_Key_ID"] = d.APIKey.PrivateKeyID
+
+	return secretMap
+}
+
+// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *GCNVNASStorageDriverConfig) ResetSecrets() {
+	d.APIKey.PrivateKey = ""
+	d.APIKey.PrivateKeyID = ""
+}
+
+// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
+// with secretName.
+func (d *GCNVNASStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+	d.APIKey.PrivateKey = secretName
+	d.APIKey.PrivateKeyID = secretName
+}
+
+// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
+// replaces those fields with secretName and returns the the map.
+func (d *GCNVNASStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+	secretMap := d.ExtractSecrets()
+	d.HideSensitiveWithSecretName(secretName)
+
+	return secretMap
+}
+
+// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
+func (d GCNVNASStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+	return checkMapContainsAttributes(d.ExtractSecrets())
+}
+
+func (d GCNVNASStorageDriverConfig) SpecOnlyValidation() error {
 	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
 	}

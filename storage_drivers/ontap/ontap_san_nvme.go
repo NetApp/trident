@@ -295,7 +295,7 @@ func (d *NVMeStorageDriver) Create(
 	namespaceSizeBytes := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes()[Size])
 	namespaceSize := strconv.FormatUint(namespaceSizeBytes, 10)
 	// Get the FlexVol size based on the snapshot reserve.
-	flexVolSize := calculateFlexvolSizeBytes(ctx, name, namespaceSizeBytes, snapshotReserveInt)
+	flexVolSize := drivers.CalculateVolumeSizeBytes(ctx, name, namespaceSizeBytes, snapshotReserveInt)
 	// Add extra 10% to the FlexVol to account for Namespace metadata.
 	flexVolBufferSize := uint64(LUNMetadataBufferMultiplier * float64(flexVolSize))
 
@@ -1301,7 +1301,7 @@ func (d *NVMeStorageDriver) Resize(
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume.")
 	}
 
-	newFlexVolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexVolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	newFlexVolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexVolSize))
 
 	sameNamespaceSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(nsSizeBytes),

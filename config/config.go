@@ -131,6 +131,7 @@ const (
 	AzureNASStorageDriverName          = "azure-netapp-files"
 	AzureNASBlockStorageDriverName     = "azure-netapp-files-subvolume"
 	GCPNFSStorageDriverName            = "gcp-cvs"
+	GCNVNASStorageDriverName           = "google-cloud-netapp-volumes"
 	FakeStorageDriverName              = "fake"
 
 	/* REST frontend constants */

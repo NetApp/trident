@@ -214,6 +214,27 @@ func CheckMinVolumeSize(requestedSizeBytes, minVolumeSizeBytes uint64) error {
 	return nil
 }
 
+// CalculateVolumeSizeBytes calculates the size of a volume taking into account the snapshot reserve
+func CalculateVolumeSizeBytes(
+	ctx context.Context, volume string, requestedSizeBytes uint64, snapshotReserve int,
+) uint64 {
+	snapReserveDivisor := 1.0 - (float64(snapshotReserve) / 100.0)
+
+	sizeWithSnapReserve := float64(requestedSizeBytes) / snapReserveDivisor
+
+	volumeSizeBytes := uint64(sizeWithSnapReserve)
+
+	Logc(ctx).WithFields(LogFields{
+		"volume":              volume,
+		"snapReserveDivisor":  snapReserveDivisor,
+		"requestedSize":       requestedSizeBytes,
+		"sizeWithSnapReserve": sizeWithSnapReserve,
+		"volumeSizeBytes":     volumeSizeBytes,
+	}).Debug("Calculated optimal size for volume with snapshot reserve.")
+
+	return volumeSizeBytes
+}
+
 // Clone will create a copy of the source object and store it into the destination object (which must be a pointer)
 func Clone(ctx context.Context, source, destination interface{}) {
 	if reflect.TypeOf(destination).Kind() != reflect.Ptr {

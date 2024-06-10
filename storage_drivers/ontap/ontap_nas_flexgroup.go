@@ -574,7 +574,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		return fmt.Errorf("%v is an invalid volume size: %v", volConfig.Size, err)
 	}
 	// get the flexgroup size based on the snapshot reserve
-	flexgroupSize := calculateFlexvolSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
+	flexgroupSize := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 	sizeBytes = GetVolumeSize(flexgroupSize, storagePool.InternalAttributes()[Size])
 	if err != nil {
 		return err

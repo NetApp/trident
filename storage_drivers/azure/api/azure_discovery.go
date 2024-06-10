@@ -25,12 +25,12 @@ import (
 )
 
 const (
-	PServiceLevel      = "serviceLevel"
-	PVirtualNetwork    = "virtualNetwork"
-	PSubnet            = "subnet"
-	PResourceGroups    = "resourceGroups"
-	PNetappAccounts    = "netappAccounts"
-	PCapacityPools     = "capacityPools"
+	serviceLevel       = "serviceLevel"
+	virtualNetwork     = "virtualNetwork"
+	subnet             = "subnet"
+	resourceGroups     = "resourceGroups"
+	netappAccounts     = "netappAccounts"
+	capacityPools      = "capacityPools"
 	DefaultMaxCacheAge = 10 * time.Minute
 )
 
@@ -244,7 +244,7 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
 		// Find all capacity pools that work for this storage pool
-		cPools := c.CapacityPoolsForStoragePool(ctx, sPool, sPool.InternalAttributes()[PServiceLevel])
+		cPools := c.CapacityPoolsForStoragePool(ctx, sPool, sPool.InternalAttributes()[serviceLevel])
 
 		if len(cPools) == 0 {
 
@@ -279,7 +279,7 @@ func (c Client) checkForNonexistentResourceGroups(ctx context.Context) (anyMisma
 		}
 
 		// Find any resource group value in this storage pool that doesn't match known resource groups
-		for _, configRG := range utils.SplitString(ctx, sPool.InternalAttributes()[PResourceGroups], ",") {
+		for _, configRG := range utils.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",") {
 			if !utils.StringInSlice(configRG, rgNames) {
 				anyMismatches = true
 
@@ -307,7 +307,7 @@ func (c Client) checkForNonexistentNetAppAccounts(ctx context.Context) (anyMisma
 		}
 
 		// Find any netapp account value in this storage pool that doesn't match known netapp accounts
-		for _, configNA := range utils.SplitString(ctx, sPool.InternalAttributes()[PNetappAccounts], ",") {
+		for _, configNA := range utils.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",") {
 			if !utils.StringInSlice(configNA, naNames) {
 				anyMismatches = true
 
@@ -335,7 +335,7 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 		}
 
 		// Find any capacity pools value in this storage pool that doesn't match known capacity pools
-		for _, configCP := range utils.SplitString(ctx, sPool.InternalAttributes()[PCapacityPools], ",") {
+		for _, configCP := range utils.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",") {
 			if !utils.StringInSlice(configCP, cpNames) {
 				anyMismatches = true
 
@@ -363,7 +363,7 @@ func (c Client) checkForNonexistentVirtualNetworks(ctx context.Context) (anyMism
 		}
 
 		// Find any virtual network value in this storage pool that doesn't match known virtual networks
-		configVN := sPool.InternalAttributes()[PVirtualNetwork]
+		configVN := sPool.InternalAttributes()[virtualNetwork]
 		if configVN != "" && !utils.StringInSlice(configVN, vnNames) {
 			anyMismatches = true
 
@@ -390,7 +390,7 @@ func (c Client) checkForNonexistentSubnets(ctx context.Context) (anyMismatches b
 		}
 
 		// Find any subnet value in this storage pool that doesn't match known subnets
-		configSN := sPool.InternalAttributes()[PSubnet]
+		configSN := sPool.InternalAttributes()[subnet]
 		if configSN != "" && !utils.StringInSlice(configSN, snNames) {
 			anyMismatches = true
 
@@ -832,7 +832,7 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// If resource groups were specified, filter out non-matching capacity pools
-	rgList := utils.SplitString(ctx, sPool.InternalAttributes()[PResourceGroups], ",")
+	rgList := utils.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
 	if len(rgList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			if !utils.SliceContainsString(rgList, cPool.ResourceGroup) {
@@ -844,7 +844,7 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// If netapp accounts were specified, filter out non-matching capacity pools
-	naList := utils.SplitString(ctx, sPool.InternalAttributes()[PNetappAccounts], ",")
+	naList := utils.SplitString(ctx, sPool.InternalAttributes()[netappAccounts], ",")
 	if len(naList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			naName := cPool.NetAppAccount
@@ -858,7 +858,7 @@ func (c Client) CapacityPoolsForStoragePool(
 	}
 
 	// If capacity pools were specified, filter out non-matching capacity pools
-	cpList := utils.SplitString(ctx, sPool.InternalAttributes()[PCapacityPools], ",")
+	cpList := utils.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",")
 	if len(cpList) > 0 {
 		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
 			if !utils.SliceContainsString(cpList, cPool.Name) && !utils.SliceContainsString(cpList, cPoolFullName) {
@@ -940,7 +940,7 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 	}
 
 	// If resource groups were specified, filter out non-matching subnets
-	rgList := utils.SplitString(ctx, sPool.InternalAttributes()[PResourceGroups], ",")
+	rgList := utils.SplitString(ctx, sPool.InternalAttributes()[resourceGroups], ",")
 	if len(rgList) > 0 {
 		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
 			if !utils.SliceContainsString(rgList, subnet.ResourceGroup) {
@@ -952,7 +952,7 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 	}
 
 	// If virtual network was specified, filter out non-matching subnets
-	vn := sPool.InternalAttributes()[PVirtualNetwork]
+	vn := sPool.InternalAttributes()[virtualNetwork]
 	if vn != "" {
 		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
 			vnName := subnet.VirtualNetwork
@@ -966,7 +966,7 @@ func (c Client) SubnetsForStoragePool(ctx context.Context, sPool storage.Pool) [
 	}
 
 	// If subnet was specified, filter out non-matching capacity subnets
-	sn := sPool.InternalAttributes()[PSubnet]
+	sn := sPool.InternalAttributes()[subnet]
 	if sn != "" {
 		for subnetFullName, subnet := range c.sdkClient.SubnetMap {
 			if sn != subnet.Name && sn != subnetFullName {

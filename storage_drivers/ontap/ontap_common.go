@@ -511,7 +511,7 @@ func resizeValidation(
 	}
 
 	// Ensure the final effective volume size is larger than the current volume size
-	newFlexvolSize := calculateFlexvolSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
+	newFlexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
 	if newFlexvolSize < volSizeBytes {
 		return 0, errors.UnsupportedCapacityRangeError(fmt.Errorf("effective volume size %d including any "+
 			"snapshot reserve is less than the existing volume size %d", newFlexvolSize, volSizeBytes))
@@ -2846,27 +2846,6 @@ func calculateFlexvolEconomySizeBytes(
 		"spaceWithSnapReserve":   usableSpaceSnapReserve,
 		"flexvolSizeBytes":       flexvolSizeBytes,
 	}).Debug("Calculated optimal size for Flexvol with new LUN or QTree.")
-
-	return flexvolSizeBytes
-}
-
-// calculateFlexvolSizeBytes calculates the size of the Flexvol taking into account the snapshot reserve
-func calculateFlexvolSizeBytes(
-	ctx context.Context, flexvol string, requestedSizeBytes uint64, snapshotReserve int,
-) uint64 {
-	snapReserveDivisor := 1.0 - (float64(snapshotReserve) / 100.0)
-
-	sizeWithSnapReserve := float64(requestedSizeBytes) / snapReserveDivisor
-
-	flexvolSizeBytes := uint64(sizeWithSnapReserve)
-
-	Logc(ctx).WithFields(LogFields{
-		"flexvol":             flexvol,
-		"snapReserveDivisor":  snapReserveDivisor,
-		"requestedSize":       requestedSizeBytes,
-		"sizeWithSnapReserve": sizeWithSnapReserve,
-		"flexvolSizeBytes":    flexvolSizeBytes,
-	}).Debug("Calculated optimal size for Flexvol with snapshot reserve.")
 
 	return flexvolSizeBytes
 }

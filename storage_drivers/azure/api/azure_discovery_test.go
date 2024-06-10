@@ -299,9 +299,9 @@ func TestCheckForUnsatisfiedPools_NoPools(t *testing.T) {
 
 func TestCheckForUnsatisfiedPools_EmptyPools(t *testing.T) {
 	sPool1 := storage.NewStoragePool(nil, "pool1")
-	sPool1.InternalAttributes()[PCapacityPools] = ""
+	sPool1.InternalAttributes()[capacityPools] = ""
 	sPool2 := storage.NewStoragePool(nil, "pool2")
-	sPool2.InternalAttributes()[PCapacityPools] = ""
+	sPool2.InternalAttributes()[capacityPools] = ""
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
@@ -313,9 +313,9 @@ func TestCheckForUnsatisfiedPools_EmptyPools(t *testing.T) {
 
 func TestCheckForUnsatisfiedPools_ValidPools(t *testing.T) {
 	sPool1 := storage.NewStoragePool(nil, "pool1")
-	sPool1.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP3"
+	sPool1.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP3"
 	sPool2 := storage.NewStoragePool(nil, "pool2")
-	sPool2.InternalAttributes()[PCapacityPools] = "CP1,CP2"
+	sPool2.InternalAttributes()[capacityPools] = "CP1,CP2"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
@@ -327,9 +327,9 @@ func TestCheckForUnsatisfiedPools_ValidPools(t *testing.T) {
 
 func TestCheckForUnsatisfiedPools_OneInvalidPool(t *testing.T) {
 	sPool1 := storage.NewStoragePool(nil, "pool1")
-	sPool1.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP4"
+	sPool1.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP4"
 	sPool2 := storage.NewStoragePool(nil, "pool2")
-	sPool2.InternalAttributes()[PCapacityPools] = "CP4"
+	sPool2.InternalAttributes()[capacityPools] = "CP4"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
@@ -341,12 +341,12 @@ func TestCheckForUnsatisfiedPools_OneInvalidPool(t *testing.T) {
 
 func TestCheckForUnsatisfiedPools_TwoInvalidPools(t *testing.T) {
 	sPool1 := storage.NewStoragePool(nil, "pool1")
-	sPool1.InternalAttributes()[PServiceLevel] = ServiceLevelUltra
-	sPool1.InternalAttributes()[PCapacityPools] = "CP2"
+	sPool1.InternalAttributes()[serviceLevel] = ServiceLevelUltra
+	sPool1.InternalAttributes()[capacityPools] = "CP2"
 	sPool2 := storage.NewStoragePool(nil, "pool2")
-	sPool2.InternalAttributes()[PResourceGroups] = "RG1"
-	sPool2.InternalAttributes()[PNetappAccounts] = "NA1"
-	sPool2.InternalAttributes()[PCapacityPools] = "CP4"
+	sPool2.InternalAttributes()[resourceGroups] = "RG1"
+	sPool2.InternalAttributes()[netappAccounts] = "NA1"
+	sPool2.InternalAttributes()[capacityPools] = "CP4"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2}
@@ -367,7 +367,7 @@ func TestCheckForNonexistentResourceGroups_NoPools(t *testing.T) {
 
 func TestCheckForNonexistentResourceGroups_Empty(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PResourceGroups] = ""
+	sPool.InternalAttributes()[resourceGroups] = ""
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -379,7 +379,7 @@ func TestCheckForNonexistentResourceGroups_Empty(t *testing.T) {
 
 func TestCheckForNonexistentResourceGroups_OK(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PResourceGroups] = "RG1,RG2"
+	sPool.InternalAttributes()[resourceGroups] = "RG1,RG2"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -391,7 +391,7 @@ func TestCheckForNonexistentResourceGroups_OK(t *testing.T) {
 
 func TestCheckForNonexistentResourceGroups_Missing(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PResourceGroups] = "RG1,RG2,RG3"
+	sPool.InternalAttributes()[resourceGroups] = "RG1,RG2,RG3"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -412,7 +412,7 @@ func TestCheckForNonexistentNetAppAccounts_NoPools(t *testing.T) {
 
 func TestCheckForNonexistentNetAppAccounts_Empty(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PNetappAccounts] = ""
+	sPool.InternalAttributes()[netappAccounts] = ""
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -424,7 +424,7 @@ func TestCheckForNonexistentNetAppAccounts_Empty(t *testing.T) {
 
 func TestCheckForNonexistentNetAppAccounts_OK(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PNetappAccounts] = "RG1/NA1,RG2/NA1,NA2"
+	sPool.InternalAttributes()[netappAccounts] = "RG1/NA1,RG2/NA1,NA2"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -436,7 +436,7 @@ func TestCheckForNonexistentNetAppAccounts_OK(t *testing.T) {
 
 func TestCheckForNonexistentNetAppAccounts_Missing(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PNetappAccounts] = "RG1/NA1,RG2/NA1,NA3"
+	sPool.InternalAttributes()[netappAccounts] = "RG1/NA1,RG2/NA1,NA3"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -457,7 +457,7 @@ func TestCheckForNonexistentCapacityPools_NoPools(t *testing.T) {
 
 func TestCheckForNonexistentCapacityPools_Empty(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PCapacityPools] = ""
+	sPool.InternalAttributes()[capacityPools] = ""
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -469,7 +469,7 @@ func TestCheckForNonexistentCapacityPools_Empty(t *testing.T) {
 
 func TestCheckForNonexistentCapacityPools_OK(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP3"
+	sPool.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP3"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -481,7 +481,7 @@ func TestCheckForNonexistentCapacityPools_OK(t *testing.T) {
 
 func TestCheckForNonexistentCapacityPools_Missing(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP4"
+	sPool.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2,CP4"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -502,7 +502,7 @@ func TestCheckForNonexistentVirtualNetworks_NoPools(t *testing.T) {
 
 func TestCheckForNonexistentVirtualNetworks_Empty(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PVirtualNetwork] = ""
+	sPool.InternalAttributes()[virtualNetwork] = ""
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -514,7 +514,7 @@ func TestCheckForNonexistentVirtualNetworks_Empty(t *testing.T) {
 
 func TestCheckForNonexistentVirtualNetworks_OK(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PVirtualNetwork] = "RG1/VN1"
+	sPool.InternalAttributes()[virtualNetwork] = "RG1/VN1"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -526,7 +526,7 @@ func TestCheckForNonexistentVirtualNetworks_OK(t *testing.T) {
 
 func TestCheckForNonexistentVirtualNetworks_Missing(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PVirtualNetwork] = "VN4"
+	sPool.InternalAttributes()[virtualNetwork] = "VN4"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -547,7 +547,7 @@ func TestCheckForNonexistentSubnets_NoPools(t *testing.T) {
 
 func TestCheckForNonexistentSubnets_Empty(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PSubnet] = ""
+	sPool.InternalAttributes()[subnet] = ""
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -559,7 +559,7 @@ func TestCheckForNonexistentSubnets_Empty(t *testing.T) {
 
 func TestCheckForNonexistentSubnets_OK(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PSubnet] = "RG1/VN2/SN3"
+	sPool.InternalAttributes()[subnet] = "RG1/VN2/SN3"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -571,7 +571,7 @@ func TestCheckForNonexistentSubnets_OK(t *testing.T) {
 
 func TestCheckForNonexistentSubnets_Missing(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
-	sPool.InternalAttributes()[PSubnet] = "RG1/VN2/SN4"
+	sPool.InternalAttributes()[subnet] = "RG1/VN2/SN4"
 
 	sdk := getFakeSDK()
 	sdk.sdkClient.StoragePoolMap = map[string]storage.Pool{"pool": sPool}
@@ -654,11 +654,11 @@ func TestCapacityPoolsForStoragePools(t *testing.T) {
 	RG2_NA2_CP3 := sdk.capacityPool("RG2/NA2/CP3")
 
 	sPool1 := storage.NewStoragePool(nil, "testPool1")
-	sPool1.InternalAttributes()[PCapacityPools] = "CP3"
+	sPool1.InternalAttributes()[capacityPools] = "CP3"
 	sdk.sdkClient.StoragePoolMap[sPool1.Name()] = sPool1
 
 	sPool2 := storage.NewStoragePool(nil, "testPool2")
-	sPool2.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2"
+	sPool2.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2"
 	sdk.sdkClient.StoragePoolMap[sPool2.Name()] = sPool2
 
 	expected := []*CapacityPool{RG1_NA1_CP1, RG1_NA1_CP2, RG2_NA2_CP3}
@@ -810,9 +810,9 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 
 	for _, test := range tests {
 
-		sPool.InternalAttributes()[PResourceGroups] = test.resourceGroups
-		sPool.InternalAttributes()[PNetappAccounts] = test.netappAccounts
-		sPool.InternalAttributes()[PCapacityPools] = test.capacityPools
+		sPool.InternalAttributes()[resourceGroups] = test.resourceGroups
+		sPool.InternalAttributes()[netappAccounts] = test.netappAccounts
+		sPool.InternalAttributes()[capacityPools] = test.capacityPools
 
 		cPools := sdk.CapacityPoolsForStoragePool(context.TODO(), sPool, test.serviceLevel)
 
@@ -834,13 +834,13 @@ func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
 	assert.Nil(t, sdk.EnsureVolumeInValidCapacityPool(context.TODO(), volume), "result not nil")
 
 	sPool1 := storage.NewStoragePool(nil, "testPool1")
-	sPool1.InternalAttributes()[PCapacityPools] = "CP3"
+	sPool1.InternalAttributes()[capacityPools] = "CP3"
 	sdk.sdkClient.StoragePoolMap[sPool1.Name()] = sPool1
 
 	assert.NotNil(t, sdk.EnsureVolumeInValidCapacityPool(context.TODO(), volume), "result nil")
 
 	sPool2 := storage.NewStoragePool(nil, "testPool2")
-	sPool2.InternalAttributes()[PCapacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2"
+	sPool2.InternalAttributes()[capacityPools] = "RG1/NA1/CP1,RG1/NA1/CP2"
 	sdk.sdkClient.StoragePoolMap[sPool2.Name()] = sPool2
 
 	assert.Nil(t, sdk.EnsureVolumeInValidCapacityPool(context.TODO(), volume), "result not nil")
@@ -957,9 +957,9 @@ func TestSubnetsForStoragePoolAndFilteredSubnetMap(t *testing.T) {
 
 	for _, test := range tests {
 
-		sPool.InternalAttributes()[PResourceGroups] = test.resourceGroups
-		sPool.InternalAttributes()[PVirtualNetwork] = test.virtualNetwork
-		sPool.InternalAttributes()[PSubnet] = test.subnet
+		sPool.InternalAttributes()[resourceGroups] = test.resourceGroups
+		sPool.InternalAttributes()[virtualNetwork] = test.virtualNetwork
+		sPool.InternalAttributes()[subnet] = test.subnet
 
 		subnets := sdk.SubnetsForStoragePool(context.TODO(), sPool)
 		subnet := sdk.RandomSubnetForStoragePool(context.TODO(), sPool)

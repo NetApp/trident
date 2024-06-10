@@ -638,6 +638,7 @@ func TestGetNFSVersionFromMountOptions(t *testing.T) {
 	}{
 		// Positive tests
 		{"", defaultVersion, supportedVersions, defaultVersion, false},
+		{"", "", supportedVersions, "", false},
 		{"", defaultVersion, nil, defaultVersion, false},
 		{"vers=3", defaultVersion, supportedVersions, defaultVersion, false},
 		{"tcp, vers=3", defaultVersion, supportedVersions, defaultVersion, false},
@@ -1666,5 +1667,29 @@ func TestGetFormattedValidBool(t *testing.T) {
 				assert.Nil(t, responseErr)
 			}
 		})
+	}
+}
+
+func TestShortenString(t *testing.T) {
+	Log().Debug("Running TestShortenString...")
+
+	type TestData struct {
+		Input  string
+		Length int
+		Output string
+	}
+
+	data := []TestData{
+		{"", 0, ""},
+		{"", 1, ""},
+		{"text", 10, "text"},
+		{"text", 3, "tex"},
+		{" text ", 10, " text "},
+		{"a123456789b123456789c123456789d123456789e123456789f123456789g123456789", 63, "a123456789b123456789c123456789d123456789e123456789f123456789g12"},
+	}
+
+	for _, d := range data {
+		result := ShortenString(d.Input, d.Length)
+		assert.Equal(t, d.Output, result)
 	}
 }

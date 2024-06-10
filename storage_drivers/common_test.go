@@ -397,6 +397,44 @@ func TestCheckMinVolumeSize(t *testing.T) {
 	}
 }
 
+func TestCalculateVolumeSizeBytes(t *testing.T) {
+	ctx := context.TODO()
+
+	tests := []struct {
+		requestedSizeBytes uint64
+		snapshotReserve    int
+		expectedSizeBytes  uint64
+	}{
+		{
+			requestedSizeBytes: 1000000000,
+			snapshotReserve:    0,
+			expectedSizeBytes:  1000000000,
+		},
+		{
+			requestedSizeBytes: 1000000000,
+			snapshotReserve:    10,
+			expectedSizeBytes:  1111111111,
+		},
+		{
+			requestedSizeBytes: 1000000000,
+			snapshotReserve:    50,
+			expectedSizeBytes:  2000000000,
+		},
+		{
+			requestedSizeBytes: 1000000000,
+			snapshotReserve:    90,
+			expectedSizeBytes:  10000000000,
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("CalculateVolumeSizeBytes: %d", i), func(t *testing.T) {
+			actual := CalculateVolumeSizeBytes(ctx, "", test.requestedSizeBytes, test.snapshotReserve)
+			assert.Equal(t, test.expectedSizeBytes, actual, "incorrect volume size")
+		})
+	}
+}
+
 func TestClone(t *testing.T) {
 	type test struct {
 		source      interface{}

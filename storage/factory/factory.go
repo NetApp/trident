@@ -145,6 +145,8 @@ func GetStorageDriver(driverName, driverProtocol string) (storage.Driver, error)
 		storageDriver = &azure.NASBlockStorageDriver{}
 	case config.GCPNFSStorageDriverName:
 		storageDriver = &gcp.NFSStorageDriver{}
+	case config.GCNVNASStorageDriverName:
+		storageDriver = &gcp.NASStorageDriver{}
 	case config.FakeStorageDriverName:
 		storageDriver = &fake.StorageDriver{}
 	default:

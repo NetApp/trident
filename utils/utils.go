@@ -1116,3 +1116,11 @@ func ReplaceMultilineYAMLTag(originalYAML, tag, tagText string) string {
 
 	return originalYAML
 }
+
+// ShortenString returns the specified string, shortened by dropping characters on the right side to the given limit.
+func ShortenString(s string, maxLength int) string {
+	if len(s) > maxLength {
+		return s[:maxLength]
+	}
+	return s
+}

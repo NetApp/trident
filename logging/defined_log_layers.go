@@ -22,6 +22,7 @@ const (
 	LogLayerANFSubvolumeDriver      = LogLayer(AzureNASBlockStorageDriverName)
 	LogLayerSolidfireDriver         = LogLayer(SolidfireSANStorageDriverName)
 	LogLayerGCPNASDriver            = LogLayer(GCPNFSStorageDriverName)
+	LogLayerGCNVNASDriver           = LogLayer(GCNVNASStorageDriverName)
 	LogLayerOntapNASDriver          = LogLayer(OntapNASStorageDriverName)
 	LogLayerOntapNASFlexgroupDriver = LogLayer(OntapNASFlexGroupStorageDriverName)
 	LogLayerOntapNASQtreeDriver     = LogLayer(OntapNASQtreeStorageDriverName)

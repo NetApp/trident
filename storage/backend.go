@@ -1151,6 +1151,7 @@ type PersistentStorageBackendConfig struct {
 	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
 	AzureConfig             *drivers.AzureNASStorageDriverConfig  `json:"azure_config,omitempty"`
 	GCPConfig               *drivers.GCPNFSStorageDriverConfig    `json:"gcp_config,omitempty"`
+	GCNVConfig              *drivers.GCNVNASStorageDriverConfig   `json:"gcnv_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 
@@ -1166,6 +1167,8 @@ func (psbc *PersistentStorageBackendConfig) GetDriverConfig() (drivers.DriverCon
 		driverConfig = psbc.AzureConfig
 	case psbc.GCPConfig != nil:
 		driverConfig = psbc.GCPConfig
+	case psbc.GCNVConfig != nil:
+		driverConfig = psbc.GCNVConfig
 	case psbc.FakeStorageDriverConfig != nil:
 		driverConfig = psbc.FakeStorageDriverConfig
 	default:
@@ -1222,6 +1225,8 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.AzureConfig)
 	case p.Config.GCPConfig != nil:
 		bytes, err = json.Marshal(p.Config.GCPConfig)
+	case p.Config.GCNVConfig != nil:
+		bytes, err = json.Marshal(p.Config.GCNVConfig)
 	case p.Config.FakeStorageDriverConfig != nil:
 		bytes, err = json.Marshal(p.Config.FakeStorageDriverConfig)
 	default:
@@ -1267,7 +1272,7 @@ func (p *BackendPersistent) ExtractBackendSecrets(
 
 	// Check if user-provided credentials field is set
 	if backendSecretName, backendSecretType, err := p.GetBackendCredentials(); err != nil {
-		Log().Errorf("Could not determined if backend credentials field exist; %v", err)
+		Log().Errorf("Could not determine if backend credentials field exist; %v", err)
 		return nil, nil, usingTridentSecretName, err
 	} else if backendSecretName != "" {
 		if backendSecretName == secretName {
