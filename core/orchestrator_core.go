@@ -2589,6 +2589,21 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 		return errors.NotFoundError("volume %s was not found", originalName)
 	}
 
+	requestedSize, err := strconv.ParseInt(volumeConfig.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not determine requested size to import")
+	}
+	actualSize, err := strconv.ParseInt(extantVol.Config.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not determine actual size of the volume being imported")
+	}
+	if actualSize < requestedSize {
+		Logc(ctx).WithFields(LogFields{
+			"requestedSize": requestedSize,
+			"actualSize":    actualSize,
+		}).Error("Import request size is more than actual size.")
+		return errors.UnsupportedCapacityRangeError(errors.New("requested size is more than actual size"))
+	}
 	for volumeName, managedVol := range o.volumes {
 		if managedVol.Config.InternalName == extantVol.Config.InternalName && managedVol.BackendUUID == backendUUID {
 			return errors.FoundError("PV %s already exists for volume %s", originalName, volumeName)
