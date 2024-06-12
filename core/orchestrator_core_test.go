@@ -2785,6 +2785,8 @@ func importVolumeSetup(
 	}
 
 	volumeConfig := tu.GenerateVolumeConfig(volumeName, 50, scName, backendProtocol)
+	// Set size matching to fake driver.
+	volumeConfig.Size = fmt.Sprintf("%d", 1000000000)
 	volumeConfig.ImportOriginalName = importOriginalName
 	volumeConfig.ImportBackendUUID = backendUUID
 	return orchestrator, volumeConfig
@@ -2954,6 +2956,9 @@ func TestValidateImportVolumeSanBackend(t *testing.T) {
 	ext4RawBlockFSVolConfig.Protocol = config.Block
 	ext4RawBlockFSVolConfig.FileSystem = "ext4"
 
+	sizeGreaterVolConfig := volumeConfig.ConstructClone()
+	sizeGreaterVolConfig.Size = fmt.Sprintf("%d", 50*1024*1024*1024) // bigger size than fake driver reported size
+
 	for _, c := range []struct {
 		name         string
 		volumeConfig *storage.VolumeConfig
@@ -2966,6 +2971,12 @@ func TestValidateImportVolumeSanBackend(t *testing.T) {
 			volumeConfig: ext4RawBlockFSVolConfig,
 			valid:        false,
 			error:        "cannot create raw-block volume",
+		},
+		{
+			name:         "invalidSize",
+			volumeConfig: sizeGreaterVolConfig,
+			valid:        false,
+			error:        "requested size is more than actual size",
 		},
 	} {
 		// The test code
