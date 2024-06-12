@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net"
 	"os"
 	"reflect"
@@ -793,7 +794,7 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("could not convert volume size %s; %v", volConfig.Size, err)
 	}
 	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil {
+	if err != nil || sizeBytes > math.MaxInt64 { // the azure api requires both int64 and uint64
 		return fmt.Errorf("%v is an invalid volume size; %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {

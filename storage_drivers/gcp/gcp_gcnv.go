@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net"
 	"reflect"
 	"regexp"
@@ -264,7 +265,7 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 	// VolumeCreateTimeoutSeconds is the timeout value in seconds.
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		i, err := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64)
+		i, err := strconv.ParseInt(d.Config.VolumeCreateTimeout, 10, 64)
 		if err != nil {
 			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).Errorf(
 				"Invalid volume create timeout period. %v", err)
@@ -478,7 +479,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 
 	sdkTimeout := gcnvapi.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.SDKTimeout, 10, 64); parseErr != nil {
+		if i, parseErr := strconv.ParseInt(d.Config.SDKTimeout, 10, 64); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
 				"Invalid value for SDK timeout.")
 			return nil, parseErr
@@ -489,7 +490,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 
 	maxCacheAge := gcnvapi.DefaultMaxCacheAge
 	if config.MaxCacheAge != "" {
-		if i, parseErr := strconv.ParseUint(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
+		if i, parseErr := strconv.ParseInt(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
 				"Invalid value for max cache age.")
 			return nil, parseErr
@@ -666,13 +667,14 @@ func (d *NASStorageDriver) Create(
 		snapshotReserve = pool.InternalAttributes()[SnapshotReserve]
 	}
 	var snapshotReservePtr *int64
-	var snapshotReserveInt int64
+	var snapshotReserveInt int
 	if snapshotReserve != "" {
-		snapshotReserveInt, err = strconv.ParseInt(snapshotReserve, 10, 64)
+		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 0)
+		snapshotReserveInt = int(snapshotReserveInt64)
 		if err != nil {
 			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
 		}
-		snapshotReservePtr = &snapshotReserveInt
+		snapshotReservePtr = &snapshotReserveInt64
 	}
 
 	// Determine volume size in bytes
@@ -704,7 +706,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Get the volume size based on the snapshot reserve
-	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, int(snapshotReserveInt))
+	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 
 	_, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeWithReserveBytes, d.Config.CommonStorageDriverConfig)
 	if err != nil {
@@ -1801,6 +1803,9 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// Include the snapshot reserve in the new size
+	if volume.SnapshotReserve > math.MaxInt {
+		return fmt.Errorf("snapshot reserve too large")
+	}
 	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, int(volume.SnapshotReserve))
 
 	// If the volume is already the requested size, there's nothing to do
