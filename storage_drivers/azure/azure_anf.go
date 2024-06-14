@@ -809,7 +809,7 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("could not convert volume size %s; %v", volConfig.Size, err)
 	}
 	sizeBytes, err := strconv.ParseUint(requestedSize, 10, 64)
-	if err != nil || sizeBytes > math.MaxInt64 { // the azure api requires both int64 and uint64
+	if err != nil {
 		return fmt.Errorf("%v is an invalid volume size; %v", volConfig.Size, err)
 	}
 	if sizeBytes == 0 {
@@ -828,6 +828,10 @@ func (d *NASStorageDriver) Create(
 		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable (100 GB).")
 
 		sizeBytes = MinimumANFVolumeSizeBytes
+	}
+
+	if sizeBytes > math.MaxInt64 { // the azure api requires both int64 and uint64
+		return fmt.Errorf("%v is an invalid volume size", sizeBytes)
 	}
 
 	if _, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
