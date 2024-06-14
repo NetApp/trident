@@ -5,6 +5,7 @@ package ontap
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -31,16 +32,16 @@ import (
 var QtreeInternalIDRegex = regexp.MustCompile(`^/svm/(?P<svm>[^/]+)/flexvol/(?P<flexvol>[^/]+)/qtree/(?P<qtree>[^/]+)$`)
 
 const (
-	deletedQtreeNamePrefix                      = "deleted_"
-	maxQtreeNameLength                          = 64
-	minQtreesPerFlexvol                         = 50
-	defaultQtreesPerFlexvol                     = 200
-	maxQtreesPerFlexvol                         = 300
-	defaultPruneFlexvolsPeriodSecs              = uint64(600)   // default to 10 minutes
-	defaultResizeQuotasPeriodSecs               = uint64(60)    // default to 1 minute
-	defaultEmptyFlexvolDeferredDeletePeriodSecs = uint64(28800) // default to 8 hours
-	pruneTask                                   = "prune"
-	resizeTask                                  = "resize"
+	deletedQtreeNamePrefix                  = "deleted_"
+	maxQtreeNameLength                      = 64
+	minQtreesPerFlexvol                     = 50
+	defaultQtreesPerFlexvol                 = 200
+	maxQtreesPerFlexvol                     = 300
+	defaultPruneFlexvolsPeriod              = 10 * time.Minute // default to 10 minutes
+	defaultResizeQuotasPeriod               = 1 * time.Minute  // default to 1 minute
+	defaultEmptyFlexvolDeferredDeletePeriod = 8 * time.Hour    // default to 8 hours
+	pruneTask                               = "prune"
+	resizeTask                              = "resize"
 )
 
 // NASQtreeStorageDriver is for NFS and SMB storage provisioning of qtrees
@@ -1998,35 +1999,41 @@ func (t *HousekeepingTask) run(ctx context.Context, tick time.Time) {
 
 func NewPruneTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(context.Context)) *HousekeepingTask {
 	// Read background task timings from config file, use defaults if missing or invalid
-	pruneFlexvolsPeriodSecs := defaultPruneFlexvolsPeriodSecs
+	pruneFlexvolsPeriod := defaultPruneFlexvolsPeriod
 	if d.Config.QtreePruneFlexvolsPeriod != "" {
-		i, err := strconv.ParseUint(d.Config.QtreePruneFlexvolsPeriod, 10, 64)
+		i, err := strconv.ParseInt(d.Config.QtreePruneFlexvolsPeriod, 10, 64)
+		if i < 0 {
+			err = fmt.Errorf("negative interval")
+		}
 		if err != nil {
-			Logc(ctx).WithField("interval", d.Config.QtreePruneFlexvolsPeriod).Warnf(
-				"Invalid Flexvol pruning interval. %v", err)
+			Logc(ctx).WithField("defaultInterval", pruneFlexvolsPeriod).WithError(err).Warnf(
+				"Invalid Flexvol pruning interval, using default interval.")
 		} else {
-			pruneFlexvolsPeriodSecs = i
+			pruneFlexvolsPeriod = time.Duration(i) * time.Second
 		}
 	}
-	emptyFlexvolDeferredDeletePeriodSecs := defaultEmptyFlexvolDeferredDeletePeriodSecs
+	emptyFlexvolDeferredDeletePeriod := defaultEmptyFlexvolDeferredDeletePeriod
 	if d.Config.EmptyFlexvolDeferredDeletePeriod != "" {
-		i, err := strconv.ParseUint(d.Config.EmptyFlexvolDeferredDeletePeriod, 10, 64)
+		i, err := strconv.ParseInt(d.Config.EmptyFlexvolDeferredDeletePeriod, 10, 64)
+		if i < 0 {
+			err = fmt.Errorf("negative interval")
+		}
 		if err != nil {
-			Logc(ctx).WithField("interval", d.Config.EmptyFlexvolDeferredDeletePeriod).Warnf(
-				"Invalid Flexvol deferred delete period. %v", err)
+			Logc(ctx).WithField("defaultInterval", emptyFlexvolDeferredDeletePeriod).WithError(err).Warnf(
+				"Invalid Flexvol deferred delete period, using default interval.")
 		} else {
-			emptyFlexvolDeferredDeletePeriodSecs = i
+			emptyFlexvolDeferredDeletePeriod = time.Duration(i) * time.Second
 		}
 	}
-	d.emptyFlexvolDeferredDeletePeriod = time.Duration(emptyFlexvolDeferredDeletePeriodSecs) * time.Second
+	d.emptyFlexvolDeferredDeletePeriod = emptyFlexvolDeferredDeletePeriod
 	Logc(ctx).WithFields(LogFields{
-		"IntervalSeconds": pruneFlexvolsPeriodSecs,
-		"EmptyFlexvolTTL": emptyFlexvolDeferredDeletePeriodSecs,
+		"IntervalSeconds": pruneFlexvolsPeriod,
+		"EmptyFlexvolTTL": emptyFlexvolDeferredDeletePeriod,
 	}).Debug("Configured Flexvol pruning period.")
 
 	task := &HousekeepingTask{
 		Name:         pruneTask,
-		Ticker:       time.NewTicker(time.Duration(pruneFlexvolsPeriodSecs) * time.Second),
+		Ticker:       time.NewTicker(pruneFlexvolsPeriod),
 		InitialDelay: HousekeepingStartupDelaySecs * time.Second,
 		Done:         make(chan struct{}),
 		Tasks:        tasks,
@@ -2038,23 +2045,23 @@ func NewPruneTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(co
 
 func NewResizeTask(ctx context.Context, d *NASQtreeStorageDriver, tasks []func(context.Context)) *HousekeepingTask {
 	// Read background task timings from config file, use defaults if missing or invalid
-	resizeQuotasPeriodSecs := defaultResizeQuotasPeriodSecs
+	resizeQuotasPeriod := defaultResizeQuotasPeriod
 	if d.Config.QtreeQuotaResizePeriod != "" {
-		i, err := strconv.ParseUint(d.Config.QtreeQuotaResizePeriod, 10, 64)
+		i, err := strconv.ParseInt(d.Config.QtreeQuotaResizePeriod, 10, 64)
 		if err != nil {
 			Logc(ctx).WithField("interval", d.Config.QtreeQuotaResizePeriod).Warnf(
 				"Invalid quota resize interval. %v", err)
 		} else {
-			resizeQuotasPeriodSecs = i
+			resizeQuotasPeriod = time.Duration(i) * time.Second
 		}
 	}
 	Logc(ctx).WithFields(LogFields{
-		"IntervalSeconds": resizeQuotasPeriodSecs,
+		"IntervalSeconds": resizeQuotasPeriod,
 	}).Debug("Configured quota resize period.")
 
 	task := &HousekeepingTask{
 		Name:         resizeTask,
-		Ticker:       time.NewTicker(time.Duration(resizeQuotasPeriodSecs) * time.Second),
+		Ticker:       time.NewTicker(resizeQuotasPeriod),
 		InitialDelay: HousekeepingStartupDelaySecs * time.Second,
 		Done:         make(chan struct{}),
 		Tasks:        tasks,
@@ -2078,6 +2085,10 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 
 	if volConfig.ReadOnlyClone {
 		return fmt.Errorf("resizing is not supported on a read-only volume")
+	}
+
+	if sizeBytes > math.MaxInt64 {
+		return fmt.Errorf("invalid volume size")
 	}
 
 	// Ensure any Flexvol won't be pruned before resize is completed.

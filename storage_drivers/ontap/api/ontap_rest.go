@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -642,6 +643,10 @@ func (c RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName,
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithField("sizeInBytes", sizeBytes).Error("Invalid volume size")
+		return errors.New("invalid volume size")
+	}
 
 	volumeInfo := &models.Volume{
 		Size: utils.Ptr(int64(sizeBytes)),
@@ -2923,6 +2928,11 @@ func (c RestClient) LunSetSize(
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(newSize)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithField("sizeInBytes", sizeBytes).Error("Invalid volume size")
+		return 0, errors.New("invalid volume size")
+	}
+
 	spaceInfo := &models.LunInlineSpace{
 		Size: utils.Ptr(int64(sizeBytes)),
 	}
@@ -5740,6 +5750,10 @@ func (c RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(ns.Size)
 	sizeInBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	if sizeInBytes > math.MaxInt64 {
+		Logc(ctx).WithField("sizeInBytes", sizeInBytes).Error("Invalid volume size")
+		return "", errors.New("invalid volume size")
+	}
 
 	nsInfo := &models.NvmeNamespace{
 		Name:   &ns.Name,

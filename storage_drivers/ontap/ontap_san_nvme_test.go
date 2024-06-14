@@ -1545,7 +1545,7 @@ func TestNVMeResize_ParseNamespaceSizeError(t *testing.T) {
 
 	err := d.Resize(ctx, volConfig, 100)
 
-	assert.ErrorContains(t, err, "error while parsing namespace size")
+	assert.ErrorContains(t, err, "unsupported namespace size")
 }
 
 func TestNVMeResize_LessRequestedSizeError(t *testing.T) {

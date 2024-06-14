@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"runtime/debug"
 	"sort"
 	"strconv"
@@ -2058,6 +2059,11 @@ func (d OntapAPIREST) LunCreate(ctx context.Context, lun Lun) error {
 
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(lun.Size)
 	sizeBytes, _ := strconv.ParseUint(sizeBytesStr, 10, 64)
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithField("sizeInBytes", sizeBytes).Error("Invalid volume size")
+		return errors.New("invalid volume size")
+	}
+
 	creationErr := d.api.LunCreate(ctx, lun.Name, int64(sizeBytes), lun.OsType, lun.Qos, *lun.SpaceReserved,
 		*lun.SpaceAllocated)
 	if creationErr != nil {

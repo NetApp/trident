@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net"
 	"reflect"
 	"regexp"
@@ -281,11 +282,15 @@ func (d *NFSStorageDriver) populateConfigurationDefaults(
 	// VolumeCreateTimeoutSeconds is the timeout value in seconds.
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		i, err := strconv.ParseUint(d.Config.VolumeCreateTimeout, 10, 64)
+		i, err := strconv.ParseInt(d.Config.VolumeCreateTimeout, 10, 64)
 		if err != nil {
-			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).Errorf(
-				"Invalid volume create timeout period. %v", err)
+			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).WithError(err).Error(
+				"Invalid volume create timeout period.")
 			return err
+		} else if i < 0 {
+			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).WithError(err).Error(
+				"Unsupported volume create timeout period.")
+			return errors.UnsupportedError("unsupported volume create timeout period")
 		}
 		volumeCreateTimeout = time.Duration(i) * time.Second
 	}
@@ -695,6 +700,11 @@ func (d *NFSStorageDriver) Create(
 	sizeBytes := requestedSizeBytes
 	if storageClass == api.StorageClassHardware {
 		sizeBytes = d.applyMinimumVolumeSizeHW(requestedSizeBytes)
+	}
+
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size")
+		return errors.New("invalid volume size")
 	}
 
 	if requestedSizeBytes < sizeBytes {
@@ -1738,6 +1748,11 @@ func (d *NFSStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
+
+	if sizeBytes > math.MaxInt64 {
+		Logc(ctx).WithFields(fields).Error("Invalid volume size")
+		return errors.New("invalid volume size")
+	}
 
 	// Get the volume
 	creationToken := name
