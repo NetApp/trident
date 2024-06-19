@@ -54,12 +54,15 @@ func TestIsPerNodeIgroup(t *testing.T) {
 	tt := map[string]bool{
 		"":        false,
 		"trident": false,
-		"node-01-8095-ad1b8212-49a0-82d4-ef4f8b5b620z":          false,
-		"trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":          false,
-		"-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                 false,
-		"igroup-a-trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z": false,
-		"node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":          true,
-		"trdnt-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":            true,
+		"node-01-8095-ad1b8212-49a0-82d4-ef4f8b5b620z":                                   false,
+		"trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                   false,
+		"-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                          false,
+		".ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                          false,
+		"igroup-a-trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                          false,
+		"node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                   true,
+		"trdnt-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                     true,
+		"worker0.hjonhjc.rtp.openenglab.netapp.com-25426e2a-9f96-4f4d-90a8-72a6cdd6f645": true,
+		"worker0-hjonhjc.trdnt-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                     true,
 	}
 
 	for input, expected := range tt {
