@@ -59,7 +59,7 @@ var (
 	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
 	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>
 	// ex: Kubernetes-NodeA-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z
-	perNodeIgroupRegex = regexp.MustCompile(`^[0-9A-z\-]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
+	perNodeIgroupRegex = regexp.MustCompile(`^[0-9A-z\-.]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
 )
 
 // IsPerNodeIgroup accepts an igroup and returns whether that igroup matches the per-node igroup schema.
