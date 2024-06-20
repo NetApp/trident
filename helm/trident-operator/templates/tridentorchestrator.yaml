@@ -3,7 +3,7 @@ kind: TridentOrchestrator
 metadata:
   name: trident
 spec:
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trident.orchestratorNamespace" $ }}
   enableForceDetach: {{ include "trident.enableForceDetach" $ }}
   IPv6: {{ include "trident.IPv6" $ }}
   k8sTimeout: {{ .Values.tridentK8sTimeout }}

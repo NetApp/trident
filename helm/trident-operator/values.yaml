@@ -121,6 +121,9 @@ tridentProbePort: ""
 # windows allows Trident to be installed on Windows worker node.
 windows: false
 
+# orchestratorNamespace allows overriding the namespace of the orchestrator
+orchestratorNamespace: ""
+
 # enableForceDetach allows enabling the force detach feature.
 enableForceDetach: false
 
