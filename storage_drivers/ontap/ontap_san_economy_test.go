@@ -16,10 +16,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/mocks/mock_acp"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -1699,12 +1697,6 @@ func TestOntapSanEconomyVolumeClone_BothQosPolicy(t *testing.T) {
 func TestOntapSanEconomyVolumeImport(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
-	mockController := gomock.NewController(t)
-	mockACP := mock_acp.NewMockTridentACP(mockController)
-	acp.SetAPI(mockACP)
-	// Mock out any expected calls on the ACP API.
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSANEconomyVolumeImport).Return(nil).AnyTimes()
-
 	volConfig := &storage.VolumeConfig{
 		Size:             "1g",
 		Encryption:       "false",
@@ -1824,12 +1816,6 @@ func TestOntapSanEconomyVolumeImport(t *testing.T) {
 func TestOntapSanEconomyVolumeImport_Managed(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
-	mockController := gomock.NewController(t)
-	mockACP := mock_acp.NewMockTridentACP(mockController)
-	acp.SetAPI(mockACP)
-	// Mock out any expected calls on the ACP API.
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSANEconomyVolumeImport).Return(nil).AnyTimes()
-
 	volConfig := &storage.VolumeConfig{
 		InternalName: "my_vol/my_LUN",
 		Size:         "1g",
@@ -1930,28 +1916,8 @@ func TestOntapSanEconomyVolumeImport_Managed(t *testing.T) {
 	}
 }
 
-func TestOntapSanEconomyVolumeImport_Unsupported(t *testing.T) {
-	mockController := gomock.NewController(t)
-	mockACP := mock_acp.NewMockTridentACP(mockController)
-	acp.SetAPI(mockACP)
-	// Mock out any expected calls on the ACP API.
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSANEconomyVolumeImport).
-		Return(utilserrors.UnsupportedError("unsupported"))
-
-	volConfig := &storage.VolumeConfig{}
-	_, d := newMockOntapSanEcoDriver(t)
-	err := d.Import(ctx, volConfig, "testvol")
-	assert.Error(t, err, "Import is supported")
-}
-
 func TestOntapSanEconomyVolumeImport_UnsupportedNameLength(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
-
-	mockController := gomock.NewController(t)
-	mockACP := mock_acp.NewMockTridentACP(mockController)
-	acp.SetAPI(mockACP)
-	// Mock out any expected calls on the ACP API.
-	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureSANEconomyVolumeImport).Return(nil).AnyTimes()
 
 	volConfig := &storage.VolumeConfig{
 		InternalName: "my_vol" +

@@ -9,9 +9,8 @@ const (
 
 	// Feature constants.
 
-	FeatureSnapshotRestore        = "SnapshotRestore"
-	FeatureSnapshotMirrorUpdate   = "SnapshotMirrorUpdate"
-	FeatureReadOnlyClone          = "ReadOnlyClone"
-	FeatureInflightEncryption     = "InflightEncryption"
-	FeatureSANEconomyVolumeImport = "SANEconomyVolumeImport"
+	FeatureSnapshotRestore      = "SnapshotRestore"
+	FeatureSnapshotMirrorUpdate = "SnapshotMirrorUpdate"
+	FeatureReadOnlyClone        = "ReadOnlyClone"
+	FeatureInflightEncryption   = "InflightEncryption"
 )
