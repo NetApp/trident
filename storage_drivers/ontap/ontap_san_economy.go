@@ -12,7 +12,6 @@ import (
 
 	"github.com/RoaringBitmap/roaring"
 
-	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
@@ -843,12 +842,6 @@ func (d *SANEconomyStorageDriver) Import(
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
-
-	if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureSANEconomyVolumeImport); err != nil {
-		Logc(ctx).WithField("feature", acp.FeatureSANEconomyVolumeImport).
-			WithError(err).Error("Failed to import volume.")
-		return fmt.Errorf("feature %s requires ACP; %w", acp.FeatureSANEconomyVolumeImport, err)
-	}
 
 	pathElements := strings.Split(originalName, "/")
 	if len(pathElements) < 2 {
