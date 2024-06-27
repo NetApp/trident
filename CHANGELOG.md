@@ -4,10 +4,35 @@
 
 ## Changes since v24.02.0
 
+- **IMPORTANT**: The 'limitVolumeSize' parameter now limits qtree/LUN sizes in the ONTAP economy drivers.  Use the new 'limitVolumePoolSize'
+  parameter to control Flexvol sizes in those drivers.  (Issue [#341](https://github.com/NetApp/trident/issues/341)).
+
+**Fixes:**
+
+- Fixed Trident installation failures due to stale transactions.
+- Fixed tridentctl to ignore warning messages from Kubernetes (Issue [#892](https://github.com/NetApp/trident/issues/892)).
+- Changed Trident controller SecurityContextConstraint priority to 0 (Issue [#887](https://github.com/NetApp/trident/issues/887)).
+- ONTAP drivers now accept volume sizes below 20MiB (Issue[#885](https://github.com/NetApp/trident/issues/885)).
+- Prevent shrinking of Flexvols during resize operation for the ONTAP-SAN driver.
+- Fixed ANF volume import failure with NFS v4.1.
+
 **Enhancements:**
 
+- **Kubernetes**: Trident DaemonSet will now clean zombie mounts and residual tracking files at startup (Issue [#883](https://github.com/NetApp/trident/issues/883)).
+- **Kubernetes**: Added PVC annotation `trident.netapp.io/luksEncryption` for dynamically importing LUKS volumes (Issue [#849](https://github.com/NetApp/trident/issues/849)).
+- **Kubernetes**: Added topology awareness to ANF driver.
 - iSCSI self-healing will now initiate SCSI scans by exact LUN ID if deprecated igroups are in use (Issue [#883](https://github.com/NetApp/trident/issues/883)).
-- **Kubernetes**: Trident DaemonSet will now clean zombie mounts and residual tracking files at startup.
+- Operations such as Clone and Resize are now allowed even when the backend is in suspended mode.
+- User-configured log settings for the Trident controller can now be propagated to Trident node pods.
+- Trident defaults to use REST instead of ZAPI for ONTAP versions 9.15.1 and later.
+- Added support for custom volume names and metadata (labels) on the ONTAP storage backends.
+- Added tech preview driver for Google Cloud NetApp Volumes.
+- Enhanced the azure-netapp-files (ANF) driver to automatically enable the snapshot directory by default when the NFS mount options are set to use NFS version 4.x.
+- Added Bottlerocket support for NFS volumes.
+
+**Deprecations:**
+
+- Removed support for EOL Windows server 2019.
 
 ## v24.02.0
 
