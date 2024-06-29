@@ -357,7 +357,13 @@ func TestEnsureLUKSDeviceClosed_ClosesDevice(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
-	mockCryptsetupLuksClose(mockCommand).Return([]byte(""), nil)
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	gomock.InOrder(
+		mockCryptsetupLuksStatus(mockCommand).Return([]byte("device:  /dev/mapper/luks-test-dev"), nil),
+		mockCryptsetupIsLuks(mockCommand).Return([]byte(""), nil),
+		mockCryptsetupLuksClose(mockCommand).Return([]byte(""), nil),
+	)
 	command = mockCommand
 
 	err := EnsureLUKSDeviceClosed(ctx, devicePath)

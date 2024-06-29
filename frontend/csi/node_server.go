@@ -1287,9 +1287,18 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 				return err
 			}
 
+			publishedLUKsDMDevice := ""
+			// Get the DM device for the LUKS device
+			if publishedLUKsDMDevice, err = utils.GetDMDeviceForMapperPath(ctx, publishedLUKsDevice); err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"devicePath": publishedLUKsDevice,
+					"err":        err,
+				}).Warning("Failed to get the DM device for mapper device.")
+			}
+
 			// For the future steps LUKs device path is not really useful, either it should be
 			// DM device or empty.
-			publishInfo.DevicePath = publishedLUKsDevice
+			publishInfo.DevicePath = publishedLUKsDMDevice
 		}
 	}
 

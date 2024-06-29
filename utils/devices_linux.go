@@ -304,7 +304,16 @@ func EnsureLUKSDeviceClosed(ctx context.Context, luksDevicePath string) error {
 
 	_, err := osFs.Stat(luksDevicePath)
 	if err == nil {
-		// Need to Close the LUKS device
+		// Invoke close only on a valid LUKS device.
+		luksDevice, err := NewLUKSDeviceFromMappingPath(ctx, luksDevicePath, "")
+		if err != nil {
+			return err
+		} else {
+			if isLuks, err := luksDevice.IsLUKSFormatted(ctx); err != nil || !isLuks {
+				return fmt.Errorf("device %s is not a LUKS device", luksDevicePath)
+			}
+		}
+
 		return closeLUKSDevice(ctx, luksDevicePath)
 	} else if os.IsNotExist(err) {
 		Logc(ctx).WithFields(LogFields{

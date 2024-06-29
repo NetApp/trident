@@ -2476,3 +2476,32 @@ func SortPortals(portals []string, publishedSessions *ISCSISessions) {
 		})
 	}
 }
+
+// GetDMDeviceForMapperPath returns the DM device corresponding to mapper device.
+// Ex: for "/dev/mapper/3600a09807a415273323f576776372d4d -> ../dm-0" /dev/dm-0 is returned
+func GetDMDeviceForMapperPath(ctx context.Context, mapperPath string) (string, error) {
+	// Check if the input is a valid mapper device path
+	if !strings.HasPrefix(mapperPath, "/dev/mapper/") {
+		return "", fmt.Errorf("invalid mapper device path: %s", mapperPath)
+	}
+
+	// Use Lstat to get information about the symlink
+	info, err := os.Lstat(mapperPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to get mapper path: %s", err)
+	}
+
+	// Check if the path is a symlink
+	if info.Mode()&os.ModeSymlink == 0 {
+		return "", fmt.Errorf("path is not symlink: %s", mapperPath)
+	}
+
+	// Get the target of the symlink
+	target, err := os.Readlink(mapperPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read mapper path: %s", err)
+	}
+
+	target = strings.TrimPrefix(target, "../")
+	return "/dev/" + target, nil
+}
