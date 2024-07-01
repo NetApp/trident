@@ -39,7 +39,7 @@ const (
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "24.06.0"
+	DefaultOrchestratorVersion       = "24.10.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
@@ -252,10 +252,10 @@ var (
 	}
 
 	// DefaultAutosupportImage default image used by tridentctl and operator for asup sidecar
-	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:24.02"
+	DefaultAutosupportImage = "docker.io/netapp/trident-autosupport:24.06"
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
-	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:24.06.0"
+	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:24.10.0"
 
 	// TopologyKeyPrefixes contains well-known topology label prefixes
 	TopologyKeyPrefixes = []string{"topology.kubernetes.io"}
