@@ -1,3 +1,4 @@
+{{ if .Values.enableTridentOrchestrator }}
 apiVersion: trident.netapp.io/v1
 kind: TridentOrchestrator
 metadata:
@@ -24,8 +25,8 @@ spec:
   logLayers: {{ include "trident.logLayers" $ }}
   probePort: {{ include "trident.probePort" $ }}
   tridentImage: {{ include "trident.image" $ }}
-  {{- if .Values.imageRegistry }}
-  imageRegistry: {{ .Values.imageRegistry }}
+  {{- if .Values.orchestratorImageRegistry }}
+  imageRegistry: {{ .Values.orchestratorImageRegistry }}
   {{- end }}
   kubeletDir: {{ .Values.kubeletDir }}
   {{- with .Values.imagePullSecrets }}
@@ -68,3 +69,4 @@ spec:
   acpImage: {{ .Values.acpImage }}
   iscsiSelfHealingInterval: {{ .Values.iscsiSelfHealingInterval }}
   iscsiSelfHealingWaitTime: {{ .Values.iscsiSelfHealingWaitTime }}
+{{ end }}

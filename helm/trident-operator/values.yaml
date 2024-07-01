@@ -36,6 +36,11 @@ affinity: {}
 # imageRegistry identifies the registry for the trident-operator, trident, and other images.  Leave empty to accept the default.
 imageRegistry: ""
 
+# use to enable/disable deployment of trident orchestrator
+enableTridentOrchestrator: true
+# orchestratorImageRegistry is used in the TridentOrchestrator for imageRegistry parameter
+orchestratorImageRegistry: null
+
 # imagePullPolicy sets the image pull policy for the trident-operator.
 imagePullPolicy: IfNotPresent
 
