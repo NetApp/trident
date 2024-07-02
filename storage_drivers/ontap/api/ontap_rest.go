@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -456,7 +456,8 @@ func (c RestClient) getAllVolumePayloadRecords(
 				payload.NumRecords = utils.Ptr(int64(0))
 			}
 			payload.NumRecords = utils.Ptr(*payload.NumRecords + *resultNext.Payload.NumRecords)
-			payload.VolumeResponseInlineRecords = append(payload.VolumeResponseInlineRecords, resultNext.Payload.VolumeResponseInlineRecords...)
+			payload.VolumeResponseInlineRecords = append(payload.VolumeResponseInlineRecords,
+				resultNext.Payload.VolumeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				break
@@ -1191,7 +1192,8 @@ func (c RestClient) listAllVolumeNamesBackedBySnapshot(ctx context.Context, volu
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
 func (c RestClient) createVolumeByStyle(
-	ctx context.Context, name string, sizeInBytes int64, aggrs []string, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+	ctx context.Context, name string, sizeInBytes int64, aggrs []string,
+	spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, style string, dpVolume bool,
 ) error {
 	params := storage.NewVolumeCreateParamsWithTimeout(c.httpClient.Timeout)
@@ -1357,14 +1359,17 @@ func (c RestClient) waitForFlexgroup(ctx context.Context, volumeName string) err
 // ////////////////////////////////////////////////////////////////////////////
 
 // VolumeList returns the names of all Flexvols whose names match the supplied pattern
-func (c RestClient) VolumeList(ctx context.Context, pattern string, fields []string,
+func (c RestClient) VolumeList(
+	ctx context.Context, pattern string, fields []string,
 ) (*storage.VolumeCollectionGetOK, error) {
 	return c.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexvol, models.VolumeStateOnline,
 		fields)
 }
 
 // VolumeListByAttrs is used to find bucket volumes for nas-eco and san-eco
-func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume, fields []string) (*storage.VolumeCollectionGetOK, error) {
+func (c RestClient) VolumeListByAttrs(
+	ctx context.Context, volumeAttrs *Volume, fields []string,
+) (*storage.VolumeCollectionGetOK, error) {
 	params := storage.NewVolumeCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -1438,7 +1443,8 @@ func (c RestClient) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume, 
 // -policy default -unix-permissions ---rwxr-xr-x -space-guarantee none -snapshot-policy none -security-style unix
 // -encrypt false
 func (c RestClient) VolumeCreate(
-	ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
+	ctx context.Context,
+	name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string,
 	qosPolicyGroup QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool,
 ) error {
 	sizeBytesStr, _ := utils.ConvertSizeToBytes(size)
@@ -1602,7 +1608,8 @@ func (c RestClient) SnapshotList(ctx context.Context, volumeUUID string) (*stora
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.SnapshotResponseInlineRecords = append(result.Payload.SnapshotResponseInlineRecords, resultNext.Payload.SnapshotResponseInlineRecords...)
+			result.Payload.SnapshotResponseInlineRecords = append(result.Payload.SnapshotResponseInlineRecords,
+				resultNext.Payload.SnapshotResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -1753,7 +1760,9 @@ func (c RestClient) VolumeCloneCreateAsync(ctx context.Context, cloneName, sourc
 
 // IscsiInitiatorGetDefaultAuth returns the authorization details for the default initiator
 // equivalent to filer::> vserver iscsi security show -vserver SVM -initiator-name default
-func (c RestClient) IscsiInitiatorGetDefaultAuth(ctx context.Context, fields []string) (*san.IscsiCredentialsCollectionGetOK, error) {
+func (c RestClient) IscsiInitiatorGetDefaultAuth(
+	ctx context.Context, fields []string,
+) (*san.IscsiCredentialsCollectionGetOK, error) {
 	params := san.NewIscsiCredentialsCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -2042,7 +2051,9 @@ func (c RestClient) IgroupDestroy(ctx context.Context, initiatorGroupName string
 }
 
 // IgroupList lists initiator groups
-func (c RestClient) IgroupList(ctx context.Context, pattern string, fields []string) (*san.IgroupCollectionGetOK, error) {
+func (c RestClient) IgroupList(ctx context.Context, pattern string, fields []string) (*san.IgroupCollectionGetOK,
+	error,
+) {
 	if pattern == "" {
 		pattern = "*"
 	}
@@ -2081,7 +2092,8 @@ func (c RestClient) IgroupList(ctx context.Context, pattern string, fields []str
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.IgroupResponseInlineRecords = append(result.Payload.IgroupResponseInlineRecords, resultNext.Payload.IgroupResponseInlineRecords...)
+			result.Payload.IgroupResponseInlineRecords = append(result.Payload.IgroupResponseInlineRecords,
+				resultNext.Payload.IgroupResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -2105,7 +2117,9 @@ func (c RestClient) IgroupGet(ctx context.Context, uuid string) (*san.IgroupGetO
 }
 
 // IgroupGetByName gets the igroup with the specified name
-func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName string, fields []string) (*models.Igroup, error) {
+func (c RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName string, fields []string) (*models.Igroup,
+	error,
+) {
 	result, err := c.IgroupList(ctx, initiatorGroupName, fields)
 	if err != nil {
 		return nil, err
@@ -2388,7 +2402,8 @@ func (c RestClient) LunList(ctx context.Context, pattern string, fields []string
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.LunResponseInlineRecords = append(result.Payload.LunResponseInlineRecords, resultNext.Payload.LunResponseInlineRecords...)
+			result.Payload.LunResponseInlineRecords = append(result.Payload.LunResponseInlineRecords,
+				resultNext.Payload.LunResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -2984,7 +2999,8 @@ func (c RestClient) NetworkIPInterfacesList(ctx context.Context) (*networking.Ne
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.IPInterfaceResponseInlineRecords = append(result.Payload.IPInterfaceResponseInlineRecords, resultNext.Payload.IPInterfaceResponseInlineRecords...)
+			result.Payload.IPInterfaceResponseInlineRecords = append(result.Payload.IPInterfaceResponseInlineRecords,
+				resultNext.Payload.IPInterfaceResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -3197,7 +3213,8 @@ func (c RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkRe
 // ////////////////////////////////////////////////////////////////////////////
 
 // AggregateList returns the names of all Aggregates whose names match the supplied pattern
-func (c RestClient) AggregateList(ctx context.Context, pattern string, fields []string,
+func (c RestClient) AggregateList(
+	ctx context.Context, pattern string, fields []string,
 ) (*storage.AggregateCollectionGetOK, error) {
 	params := storage.NewAggregateCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 
@@ -3233,7 +3250,8 @@ func (c RestClient) AggregateList(ctx context.Context, pattern string, fields []
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.AggregateResponseInlineRecords = append(result.Payload.AggregateResponseInlineRecords, resultNext.Payload.AggregateResponseInlineRecords...)
+			result.Payload.AggregateResponseInlineRecords = append(result.Payload.AggregateResponseInlineRecords,
+				resultNext.Payload.AggregateResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -3298,7 +3316,8 @@ func (c RestClient) SvmList(ctx context.Context, pattern string) (*svm.SvmCollec
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.SvmResponseInlineRecords = append(result.Payload.SvmResponseInlineRecords, resultNext.Payload.SvmResponseInlineRecords...)
+			result.Payload.SvmResponseInlineRecords = append(result.Payload.SvmResponseInlineRecords,
+				resultNext.Payload.SvmResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -3351,7 +3370,9 @@ func ValidatePayloadExists(ctx context.Context, restResult interface{}) (errorOu
 }
 
 // ExtractErrorResponse returns any underlying *models.ErrorResponse from the supplied restError
-func ExtractErrorResponse(ctx context.Context, restError interface{}) (errorResponse *models.ErrorResponse, errorOut error) {
+func ExtractErrorResponse(ctx context.Context, restError interface{}) (errorResponse *models.ErrorResponse,
+	errorOut error,
+) {
 	// for an example, see s_a_n.LunMapReportingNodeCollectionGetDefault
 	defer func() {
 		if r := recover(); r != nil {
@@ -3538,7 +3559,8 @@ func (c RestClient) NodeList(ctx context.Context, pattern string) (*cluster.Node
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.NodeResponseInlineRecords = append(result.Payload.NodeResponseInlineRecords, resultNext.Payload.NodeResponseInlineRecords...)
+			result.Payload.NodeResponseInlineRecords = append(result.Payload.NodeResponseInlineRecords,
+				resultNext.Payload.NodeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -3708,7 +3730,8 @@ func (c RestClient) ExportPolicyList(ctx context.Context, pattern string) (*nas.
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.ExportPolicyResponseInlineRecords = append(result.Payload.ExportPolicyResponseInlineRecords, resultNext.Payload.ExportPolicyResponseInlineRecords...)
+			result.Payload.ExportPolicyResponseInlineRecords = append(result.Payload.ExportPolicyResponseInlineRecords,
+				resultNext.Payload.ExportPolicyResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -3800,7 +3823,8 @@ func (c RestClient) ExportRuleList(ctx context.Context, policy string) (*nas.Exp
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.ExportRuleResponseInlineRecords = append(result.Payload.ExportRuleResponseInlineRecords, resultNext.Payload.ExportRuleResponseInlineRecords...)
+			result.Payload.ExportRuleResponseInlineRecords = append(result.Payload.ExportRuleResponseInlineRecords,
+				resultNext.Payload.ExportRuleResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -4044,13 +4068,15 @@ func (c RestClient) FlexGroupSetComment(ctx context.Context, volumeName, newVolu
 }
 
 // FlexGroupGetByName gets the flexgroup with the specified name
-func (c RestClient) FlexGroupGetByName(ctx context.Context, volumeName string, fields []string,
+func (c RestClient) FlexGroupGetByName(
+	ctx context.Context, volumeName string, fields []string,
 ) (*models.Volume, error) {
 	return c.getVolumeByNameAndStyle(ctx, volumeName, models.VolumeStyleFlexgroup, fields)
 }
 
 // FlexGroupGetAll returns all relevant details for all FlexGroups whose names match the supplied prefix
-func (c RestClient) FlexGroupGetAll(ctx context.Context, pattern string, fields []string,
+func (c RestClient) FlexGroupGetAll(
+	ctx context.Context, pattern string, fields []string,
 ) (*storage.VolumeCollectionGetOK, error) {
 	return c.getAllVolumesByPatternStyleAndState(ctx, pattern, models.VolumeStyleFlexgroup, models.VolumeStateOnline,
 		fields)
@@ -4149,7 +4175,8 @@ func (c RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName stri
 
 	// Run the existence check using an exponential backoff
 	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
-		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.", statusBackoff.MaxElapsedTime.Seconds())
+		Logc(ctx).WithField("name", volumeName).Warnf("Qtree not found after %3.2f seconds.",
+			statusBackoff.MaxElapsedTime.Seconds())
 		return err
 	}
 
@@ -4171,7 +4198,8 @@ func (c RestClient) QtreeRename(ctx context.Context, path, newPath string) error
 		return fmt.Errorf("could not find id for qtree with path %v", path)
 	}
 	if qtree.Volume == nil || qtree.Volume.UUID == nil || qtree.Volume.Name == nil {
-		return fmt.Errorf("unexpected response from qtree lookup by path, missing volume information for qtree with path %v", path)
+		return fmt.Errorf("unexpected response from qtree lookup by path, missing volume information for qtree with path %v",
+			path)
 	}
 
 	params := storage.NewQtreeModifyParamsWithTimeout(c.httpClient.Timeout)
@@ -4235,7 +4263,8 @@ func (c RestClient) QtreeDestroyAsync(ctx context.Context, path string, force bo
 
 // QtreeList returns the names of all Qtrees whose names match the supplied prefix
 // equivalent to filer::> volume qtree show
-func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string, fields []string,
+func (c RestClient) QtreeList(
+	ctx context.Context, prefix, volumePrefix string, fields []string,
 ) (*storage.QtreeCollectionGetOK, error) {
 	namePattern := "*"
 	if prefix != "" {
@@ -4285,7 +4314,8 @@ func (c RestClient) QtreeList(ctx context.Context, prefix, volumePrefix string, 
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.QtreeResponseInlineRecords = append(result.Payload.QtreeResponseInlineRecords, resultNext.Payload.QtreeResponseInlineRecords...)
+			result.Payload.QtreeResponseInlineRecords = append(result.Payload.QtreeResponseInlineRecords,
+				resultNext.Payload.QtreeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -4473,7 +4503,8 @@ func (c RestClient) QtreeExists(ctx context.Context, name, volumePattern string)
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.QtreeResponseInlineRecords = append(result.Payload.QtreeResponseInlineRecords, resultNext.Payload.QtreeResponseInlineRecords...)
+			result.Payload.QtreeResponseInlineRecords = append(result.Payload.QtreeResponseInlineRecords,
+				resultNext.Payload.QtreeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -4594,7 +4625,8 @@ func (c RestClient) QtreeGetAll(ctx context.Context, volumePrefix string) (*stor
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.QtreeResponseInlineRecords = append(result.Payload.QtreeResponseInlineRecords, resultNext.Payload.QtreeResponseInlineRecords...)
+			result.Payload.QtreeResponseInlineRecords = append(result.Payload.QtreeResponseInlineRecords,
+				resultNext.Payload.QtreeResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -4620,7 +4652,8 @@ func (c RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNam
 		return fmt.Errorf("could not find id for qtree with name %v", name)
 	}
 	if qtree.Volume == nil || qtree.Volume.UUID == nil || qtree.Volume.Name == nil {
-		return fmt.Errorf("unexpected response from qtree lookup by name, missing volume information for qtree with name %v", name)
+		return fmt.Errorf("unexpected response from qtree lookup by name, missing volume information for qtree with name %v",
+			name)
 	}
 
 	params := storage.NewQtreeModifyParamsWithTimeout(c.httpClient.Timeout)
@@ -4841,7 +4874,8 @@ func (c RestClient) QuotaGetEntry(
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.QuotaRuleResponseInlineRecords = append(result.Payload.QuotaRuleResponseInlineRecords, resultNext.Payload.QuotaRuleResponseInlineRecords...)
+			result.Payload.QuotaRuleResponseInlineRecords = append(result.Payload.QuotaRuleResponseInlineRecords,
+				resultNext.Payload.QuotaRuleResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -4910,7 +4944,8 @@ func (c RestClient) QuotaEntryList(ctx context.Context, volumeName string) (*sto
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.QuotaRuleResponseInlineRecords = append(result.Payload.QuotaRuleResponseInlineRecords, resultNext.Payload.QuotaRuleResponseInlineRecords...)
+			result.Payload.QuotaRuleResponseInlineRecords = append(result.Payload.QuotaRuleResponseInlineRecords,
+				resultNext.Payload.QuotaRuleResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -5215,8 +5250,8 @@ func (c RestClient) SnapmirrorInitialize(
 func (c RestClient) SnapmirrorResync(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) error {
-	// first, find the relationship so we can then use the UUID to modify it
-	fields := []string{"destination.path", "source.path"}
+	// first, find the relationship, then we can then use the UUID to modify it
+	fields := []string{"destination.path", "source.path", "policy.type"}
 	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, c.SVMName(), remoteFlexvolName, remoteSVMName, fields)
 	if err != nil {
 		return err
@@ -5800,7 +5835,9 @@ func (c RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, new
 }
 
 // NVMeNamespaceList finds Namespaces with the specified pattern.
-func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string, fields []string) (*nvme.NvmeNamespaceCollectionGetOK, error) {
+func (c RestClient) NVMeNamespaceList(
+	ctx context.Context, pattern string, fields []string,
+) (*nvme.NvmeNamespaceCollectionGetOK, error) {
 	params := nvme.NewNvmeNamespaceCollectionGetParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -5835,7 +5872,8 @@ func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string, field
 				result.Payload.NumRecords = utils.Ptr(int64(0))
 			}
 			result.Payload.NumRecords = utils.Ptr(*result.Payload.NumRecords + *resultNext.Payload.NumRecords)
-			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords, resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
+			result.Payload.NvmeNamespaceResponseInlineRecords = append(result.Payload.NvmeNamespaceResponseInlineRecords,
+				resultNext.Payload.NvmeNamespaceResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -5849,7 +5887,9 @@ func (c RestClient) NVMeNamespaceList(ctx context.Context, pattern string, field
 }
 
 // NVMeNamespaceGetByName gets the Namespace with the specified name.
-func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string, fields []string) (*models.NvmeNamespace, error) {
+func (c RestClient) NVMeNamespaceGetByName(ctx context.Context, name string, fields []string) (*models.NvmeNamespace,
+	error,
+) {
 	result, err := c.NVMeNamespaceList(ctx, name, fields)
 	if err != nil {
 		return nil, err
@@ -5964,7 +6004,9 @@ func (c RestClient) NVMeNamespaceCount(ctx context.Context, subsysUUID string) (
 
 // Subsystem operations
 // NVMeSubsystemList returns a list of subsystems seen by the host
-func (c RestClient) NVMeSubsystemList(ctx context.Context, pattern string, fields []string) (*nvme.NvmeSubsystemCollectionGetOK, error) {
+func (c RestClient) NVMeSubsystemList(
+	ctx context.Context, pattern string, fields []string,
+) (*nvme.NvmeSubsystemCollectionGetOK, error) {
 	if pattern == "" {
 		pattern = "*"
 	}
@@ -6003,7 +6045,8 @@ func (c RestClient) NVMeSubsystemList(ctx context.Context, pattern string, field
 			}
 
 			*result.Payload.NumRecords += *resultNext.Payload.NumRecords
-			result.Payload.NvmeSubsystemResponseInlineRecords = append(result.Payload.NvmeSubsystemResponseInlineRecords, resultNext.Payload.NvmeSubsystemResponseInlineRecords...)
+			result.Payload.NvmeSubsystemResponseInlineRecords = append(result.Payload.NvmeSubsystemResponseInlineRecords,
+				resultNext.Payload.NvmeSubsystemResponseInlineRecords...)
 
 			if !HasNextLink(resultNext.Payload) {
 				done = true
@@ -6017,7 +6060,9 @@ func (c RestClient) NVMeSubsystemList(ctx context.Context, pattern string, field
 }
 
 // NVMeSubsystemGetByName gets the subsystem with the specified name
-func (c RestClient) NVMeSubsystemGetByName(ctx context.Context, subsystemName string, fields []string) (*models.NvmeSubsystem, error) {
+func (c RestClient) NVMeSubsystemGetByName(
+	ctx context.Context, subsystemName string, fields []string,
+) (*models.NvmeSubsystem, error) {
 	result, err := c.NVMeSubsystemList(ctx, subsystemName, fields)
 	if err != nil {
 		return nil, err
