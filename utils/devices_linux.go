@@ -153,7 +153,7 @@ func (d *LUKSDevice) luksFormat(ctx context.Context, luksPassphrase string) erro
 		Logc(ctx).WithFields(LogFields{
 			"device": device,
 			"output": string(output),
-		}).WithError(err).Debug("Failed to format LUKS device.")
+		}).WithError(err).Error("Failed to format LUKS device.")
 		return fmt.Errorf("could not format LUKS device; %w", err)
 	}
 
@@ -460,11 +460,15 @@ func (d *LUKSDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUK
 	// Rely on Linux's ability to reference already-open files with /dev/fd/*
 	oldKeyFilename := fmt.Sprintf("/dev/fd/%d", fd)
 
-	_, err = command.ExecuteWithTimeoutAndInput(
+	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksChangeKey", "-d",
 		oldKeyFilename, d.RawDevicePath(),
 	)
 	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"device": d.RawDevicePath(),
+			"output": string(output),
+		}).WithError(err).Error("Error changing LUKS passphrase.")
 		return fmt.Errorf("could not change LUKS passphrase; %v", err)
 	}
 	Logc(ctx).WithFields(LogFields{
