@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"time"
 
@@ -78,17 +79,22 @@ type Client struct {
 }
 
 func createGCNVClient(ctx context.Context, config *ClientConfig) (*netapp.Client, error) {
-	if config.APIKey != nil {
+	// Check if the config is empty
+	if reflect.ValueOf(*config.APIKey).IsZero() {
+		credentials, err := google.FindDefaultCredentials(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return netapp.NewClient(ctx, option.WithCredentials(credentials))
+	} else if config.APIKey != nil {
 		keyBytes, jsonErr := json.Marshal(config.APIKey)
 		if jsonErr != nil {
 			return nil, jsonErr
 		}
-
 		creds, credsErr := google.CredentialsFromJSON(ctx, keyBytes, netapp.DefaultAuthScopes()...)
 		if credsErr != nil {
 			return nil, credsErr
 		}
-
 		return netapp.NewClient(ctx, option.WithCredentials(creds))
 	} else {
 		return nil, errors.New("apiKey in config must be specified")

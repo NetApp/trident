@@ -734,6 +734,7 @@ type GCNVNASStorageDriverPool struct {
 	StoragePools                       []string            `json:"storagePools"`
 	Network                            string              `json:"network"`
 	SupportedTopologies                []map[string]string `json:"supportedTopologies"`
+	NASType                            string              `json:"NASType"`
 	GCNVNASStorageDriverConfigDefaults `json:"defaults"`
 }
 
@@ -818,10 +819,6 @@ func (d GCNVNASStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() [
 func (d GCNVNASStorageDriverConfig) SpecOnlyValidation() error {
 	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
-	}
-
-	if !d.HasCredentials() {
-		return fmt.Errorf("input is missing the credentials field")
 	}
 
 	return nil

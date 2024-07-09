@@ -28,20 +28,6 @@ import (
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
-const (
-	ProjectNumber     = "123456"
-	PrivateKeyId      = "12345678987654321"
-	PrivateKey        = "-----BEGIN PRIVATE KEY-----AAAABBBCCCCDDDDDDEEEEEEFFFF----END PRIVATE KEY-----"
-	ClientEmail       = "random@random.com"
-	ClientID          = "98765432123456789"
-	ClientX509CertURL = "https://random.com/x509Cert"
-)
-
-var (
-	ctx             = context.Background
-	debugTraceFlags = map[string]bool{"method": true, "api": true, "discovery": true}
-)
-
 func TestMain(m *testing.M) {
 	// Disable any standard log output
 	InitLogOutput(io.Discard)
@@ -59,7 +45,7 @@ func newTestGCPDriver(client api.GCPClient) *NFSStorageDriver {
 	APIKey := drivers.GCPPrivateKey{
 		Type:                    "random_account",
 		ProjectID:               "random_project",
-		PrivateKeyID:            PrivateKeyId,
+		PrivateKeyID:            PrivateKeyID,
 		PrivateKey:              PrivateKey,
 		ClientEmail:             ClientEmail,
 		ClientID:                ClientID,
@@ -186,7 +172,7 @@ func TestGCPStorageDriverConfigString(t *testing.T) {
 				"GCP driver does not redact APIKey")
 			assert.NotContains(t, toString(GCPDriver), ProjectNumber,
 				"GCP driver contains project number")
-			assert.NotContains(t, toString(GCPDriver), PrivateKeyId,
+			assert.NotContains(t, toString(GCPDriver), PrivateKeyID,
 				"GCP driver contains Private Key Id")
 			assert.NotContains(t, toString(GCPDriver), PrivateKey,
 				"GCP driver contains Private Key")
@@ -702,7 +688,7 @@ func TestGetPoolsForCreate(t *testing.T) {
 			gcpClient, d := newMockGCPDriver(t)
 			tt.mockFunc(gcpClient)
 
-			gPool, err := d.GetPoolsForCreate(ctx(), sPool, api.PoolServiceLevel1, tt.volSize)
+			gPool, err := d.GetPoolsForCreate(ctx, sPool, api.PoolServiceLevel1, tt.volSize)
 			tt.wantErr(t, err, "Unexpected error")
 			if err == nil && tt.Name != "GetPoolsNoMatch" && tt.Name != "GetPoolsForPO" {
 				assert.NotNil(t, gPool, "gPool is empty")
@@ -741,7 +727,7 @@ func TestInitialize(t *testing.T) {
 	gcpClient.EXPECT().GetVolumes(gomock.Any()).Return(nil, nil)
 	gcpClient.EXPECT().GetServiceLevels(gomock.Any()).Return(nil, nil)
 
-	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
 	assert.NoError(t, err, "Not initialized")
 	assert.True(t, d.initialized, "Driver not initialized")
 }
@@ -787,7 +773,7 @@ func TestInitialize_MultipleVPools(t *testing.T) {
 	gcpClient.EXPECT().GetVolumes(gomock.Any()).Return(nil, nil)
 	gcpClient.EXPECT().GetServiceLevels(gomock.Any()).Return(nil, nil)
 
-	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
 	assert.NoError(t, err, "Not initialized")
 	assert.True(t, d.initialized, "Driver not initialized")
 	assert.NotEmpty(t, d.Config.BackendPools, "backend pools were empty")
@@ -817,7 +803,7 @@ func TestInitialize_ValidateError(t *testing.T) {
 
 	d := newTestGCPDriver(nil)
 
-	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
 	assert.Error(t, err, "Initialized")
 	assert.False(t, d.initialized, "Driver initialized")
 }
@@ -846,7 +832,7 @@ func TestInitialize_InvalidConfigJSON(t *testing.T) {
 
 	d := newTestGCPDriver(nil)
 
-	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
 	assert.ErrorContains(t, err, "could not decode JSON configuration", "Valid json")
 	assert.False(t, d.initialized, "Driver initialized")
 }
@@ -879,7 +865,7 @@ func TestInitialize_InvalidSecrets(t *testing.T) {
 
 	d := newTestGCPDriver(nil)
 
-	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, secrets, "abcd")
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, secrets, "abcd")
 	assert.ErrorContains(t, err, "could not inject backend secret", "Valid secret")
 	assert.False(t, d.Initialized(), "Driver initialized")
 }
@@ -908,14 +894,14 @@ func TestInitialize_InvalidVolumeCreateTimeout(t *testing.T) {
 
 	d := newTestGCPDriver(nil)
 
-	err := d.Initialize(ctx(), tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
+	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, map[string]string{}, "abcd")
 	assert.ErrorContains(t, err, "strconv.ParseUint", "Valid volume create timeout")
 	assert.False(t, d.initialized, "Driver initialized")
 }
 
 func TestTerminate(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	d.Terminate(ctx(), "test")
+	d.Terminate(ctx, "test")
 	assert.False(t, d.Initialized(), "Driver not terminated")
 }
 
@@ -956,8 +942,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, errors.New("failed to get volumes"))
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, errors.New("failed to get volumes"))
 			},
 			wantErr: assert.Error,
 			errStr:  "failed to get volumes",
@@ -968,8 +954,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(invalidVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "API version",
@@ -980,8 +966,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, invalidVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "SDE version",
@@ -992,8 +978,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "_a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "storage prefix",
@@ -1004,8 +990,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid storage class in pool",
@@ -1016,8 +1002,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid service level in pool",
@@ -1028,8 +1014,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "storagePools not expected for hardware type storage class pool",
@@ -1040,8 +1026,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid address/CIDR for exportRule in pool",
@@ -1052,8 +1038,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid value for snapshotDir in pool",
@@ -1064,8 +1050,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid value for snapshotReserve in pool",
@@ -1076,8 +1062,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid value for snapshotReserve in pool",
@@ -1088,8 +1074,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid value for default volume size in pool",
@@ -1100,8 +1086,8 @@ func TestValidate(t *testing.T) {
 			prefix:    "a",
 			mockFunc: func(client *mockGCPClient.MockGCPClient) {
 				client.EXPECT().GetVersion(gomock.Any()).Return(apiVersion, sdeVersion, nil)
-				client.EXPECT().GetServiceLevels(ctx()).Return(nil, nil)
-				client.EXPECT().GetVolumes(ctx()).Return(nil, nil)
+				client.EXPECT().GetServiceLevels(ctx).Return(nil, nil)
+				client.EXPECT().GetVolumes(ctx).Return(nil, nil)
 			},
 			wantErr: assert.Error,
 			errStr:  "invalid value for label in pool",
@@ -1112,7 +1098,7 @@ func TestValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gcpClient, d := newMockGCPDriver(t)
 			tt.mockFunc(gcpClient)
-			d.populateConfigurationDefaults(ctx(), &d.Config)
+			d.populateConfigurationDefaults(ctx, &d.Config)
 			d.Config.APIRegion = tt.apiRegion
 			d.Config.StoragePrefix = &tt.prefix
 			d.Config.StoragePools = []string{}
@@ -1158,9 +1144,9 @@ func TestValidate(t *testing.T) {
 			}
 
 			// Initialize pools with above configs
-			d.initializeStoragePools(ctx())
+			d.initializeStoragePools(ctx)
 
-			err := d.validate(ctx())
+			err := d.validate(ctx)
 			tt.wantErr(t, err, "Validate did not fail")
 			assert.ErrorContains(t, err, tt.errStr, "Unexpected error")
 		})
@@ -1170,7 +1156,7 @@ func TestValidate(t *testing.T) {
 func TestCreate_InvalidVolumeName(t *testing.T) {
 	volConfig := &storage.VolumeConfig{InternalName: "_invalid_vol_name"}
 	d := newTestGCPDriver(nil)
-	err := d.Create(ctx(), volConfig, nil, nil)
+	err := d.Create(ctx, volConfig, nil, nil)
 
 	assert.Error(t, err, "Valid volume name")
 }
@@ -1178,7 +1164,7 @@ func TestCreate_InvalidVolumeName(t *testing.T) {
 func TestCreate_VPoolNotSpecified(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	d := newTestGCPDriver(nil)
-	err := d.Create(ctx(), volConfig, nil, nil)
+	err := d.Create(ctx, volConfig, nil, nil)
 
 	assert.ErrorContains(t, err, "pool not specified", "Valid vpool")
 }
@@ -1187,7 +1173,7 @@ func TestCreate_VPoolNotPresent(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	vPool := storage.NewStoragePool(nil, "vpool-name2")
 	d := newTestGCPDriver(nil)
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 
 	assert.ErrorContains(t, err, "pool vpool-name2 does not exist", "VPool present")
 }
@@ -1198,29 +1184,29 @@ func TestCreate_VolumeExistsErrors(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Volume exists API error
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, nil, errors.New("API call failed"))
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "API call failed", "Volume exists API call succeeded")
 
 	// Volume exists in other region error
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, extantVol, nil)
-	err = d.Create(ctx(), volConfig, vPool, nil)
+	err = d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "already exists in region", "Volume doesn't exist")
 
 	// Volume is in Creating state error
 	extantVol.Region = d.Config.APIRegion
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, extantVol, nil)
-	err = d.Create(ctx(), volConfig, vPool, nil)
+	err = d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "volume state is still creating", "Volume doesn't exist")
 
 	// Volume exists error
 	extantVol.LifeCycleState = api.StateAvailable
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, extantVol, nil)
-	err = d.Create(ctx(), volConfig, vPool, nil)
+	err = d.Create(ctx, volConfig, vPool, nil)
 	assert.True(t, drivers.IsVolumeExistsError(err), "Volume doesn't exist")
 }
 
@@ -1228,27 +1214,27 @@ func TestCreate_VolumeSizeErrors(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil).AnyTimes()
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil).AnyTimes()
 
 	// Convert size to bytes error
 	volConfig.Size = "1i"
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "could not convert volume size", "Valid volume size")
 
 	// Invalid volume size
 	volConfig.Size = "-1Gi"
-	err = d.Create(ctx(), volConfig, vPool, nil)
+	err = d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "an invalid volume size", "Valid volume size")
 
 	// Minimum volume size error
 	volConfig.Size = "0"
-	err = d.Create(ctx(), volConfig, vPool, nil)
+	err = d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "the minimum volume size is", "Valid volume size")
 
 	// Config volume size limit error
 	volConfig.Size = "1Gi"
 	d.Config.CommonStorageDriverConfig.LimitVolumeSize = "1Mi"
-	err = d.Create(ctx(), volConfig, vPool, nil)
+	err = d.Create(ctx, volConfig, vPool, nil)
 	isErr, _ := errors.HasUnsupportedCapacityRangeError(err)
 	assert.True(t, isErr, "Valid volume size")
 }
@@ -1275,11 +1261,11 @@ func TestCreate_InvalidServiceLevel(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
 
 	d.pools[vPool.Name()].InternalAttributes()[StorageClass] = api.StorageClassHardware
 	d.pools[vPool.Name()].InternalAttributes()[ServiceLevel] = api.PoolServiceLevel1
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "invalid service level", "Valid service level")
 }
 
@@ -1287,10 +1273,10 @@ func TestCreate_InvalidSnapshotDir(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
 
 	d.pools[vPool.Name()].InternalAttributes()[SnapshotDir] = "test"
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "invalid value for snapshotDir", "Valid snapshot dir")
 }
 
@@ -1298,10 +1284,10 @@ func TestCreate_InvalidSnapshotReserve(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
 
 	d.pools[vPool.Name()].InternalAttributes()[SnapshotReserve] = "test"
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "invalid value for snapshotReserve", "Valid snapshot reserve")
 }
 
@@ -1309,12 +1295,12 @@ func TestCreate_InvalidZone(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
 
 	d.pools[vPool.Name()].InternalAttributes()[Zone] = ""
 	d.pools[vPool.Name()].InternalAttributes()[StorageClass] = api.StorageClassSoftware
 	d.pools[vPool.Name()].InternalAttributes()[ServiceLevel] = api.PoolServiceLevel1
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "software volumes require zone", "Valid zone value")
 }
 
@@ -1322,7 +1308,7 @@ func TestCreate_InvalidPoolLabels(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
 
 	d.Config.Labels = map[string]string{
 		"key1": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
@@ -1332,7 +1318,7 @@ func TestCreate_InvalidPoolLabels(t *testing.T) {
 
 	d.pools[vPool.Name()].InternalAttributes()[SnapshotReserve] = "10"
 	d.pools[vPool.Name()].Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "exceeds the character limit", "Valid pool labels")
 }
 
@@ -1340,10 +1326,10 @@ func TestCreate_POVolumeError(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().CreateVolume(ctx(), gomock.Any()).Return(errors.New("volume creation failed"))
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().CreateVolume(ctx, gomock.Any()).Return(errors.New("volume creation failed"))
 
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "volume creation failed", "Volume created")
 }
 
@@ -1351,12 +1337,12 @@ func TestCreate_GetPOVolumeByTokenError(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().CreateVolume(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().CreateVolume(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).
 		Return(nil, errors.New("failed to get volume"))
 
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "failed to get volume", "Volume created")
 }
 
@@ -1365,13 +1351,13 @@ func TestCreate_POVolume(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().CreateVolume(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().CreateVolume(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", nil)
 
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.NoError(t, err, "failed to get volume", "Volume creation failed")
 	assert.Equal(t, api.StorageClassHardware, volConfig.CVSStorageClass)
 	assert.Equal(t, "0755", volConfig.UnixPermissions)
@@ -1390,10 +1376,10 @@ func TestCreate_SOVolumePoolsError(t *testing.T) {
 	d.pools[vPool.Name()].InternalAttributes()[StorageClass] = api.StorageClassSoftware
 	d.pools[vPool.Name()].InternalAttributes()[ServiceLevel] = api.PoolServiceLevel1
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().GetPools(ctx()).Return(nil, errors.New("failed to get pools"))
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().GetPools(ctx).Return(nil, errors.New("failed to get pools"))
 
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "failed to get pools", "Volume created")
 }
 
@@ -1407,11 +1393,11 @@ func TestCreate_SOVolumeError(t *testing.T) {
 	d.pools[vPool.Name()].InternalAttributes()[StorageClass] = api.StorageClassSoftware
 	d.pools[vPool.Name()].InternalAttributes()[ServiceLevel] = api.PoolServiceLevel1
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().GetPools(ctx()).Return(getDummyGCPPools(), nil)
-	gcpClient.EXPECT().CreateVolume(ctx(), gomock.Any()).Return(errors.New("volume create failed"))
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().GetPools(ctx).Return(getDummyGCPPools(), nil)
+	gcpClient.EXPECT().CreateVolume(ctx, gomock.Any()).Return(errors.New("volume create failed"))
 
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.ErrorContains(t, err, "volume create failed", "Volume created")
 }
 
@@ -1426,14 +1412,14 @@ func TestCreate_SOVolumeCreatingError(t *testing.T) {
 	d.pools[vPool.Name()].InternalAttributes()[StorageClass] = api.StorageClassSoftware
 	d.pools[vPool.Name()].InternalAttributes()[ServiceLevel] = api.PoolServiceLevel1
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().GetPools(ctx()).Return(getDummyGCPPools(), nil)
-	gcpClient.EXPECT().CreateVolume(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().GetPools(ctx).Return(getDummyGCPPools(), nil)
+	gcpClient.EXPECT().CreateVolume(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(api.StateCreating, errors.New("failed"))
 
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.True(t, errors.IsVolumeCreatingError(err), "Volume created")
 }
 
@@ -1451,14 +1437,14 @@ func TestCreate_SOVolume(t *testing.T) {
 	// Setting service level of "abc1" pool to zone redundant for covering RegionalHA condition
 	(*pools)[0].ServiceLevel = api.PoolServiceLevel2
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().GetPools(ctx()).Return(pools, nil)
-	gcpClient.EXPECT().CreateVolume(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().GetPools(ctx).Return(pools, nil)
+	gcpClient.EXPECT().CreateVolume(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", nil)
 
-	err := d.Create(ctx(), volConfig, vPool, nil)
+	err := d.Create(ctx, volConfig, vPool, nil)
 	assert.NoError(t, err, "Volume creation failed")
 	assert.Equal(t, api.StorageClassSoftware, volConfig.CVSStorageClass)
 	assert.Equal(t, "0755", volConfig.UnixPermissions)
@@ -1475,7 +1461,7 @@ func TestCreateClone_InvalidName(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	_, d := newMockGCPDriver(t)
 
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "volume name '' is not allowed", "Valid clone name")
 }
 
@@ -1486,27 +1472,27 @@ func TestCreateClone_VolumeExistsErrors(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Volume exists API call error
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, extantVol, errors.New("API call failed"))
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "API call failed", "Volume exists API call succeeded")
 
 	// Volume creating/restoring error
 	extantVol.LifeCycleState = api.StateRestoring
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, extantVol, nil)
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, extantVol, nil)
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.True(t, errors.IsVolumeCreatingError(err), "Volume doesn't exist")
 
 	// Volume available/updating error
 	extantVol.LifeCycleState = api.StateUpdating
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, extantVol, nil)
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, extantVol, nil)
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.True(t, drivers.IsVolumeExistsError(err), "Volume doesn't exist")
 
 	// Volume unexpected state error
 	extantVol.LifeCycleState = api.StateError
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, extantVol, nil)
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, extantVol, nil)
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "volume state", "Volume doesn't exist")
 }
 
@@ -1515,11 +1501,11 @@ func TestCreateClone_GetVolumeByTokenError(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).
 		Return(nil, errors.New("failed to get volume"))
 
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -1529,10 +1515,10 @@ func TestCreateClone_DifferentRegionError(t *testing.T) {
 	volConfig, vPool := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(srcVol, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(srcVol, nil)
 
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "already exists in region", "Volume doesn't exist")
 }
 
@@ -1542,11 +1528,11 @@ func TestCreateClone_GetVolumeByIDError(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 	srcVol := &api.Volume{Region: d.Config.Region}
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(srcVol, nil)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(srcVol, errors.New("failed to get volume"))
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(srcVol, nil)
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(srcVol, errors.New("failed to get volume"))
 
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -1557,37 +1543,37 @@ func TestCreateClone_NoSnapshot_CreateSnapshotErrors(t *testing.T) {
 	srcVol := &api.Volume{Region: d.Config.Region, Name: "vol-name"}
 	srcSnap := &api.Snapshot{Name: "snap-name"}
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil).Times(4)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(srcVol, nil).Times(4)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(srcVol, nil).Times(4)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil).Times(4)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(srcVol, nil).Times(4)
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(srcVol, nil).Times(4)
 
 	// Create snapshot API failed
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(errors.New("failed to create snapshot"))
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(errors.New("failed to create snapshot"))
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "failed to create snapshot", "Snapshot created")
 
 	// Get snapshot for volume failed
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("failed to get snapshot"))
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "failed to get snapshot", "Snapshot created")
 
 	// Wait for snapshot state failed
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(srcSnap, nil)
-	gcpClient.EXPECT().WaitForSnapshotState(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(srcSnap, nil)
+	gcpClient.EXPECT().WaitForSnapshotState(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(errors.New("failed to get snapshot state"))
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "failed to get snapshot state", "Snapshot created")
 
 	// Empty Zone value for software source volume
 	srcVol.Zone = ""
 	srcVol.StorageClass = api.StorageClassSoftware
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(srcSnap, nil)
-	gcpClient.EXPECT().WaitForSnapshotState(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(srcSnap, nil)
+	gcpClient.EXPECT().WaitForSnapshotState(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "software volumes require zone", "Snapshot created")
 }
 
@@ -1598,20 +1584,20 @@ func TestCreateClone_ExistingSnapshot_GetSnapshotErrors(t *testing.T) {
 	srcVol := &api.Volume{Region: d.Config.Region, Name: "vol-name"}
 	srcSnap := &api.Snapshot{Name: "snap-name"}
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil).Times(2)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(srcVol, nil).Times(2)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(srcVol, nil).Times(2)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil).Times(2)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(srcVol, nil).Times(2)
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(srcVol, nil).Times(2)
 
 	// Get snapshot from volume failed
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("failed to get snapshot"))
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "failed to get snapshot", "Snapshot created")
 
 	// Existing Snapshot state error
 	srcSnap.LifeCycleState = api.StateError
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(srcSnap, nil)
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(srcSnap, nil)
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "source snapshot state", "Snapshot created")
 }
 
@@ -1623,9 +1609,9 @@ func TestCreateClone_UnsetPool(t *testing.T) {
 	srcVol := &api.Volume{Region: d.Config.Region, Name: "vol-name"}
 	srcSnap := &api.Snapshot{Name: "snap-name"}
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil).Times(2)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(srcVol, nil).Times(2)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(srcVol, nil).Times(2)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil).Times(2)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(srcVol, nil).Times(2)
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(srcVol, nil).Times(2)
 
 	// Unset pool label error
 	vPool := storage.NewStoragePool(nil, "")
@@ -1635,17 +1621,17 @@ func TestCreateClone_UnsetPool(t *testing.T) {
 		"key2": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 		"key3": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 	}
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(srcSnap, nil)
-	err := d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(srcSnap, nil)
+	err := d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "exceeds the character limit", "Valid pool label")
 
 	// Clone create failed
 	d.Config.Labels = map[string]string{"key1": "1234"}
 	cloneVolConfig.ServiceLevel = api.PoolServiceLevel2
 	volConfig.ServiceLevel = api.PoolServiceLevel2
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(srcSnap, nil)
-	gcpClient.EXPECT().CreateVolume(ctx(), gomock.Any()).Return(errors.New("clone create failed"))
-	err = d.CreateClone(ctx(), volConfig, cloneVolConfig, vPool)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(srcSnap, nil)
+	gcpClient.EXPECT().CreateVolume(ctx, gomock.Any()).Return(errors.New("clone create failed"))
+	err = d.CreateClone(ctx, volConfig, cloneVolConfig, vPool)
 	assert.ErrorContains(t, err, "clone create failed", "Clone created")
 }
 
@@ -1653,10 +1639,10 @@ func TestImport_GetVolumeByTokenError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).
 		Return(nil, errors.New("failed to get volume"))
 
-	err := d.Import(ctx(), volConfig, "test")
+	err := d.Import(ctx, volConfig, "test")
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -1665,10 +1651,10 @@ func TestImport_NotManagedVolume(t *testing.T) {
 	volume := &api.Volume{QuotaInBytes: 1000, PoolID: "abc1", VolumeID: "xyz", StorageClass: api.StorageClassSoftware}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
 	volConfig.ImportNotManaged = true
 
-	err := d.Import(ctx(), volConfig, "test")
+	err := d.Import(ctx, volConfig, "test")
 	assert.NoError(t, err, "Volume import failed")
 }
 
@@ -1679,10 +1665,10 @@ func TestImport_NotManagedZoneRedundantVolume(t *testing.T) {
 
 	// Zone Redundant Volume
 	volume.RegionalHA = true
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
 	volConfig.ImportNotManaged = true
 
-	err := d.Import(ctx(), volConfig, "test")
+	err := d.Import(ctx, volConfig, "test")
 	assert.NoError(t, err, "Volume import failed")
 }
 
@@ -1711,44 +1697,44 @@ func TestImport_ManagedVolume(t *testing.T) {
 	}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil).Times(4)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil).Times(4)
 
 	// Relabel API error
-	gcpClient.EXPECT().RelabelVolume(ctx(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().RelabelVolume(ctx, gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("relabel failed"))
-	err := d.Import(ctx(), volConfig, "test")
+	err := d.Import(ctx, volConfig, "test")
 	assert.ErrorContains(t, err, "relabel failed", "Volume imported")
 
 	// Wait for volume state error
-	gcpClient.EXPECT().RelabelVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().RelabelVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", errors.New("failed to get volume state"))
-	err = d.Import(ctx(), volConfig, "test")
+	err = d.Import(ctx, volConfig, "test")
 	assert.ErrorContains(t, err, "failed to get volume state", "Volume imported")
 
 	// Change volume unix permission error
-	gcpClient.EXPECT().RelabelVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().RelabelVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", nil)
-	gcpClient.EXPECT().ChangeVolumeUnixPermissions(ctx(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().ChangeVolumeUnixPermissions(ctx, gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("failed to change unix permissions"))
-	err = d.Import(ctx(), volConfig, "test")
+	err = d.Import(ctx, volConfig, "test")
 	assert.ErrorContains(t, err, "failed to change unix permissions", "Volume imported")
 
 	// Wait for volume state error again
-	gcpClient.EXPECT().RelabelVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().RelabelVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", nil)
-	gcpClient.EXPECT().ChangeVolumeUnixPermissions(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().ChangeVolumeUnixPermissions(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", errors.New("failed to get volume state"))
-	err = d.Import(ctx(), volConfig, "test")
+	err = d.Import(ctx, volConfig, "test")
 	assert.ErrorContains(t, err, "failed to get volume state", "Volume imported")
 }
 
 func TestRename(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	err := d.Rename(ctx(), "oldName", "newName")
+	err := d.Rename(ctx, "oldName", "newName")
 	assert.NoError(t, err, "Volume rename failed")
 }
 
@@ -1757,19 +1743,19 @@ func TestWaitForVolumeCreate_NonTransitionalState(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Delete volume error log
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(api.StateError, errors.New("failed to get transitional state"))
-	gcpClient.EXPECT().DeleteVolume(ctx(), gomock.Any()).Return(errors.New("delete volume failed"))
-	err := d.waitForVolumeCreate(ctx(), volume, "vol-name")
+	gcpClient.EXPECT().DeleteVolume(ctx, gomock.Any()).Return(errors.New("delete volume failed"))
+	err := d.waitForVolumeCreate(ctx, volume, "vol-name")
 	assert.ErrorContains(t, err, "failed to get transitional state", "Volume deleted")
 
 	// Wait for volume state failure after deleting the volume
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(api.StateError, errors.New("failed to get transitional state"))
-	gcpClient.EXPECT().DeleteVolume(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().DeleteVolume(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(api.StateError, errors.New("failed again"))
-	err = d.waitForVolumeCreate(ctx(), volume, "vol-name")
+	err = d.waitForVolumeCreate(ctx, volume, "vol-name")
 	assert.ErrorContains(t, err, "failed to get transitional state", "Volume deleted")
 }
 
@@ -1778,22 +1764,22 @@ func TestDestroy_VolumeExistsErrors(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Volume exists by token API failure
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(false, nil, errors.New("api failed"))
-	err := d.Destroy(ctx(), volConfig)
+	err := d.Destroy(ctx, volConfig)
 	assert.ErrorContains(t, err, "api failed", "Volume destroyed")
 
 	// Volume doesn't exists
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	err = d.Destroy(ctx(), volConfig)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	err = d.Destroy(ctx, volConfig)
 	assert.NoError(t, err, "Volume exists")
 
 	// Wait for volume state failure for deleting volume
 	extantVol := &api.Volume{LifeCycleState: api.StateDeleting}
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, extantVol, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, extantVol, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", errors.New("failed to get volume state"))
-	err = d.Destroy(ctx(), volConfig)
+	err = d.Destroy(ctx, volConfig)
 	assert.ErrorContains(t, err, "failed to get volume state", "Volume destroyed")
 }
 
@@ -1802,27 +1788,27 @@ func TestDestroy(t *testing.T) {
 	extantVol := &api.Volume{LifeCycleState: api.StateAvailable}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, extantVol, nil).Times(3)
 
 	// Get volume by token API error
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).
 		Return(nil, errors.New("failed to get volume"))
-	err := d.Destroy(ctx(), volConfig)
+	err := d.Destroy(ctx, volConfig)
 	assert.ErrorContains(t, err, "failed to get volume", "Volume destroyed")
 
 	// Delete volume API error
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(extantVol, nil)
-	gcpClient.EXPECT().DeleteVolume(ctx(), gomock.Any()).Return(errors.New("failed to delete volume"))
-	err = d.Destroy(ctx(), volConfig)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(extantVol, nil)
+	gcpClient.EXPECT().DeleteVolume(ctx, gomock.Any()).Return(errors.New("failed to delete volume"))
+	err = d.Destroy(ctx, volConfig)
 	assert.ErrorContains(t, err, "failed to delete volume", "Volume destroyed")
 
 	// Wait for volume state API error
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(extantVol, nil)
-	gcpClient.EXPECT().DeleteVolume(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(extantVol, nil)
+	gcpClient.EXPECT().DeleteVolume(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", errors.New("failed to get volume state"))
-	err = d.Destroy(ctx(), volConfig)
+	err = d.Destroy(ctx, volConfig)
 	assert.ErrorContains(t, err, "failed to get volume state", "Volume destroyed")
 }
 
@@ -1830,10 +1816,10 @@ func TestPublish_GetVolumeByTokenError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).
 		Return(nil, errors.New("failed to get volume"))
 
-	err := d.Publish(ctx(), volConfig, nil)
+	err := d.Publish(ctx, volConfig, nil)
 	assert.ErrorContains(t, err, "failed to get volume", "Volume found")
 }
 
@@ -1841,9 +1827,9 @@ func TestPublish_NoMountsError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&api.Volume{}, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&api.Volume{}, nil)
 
-	err := d.Publish(ctx(), volConfig, nil)
+	err := d.Publish(ctx, volConfig, nil)
 	assert.ErrorContains(t, err, "has no mount targets", "Volume has mount targets")
 }
 
@@ -1856,9 +1842,9 @@ func TestPublish(t *testing.T) {
 	volume := &api.Volume{MountPoints: []api.MountPoint{mountPoint}}
 	publishInfo := &utils.VolumePublishInfo{}
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
 
-	err := d.Publish(ctx(), volConfig, publishInfo)
+	err := d.Publish(ctx, volConfig, publishInfo)
 	assert.NoError(t, err, "Volume not published")
 	assert.Equal(t, publishInfo.NfsServerIP, "0.0.0.0")
 	assert.Equal(t, publishInfo.NfsPath, "/tmp")
@@ -1868,7 +1854,7 @@ func TestPublish(t *testing.T) {
 
 func TestCanSnapshot(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	err := d.CanSnapshot(ctx(), nil, nil)
+	err := d.CanSnapshot(ctx, nil, nil)
 	assert.NoError(t, err, "Cannot take snapshot")
 }
 
@@ -1889,14 +1875,14 @@ func TestGetSnapshot_VolumeExistsErrors(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Volume exists by token API error
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(false, nil, errors.New("failed to get volume"))
-	_, err := d.GetSnapshot(ctx(), snapConfig, nil)
+	_, err := d.GetSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 
 	// Volume doesn't exist
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	_, err = d.GetSnapshot(ctx(), snapConfig, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	_, err = d.GetSnapshot(ctx, snapConfig, nil)
 	assert.NoError(t, err, "Found volume")
 }
 
@@ -1904,10 +1890,10 @@ func TestGetSnapshot_GetSnapshotForVolumeError(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, nil, nil)
-	gcpClient.EXPECT().GetSnapshotsForVolume(ctx(), gomock.Any()).Return(nil, errors.New("failed to get snapshots"))
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, nil, nil)
+	gcpClient.EXPECT().GetSnapshotsForVolume(ctx, gomock.Any()).Return(nil, errors.New("failed to get snapshots"))
 
-	_, err := d.GetSnapshot(ctx(), snapConfig, nil)
+	_, err := d.GetSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get snapshots", "Got snapshots")
 }
 
@@ -1915,10 +1901,10 @@ func TestGetSnapshot_Found(t *testing.T) {
 	snapConfig, snapList := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, &api.Volume{QuotaInBytes: 100}, nil)
-	gcpClient.EXPECT().GetSnapshotsForVolume(ctx(), gomock.Any()).Return(snapList, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, &api.Volume{QuotaInBytes: 100}, nil)
+	gcpClient.EXPECT().GetSnapshotsForVolume(ctx, gomock.Any()).Return(snapList, nil)
 
-	snap, err := d.GetSnapshot(ctx(), snapConfig, nil)
+	snap, err := d.GetSnapshot(ctx, snapConfig, nil)
 	assert.NoError(t, err, "Found snapshot")
 	assert.Equal(t, snap.Config, snapConfig, "Config are not same")
 	assert.Equal(t, snap.SizeBytes, int64(100), "Snapshot size is different")
@@ -1930,10 +1916,10 @@ func TestGetSnapshot_NotFound(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 	(*snapList)[0].Name = "fake-snap"
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, &api.Volume{QuotaInBytes: 100}, nil)
-	gcpClient.EXPECT().GetSnapshotsForVolume(ctx(), gomock.Any()).Return(snapList, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, &api.Volume{QuotaInBytes: 100}, nil)
+	gcpClient.EXPECT().GetSnapshotsForVolume(ctx, gomock.Any()).Return(snapList, nil)
 
-	snap, err := d.GetSnapshot(ctx(), snapConfig, nil)
+	snap, err := d.GetSnapshot(ctx, snapConfig, nil)
 	assert.NoError(t, err, "Found snapshot")
 	assert.Nil(t, snap)
 }
@@ -1942,9 +1928,9 @@ func TestGetSnapshots_GetVolumeByTokenError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, errors.New("failed to get volume"))
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume"))
 
-	_, err := d.GetSnapshots(ctx(), volConfig)
+	_, err := d.GetSnapshots(ctx, volConfig)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -1952,10 +1938,10 @@ func TestGetSnapshots_GetSnapshotsForVolumeError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().GetSnapshotsForVolume(ctx(), gomock.Any()).Return(nil, errors.New("failed to get snapshots"))
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().GetSnapshotsForVolume(ctx, gomock.Any()).Return(nil, errors.New("failed to get snapshots"))
 
-	_, err := d.GetSnapshots(ctx(), volConfig)
+	_, err := d.GetSnapshots(ctx, volConfig)
 	assert.ErrorContains(t, err, "failed to get snapshots", "Found snapshots")
 }
 
@@ -1965,10 +1951,10 @@ func TestGetSnapshots(t *testing.T) {
 	volume := &api.Volume{QuotaInBytes: 100}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().GetSnapshotsForVolume(ctx(), gomock.Any()).Return(snapList, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().GetSnapshotsForVolume(ctx, gomock.Any()).Return(snapList, nil)
 
-	snapResults, err := d.GetSnapshots(ctx(), volConfig)
+	snapResults, err := d.GetSnapshots(ctx, volConfig)
 	assert.NoError(t, err, "Couldn't get snapshots")
 	assert.Len(t, snapResults, 1, "Total number of snapshots found is not 1")
 }
@@ -1978,22 +1964,22 @@ func TestCreateSnapshot_GetVolumeErrors(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Get volume by token API failed
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(false, nil, errors.New("failed to get volume"))
-	_, err := d.CreateSnapshot(ctx(), snapConfig, nil)
+	_, err := d.CreateSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get volume", "Volume found")
 
 	// Volume doesn't exist error
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(false, nil, nil)
-	_, err = d.CreateSnapshot(ctx(), snapConfig, nil)
+	_, err = d.CreateSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "does not exist", "Volume found")
 
 	// Get volume by ID API failed
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, &api.Volume{VolumeID: "123"}, nil)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(nil, errors.New("failed to get volume by ID"))
-	_, err = d.CreateSnapshot(ctx(), snapConfig, nil)
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume by ID"))
+	_, err = d.CreateSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get volume by ID", "Volume found")
 }
 
@@ -2002,12 +1988,12 @@ func TestCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
 	volume := &api.Volume{VolumeID: "123"}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, volume, nil)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(errors.New("snapshot creation failed"))
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(errors.New("snapshot creation failed"))
 
-	_, err := d.CreateSnapshot(ctx(), snapConfig, nil)
+	_, err := d.CreateSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "snapshot creation failed", "Snapshot created")
 }
 
@@ -2016,14 +2002,14 @@ func TestCreateSnapshot_GetSnapshotFailed(t *testing.T) {
 	volume := &api.Volume{VolumeID: "123"}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, volume, nil)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("failed to get snapshot"))
 
-	_, err := d.CreateSnapshot(ctx(), snapConfig, nil)
+	_, err := d.CreateSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get snapshot", "Snapshot created")
 }
 
@@ -2032,15 +2018,15 @@ func TestCreateSnapshot_WaitForSnapshotFailed(t *testing.T) {
 	volume := &api.Volume{VolumeID: "123"}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, volume, nil)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().WaitForSnapshotState(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().WaitForSnapshotState(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(errors.New("failed to get snapshot state"))
 
-	_, err := d.CreateSnapshot(ctx(), snapConfig, nil)
+	_, err := d.CreateSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get snapshot state", "Snapshot created")
 }
 
@@ -2049,14 +2035,14 @@ func TestCreateSnapshot(t *testing.T) {
 	volume := &api.Volume{VolumeID: "123"}
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(true, volume, nil)
-	gcpClient.EXPECT().GetVolumeByID(ctx(), gomock.Any()).Return(volume, nil)
-	gcpClient.EXPECT().CreateSnapshot(ctx(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(&api.Snapshot{}, nil)
-	gcpClient.EXPECT().WaitForSnapshotState(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetVolumeByID(ctx, gomock.Any()).Return(volume, nil)
+	gcpClient.EXPECT().CreateSnapshot(ctx, gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(&api.Snapshot{}, nil)
+	gcpClient.EXPECT().WaitForSnapshotState(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	snap, err := d.CreateSnapshot(ctx(), snapConfig, nil)
+	snap, err := d.CreateSnapshot(ctx, snapConfig, nil)
 	assert.NoError(t, err, "Snapshot creation failed")
 	assert.NotNil(t, snap, "Snapshot is empty")
 }
@@ -2065,9 +2051,9 @@ func TestRestoreSnapshot_GetVolumeError(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, errors.New("failed to get volume"))
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume"))
 
-	err := d.RestoreSnapshot(ctx(), snapConfig, nil)
+	err := d.RestoreSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -2075,11 +2061,11 @@ func TestRestoreSnapshot_GetSnapshotError(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&api.Volume{}, nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&api.Volume{}, nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("failed to get snapshot"))
 
-	err := d.RestoreSnapshot(ctx(), snapConfig, nil)
+	err := d.RestoreSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get snapshot", "Found snapshot")
 }
 
@@ -2087,11 +2073,11 @@ func TestRestoreSnapshot(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&api.Volume{}, nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().RestoreSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&api.Volume{}, nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().RestoreSnapshot(ctx, gomock.Any(), gomock.Any()).Return(nil)
 
-	err := d.RestoreSnapshot(ctx(), snapConfig, nil)
+	err := d.RestoreSnapshot(ctx, snapConfig, nil)
 	assert.NoError(t, err, "Snapshot not restored")
 }
 
@@ -2100,14 +2086,14 @@ func TestDeleteSnapshot_VolumeExistsErrors(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Get existing volume by token API error
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).
 		Return(false, nil, errors.New("failed to get volume"))
-	err := d.DeleteSnapshot(ctx(), snapConfig, nil)
+	err := d.DeleteSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get volume", "Volume found")
 
 	// Volume whose snapshot we need to delete, doesn't exist
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(false, nil, nil)
-	err = d.DeleteSnapshot(ctx(), snapConfig, nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(false, nil, nil)
+	err = d.DeleteSnapshot(ctx, snapConfig, nil)
 	assert.NoError(t, err, "Volume found")
 }
 
@@ -2115,11 +2101,11 @@ func TestDeleteSnapshot_GetSnapshotError(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, nil, nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, nil, nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("failed to get snapshot"))
 
-	err := d.DeleteSnapshot(ctx(), snapConfig, nil)
+	err := d.DeleteSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to get snapshot", "Snapshot found")
 }
 
@@ -2127,11 +2113,11 @@ func TestDeleteSnapshot_DeleteAPIError(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, nil, nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, nil, nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to delete snapshot"))
 
-	err := d.DeleteSnapshot(ctx(), snapConfig, nil)
+	err := d.DeleteSnapshot(ctx, snapConfig, nil)
 	assert.ErrorContains(t, err, "failed to delete snapshot", "Snapshot got deleted")
 }
 
@@ -2139,12 +2125,12 @@ func TestDeleteSnapshot(t *testing.T) {
 	snapConfig, _ := getSnapshotVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx(), gomock.Any()).Return(true, nil, nil)
-	gcpClient.EXPECT().GetSnapshotForVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().DeleteSnapshot(ctx(), gomock.Any(), gomock.Any()).Return(nil)
-	gcpClient.EXPECT().WaitForSnapshotState(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	gcpClient.EXPECT().VolumeExistsByCreationToken(ctx, gomock.Any()).Return(true, nil, nil)
+	gcpClient.EXPECT().GetSnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	gcpClient.EXPECT().WaitForSnapshotState(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	err := d.DeleteSnapshot(ctx(), snapConfig, nil)
+	err := d.DeleteSnapshot(ctx, snapConfig, nil)
 	assert.NoError(t, err, "Snapshot deletion failed")
 }
 
@@ -2158,31 +2144,31 @@ func getVolumes() *[]api.Volume {
 
 func TestList_GetVolumesError(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumes(ctx()).Return(nil, errors.New("failed to get volumes"))
-	_, err := d.List(ctx())
+	gcpClient.EXPECT().GetVolumes(ctx).Return(nil, errors.New("failed to get volumes"))
+	_, err := d.List(ctx)
 	assert.ErrorContains(t, err, "failed to get volumes", "Found volumes")
 }
 
 func TestList(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumes(ctx()).Return(getVolumes(), nil)
-	volumes, err := d.List(ctx())
+	gcpClient.EXPECT().GetVolumes(ctx).Return(getVolumes(), nil)
+	volumes, err := d.List(ctx)
 	assert.NoError(t, err, "Failed to get volumes")
 	assert.Equal(t, volumes, []string{"vol1"}, "Found unexpected volumes in the result")
 }
 
 func TestGet(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, nil)
-	err := d.Get(ctx(), "vol1")
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(nil, nil)
+	err := d.Get(ctx, "vol1")
 	assert.NoError(t, err, "Error getting volume")
 }
 
 func TestResize_GetVolumeError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, errors.New("failed to get volume"))
-	err := d.Resize(ctx(), volConfig, 100)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume"))
+	err := d.Resize(ctx, volConfig, 100)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -2190,8 +2176,8 @@ func TestResize_VolumeStateError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	volume := (*getVolumes())[1]
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	err := d.Resize(ctx(), volConfig, 100)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	err := d.Resize(ctx, volConfig, 100)
 	assert.ErrorContains(t, err, "not available", "Found volume")
 }
 
@@ -2199,8 +2185,8 @@ func TestResize_NoSizeChange(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	volume := (*getVolumes())[0]
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	err := d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes))
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	err := d.Resize(ctx, volConfig, uint64(volume.QuotaInBytes))
 	assert.NoError(t, err, "Resize failed")
 }
 
@@ -2208,8 +2194,8 @@ func TestResize_UnsupportedCapacity(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	volume := (*getVolumes())[0]
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	err := d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes)-1)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	err := d.Resize(ctx, volConfig, uint64(volume.QuotaInBytes)-1)
 	isErr, _ := errors.HasUnsupportedCapacityRangeError(err)
 	assert.True(t, isErr, "Valid new volume size")
 }
@@ -2220,9 +2206,9 @@ func TestResize_VolumeSizeLimitError(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	d.Config.LimitVolumeSize = fmt.Sprintf("%v", uint64(volume.QuotaInBytes))
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
 
-	err := d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes)+10)
+	err := d.Resize(ctx, volConfig, uint64(volume.QuotaInBytes)+10)
 	assert.ErrorContains(t, err, "size limit", "Valid new volume size")
 }
 
@@ -2231,10 +2217,10 @@ func TestResize_ResizeAPIError(t *testing.T) {
 	volume := (*getVolumes())[0]
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	gcpClient.EXPECT().ResizeVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, errors.New("resize failed"))
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	gcpClient.EXPECT().ResizeVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, errors.New("resize failed"))
 
-	err := d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes)+10)
+	err := d.Resize(ctx, volConfig, uint64(volume.QuotaInBytes)+10)
 	assert.ErrorContains(t, err, "resize failed", "Resize call succeeded")
 }
 
@@ -2244,28 +2230,28 @@ func TestResize_WaitForVolumeStateError(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	// Wait for volume state error
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	gcpClient.EXPECT().ResizeVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	gcpClient.EXPECT().ResizeVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", errors.New("wait for volume state failed"))
 
-	err := d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes)+10)
+	err := d.Resize(ctx, volConfig, uint64(volume.QuotaInBytes)+10)
 	assert.ErrorContains(t, err, "wait for volume state failed", "Resize call succeeded")
 
 	// Wait for volume state success
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	gcpClient.EXPECT().ResizeVolume(ctx(), gomock.Any(), gomock.Any()).Return(nil, nil)
-	gcpClient.EXPECT().WaitForVolumeStates(ctx(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	gcpClient.EXPECT().ResizeVolume(ctx, gomock.Any(), gomock.Any()).Return(nil, nil)
+	gcpClient.EXPECT().WaitForVolumeStates(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return("", nil)
 
-	err = d.Resize(ctx(), volConfig, uint64(volume.QuotaInBytes)+10)
+	err = d.Resize(ctx, volConfig, uint64(volume.QuotaInBytes)+10)
 	assert.NoError(t, err, "Resize failed")
 }
 
 func TestGetStorageBackendSpecs(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	backend, _ := storage.NewStorageBackend(ctx(), d)
-	err := d.GetStorageBackendSpecs(ctx(), backend)
+	backend, _ := storage.NewStorageBackend(ctx, d)
+	err := d.GetStorageBackendSpecs(ctx, backend)
 	assert.NoError(t, err, "Failed to update storage backend specs")
 }
 
@@ -2273,14 +2259,14 @@ func TestCreatePrepare(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	d := newTestGCPDriver(nil)
 	pool := storage.NewStoragePool(nil, "pool1")
-	d.CreatePrepare(ctx(), volConfig, pool)
-	name := d.GetInternalVolumeName(ctx(), volConfig, pool)
+	d.CreatePrepare(ctx, volConfig, pool)
+	name := d.GetInternalVolumeName(ctx, volConfig, pool)
 	assert.Equal(t, volConfig.InternalName, name, "Different internal name for volume")
 }
 
 func TestGetStorageBackendPhysicalPoolNames(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	poolNames := d.GetStorageBackendPhysicalPoolNames(ctx())
+	poolNames := d.GetStorageBackendPhysicalPoolNames(ctx)
 	assert.Equal(t, len(poolNames), 0, "Found physical pools")
 }
 
@@ -2310,21 +2296,21 @@ func TestGetInternalVolumeName(t *testing.T) {
 	// Using pass through store
 	tridentconfig.UsingPassthroughStore = true
 	volConfig.Name = "test-vol"
-	name := d.GetInternalVolumeName(ctx(), volConfig, pool)
+	name := d.GetInternalVolumeName(ctx, volConfig, pool)
 	assert.Equal(t, name, "test_test-vol", "Wrong internal name")
 
 	// Using existing UUID as volume name
 	tridentconfig.UsingPassthroughStore = false
 	volConfig.Name = "pvc-9d77b6f75f24"
-	name = d.GetInternalVolumeName(ctx(), volConfig, pool)
+	name = d.GetInternalVolumeName(ctx, volConfig, pool)
 	assert.Equal(t, name, "pvc-9d77b6f75f24", "Wrong internal name")
 }
 
 func TestCreateFollowup_GetVolumeByTokenError(t *testing.T) {
 	volConfig, _ := getCreateVolumeStructs()
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, errors.New("failed to get volume"))
-	err := d.CreateFollowup(ctx(), volConfig)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume"))
+	err := d.CreateFollowup(ctx, volConfig)
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -2334,9 +2320,9 @@ func TestCreateFollowup_ErrorStateVolume(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
 
 	volume.LifeCycleStateDetails = "error while creating"
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
 
-	err := d.CreateFollowup(ctx(), volConfig)
+	err := d.CreateFollowup(ctx, volConfig)
 	assert.ErrorContains(t, err, volume.LifeCycleStateDetails, "Found volume")
 }
 
@@ -2347,14 +2333,14 @@ func TestCreateFollowup_VolumeMountPoints(t *testing.T) {
 
 	// Zero volume mount points
 	volume.MountPoints = []api.MountPoint{}
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	err := d.CreateFollowup(ctx(), volConfig)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	err := d.CreateFollowup(ctx, volConfig)
 	assert.ErrorContains(t, err, "has no mount points", "Volume has mount points")
 
 	// Valid volume mount points
 	volume.MountPoints = []api.MountPoint{{Server: "0.0.0.0", Export: "/tmp"}}
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	err = d.CreateFollowup(ctx(), volConfig)
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	err = d.CreateFollowup(ctx, volConfig)
 	assert.NoError(t, err, "Create followup failed")
 	assert.Equal(t, volConfig.AccessInfo.NfsServerIP, "0.0.0.0", "Incorrect server IP")
 	assert.Equal(t, volConfig.AccessInfo.NfsPath, "/tmp", "Incorrect nfs path")
@@ -2363,27 +2349,27 @@ func TestCreateFollowup_VolumeMountPoints(t *testing.T) {
 
 func TestGetProtocol(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	assert.Equal(t, d.GetProtocol(ctx()), tridentconfig.File, "Incorrect protocol")
+	assert.Equal(t, d.GetProtocol(ctx), tridentconfig.File, "Incorrect protocol")
 }
 
 func TestStoreConfig(t *testing.T) {
 	backendConfig := storage.PersistentStorageBackendConfig{}
 	d := newTestGCPDriver(nil)
-	d.StoreConfig(ctx(), &backendConfig)
+	d.StoreConfig(ctx, &backendConfig)
 	assert.Equal(t, backendConfig.GCPConfig, &d.Config, "Stored config is different")
 }
 
 func TestGetExternalConfig(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	config := d.GetExternalConfig(ctx())
+	config := d.GetExternalConfig(ctx)
 	assert.Equal(t, config.(drivers.GCPNFSStorageDriverConfig).StorageDriverName,
 		d.Config.StorageDriverName, "Incorrect config")
 }
 
 func TestGetVolumeForImport_GetVolumeError(t *testing.T) {
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(nil, errors.New("failed to get volume"))
-	_, err := d.GetVolumeForImport(ctx(), "vol-name")
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume"))
+	_, err := d.GetVolumeForImport(ctx, "vol-name")
 	assert.ErrorContains(t, err, "failed to get volume", "Found volume")
 }
 
@@ -2396,8 +2382,8 @@ func TestGetVolumeForImport(t *testing.T) {
 		SnapshotDirectory: false,
 		QuotaInBytes:      100,
 	}
-	gcpClient.EXPECT().GetVolumeByCreationToken(ctx(), gomock.Any()).Return(&volume, nil)
-	extVol, err := d.GetVolumeForImport(ctx(), "vol-name")
+	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(&volume, nil)
+	extVol, err := d.GetVolumeForImport(ctx, "vol-name")
 	assert.NoError(t, err, "Failed to get external volume")
 	assert.Equal(t, extVol.Config.Name, volume.Name)
 }
@@ -2405,8 +2391,8 @@ func TestGetVolumeForImport(t *testing.T) {
 func TestGetVolumeExternalWrappers_GetVolumeError(t *testing.T) {
 	channel := make(chan *storage.VolumeExternalWrapper)
 	gcpClient, d := newMockGCPDriver(t)
-	gcpClient.EXPECT().GetVolumes(ctx()).Return(nil, errors.New("failed to get volumes"))
-	go d.GetVolumeExternalWrappers(ctx(), channel)
+	gcpClient.EXPECT().GetVolumes(ctx).Return(nil, errors.New("failed to get volumes"))
+	go d.GetVolumeExternalWrappers(ctx, channel)
 	volumeWrapper, _ := <-channel
 	assert.ErrorContains(t, volumeWrapper.Error, "failed to get volumes", "Found volumes")
 }
@@ -2415,9 +2401,9 @@ func TestGetVolumeExternalWrappers(t *testing.T) {
 	channel := make(chan *storage.VolumeExternalWrapper)
 	gcpClient, d := newMockGCPDriver(t)
 
-	gcpClient.EXPECT().GetVolumes(ctx()).Return(getVolumes(), nil)
+	gcpClient.EXPECT().GetVolumes(ctx).Return(getVolumes(), nil)
 
-	go d.GetVolumeExternalWrappers(ctx(), channel)
+	go d.GetVolumeExternalWrappers(ctx, channel)
 	volumeWrapper, _ := <-channel
 	assert.NoError(t, volumeWrapper.Error, "Failed to get volumes")
 }
@@ -2429,10 +2415,10 @@ func TestGetUpdateType_InvalidUpdate(t *testing.T) {
 		},
 	}
 
-	fakeDriver := fake.NewFakeStorageDriver(ctx(), fakeDriverConfig)
+	fakeDriver := fake.NewFakeStorageDriver(ctx, fakeDriverConfig)
 	d := newTestGCPDriver(nil)
 
-	bitmap := d.GetUpdateType(ctx(), fakeDriver)
+	bitmap := d.GetUpdateType(ctx, fakeDriver)
 	assert.True(t, bitmap.Contains(storage.InvalidUpdate), "Not an invalid update")
 }
 
@@ -2443,7 +2429,7 @@ func TestGetUpdate(t *testing.T) {
 	*d2.Config.StoragePrefix = "trident"
 	d2.Config.Credentials = map[string]string{"key1": "value1"}
 
-	bitmap := d1.GetUpdateType(ctx(), d2)
+	bitmap := d1.GetUpdateType(ctx, d2)
 	assert.True(t, bitmap.Contains(storage.PrefixChange))
 	assert.True(t, bitmap.Contains(storage.CredentialsChange))
 }
@@ -2452,13 +2438,13 @@ func TestReconcileNodeAccess(t *testing.T) {
 	d := newTestGCPDriver(nil)
 	node1 := utils.Node{Name: "node-name"}
 	nodes := []*utils.Node{&node1}
-	err := d.ReconcileNodeAccess(ctx(), nodes, "", "")
+	err := d.ReconcileNodeAccess(ctx, nodes, "", "")
 	assert.NoError(t, err, "Reconcile node access failed")
 }
 
 func TestGetCommonConfig(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	config := d.GetCommonConfig(ctx())
+	config := d.GetCommonConfig(ctx)
 	assert.Equal(t, config, d.Config.CommonStorageDriverConfig, "Configs not same")
 }
 

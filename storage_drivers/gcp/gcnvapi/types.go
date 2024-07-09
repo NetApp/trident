@@ -10,7 +10,7 @@ import (
 	"github.com/netapp/trident/storage"
 )
 
-//go:generate mockgen -package mock_api -destination=../../../mocks/mock_storage_drivers/mock_gcp/mock_gcnvapi.go github.com/netapp/trident/storage_drivers/gcp/gcnvapi GCNVAPI
+//go:generate mockgen -package mock_api -destination=../../../mocks/mock_storage_drivers/mock_gcp/mock_gcnvapi.go github.com/netapp/trident/storage_drivers/gcp/gcnvapi GCNV
 
 type GCNV interface {
 	Init(context.Context, map[string]storage.Pool) error

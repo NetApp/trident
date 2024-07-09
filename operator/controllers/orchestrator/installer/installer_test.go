@@ -206,11 +206,11 @@ func TestCloudProviderPrechecks(t *testing.T) {
 		{k8sclient.CloudProviderAWS, true},
 		{"azure", true},
 		{"aws", true},
+		{"GCP", true},
 
 		// Invalid values
 		{"test", false},
 		{"AZ", false},
-		{"GCP", false},
 		{"Oracle", false},
 	}
 

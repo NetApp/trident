@@ -33,6 +33,8 @@ const (
 	MinimumGCNVVolumeSizeBytesSW = uint64(1073741824)   // 1 GiB
 	MinimumGCNVVolumeSizeBytesHW = uint64(107374182400) // 100 GiB
 
+	defaultVolumeSizeStr = "107374182400"
+
 	// Constants for internal pool attributes
 
 	CapacityPools = "capacityPools"
@@ -50,6 +52,7 @@ var (
 	gcpLabelRegex            = regexp.MustCompile(`[^-_a-z0-9\p{L}]`)
 	csiRegex                 = regexp.MustCompile(`^pvc-[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$`)
 	nfsMountPathRegex        = regexp.MustCompile(`^(?P<server>.+):/(?P<share>.+)$`)
+	smbMountPathRegex        = regexp.MustCompile(`\\\\(?P<server>.+)\\(?P<share>.+)$`)
 )
 
 // NASStorageDriver is for storage provisioning using the Google Cloud NetApp Volumes service.
@@ -844,19 +847,17 @@ func (d *NASStorageDriver) Create(
 			CreationToken:     name,
 			CapacityPool:      cPool.Name,
 			SizeBytes:         int64(sizeWithReserveBytes),
-			ExportPolicy:      exportPolicy,
 			ProtocolTypes:     protocolTypes,
-			UnixPermissions:   unixPermissions,
 			Labels:            labels,
 			SnapshotReserve:   snapshotReservePtr,
 			SnapshotDirectory: snapshotDirBool,
-			SecurityStyle:     gcnvapi.SecurityStyleUnix,
 		}
 
 		// Add unix permissions and export policy fields only to NFS volume
 		if d.Config.NASType == sa.NFS {
 			createRequest.UnixPermissions = unixPermissions
 			createRequest.ExportPolicy = exportPolicy
+			createRequest.SecurityStyle = gcnvapi.SecurityStyleUnix
 		}
 
 		// Create the volume
@@ -1119,8 +1120,8 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		// Update the volume labels
 		labels := d.updateTelemetryLabels(ctx, volume)
 
-		/*if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == gcnvapi.ProtocolTypeSMB {
-			if err = d.API.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess, &modifiedExportRule); err != nil {
+		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == gcnvapi.ProtocolTypeSMB {
+			if err = d.API.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess, nil); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1132,7 +1133,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 				"labels":        labels,
 			}).Info("Volume modified.")
 
-		} else*/if d.Config.NASType == sa.NFS && (volume.ProtocolTypes[0] == gcnvapi.ProtocolTypeNFSv3 || volume.
+		} else if d.Config.NASType == sa.NFS && (volume.ProtocolTypes[0] == gcnvapi.ProtocolTypeNFSv3 || volume.
 			ProtocolTypes[0] == gcnvapi.ProtocolTypeNFSv41) {
 			// Update volume unix permissions.  Permissions specified in a PVC annotation take precedence
 			// over the backend's unixPermissions config.
@@ -1403,9 +1404,14 @@ func (d *NASStorageDriver) Publish(
 
 	// Add required fields for attaching SMB volume
 	if d.Config.NASType == sa.SMB {
-		// publishInfo.SMBPath = volConfig.AccessInfo.SMBPath
-		// publishInfo.SMBServer = (volume.MountTargets)[0].ServerFqdn
-		// publishInfo.FilesystemType = sa.SMB
+		server, share, exportErr := d.parseSMBExport(volume.MountTargets[0].ExportPath)
+		if exportErr != nil {
+			return exportErr
+		}
+
+		publishInfo.SMBPath = "\\" + share
+		publishInfo.SMBServer = server
+		publishInfo.FilesystemType = sa.SMB
 	} else {
 		protocol := ""
 		nfsVersion, versionErr := utils.GetNFSVersionFromMountOptions(mountOptions, "", supportedNFSVersions)
@@ -1943,9 +1949,9 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 
 	// Set the mount target based on the NASType
 	if d.Config.NASType == sa.SMB {
-		// volConfig.AccessInfo.SMBPath = constructVolumeAccessPath(volConfig, volume, sa.SMB)
-		// volConfig.AccessInfo.SMBServer = (volume.MountTargets)[0].ServerFqdn
-		// volConfig.FileSystem = sa.SMB
+		volConfig.AccessInfo.SMBPath = constructVolumeAccessPath(volConfig, volume, sa.SMB)
+		volConfig.AccessInfo.SMBServer = (volume.MountTargets)[0].ExportPath
+		volConfig.FileSystem = sa.SMB
 	} else {
 		server, share, exportErr := d.nfsExportComponentsForProtocol(volume, "")
 		if exportErr != nil {
@@ -2196,6 +2202,27 @@ func (d *NASStorageDriver) parseNFSExport(export string) (server, share string, 
 	return
 }
 
+func (d *NASStorageDriver) parseSMBExport(export string) (server, share string, err error) {
+	match := smbMountPathRegex.FindStringSubmatch(export)
+
+	if match == nil {
+		err = fmt.Errorf("SMB export path %s is invalid", export)
+		return
+	}
+
+	paramsMap := make(map[string]string)
+	for i, name := range smbMountPathRegex.SubexpNames() {
+		if i > 0 && i <= len(match) {
+			paramsMap[name] = match[i]
+		}
+	}
+
+	server = paramsMap["server"]
+	share = paramsMap["share"]
+
+	return
+}
+
 func (d *NASStorageDriver) isDualProtocolVolume(volume *gcnvapi.Volume) bool {
 	var nfs, smb bool
 
@@ -2208,4 +2235,22 @@ func (d *NASStorageDriver) isDualProtocolVolume(volume *gcnvapi.Volume) bool {
 		}
 	}
 	return nfs && smb
+}
+
+func constructVolumeAccessPath(
+	volConfig *storage.VolumeConfig, volume *gcnvapi.Volume, protocol string,
+) string {
+	switch protocol {
+	case sa.NFS:
+		if volConfig.ReadOnlyClone {
+			return "/" + volConfig.CloneSourceVolumeInternal + "/" + ".snapshot" + "/" + volConfig.CloneSourceSnapshot
+		}
+		return "/" + volume.CreationToken
+	case sa.SMB:
+		if volConfig.ReadOnlyClone {
+			return "\\" + volConfig.CloneSourceVolumeInternal + "\\" + "~snapshot" + "\\" + volConfig.CloneSourceSnapshot
+		}
+		return "\\" + volume.CreationToken
+	}
+	return ""
 }

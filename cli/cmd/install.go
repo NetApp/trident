@@ -451,7 +451,8 @@ func validateInstallationArguments() error {
 	}
 
 	// Validate the cloud provider
-	if !(cloudProvider == "" || strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) || strings.EqualFold(cloudProvider, k8sclient.CloudProviderAWS)) {
+	if !(cloudProvider == "" || strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) || strings.EqualFold(cloudProvider,
+		k8sclient.CloudProviderAWS) || strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP)) {
 		return fmt.Errorf("'%s' is not a valid cloud provider ", cloudProvider)
 	}
 
@@ -461,7 +462,7 @@ func validateInstallationArguments() error {
 		return fmt.Errorf("cloud provider must be specified for the cloud identity '%s'", cloudIdentity)
 	}
 
-	// validate the cloud provider and cloud identity for Azure.
+	// Validate the cloud provider and cloud identity for Azure.
 	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAzure) && strings.Contains(cloudIdentity, k8sclient.AzureCloudIdentityKey) {
 		// Add identity label.
 		identityLabel = true
@@ -472,9 +473,14 @@ func validateInstallationArguments() error {
 		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAzure)
 	}
 
-	// validate the cloud provider and cloud identity for AWS.
+	// Validate the cloud provider and cloud identity for AWS.
 	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderAWS) && !strings.Contains(cloudIdentity, k8sclient.AWSCloudIdentityKey) {
 		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderAWS)
+	}
+
+	// Validate the cloud provider and cloud identity for GCP.
+	if strings.EqualFold(cloudProvider, k8sclient.CloudProviderGCP) && !strings.Contains(cloudIdentity, k8sclient.GCPCloudIdentityKey) {
+		return fmt.Errorf("'%s' is not a valid cloud identity for the cloud provider '%s'", cloudIdentity, k8sclient.CloudProviderGCP)
 	}
 
 	return nil

@@ -64,9 +64,11 @@ const (
 
 	CloudProviderAzure         = "Azure"
 	CloudProviderAWS           = "AWS"
+	CloudProviderGCP           = "GCP"
 	AzureCloudIdentityKey      = "azure.workload.identity/client-id:"
 	AzureWorkloadIdentityLabel = "azure.workload.identity/use: 'true'"
 	AWSCloudIdentityKey        = "eks.amazonaws.com/role-arn:"
+	GCPCloudIdentityKey        = "iam.gke.io/gcp-service-account:"
 )
 
 type LogLineCallback func(string)
