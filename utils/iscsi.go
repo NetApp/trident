@@ -592,10 +592,10 @@ func waitForDeviceScan(ctx context.Context, lunID int, iSCSINodeName string) err
 			Logc(ctx).Warnf("Could not run ls -al /dev/disk/by-path: %v", err)
 		}
 		if _, err := command.Execute(ctx, "lsscsi"); err != nil {
-			Logc(ctx).Warnf("Could not run lsscsi: %v", err)
+			Logc(ctx).Infof("Could not collect debug info, run lsscsi: %v", err)
 		}
 		if _, err := command.Execute(ctx, "lsscsi", "-t"); err != nil {
-			Logc(ctx).Warnf("Could not run lsscsi -t: %v", err)
+			Logc(ctx).Infof("Could not collect debug info, run lsscsi -t: %v", err)
 		}
 		if _, err := command.Execute(ctx, "free"); err != nil {
 			Logc(ctx).Warnf("Could not run free: %v", err)
