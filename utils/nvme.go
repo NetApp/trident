@@ -5,7 +5,6 @@ package utils
 import (
 	"context"
 	"fmt"
-	"os/exec"
 	"sort"
 	"strings"
 	"time"
@@ -246,7 +245,8 @@ func extractIPFromNVMeAddress(a string) string {
 }
 
 func AttachNVMeVolumeRetry(
-	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string, timeout time.Duration,
+	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string,
+	timeout time.Duration,
 ) error {
 	Logc(ctx).Debug(">>>> nvme.AttachNVMeVolumeRetry")
 	defer Logc(ctx).Debug("<<<< nvme.AttachNVMeVolumeRetry")
@@ -273,7 +273,9 @@ func AttachNVMeVolumeRetry(
 	return err
 }
 
-func AttachNVMeVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string) error {
+func AttachNVMeVolume(
+	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string,
+) error {
 	nvmeHandler := NewNVMeHandler()
 	nvmeSubsys := nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	connectionStatus := nvmeSubsys.GetConnectionStatus()
@@ -347,23 +349,7 @@ func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *
 		return err
 	}
 	if !mounted {
-		err = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
-		if err != nil {
-			if exitErr, ok := err.(*exec.ExitError); ok {
-				logFields := LogFields{
-					"volume": name,
-					"fstype": publishInfo.FilesystemType,
-					"device": devicePath,
-				}
-
-				if exitErr.ExitCode() == 1 {
-					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
-				} else {
-					logFields["exitCode"] = exitErr.ExitCode()
-					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
-				}
-			}
-		}
+		repairVolume(ctx, devicePath, publishInfo.FilesystemType)
 	}
 
 	// Optionally mount the device
@@ -588,7 +574,9 @@ func SortSubsystemsUsingSessions(subs []NVMeSubsystem, pubSessions *NVMeSessions
 // InspectNVMeSessions compares and checks if the current sessions are in-line with the published sessions. If any
 // subsystem is missing any path in the current session (as compared with the published session), then it is added in
 // the subsToFix array for healing.
-func (nh *NVMeHandler) InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *NVMeSessions) []NVMeSubsystem {
+func (nh *NVMeHandler) InspectNVMeSessions(
+	ctx context.Context, pubSessions, currSessions *NVMeSessions,
+) []NVMeSubsystem {
 	var subsToFix []NVMeSubsystem
 	if pubSessions == nil || pubSessions.IsEmpty() {
 		return subsToFix
@@ -633,7 +621,9 @@ func (nh *NVMeHandler) InspectNVMeSessions(ctx context.Context, pubSessions, cur
 }
 
 // RectifyNVMeSession applies the required remediation on the subsystemToFix to make it working again.
-func (nh *NVMeHandler) RectifyNVMeSession(ctx context.Context, subsystemToFix NVMeSubsystem, pubSessions *NVMeSessions) {
+func (nh *NVMeHandler) RectifyNVMeSession(
+	ctx context.Context, subsystemToFix NVMeSubsystem, pubSessions *NVMeSessions,
+) {
 	if pubSessions == nil || pubSessions.IsEmpty() {
 		return
 	}

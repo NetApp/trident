@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -25,6 +26,18 @@ const (
 	fsExt3 = "ext3"
 	fsExt4 = "ext4"
 	fsRaw  = "raw"
+)
+
+const (
+	// filesystem check (fsck) error codes
+	fsckNoErrors                = 0
+	fsckFsErrorsCorrected       = 1
+	fsckFsErrorsCorrectedReboot = 2
+	fsckFsErrorsUncorrected     = 4
+	fsckOperationalError        = 8
+	fsckSyntaxError             = 16
+	fsckCancelledByUser         = 32
+	fsckSharedLibError          = 128
 )
 
 var (
@@ -133,11 +146,13 @@ func formatVolumeRetry(ctx context.Context, device, fstype string) error {
 	return nil
 }
 
-// repairVolume runs fsck on a volume.
-func repairVolume(ctx context.Context, device, fstype string) (err error) {
+// repairVolume runs fsck on a volume. This is best-effort, does not return error.
+func repairVolume(ctx context.Context, device, fstype string) {
 	logFields := LogFields{"device": device, "fsType": fstype}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.repairVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.repairVolume")
+
+	var err error
 
 	switch fstype {
 	case "xfs":
@@ -147,10 +162,28 @@ func repairVolume(ctx context.Context, device, fstype string) (err error) {
 	case "ext4":
 		_, err = command.Execute(ctx, "fsck.ext4", "-p", device)
 	default:
-		return fmt.Errorf("unsupported file system type: %s", fstype)
+		Logc(ctx).WithFields(logFields).Errorf("Unsupported file system type: %s.", fstype)
 	}
 
-	return
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+
+			logFields["exitCode"] = exitErr.ExitCode()
+
+			switch exitErr.ExitCode() {
+			case fsckNoErrors:
+				Logc(ctx).WithFields(logFields).Debug("No filesystem errors.")
+			case fsckFsErrorsCorrected, fsckFsErrorsCorrectedReboot:
+				Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors.")
+			case fsckOperationalError, fsckCancelledByUser, fsckSharedLibError:
+				Logc(ctx).WithFields(logFields).Debug("Filesystem check errors.")
+			case fsckFsErrorsUncorrected, fsckSyntaxError:
+				Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
+			}
+		} else {
+			Logc(ctx).WithError(err).WithFields(logFields).Error("Error executing fsck command.")
+		}
+	}
 }
 
 // ExpandFilesystemOnNode will expand the filesystem of an already expanded volume.

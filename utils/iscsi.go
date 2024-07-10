@@ -73,7 +73,8 @@ func IsPerNodeIgroup(igroup string) bool {
 
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
 func AttachISCSIVolumeRetry(
-	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string, timeout time.Duration,
+	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string,
+	timeout time.Duration,
 ) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolumeRetry")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachISCSIVolumeRetry")
@@ -112,7 +113,8 @@ func AttachISCSIVolumeRetry(
 // If the mountpoint parameter is specified, the volume will be mounted to it.
 // The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
 // If multipath device size is found to be inconsistent with device size, then the correct size is returned.
-func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo,
+func AttachISCSIVolume(
+	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo,
 	secrets map[string]string,
 ) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolume")
@@ -353,23 +355,7 @@ func AttachISCSIVolume(ctx context.Context, name, mountpoint string, publishInfo
 		return mpathSize, err
 	}
 	if !mounted {
-		err = repairVolume(ctx, devicePath, publishInfo.FilesystemType)
-		if err != nil {
-			if exitErr, ok := err.(*exec.ExitError); ok {
-				logFields := LogFields{
-					"volume": name,
-					"fstype": deviceInfo.Filesystem,
-					"device": devicePath,
-				}
-
-				if exitErr.ExitCode() == 1 {
-					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
-				} else {
-					logFields["exitCode"] = exitErr.ExitCode()
-					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
-				}
-			}
-		}
+		repairVolume(ctx, devicePath, publishInfo.FilesystemType)
 	}
 
 	// Optionally mount the device
@@ -2087,7 +2073,8 @@ func RemovePortalsFromSession(ctx context.Context, publishInfo *VolumePublishInf
 // required iSCSI Target IQN, CHAP Credentials if any from the provided VolumePublishInfo and
 // populates the map against the portal.
 // NOTE: sessionNumber should only be passed if there is only one portal/targetportal entry in publishInfo.
-func AddISCSISession(ctx context.Context, sessions *ISCSISessions, publishInfo *VolumePublishInfo,
+func AddISCSISession(
+	ctx context.Context, sessions *ISCSISessions, publishInfo *VolumePublishInfo,
 	volID, sessionNumber string, reasonInvalid PortalInvalid,
 ) {
 	if sessions == nil {
@@ -2256,7 +2243,8 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *ISCSISessions)
 // sorted stale iSCSI portals and a sorted list of non-stale iSCSI portals.
 // NOTE: Since we do not expect notStalePortals to be very-large (in millions or even in 1000s),
 // sorting on the basis of lastAccessTime should not be an expensive operation.
-func InspectAllISCSISessions(ctx context.Context, publishedSessions, currentSessions *ISCSISessions,
+func InspectAllISCSISessions(
+	ctx context.Context, publishedSessions, currentSessions *ISCSISessions,
 	iSCSISessionWaitTime time.Duration,
 ) ([]string, []string) {
 	timeNow := time.Now()
@@ -2387,7 +2375,8 @@ func InspectAllISCSISessions(ctx context.Context, publishedSessions, currentSess
 // 1. If the FirstIdentifiedStaleAt is not set, set it; else
 // 2. Compare timeNow with the FirstIdentifiedStaleAt; if it exceeds iSCSISessionWaitTime then it returns true;
 // 3. Else do nothing and continue
-func isStalePortal(ctx context.Context, publishedPortalInfo, currentPortalInfo *PortalInfo,
+func isStalePortal(
+	ctx context.Context, publishedPortalInfo, currentPortalInfo *PortalInfo,
 	iSCSISessionWaitTime time.Duration, timeNow time.Time, portal string,
 ) ISCSIAction {
 	logFields := LogFields{
@@ -2424,7 +2413,8 @@ func isStalePortal(ctx context.Context, publishedPortalInfo, currentPortalInfo *
 // isNonStalePortal attempts to identify if a session has any issues other than being stale.
 // For sessions with no current issues it attempts to identify any strange behavior or state it should
 // not be in.
-func isNonStalePortal(ctx context.Context, publishedSessionData, currentSessionData *ISCSISessionData,
+func isNonStalePortal(
+	ctx context.Context, publishedSessionData, currentSessionData *ISCSISessionData,
 	portal string,
 ) ISCSIAction {
 	logFields := LogFields{

@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -140,23 +139,7 @@ func AttachBlockOnFileVolume(
 		return "", "", err
 	}
 	if !mounted {
-		err = repairVolume(ctx, loopDevice.Name, fsType)
-		if err != nil {
-			if exitErr, ok := err.(*exec.ExitError); ok {
-				logFields := LogFields{
-					"volume": loopFile,
-					"fstype": fsType,
-					"device": loopDevice.Name,
-				}
-
-				if exitErr.ExitCode() == 1 {
-					Logc(ctx).WithFields(logFields).Info("Fixed filesystem errors")
-				} else {
-					logFields["exitCode"] = exitErr.ExitCode()
-					Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
-				}
-			}
-		}
+		repairVolume(ctx, loopDevice.Name, fsType)
 	}
 
 	if deviceMountpoint != "" {
@@ -231,7 +214,9 @@ func getLoopDeviceInfo(ctx context.Context) ([]LoopDevice, error) {
 	return loopDevicesResponse.LoopDevices, nil
 }
 
-func (h *BlockOnFileReconcileHelper) GetLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool, *LoopDevice, error) {
+func (h *BlockOnFileReconcileHelper) GetLoopDeviceAttachedToFile(ctx context.Context, loopFile string) (bool,
+	*LoopDevice, error,
+) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	Logc(ctx).WithField("loopFile", loopFile).Debug(">>>> bof.GetLoopDeviceAttachedToFile")
