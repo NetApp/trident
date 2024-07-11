@@ -1,4 +1,6 @@
 name: checks
+env:
+  GO_VERSION: '1.22'
 on:
   pull_request:
     branches:
@@ -19,7 +21,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: ${{ env.GO_VERSION }}
           check-latest: true
       - uses: actions/checkout@v4
       - name: golangci-lint
@@ -27,6 +29,28 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.58.1
           $(go env GOPATH)/bin/golangci-lint run --out-format=github-actions --timeout=15m --verbose
+  go-mod-tidy:
+    name: go mod tidy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+      # This takes a little extra time on the first run but ensures later runs for new commits are fast.
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Run go mod tidy
+        run: |
+          go mod tidy -compat=$GO_VERSION
+          git diff --exit-code go.mod go.sum
   unit:
     strategy:
       matrix:
@@ -36,7 +60,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: ${{ env.GO_VERSION }}
           check-latest: true
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
