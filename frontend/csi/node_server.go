@@ -1096,14 +1096,16 @@ func (p *Plugin) readAllTrackingFiles(ctx context.Context) []utils.VolumePublish
 
 func (p *Plugin) nodeStageISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *utils.VolumePublishInfo,
-) error {
-	useCHAP, err := strconv.ParseBool(req.PublishContext["useCHAP"])
+) (err error) {
+	var useCHAP bool
+	useCHAP, err = strconv.ParseBool(req.PublishContext["useCHAP"])
 	if err != nil {
 		return err
 	}
 	publishInfo.UseCHAP = useCHAP
 
-	lunID, err := strconv.ParseInt(req.PublishContext["iscsiLunNumber"], 10, 0)
+	var lunID int64
+	lunID, err = strconv.ParseInt(req.PublishContext["iscsiLunNumber"], 10, 0)
 	if err != nil {
 		return err
 	}
@@ -1155,22 +1157,53 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
-	mpathSize, err := p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort)
-	if err != nil {
-		return err
-	}
-
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
 		return err
 	}
+
+	// In the case of a failed CSI NodeStageVolume call, CSI node clients may call NodeStageVolume or NodeUnstageVolume.
+	// To ensure Trident can handle a subsequent CSI NodeUnstageVolume call, Trident always writes a tracking file.
+	// This should result in Trident having all it needs to for CSI NodeUnstageVolume should an attachment fail.
+	defer func() {
+		// Always write a volume tracking info for use in node publish & unstage calls.
+		volTrackingInfo := &utils.VolumeTrackingInfo{
+			VolumePublishInfo: *publishInfo,
+			StagingTargetPath: stagingTargetPath,
+			PublishedPaths:    map[string]struct{}{},
+		}
+		if fileErr := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); fileErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeID":          volumeId,
+				"stagingTargetPath": stagingTargetPath,
+			}).WithError(fileErr).Error("Could not write tracking file.")
+
+			// If an attachment error exists, then we should capture that failure along with a write file error.
+			if err != nil {
+				err = fmt.Errorf("attachment failed: %v; could not write tracking file: %v", err, fileErr)
+			} else {
+				err = fmt.Errorf("could not write tracking file: %v", fileErr)
+			}
+		}
+	}()
+
+	var mpathSize int64
+	mpathSize, err = p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort)
+	if err != nil {
+		return err
+	}
+
 	if isLUKS {
-		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
-			req.VolumeContext["internalName"])
+		var luksDevice utils.LUKSDeviceInterface
+		luksDevice, err = utils.NewLUKSDeviceFromMappingPath(
+			ctx, publishInfo.DevicePath,
+			req.VolumeContext["internalName"],
+		)
 		if err != nil {
 			return err
 		}
-		// Ensure we update the passphrase incase it has never been set before
+
+		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase")
@@ -1191,15 +1224,6 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 	}
 
-	volTrackingInfo := &utils.VolumeTrackingInfo{
-		VolumePublishInfo: *publishInfo,
-		StagingTargetPath: stagingTargetPath,
-		PublishedPaths:    map[string]struct{}{},
-	}
-	// Save the device info to the volume tracking info path for use in the publish & unstage calls.
-	if err := p.nodeHelper.WriteTrackingInfo(ctx, volumeId, volTrackingInfo); err != nil {
-		return err
-	}
 	// Update in-mem map used for self-healing; do it after a volume has been staged.
 	// Beyond here if there is a problem with the session or there are missing LUNs
 	// then self-healing should be able to fix those issues.
@@ -1361,10 +1385,12 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	// Ensure that the temporary mount point created during a filesystem expand operation is removed.
 	if err := utils.UmountAndRemoveTemporaryMountPoint(ctx, stagingTargetPath); err != nil {
-		Logc(ctx).WithField("stagingTargetPath", stagingTargetPath).Errorf(
-			"Failed to remove directory in staging target path; %s", err)
+		Logc(ctx).WithFields(LogFields{
+			"volumeId":          volumeId,
+			"stagingTargetPath": stagingTargetPath,
+		}).WithError(err).Errorf("Failed to remove directory in staging target path.")
 		errStr := fmt.Sprintf("failed to remove temporary directory in staging target path %s; %s",
-			stagingTargetPath, err)
+			stagingTargetPath, err.Error())
 		return status.Error(codes.Internal, errStr)
 	}
 
@@ -1389,8 +1415,7 @@ func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 	}
 
 	nodeUnstageISCSIVolumeAttempt := func() error {
-		err := p.nodeUnstageISCSIVolume(ctx, req, publishInfo, force)
-		return err
+		return p.nodeUnstageISCSIVolume(ctx, req, publishInfo, force)
 	}
 
 	nodeUnstageISCSIVolumeBackoff := backoff.NewExponentialBackOff()
@@ -1829,7 +1854,9 @@ func (p *Plugin) performNodeCleanup(ctx context.Context) error {
 
 // discoverDesiredPublicationState discovers the desired state of published volumes on the CSI controller and returns
 // a mapping of volumeID -> publications.
-func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (map[string]*utils.VolumePublicationExternal, error) {
+func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (
+	map[string]*utils.VolumePublicationExternal, error,
+) {
 	Logc(ctx).Debug("Discovering desired publication state.")
 
 	publications, err := p.restClient.ListVolumePublicationsForNode(ctx, p.nodeName)
@@ -1887,7 +1914,9 @@ func (p *Plugin) discoverStalePublications(
 
 // cleanStalePublications cleans published paths on the host node for attached volumes with no matching publication
 // object in the CSI controller. It should never publish volumes to the node.
-func (p *Plugin) cleanStalePublications(ctx context.Context, stalePublications map[string]*utils.VolumeTrackingInfo) error {
+func (p *Plugin) cleanStalePublications(
+	ctx context.Context, stalePublications map[string]*utils.VolumeTrackingInfo,
+) error {
 	Logc(ctx).Debug("Cleaning stale node publication state.")
 
 	// Clean stale volume publication state.
@@ -2476,7 +2505,8 @@ func (p *Plugin) nodePublishNVMeVolume(
 	return &csi.NodePublishVolumeResponse{}, nil
 }
 
-func (p *Plugin) nodeStageSANVolume(ctx context.Context, req *csi.NodeStageVolumeRequest,
+func (p *Plugin) nodeStageSANVolume(
+	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
 	var err error
 	var fstype string
