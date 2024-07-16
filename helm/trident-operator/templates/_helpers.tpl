@@ -206,3 +206,13 @@ Trident image pull policy
 {{- "IfNotPresent" }}
 {{- end }}
 {{- end }}
+
+{{/*
+Trident orchestrator namespace
+*/}}
+{{- define "trident.orchestratorNamespace" -}}
+{{- if .Values.orchestratorNamespace }}
+{{- .Values.orchestratorNamespace }}
+{{- else }}
+{{- .Release.Namespace }}{{- end }}
+{{- end }}
