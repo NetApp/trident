@@ -981,15 +981,15 @@ spec:
             scheme: HTTPS
             port: {PROBE_PORT}
           failureThreshold: 5
-          timeoutSeconds: 1
-          periodSeconds: 5
+          timeoutSeconds: 5
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
             port: {PROBE_PORT}
-          failureThreshold: 3
-          timeoutSeconds: 1
+          failureThreshold: 5
+          timeoutSeconds: 5
           periodSeconds: 10
         readinessProbe:
           httpGet:
@@ -997,8 +997,9 @@ spec:
             scheme: HTTPS
             port: {PROBE_PORT}
           failureThreshold: 5
-          initialDelaySeconds: 10
+          timeoutSeconds: 5
           periodSeconds: 10
+          initialDelaySeconds: 15
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -1179,15 +1180,15 @@ spec:
             scheme: HTTPS
             port: healthz
           failureThreshold: 5
-          timeoutSeconds: 3
-          periodSeconds: 5
+          timeoutSeconds: 5
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
             port: healthz
-          failureThreshold: 3
-          timeoutSeconds: 3
+          failureThreshold: 5
+          timeoutSeconds: 5
           periodSeconds: 10
         readinessProbe:
           httpGet:
@@ -1195,9 +1196,9 @@ spec:
             scheme: HTTPS
             port: healthz
           failureThreshold: 5
-          initialDelaySeconds: 10
-          timeoutSeconds: 3
+          timeoutSeconds: 5
           periodSeconds: 10
+          initialDelaySeconds: 15
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
