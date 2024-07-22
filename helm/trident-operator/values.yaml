@@ -148,6 +148,10 @@ iscsiSelfHealingWaitTime: "7m0s"
 # configuratorReconcileInterval is the resource refresh rate for the auto generated backends.
 configuratorReconcileInterval: 30m0s
 
+# forceInstallRancherClusterRoles will install a Rancher specific ClusterRole and ClusterRoleBinding when set to true.
+# When set to false, the ClusterRole and ClusterRoleBinding will be installed only when a Rancher cluster is detected. 
+forceInstallRancherClusterRoles: false
+
 # Auto generated ANF backend related fields consumed by the configurator controller.
 anfConfigurator:
   enabled: false

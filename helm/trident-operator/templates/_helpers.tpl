@@ -206,3 +206,32 @@ Trident image pull policy
 {{- "IfNotPresent" }}
 {{- end }}
 {{- end }}
+
+{{/*
+Determines if rancher roles should be created by checking for the presence of the cattle-system namespace
+or annotations with the prefix "cattle.io/" in the namespace where the chart is being installed.
+Override auto-detection and force install the roles by setting Values.forceInstallRancherClusterRoles to 'true'.
+*/}}
+{{- define "shouldInstallRancherRoles" -}}
+{{- $isRancher := false -}}
+{{- $currentNs := .Release.Namespace -}}
+{{- $currentNsObj := lookup "v1" "Namespace" "" $currentNs -}}
+{{- /* Check if 'forceInstallRancherClusterRoles' is set */ -}}
+{{- if .Values.forceInstallRancherClusterRoles }}
+    {{- $isRancher = true -}}
+{{- end }}
+{{- /* Check if the annotation prefix "cattle.io/" exists on the namespace */ -}}
+{{- if $currentNsObj }}
+  {{- range $key, $value := $currentNsObj.metadata.annotations }}
+    {{- if hasPrefix "cattle.io/" $key }}
+      {{- $isRancher = true -}}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- /* Check if cattle-system ns exists */ -}}
+{{- $cattleNs := lookup "v1" "Namespace" "" "cattle-system" -}}
+{{- if $cattleNs }}
+  {{- $isRancher = true -}}
+{{- end }}
+{{- $isRancher -}}
+{{- end }}
