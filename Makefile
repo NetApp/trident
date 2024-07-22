@@ -92,7 +92,7 @@ DEFAULT_AUTOSUPPORT_IMAGE ?=
 DEFAULT_ACP_IMAGE ?=
 
 # Constants
-ALL_PLATFORMS = linux/amd64 linux/arm64 windows/amd64/ltsc2022 darwin/amd64
+ALL_PLATFORMS = linux/amd64 linux/arm64 windows/amd64/ltsc2022 windows/amd64/ltsc2019 darwin/amd64
 DEFAULT_REGISTRY = docker.io/netapp
 TRIDENT_CONFIG_PKG = github.com/netapp/trident/config
 OPERATOR_CONFIG_PKG = github.com/netapp/trident/operator/config
