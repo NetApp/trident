@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -2882,7 +2882,7 @@ func TestInitializeSANDriver(t *testing.T) {
 	err = InitializeSANDriver(ctx, driverContext, mockAPI, config, mockValidate, backendUUID)
 
 	assert.Error(t, err)
-	assert.Equal(t, "will not enable CHAP for SVM testSVM; 1 exisiting LUNs would lose access", err.Error())
+	assert.Equal(t, "will not enable CHAP for SVM testSVM; 1 existing LUNs would lose access", err.Error())
 }
 
 func TestEMSHeartbeat(t *testing.T) {
@@ -3675,13 +3675,15 @@ func TestResizeValidation(t *testing.T) {
 	assert.Error(t, err)
 
 	// Test4: Error flow: Requested Volume size is less than the previous size
-	_, err = resizeValidation(ctx, volConfig, uint64(sizeBytes-100), mockVolumeExists, mockVolumeSizeLarger, mockVolumeInfo)
+	_, err = resizeValidation(ctx, volConfig, uint64(sizeBytes-100), mockVolumeExists, mockVolumeSizeLarger,
+		mockVolumeInfo)
 	assert.Error(t, err)
 	ok, _ := errors.HasUnsupportedCapacityRangeError(err)
 	assert.Equal(t, true, ok)
 
 	// Test5: Positive flow: Volume should resize
-	newSize, err := resizeValidation(ctx, volConfig, uint64(sizeBytes*10), mockVolumeExists, mockVolumeSizeLarger, mockVolumeInfoWithSnapshotReserve)
+	newSize, err := resizeValidation(ctx, volConfig, uint64(sizeBytes*10), mockVolumeExists, mockVolumeSizeLarger,
+		mockVolumeInfoWithSnapshotReserve)
 	assert.NoError(t, err)
 	assert.Equal(t, uint64(sizeBytes*100), newSize)
 }

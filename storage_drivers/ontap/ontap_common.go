@@ -971,7 +971,7 @@ func InitializeSANDriver(
 
 			if len(lunsResponse) > 0 {
 				return fmt.Errorf(
-					"will not enable CHAP for SVM %v; %v exisiting LUNs would lose access",
+					"will not enable CHAP for SVM %v; %v existing LUNs would lose access",
 					config.SVM, len(lunsResponse))
 			}
 		}
@@ -1105,7 +1105,8 @@ func InitializeOntapAPI(
 		// One of the primary reasons could be the lack of authorization for the REST client.
 		// In such cases, we attempt to fall back to ZAPI.
 
-		Logc(ctx).WithField("error", err).Error("Error creating ONTAP REST API client for initial call. Falling back to ZAPI.")
+		msg := "Error creating ONTAP REST API client for initial call. Falling back to ZAPI."
+		Logc(ctx).WithError(err).Error(msg)
 
 		// If the user has set the useREST flag to true, return an error.
 		if config.UseREST != nil && *config.UseREST == true {
@@ -1171,7 +1172,8 @@ func InitializeOntapAPI(
 	*/
 	if !IsRESTSupported {
 		if config.UseREST != nil && *config.UseREST == true {
-			return nil, fmt.Errorf("ONTAP version is %s, trident does not support REST calls, please remove `useRest=true` from the backend config", ontapVer)
+			return nil, fmt.Errorf("ONTAP version is %s, trident does not support REST calls, please remove `useRest=true` from the backend config",
+				ontapVer)
 		} else {
 			if ontapAPI, err = api.NewZAPIClientFromOntapConfig(ctx, config, numRecords); err != nil {
 				return nil, fmt.Errorf("error creating ONTAP API client: %v", err)
@@ -1192,7 +1194,8 @@ func InitializeOntapAPI(
 		}
 	} else {
 		if config.UseREST != nil && *config.UseREST == false {
-			return nil, fmt.Errorf("ONTAP version %s does not support ZAPI calls, please remove `useRest=false` from the backend config", ontapVer)
+			return nil, fmt.Errorf("ONTAP version %s does not support ZAPI calls, please remove `useRest=false` from the backend config",
+				ontapVer)
 		}
 	}
 
@@ -1637,7 +1640,8 @@ func GetVolumeSize(sizeBytes uint64, poolDefaultSizeBytes string) uint64 {
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
 	if sizeBytes < MinimumVolumeSizeBytes {
-		Log().Infof("Requested size %v is too small. Setting volume size to the minimum allowable %v.", sizeBytes, MinimumVolumeSizeBytes)
+		Log().Infof("Requested size %v is too small. Setting volume size to the minimum allowable %v.", sizeBytes,
+			MinimumVolumeSizeBytes)
 		sizeBytes = MinimumVolumeSizeBytes
 	}
 
@@ -2741,7 +2745,8 @@ func getInternalVolumeNameCommon(
 // it processes the resulting string to replace any non-alphanumeric characters with underscores,
 // remove multiple underscores, and remove any underscores at the beginning or end of the string.
 // The function returns the processed string as the generated volume name.
-func GetVolumeNameFromTemplate(ctx context.Context, config *drivers.OntapStorageDriverConfig, volConfig *storage.VolumeConfig,
+func GetVolumeNameFromTemplate(
+	ctx context.Context, config *drivers.OntapStorageDriverConfig, volConfig *storage.VolumeConfig,
 	pool storage.Pool,
 ) (string, error) {
 	t, err := template.New("templatizedVolumeName").Parse(pool.InternalAttributes()[NameTemplate])

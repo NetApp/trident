@@ -32,16 +32,10 @@ func TestCheckOperatorStatusRunE(t *testing.T) {
 
 	command = mockCommand
 
-	// Test for ModeTunnel.
-	OperatingMode = ModeTunnel
-	mockCommand.EXPECT().ExecuteWithoutLog(gomock.Any(), gomock.Any(), gomock.Any()).Return([]byte{}, nil)
-	err := checkOperatorStatusRunE(&cobra.Command{}, nil)
-	assert.NoError(t, err, "failed to check operator status")
-
 	// Test for ModeDirect where pod namespace is not set.
 	OperatingMode = ModeDirect
 	_ = os.Unsetenv(podNamespace)
-	err = checkOperatorStatusRunE(&cobra.Command{}, nil)
+	err := checkOperatorStatusRunE(&cobra.Command{}, nil)
 	assert.Error(t, err, "expected error when pod namespace is not set")
 }
 

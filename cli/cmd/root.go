@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -493,7 +493,16 @@ func TunnelCommand(commandArgs []string) ([]byte, error) {
 	}
 
 	// Invoke tridentctl inside the Trident pod
-	return execKubernetesCLI(execCommand...)
+	cmd := execKubernetesCLIRaw(execCommand...)
+	var outbuff, errbuff bytes.Buffer
+	cmd.Stdout = &outbuff
+	cmd.Stderr = &errbuff
+	err := cmd.Run()
+	// If there is output from command return output, otherwise return stderr instead
+	if outbuff.Len() == 0 {
+		return errbuff.Bytes(), err
+	}
+	return outbuff.Bytes(), err
 }
 
 func printOutput(cmd *cobra.Command, out []byte, err error) {

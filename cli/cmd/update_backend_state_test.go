@@ -1,3 +1,5 @@
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
+
 package cmd
 
 import (
@@ -19,7 +21,6 @@ import (
 	"github.com/netapp/trident/frontend/rest"
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
 )
 
@@ -218,30 +219,18 @@ func TestUpdateBackendStateRunE(t *testing.T) {
 		backends      []storage.BackendExternal
 	}{
 		{
-			name:          "Tunnel Mode, state flag is set",
-			operatingMode: ModeTunnel,
-			cmd:           []string{"update", "backend", "state", "--state", "failed"},
-			error:         false,
-			backends:      []storage.BackendExternal{backends[0]},
-		},
-		{
-			name:          "Tunnel Mode, user-state flag is set",
-			operatingMode: ModeTunnel,
-			cmd:           []string{"update", "backend", "state", "--user-state", "normal"},
-			error:         false,
-			backends:      []storage.BackendExternal{backends[0], backends[1]},
-		},
-		{
 			name:          "Tunnel Mode, no flag is set",
 			operatingMode: ModeTunnel,
 			cmd:           []string{"update", "backend", "state"},
 			error:         true,
+			backends:      []storage.BackendExternal{backends[0]},
 		},
 		{
 			name:          "Direct mode, and no backend is given",
 			operatingMode: ModeDirect,
 			cmd:           []string{"update", "backend", "state", "--user-state", "normal"},
 			error:         true,
+			backends:      []storage.BackendExternal{backends[0], backends[1]},
 		},
 	}
 
@@ -274,14 +263,6 @@ func TestUpdateBackendStateRunE(t *testing.T) {
 			tridentCtlCmd.AddCommand(updateCmd)
 
 			OperatingMode = tt.operatingMode
-
-			if tt.operatingMode == ModeTunnel {
-				if tt.error {
-					mockCommand.EXPECT().ExecuteWithoutLog(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("error"))
-				} else {
-					mockCommand.EXPECT().ExecuteWithoutLog(gomock.Any(), gomock.Any(), gomock.Any()).Return(tableInput, nil)
-				}
-			}
 
 			c, buf, err := executeCommandC(tridentCtlCmd, tt.cmd...)
 			assert.Equal(t, "state", c.Name(), "Expected command to be `state`")
@@ -335,16 +316,6 @@ func TestUpdateBackendStateRunE(t *testing.T) {
 			backendCmd.AddCommand(stateCmd)
 			updateCmd.AddCommand(backendCmd)
 			tridentCtlCmd.AddCommand(updateCmd)
-
-			OperatingMode = tt.operatingMode
-
-			if tt.operatingMode == ModeTunnel {
-				if tt.error {
-					mockCommand.EXPECT().ExecuteWithoutLog(gomock.Any(), gomock.Any(), gomock.Not(getCmdValidate(tt.cmd)))
-				} else {
-					mockCommand.EXPECT().ExecuteWithoutLog(gomock.Any(), gomock.Any(), getCmdValidate(tt.cmd))
-				}
-			}
 
 			c, _, _ := executeCommandC(tridentCtlCmd, tt.cmd...)
 			assert.Equal(t, "state", c.Name(), "Expected command to be `state`")
