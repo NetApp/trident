@@ -2619,7 +2619,7 @@ func constructNodeSelector(nodeLabels map[string]string) string {
 
 	if nodeLabels != nil {
 		for key, value := range nodeLabels {
-			nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - %s\n", key, value)
+			nodeSelector += fmt.Sprintf("- key: %s\n  operator: In\n  values:\n  - '%s'\n", key, value)
 		}
 	}
 	return nodeSelector

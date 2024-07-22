@@ -272,7 +272,7 @@ func TestGetCSIDeploymentYAML_NodeSelectors(t *testing.T) {
                   - key: node-label-key
                     operator: In
                     values:
-                    - test1
+                    - 'test1'
 `
 
 	yamlData := GetCSIDeploymentYAML(deploymentArgs)
@@ -627,7 +627,7 @@ func TestGetCSIDaemonSetYAMLLinux_NodeSelectors(t *testing.T) {
                   - key: node-label-key
                     operator: In
                     values:
-                    - test1
+                    - 'test1'
 `
 	yamlData := GetCSIDaemonSetYAMLLinux(daemonsetArgs)
 	_, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -918,12 +918,13 @@ func TestGetCSIDaemonSetYAMLWindows_Tolerations(t *testing.T) {
 }
 
 func TestConstructNodeSelector(t *testing.T) {
-	nodeSelMap := map[string]string{"node-label-name": "master"}
+	nodeSelMap := map[string]string{"node-label-name": "master", "node-label-number": "20", "node-label-bool": "true", "node-label-alphanum": "alph20"}
 
-	expectedNodeSelString := "- key: node-label-name\n  operator: In\n  values:\n  - master\n"
+	expectedNodeSelString := []string{"- key: node-label-name\n  operator: In\n  values:\n  - 'master'\n", "- key: node-label-number\n  operator: In\n  values:\n  - '20'\n", "- key: node-label-bool\n  operator: In\n  values:\n  - 'true'\n", "- key: node-label-alphanum\n  operator: In\n  values:\n  - 'alph20'\n"}
+
 	result := constructNodeSelector(nodeSelMap)
-
-	assert.Equal(t, expectedNodeSelString, result)
+	expectedString := strings.Join(expectedNodeSelString, "")
+	assert.Equal(t, expectedString, result)
 }
 
 func TestGetNamespaceYAML(t *testing.T) {
