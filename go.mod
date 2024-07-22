@@ -63,6 +63,7 @@ require (
 	k8s.io/apimachinery v0.28.10 // github.com/kubernetes/apimachinery
 	k8s.io/client-go v0.28.10 // github.com/kubernetes/client-go
 	k8s.io/mount-utils v0.28.10 // github.com/kubernetes/mount-utils
+	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // github.com/kubernetes/utils
 	sigs.k8s.io/cloud-provider-azure/pkg/azclient v0.0.23 // github.com/kubernetes-sigs/cloud-provider-azure
 )
 
@@ -169,7 +170,6 @@ require (
 	howett.net/plist v0.0.0-20181124034731-591f970eefbb // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect

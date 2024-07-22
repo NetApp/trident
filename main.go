@@ -6,6 +6,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -54,6 +55,8 @@ var (
 	k8sConfigPath = flag.String("k8s_config_path", "", "Path to KubeConfig file.")
 	k8sPod        = flag.Bool("k8s_pod", false, "Enables dynamic storage provisioning "+
 		"for Kubernetes if running in a pod.")
+	k8sApiQPS   = flag.Float64("k8s_api_qps", config.DefaultK8sAPIQPS, "Kubernetes client QPS limit")
+	k8sApiBurst = flag.Int("k8s_api_burst", config.DefaultK8sAPIBurst, "Kubernetes client burst limit")
 
 	// Docker
 	dockerPluginMode = flag.Bool("docker_plugin_mode", false, "Enable docker plugin mode")
@@ -143,6 +146,16 @@ func processCmdLineArgs(ctx context.Context) {
 	var err error
 
 	flag.Visit(printFlag)
+
+	if *k8sApiQPS <= math.MaxFloat32 {
+		config.K8sAPIQPS = float32(*k8sApiQPS)
+	} else {
+		Logc(ctx).Warnf("Kubernetes client QPS value %v is too large, using default value", *k8sApiQPS)
+		config.K8sAPIQPS = config.DefaultK8sAPIQPS
+	}
+	config.K8sAPIBurst = *k8sApiBurst
+
+	Logc(ctx).Debugf("Setting Kubernetes client QPS to %v  and burst to %v", *k8sApiQPS, *k8sApiBurst)
 
 	// Infer frontend from arguments
 	enableCSI = *csiEndpoint != ""

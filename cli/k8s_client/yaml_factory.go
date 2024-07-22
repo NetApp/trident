@@ -385,7 +385,7 @@ const acpContainerYAMLTemplate = `
 `
 
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
-	var debugLine, sideCarLogLevel, ipLocalhost, enableACP string
+	var debugLine, sideCarLogLevel, ipLocalhost, enableACP, K8sAPISidecarThrottle, K8sAPITridentThrottle string
 	Log().WithFields(LogFields{
 		"Args": args,
 	}).Trace(">>>> GetCSIDeploymentYAML")
@@ -489,6 +489,13 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}", "")
 	}
 
+	if args.K8sAPIQPS != 0 {
+		queriesPerSecond := args.K8sAPIQPS
+		burst := getBurstValueForQPS(queriesPerSecond)
+		K8sAPITridentThrottle = fmt.Sprintf("- --k8s_api_qps=%d\n        - --k8s_api_burst=%d", queriesPerSecond, burst)
+		K8sAPISidecarThrottle = fmt.Sprintf("- --kube-api-qps=%d\n        - --kube-api-burst=%d", queriesPerSecond, burst)
+	}
+
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_REGISTRY}", args.ImageRegistry)
@@ -520,6 +527,8 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = utils.ReplaceMultilineYAMLTag(deploymentYAML, "NODE_TOLERATIONS", constructTolerations(args.Tolerations))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_FORCE_DETACH}", strconv.FormatBool(args.EnableForceDetach))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", enableACP)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -585,6 +594,7 @@ spec:
         - "--metrics"
         {ENABLE_ACP}
         {DEBUG}
+        {K8S_API_CLIENT_TRIDENT_THROTTLE}
         livenessProbe:
           exec:
             command:
@@ -658,6 +668,7 @@ spec:
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
         {PROVISIONER_FEATURE_GATES}
+        {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -676,6 +687,7 @@ spec:
         - "--timeout=60s"
         - "--retry-interval-start=10s"
         - "--csi-address=$(ADDRESS)"
+        {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -689,6 +701,7 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
+        {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -706,6 +719,7 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
+        {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -2719,4 +2733,9 @@ func constructServiceAccountAnnotation(cloudIdentity string) string {
 	serviceAccountAnnotationData += fmt.Sprintf("    %s", cloudIdentity)
 
 	return serviceAccountAnnotationData
+}
+
+func getBurstValueForQPS(queriesPerSecond int) int {
+	// The burst value is set to twice the QPS value, which seems to be a common practice
+	return queriesPerSecond * 2
 }

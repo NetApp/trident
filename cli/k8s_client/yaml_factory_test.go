@@ -95,6 +95,7 @@ func TestYAMLFactory(t *testing.T) {
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
 		EnableACP:               true,
 		IdentityLabel:           true,
+		K8sAPIQPS:               100,
 	}
 
 	yamlsOutputs := []string{
@@ -173,6 +174,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		UseIPv6:                 true,
 		SilenceAutosupport:      false,
 		EnableACP:               true,
+		K8sAPIQPS:               100,
 	}
 
 	yamlsOutputs := []string{
@@ -472,6 +474,47 @@ func TestGetCSIDeploymentYAMLAzure(t *testing.T) {
 		}
 	}
 	assert.True(t, envExist && volumeExist && volumeMountExist, "expected env var AZURE_CREDENTIAL_FILE to exist")
+}
+
+func TestGetCSIDeploymentYAML_K8sAPIQPS(t *testing.T) {
+	const k8sAPIQPS = 100
+	args := &DeploymentYAMLArguments{
+		K8sAPIQPS: k8sAPIQPS,
+	}
+	yamlData := GetCSIDeploymentYAML(args)
+	deployment := appsv1.Deployment{}
+	err := yaml.Unmarshal([]byte(yamlData), &deployment)
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", yamlData)
+	}
+
+	containerHasArgument := func(container v1.Container, expectedArg string) bool {
+		for _, arg := range container.Args {
+			if arg == expectedArg {
+				return true
+			}
+		}
+		return false
+	}
+
+	// trident-main container flag validation
+	tridentMainQPSFlag := fmt.Sprintf("--k8s_api_qps=%d", k8sAPIQPS)
+	tridentMainBurstFlag := fmt.Sprintf("--k8s_api_burst=%d", getBurstValueForQPS(k8sAPIQPS))
+	tridentMainContainer := deployment.Spec.Template.Spec.Containers[0]
+	assert.True(t, containerHasArgument(tridentMainContainer, tridentMainQPSFlag),
+		"expected trident-main to have k8s_api_qps flag")
+	assert.True(t, containerHasArgument(tridentMainContainer, tridentMainBurstFlag),
+		"expected trident-main to have k8s_api_burst flag")
+
+	sidecarQPSFlag := fmt.Sprintf("--kube-api-qps=%d", k8sAPIQPS)
+	sidecarBurstFlag := fmt.Sprintf("--kube-api-burst=%d", getBurstValueForQPS(k8sAPIQPS))
+	// trident-main and trident-autosupport containers will not have sidecar flags
+	for _, container := range deployment.Spec.Template.Spec.Containers[2:] {
+		assert.True(t, containerHasArgument(container, sidecarQPSFlag),
+			"expected sidecar %v to have kube-api-qps flag", container.Name)
+		assert.True(t, containerHasArgument(container, sidecarBurstFlag),
+			"expected sidecar %v to have kube-api-burst flag", container.Name)
+	}
 }
 
 func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {

@@ -68,3 +68,6 @@ spec:
   acpImage: {{ .Values.acpImage }}
   iscsiSelfHealingInterval: {{ .Values.iscsiSelfHealingInterval }}
   iscsiSelfHealingWaitTime: {{ .Values.iscsiSelfHealingWaitTime }}
+  {{- if .Values.k8sAPIQPS }}
+  k8sAPIQPS: {{ .Values.k8sAPIQPS }}
+  {{- end }}

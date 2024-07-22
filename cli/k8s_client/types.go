@@ -176,6 +176,7 @@ type DeploymentYAMLArguments struct {
 	EnableACP               bool                  `json:"enableACP"`
 	CloudProvider           string                `json:"cloudProvider"`
 	IdentityLabel           bool                  `json:"identityLabel"`
+	K8sAPIQPS               int                   `json:"k8sAPIQPS"`
 }
 
 type DaemonsetYAMLArguments struct {

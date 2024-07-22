@@ -126,6 +126,7 @@ var (
 	cloudIdentity            string
 	iscsiSelfHealingInterval time.Duration
 	iscsiSelfHealingWaitTime time.Duration
+	k8sAPIQPS                int
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -248,6 +249,9 @@ func init() {
 
 	installCmd.Flags().StringVar(&cloudProvider, "cloud-provider", "", "Name of the cloud provider")
 	installCmd.Flags().StringVar(&cloudIdentity, "cloud-identity", "", "Cloud identity to be set on service account")
+
+	installCmd.Flags().IntVar(&k8sAPIQPS, "k8s-api-qps", 0, "The QPS used by the controller while talking "+
+		"with the Kubernetes API server. The Burst value is automatically set as a function of the QPS value.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -676,6 +680,7 @@ func prepareYAMLFiles() error {
 		EnableACP:               enableACP,
 		CloudProvider:           cloudProvider,
 		IdentityLabel:           identityLabel,
+		K8sAPIQPS:               k8sAPIQPS,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -1128,6 +1133,7 @@ func installTrident() (returnError error) {
 			EnableACP:               enableACP,
 			CloudProvider:           cloudProvider,
 			IdentityLabel:           identityLabel,
+			K8sAPIQPS:               k8sAPIQPS,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))

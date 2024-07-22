@@ -166,6 +166,9 @@ const (
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry = "registry.k8s.io/sig-storage"
 
+	DefaultK8sAPIQPS   = 100.0
+	DefaultK8sAPIBurst = 200
+
 	NamespaceFile          = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 	VolumeTrackingInfoPath = "/var/lib/trident/tracking"
 
@@ -265,6 +268,10 @@ var (
 
 	// TopologyZoneKeys contains well-known keys for topology zone labels
 	TopologyZoneKeys = []string{"topology.kubernetes.io/zone"}
+
+	// QPS and Burst for k8s clients
+	K8sAPIQPS   float32
+	K8sAPIBurst int
 )
 
 func IsValidProtocol(p Protocol) bool {

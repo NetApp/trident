@@ -3262,7 +3262,7 @@ func (o *TridentOrchestrator) publishVolume(
 	volume, ok := o.subordinateVolumes[volumeName]
 	if ok {
 		// If volume is a subordinate, replace it with its source volume since that is what we will manipulate.
-		// The inclusion of all volume publications for the source and it subordinates will produce the correct
+		// The inclusion of all volume publications for the source and its subordinates will produce the correct
 		// set of exported nodes.
 		if volume, ok = o.volumes[volume.Config.ShareSourceVolume]; !ok {
 			return errors.NotFoundError("source volume for subordinate volumes %s not found",

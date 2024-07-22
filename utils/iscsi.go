@@ -224,7 +224,7 @@ func AttachISCSIVolume(
 
 		// To avoid LUN ID conflict with a ghost device below checks
 		// are necessary:
-		// Conflict 1: Due to race conditons, it is possible a ghost
+		// Conflict 1: Due to race conditions, it is possible a ghost
 		//             DM device is discovered instead of the actual
 		//             DM device.
 		// Conflict 2: Some OS like RHEL displays the ghost device size

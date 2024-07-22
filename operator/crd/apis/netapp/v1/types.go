@@ -74,6 +74,7 @@ type TridentOrchestratorSpec struct {
 	ACPImage                     string            `json:"acpImage,omitempty"`
 	ISCSISelfHealingInterval     string            `json:"iscsiSelfHealingInterval,omitempty"`
 	ISCSISelfHealingWaitTime     string            `json:"iscsiSelfHealingWaitTime,omitempty"`
+	K8sAPIQPS                    int               `json:"k8sAPIQPS,omitempty"`
 }
 
 // Toleration

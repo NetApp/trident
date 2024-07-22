@@ -1233,7 +1233,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 }
 
 // ensureAttachISCSIVolume attempts to attach the volume to the local host
-// with a retry logic based on the pubish information passed in.
+// with a retry logic based on the publish information passed in.
 func (p *Plugin) ensureAttachISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
 	publishInfo *utils.VolumePublishInfo, attachTimeout time.Duration,

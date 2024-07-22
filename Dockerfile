@@ -1,6 +1,6 @@
 ARG ARCH=amd64
 
-FROM --platform=linux/${ARCH} alpine:latest as baseimage
+FROM --platform=linux/${ARCH} alpine:latest AS baseimage
 
 RUN apk add nfs-utils
 

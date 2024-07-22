@@ -98,6 +98,8 @@ var (
 	nodePluginNodeSelector       map[string]string
 	nodePluginTolerations        []netappv1.Toleration
 
+	k8sAPIQPS int
+
 	CRDnames = []string{
 		ActionMirrorUpdateCRDName,
 		ActionSnapshotRestoreCRDName,
@@ -476,6 +478,8 @@ func (i *Installer) setInstallationParams(
 	}
 	cloudProvider = cr.Spec.CloudProvider
 	cloudIdentity = cr.Spec.CloudIdentity
+
+	k8sAPIQPS = cr.Spec.K8sAPIQPS
 
 	// Owner Reference details set on each of the Trident object created by the operator
 	controllingCRDetails := make(map[string]string)
@@ -1516,6 +1520,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		ACPImage:                acpImage,
 		EnableACP:               enableACP,
 		IdentityLabel:           identityLabel,
+		K8sAPIQPS:               k8sAPIQPS,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
