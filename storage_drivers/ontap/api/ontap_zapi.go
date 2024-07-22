@@ -2212,7 +2212,6 @@ func (c Client) SnapshotDelete(snapshotName, volumeName string) (*azgo.SnapshotD
 	response, err := azgo.NewSnapshotDeleteRequest().
 		SetVolume(volumeName).
 		SetSnapshot(snapshotName).
-		SetIgnoreOwners(true).
 		ExecuteUsing(c.zr)
 	return response, err
 }
