@@ -2,7 +2,13 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v24.02.0
+## Changes since v24.06.0
+
+**Fixes:**
+
+- Added support for Windows Server 2019.
+
+## v24.06.0
 
 - **IMPORTANT**: The 'limitVolumeSize' parameter now limits qtree/LUN sizes in the ONTAP economy drivers.  Use the new 'limitVolumePoolSize'
   parameter to control Flexvol sizes in those drivers.  (Issue [#341](https://github.com/NetApp/trident/issues/341)).
