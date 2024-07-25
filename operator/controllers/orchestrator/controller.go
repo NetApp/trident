@@ -1364,7 +1364,7 @@ func (c *Controller) updateTridentOrchestratorCRStatus(
 		Version:                   version,
 		Namespace:                 namespace,
 		CurrentInstallationParams: installParams,
-		ACPVersion:                acpVersion,
+		ACPVersion:                version,
 	}
 
 	if reflect.DeepEqual(tridentCR.Status, newStatusDetails) {

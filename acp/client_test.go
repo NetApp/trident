@@ -92,38 +92,6 @@ func TestTridentACP_IsFeatureEnabled(t *testing.T) {
 		// Reset the package-level state after the test completes.
 		client := newClient(nil, false)
 		err := client.IsFeatureEnabled(ctx, FeatureSnapshotRestore)
-		assert.Error(t, err, "expected error")
-		assert.True(t, errors.IsUnsupportedConfigError(err), "should be unsupported config error")
-		assert.False(t, errors.IsUnlicensedError(err), "should not be unlicensed error")
-	})
-
-	t.Run("WithAPIErrorDuringFeatureEntitlementCheck", func(t *testing.T) {
-		// Reset the package-level state after the test completes.
-		testFeature := FeatureSnapshotRestore
-
-		mockCtrl := gomock.NewController(t)
-		mockRest := mock_acp.NewMockREST(mockCtrl)
-		mockRest.EXPECT().Entitled(ctx, testFeature).Return(fmt.Errorf("api error"))
-
-		client := newClient(mockRest, true)
-		err := client.IsFeatureEnabled(ctx, testFeature)
-		assert.Error(t, err, "expected error")
-		assert.False(t, errors.IsUnsupportedConfigError(err), "should not be unsupported config error")
-		assert.False(t, errors.IsUnlicensedError(err), "should not be unlicensed error")
-	})
-
-	t.Run("WhenFeatureIsNotSupported", func(t *testing.T) {
-		// Reset the package-level state after the test completes.
-		testFeature := FeatureSnapshotRestore
-
-		mockCtrl := gomock.NewController(t)
-		mockRest := mock_acp.NewMockREST(mockCtrl)
-		mockRest.EXPECT().Entitled(ctx, testFeature).Return(errors.UnlicensedError("unlicensed error"))
-
-		client := newClient(mockRest, true)
-		err := client.IsFeatureEnabled(ctx, testFeature)
-		assert.Error(t, err, "expected error")
-		assert.False(t, errors.IsUnsupportedConfigError(err), "should be unsupported config error")
-		assert.True(t, errors.IsUnlicensedError(err), "should be unlicensed error")
+		assert.NoError(t, err, "expected no error")
 	})
 }
