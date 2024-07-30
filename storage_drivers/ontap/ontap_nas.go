@@ -511,9 +511,7 @@ func (d *NASStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 
-	if err = cloneFlexvol(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshotInternal, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup,
-	); err != nil {
+	if err = cloneFlexvol(ctx, cloneVolConfig, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup); err != nil {
 		return err
 	}
 
@@ -555,6 +553,10 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		return nil
 	}
 
+	defer func() {
+		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.VolumeSnapshotDelete)
+	}()
+
 	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
 	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
 	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
@@ -566,24 +568,25 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// If flexvol has been a snapmirror destination
-	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+	if err = d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
 	}
 
 	// If flexvol has been a snapmirror source
-	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
+	if err = d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
 	}
 
-	if err := d.API.VolumeDestroy(ctx, name, true); err != nil {
+	if err = d.API.VolumeDestroy(ctx, name, true); err != nil {
 		return err
 	}
+
 	if d.Config.NASType == sa.SMB {
-		if err := d.DestroySMBShare(ctx, name); err != nil {
+		if err = d.DestroySMBShare(ctx, name); err != nil {
 			return err
 		}
 	}

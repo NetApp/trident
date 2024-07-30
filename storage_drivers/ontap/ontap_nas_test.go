@@ -894,8 +894,9 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 			}
 
 			result := driver.CreateClone(ctx, nil, volConfig, pool1)
-
 			assert.NoError(t, result)
+			assert.Empty(t, volConfig.CloneSourceSnapshot, "expected clone source snapshot not to be populated")
+			assert.NotEmpty(t, volConfig.CloneSourceSnapshotInternal, "expected clone source snapshot internal to be populated")
 		})
 	}
 }
@@ -1417,11 +1418,18 @@ func TestOntapNasStorageDriverVolumeDestroy_FSx(t *testing.T) {
 }
 
 func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
-	svmName := "SVM1"
-	volName := "testVol"
-	volNameInternal := volName + "Internal"
-	mockAPI, driver := newMockOntapNASDriver(t)
-	volConfig := &storage.VolumeConfig{
+	type parameters struct {
+		configureOntapMockAPI func(mockAPI *mockapi.MockOntapAPI)
+		configureDriver       func(driver *NASStorageDriver)
+		volumeConfig          storage.VolumeConfig
+	}
+
+	const svmName = "SVM1"
+	const volName = "testVol"
+	const volNameInternal = volName + "Internal"
+	const cloneSourceSnapshotInternal = "20240717T102157Z"
+
+	volConfig := storage.VolumeConfig{
 		Size:         "1g",
 		Name:         volName,
 		InternalName: volNameInternal,
@@ -1429,34 +1437,88 @@ func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
 		FileSystem:   "xfs",
 	}
 
-	assert.NotNil(t, mockAPI)
-
-	tests := []struct {
-		message  string
-		nasType  string
-		smbShare string
-	}{
-		{"Test NFS volume", "nfs", ""},
-		{"Test SMB volume", "smb", ""},
-		{"Test SMB volume with share", "smb", volConfig.InternalName},
+	volConfigInternalSnapshot := storage.VolumeConfig{
+		Size:                        "1g",
+		Name:                        volName,
+		InternalName:                volNameInternal,
+		Encryption:                  "false",
+		FileSystem:                  "xfs",
+		CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
 	}
 
-	for _, test := range tests {
-		t.Run(test.message, func(t *testing.T) {
-			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-			mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-			mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, svmName).Return(nil)
-			mockAPI.EXPECT().SnapmirrorRelease(ctx, volConfig.InternalName, svmName).Return(nil)
-			mockAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
-			if test.nasType == sa.SMB {
-				if test.smbShare == "" {
-					mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(true, nil)
-					mockAPI.EXPECT().SMBShareDestroy(ctx, volConfig.InternalName).Return(nil)
-				}
+	tests := map[string]parameters{
+		"Test NFS volume": {
+			volumeConfig: volConfig,
+		},
+		"Test NFS volume with internal snapshot": {
+			configureOntapMockAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Times(1).Return(nil)
+			},
+			volumeConfig: volConfigInternalSnapshot,
+		},
+		"Test SMB volume": {
+			configureOntapMockAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(nil)
+			},
+			configureDriver: func(driver *NASStorageDriver) {
 				driver.Config.NASType = sa.SMB
-				driver.Config.SMBShare = test.smbShare
+				driver.Config.SMBShare = ""
+			},
+			volumeConfig: volConfig,
+		},
+		"Test SMB volume with internal snapshot": {
+			configureOntapMockAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Times(1).Return(nil)
+			},
+			configureDriver: func(driver *NASStorageDriver) {
+				driver.Config.NASType = sa.SMB
+				driver.Config.SMBShare = ""
+			},
+			volumeConfig: volConfigInternalSnapshot,
+		},
+		"Test SMB volume with share": {
+			configureDriver: func(driver *NASStorageDriver) {
+				driver.Config.NASType = sa.SMB
+				driver.Config.SMBShare = volNameInternal
+			},
+			volumeConfig: volConfig,
+		},
+		"Test SMB volume with share and internal snapshot": {
+			configureOntapMockAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Times(1).Return(nil)
+			},
+			configureDriver: func(driver *NASStorageDriver) {
+				driver.Config.NASType = sa.SMB
+				driver.Config.SMBShare = volNameInternal
+			},
+			volumeConfig: volConfigInternalSnapshot,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriver(t)
+			assert.NotNil(t, mockAPI)
+
+			// default API configuration that is needed for all test cases.
+			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+			mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+			mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+			mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
+			mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(nil)
+
+			if params.configureOntapMockAPI != nil {
+				params.configureOntapMockAPI(mockAPI)
 			}
-			result := driver.Destroy(ctx, volConfig)
+
+			if params.configureDriver != nil {
+				params.configureDriver(driver)
+			}
+
+			result := driver.Destroy(ctx, &params.volumeConfig)
 
 			assert.NoError(t, result)
 		})
@@ -1464,42 +1526,63 @@ func TestOntapNasStorageDriverVolumeDestroy(t *testing.T) {
 }
 
 func TestOntapNasStorageDriverVolumeDestroy_VolumeNotFound(t *testing.T) {
-	mockAPI, driver := newMockOntapNASDriver(t)
-	volConfig := &storage.VolumeConfig{
-		Size:       "1g",
-		Encryption: "false",
-		FileSystem: "xfs",
+	type parameters struct {
+		configureOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		expectError       bool
 	}
 
-	tests := []struct {
-		message string
-		valid   bool
-	}{
-		{"volume already deleted", false},
-		{"volume not found", true},
-	}
-	for _, test := range tests {
-		t.Run(test.message, func(t *testing.T) {
-			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-			if test.valid {
-				mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, fmt.Errorf(test.message))
-				result := driver.Destroy(ctx, volConfig)
-				assert.Error(t, result)
-			} else { // case where volume is already deleted
+	tests := map[string]parameters{
+		"volume already deleted": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, fmt.Errorf("volume already deleted"))
+			},
+			expectError: true,
+		},
+		"volume not found": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
-				result := driver.Destroy(ctx, volConfig)
-				assert.NoError(t, result)
+			},
+			expectError: false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriver(t)
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+			if test.configureOntapAPI != nil {
+				test.configureOntapAPI(mockAPI)
+			}
+
+			volConfig := &storage.VolumeConfig{
+				Size:       "1g",
+				Encryption: "false",
+				FileSystem: "xfs",
+			}
+
+			err := driver.Destroy(ctx, volConfig)
+			if test.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.Nil(t, err)
 			}
 		})
 	}
 }
 
 func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorDeleteFail(t *testing.T) {
-	mockAPI, driver := newMockOntapNASDriver(t)
-	svmName := "SVM1"
-	volName := "testVol"
-	volNameInternal := volName + "Internal"
-	volConfig := &storage.VolumeConfig{
+	type parameters struct {
+		configureOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		volConfig         storage.VolumeConfig
+	}
+
+	const svmName = "SVM1"
+	const volName = "testVol"
+	const volNameInternal = volName + "Internal"
+	const cloneSourceSnapshotInternal = "20240717T102157Z"
+
+	volConfig := storage.VolumeConfig{
 		Size:         "1g",
 		Name:         volName,
 		InternalName: volNameInternal,
@@ -1507,22 +1590,62 @@ func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorDeleteFail(t *testing.T) {
 		FileSystem:   "xfs",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
-	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal,
-		svmName).Return(fmt.Errorf("error deleting snapmirror info for volume"))
+	volumeConfigInternalSnapshot := storage.VolumeConfig{
+		Size:                        "1g",
+		Name:                        volName,
+		InternalName:                volNameInternal,
+		Encryption:                  "false",
+		FileSystem:                  "xfs",
+		CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
+	}
 
-	result := driver.Destroy(ctx, volConfig)
+	tests := map[string]parameters{
+		"default failure path": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal,
+					svmName).Return(fmt.Errorf("error deleting snapmirror info for volume"))
+			},
+			volConfig: volConfig,
+		},
+		"failure path with internal snapshot": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal,
+					svmName).Return(fmt.Errorf("error deleting snapmirror info for volume"))
+			},
+			volConfig: volumeConfigInternalSnapshot,
+		},
+	}
 
-	assert.Error(t, result)
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriver(t)
+
+			if params.configureOntapAPI != nil {
+				params.configureOntapAPI(mockAPI)
+			}
+
+			result := driver.Destroy(ctx, &params.volConfig)
+			assert.Error(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorReleaseFail(t *testing.T) {
-	mockAPI, driver := newMockOntapNASDriver(t)
-	svmName := "SVM1"
-	volName := "testVol"
-	volNameInternal := volName + "Internal"
-	volConfig := &storage.VolumeConfig{
+	type parameters struct {
+		configureOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		volConfig         storage.VolumeConfig
+	}
+
+	const svmName = "SVM1"
+	const volName = "testVol"
+	const volNameInternal = volName + "Internal"
+	const cloneSourceSnapshotInternal = "20240717T102157Z"
+
+	volConfig := storage.VolumeConfig{
 		Size:         "1g",
 		Name:         volName,
 		InternalName: volNameInternal,
@@ -1530,23 +1653,64 @@ func TestOntapNasStorageDriverVolumeDestroy_SnapmirrorReleaseFail(t *testing.T) 
 		FileSystem:   "xfs",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
-	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
-	mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal,
-		svmName).Return(fmt.Errorf("error releaseing snapmirror"))
+	volConfigInternalSnapshot := storage.VolumeConfig{
+		Size:                        "1g",
+		Name:                        volName,
+		InternalName:                volNameInternal,
+		Encryption:                  "false",
+		FileSystem:                  "xfs",
+		CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
+	}
 
-	result := driver.Destroy(ctx, volConfig)
+	tests := map[string]parameters{
+		"default failure path": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal,
+					svmName).Return(fmt.Errorf("error releaseing snapmirror"))
+			},
+			volConfig: volConfig,
+		},
+		"failure path with internal snapshot": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal,
+					svmName).Return(fmt.Errorf("error releaseing snapmirror"))
+			},
+			volConfig: volConfigInternalSnapshot,
+		},
+	}
 
-	assert.Error(t, result)
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriver(t)
+
+			if params.configureOntapAPI != nil {
+				params.configureOntapAPI(mockAPI)
+			}
+
+			result := driver.Destroy(ctx, &params.volConfig)
+			assert.Error(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverVolumeDestroy_Fail(t *testing.T) {
-	mockAPI, driver := newMockOntapNASDriver(t)
-	svmName := "SVM1"
-	volName := "testVol"
-	volNameInternal := volName + "Internal"
-	volConfig := &storage.VolumeConfig{
+	type parameters struct {
+		configureOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		volConfig         storage.VolumeConfig
+	}
+
+	const svmName = "SVM1"
+	const volName = "testVol"
+	const volNameInternal = volName + "Internal"
+	const cloneSourceSnapshotInternal = "20240717T102157Z"
+
+	volConfig := storage.VolumeConfig{
 		Size:         "1g",
 		Name:         volName,
 		InternalName: volNameInternal,
@@ -1554,15 +1718,109 @@ func TestOntapNasStorageDriverVolumeDestroy_Fail(t *testing.T) {
 		FileSystem:   "xfs",
 	}
 
-	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-	mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
-	mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
-	mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(fmt.Errorf("cannot delete volume"))
+	volConfigInternalSnapshot := storage.VolumeConfig{
+		Size:                        "1g",
+		Name:                        volName,
+		InternalName:                volNameInternal,
+		Encryption:                  "false",
+		FileSystem:                  "xfs",
+		CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
+	}
 
-	result := driver.Destroy(ctx, volConfig)
+	tests := map[string]parameters{
+		"default failure path": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(fmt.Errorf("cannot delete volume"))
+			},
+			volConfig: volConfig,
+		},
+		"failure path with internal snapshot": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(fmt.Errorf("cannot delete volume"))
+			},
+			volConfig: volConfigInternalSnapshot,
+		},
+	}
 
-	assert.Error(t, result)
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriver(t)
+
+			if params.configureOntapAPI != nil {
+				params.configureOntapAPI(mockAPI)
+			}
+
+			result := driver.Destroy(ctx, &params.volConfig)
+			assert.Error(t, result)
+		})
+	}
+}
+
+func TestOntapNasStorageDriverVolumeDestroy_InternalSnapshotDeleteFailure(t *testing.T) {
+	type parameters struct {
+		configureOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		volConfig         storage.VolumeConfig
+	}
+
+	const svmName = "SVM1"
+	const volName = "testVol"
+	const volNameInternal = volName + "Internal"
+	const cloneSourceSnapshotInternal = "20240717T102157Z"
+
+	volConfigInternalSnapshot := storage.VolumeConfig{
+		Size:                        "1g",
+		Name:                        volName,
+		InternalName:                volNameInternal,
+		Encryption:                  "false",
+		FileSystem:                  "xfs",
+		CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
+	}
+
+	tests := map[string]parameters{
+		"snapshotDelete returns not found error": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Return(api.NotFoundError("snapshot not found"))
+			},
+			volConfig: volConfigInternalSnapshot,
+		},
+		"SnapshotDelete returns error": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
+				mockAPI.EXPECT().VolumeExists(ctx, volNameInternal).Return(true, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, volNameInternal, svmName).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, volNameInternal, true).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Return(fmt.Errorf("error deleting snapshot"))
+			},
+			volConfig: volConfigInternalSnapshot,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapNASDriver(t)
+
+			if params.configureOntapAPI != nil {
+				params.configureOntapAPI(mockAPI)
+			}
+
+			result := driver.Destroy(ctx, &params.volConfig)
+			assert.NoError(t, result)
+		})
+	}
 }
 
 func TestOntapNasStorageDriverSMBShareDestroy_VolumeNotFound(t *testing.T) {

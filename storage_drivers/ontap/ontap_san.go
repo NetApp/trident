@@ -628,7 +628,7 @@ func (d *SANStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 	if err = cloneFlexvol(
-		ctx, name, source, snapshot, labels, split, &d.Config, d.API, api.QosPolicyGroup{},
+		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{},
 	); err != nil {
 		return err
 	}
@@ -787,6 +787,10 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		return nil
 	}
 
+	defer func() {
+		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.VolumeSnapshotDelete)
+	}()
+
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 
 		// Get target info
@@ -831,14 +835,14 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	// If flexvol has been a snapmirror destination
-	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+	if err = d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}
 	}
 
 	// If flexvol has been a snapmirror source
-	if err := d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
+	if err = d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
 		if !api.IsNotFoundError(err) {
 			return err
 		}

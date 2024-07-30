@@ -191,7 +191,7 @@ type RestClientInterface interface {
 	NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
-	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category string, computerName string, eventDescription string, eventID int, eventSource string, logLevel int) error
+	EmsAutosupportLog(ctx context.Context, appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) error
 	TieringPolicyValue(ctx context.Context) string
 	// ExportPolicyCreate creates an export policy
 	// equivalent to filer::> vserver export-policy create

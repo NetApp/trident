@@ -560,7 +560,7 @@ func (d *NVMeStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 	if err = cloneFlexvol(
-		ctx, name, source, snapshot, labels, split, &d.Config, d.API, api.QosPolicyGroup{},
+		ctx, cloneVolConfig, labels, split, &d.Config, d.API, api.QosPolicyGroup{},
 	); err != nil {
 		return err
 	}
@@ -705,6 +705,10 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 		return nil
 	}
 
+	defer func() {
+		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.VolumeSnapshotDelete)
+	}()
+
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		// TODO(sphadnis): Check if we need to do anything for docker.
 		Logc(ctx).Debug("No actions for Destroy for Docker.")
@@ -721,7 +725,7 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 	}
 
 	// If flexVol has been a snapmirror destination.
-	if err := d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
+	if err = d.API.SnapmirrorDeleteViaDestination(ctx, name, d.API.SVMName()); err != nil {
 		if !errors.IsNotFoundError(err) {
 			return err
 		}

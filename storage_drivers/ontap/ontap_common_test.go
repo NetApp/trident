@@ -4569,134 +4569,203 @@ func TestGetStorageBackendSpecsCommon(t *testing.T) {
 }
 
 func TestCloneFlexvol(t *testing.T) {
-	ctx := context.Background()
-	name := "dummy"
-	source := "fakeSource"
-	snap := "fakeSnap"
-	label := "fakeLabel"
-	split := false
-
-	commonConfig := &drivers.CommonStorageDriverConfig{
-		DebugTraceFlags:   map[string]bool{"method": true},
-		StorageDriverName: tridentconfig.OntapNASStorageDriverName,
-	}
-	config := &drivers.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: commonConfig,
+	type parameters struct {
+		configureOntapAPI         func(ontapAPI *mockapi.MockOntapAPI)
+		cloneVolumeConfig         storage.VolumeConfig
+		storageDriverConfig       drivers.OntapStorageDriverConfig
+		split                     bool
+		expectError               bool
+		validateCloneVolumeConfig func(t *testing.T, cloneVolumeConfig storage.VolumeConfig)
 	}
 
-	mockCtrl := gomock.NewController(t)
-	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	const internalName = "dummy"
+	const cloneSourceVolumeInternal = "fakeSource"
+	const cloneSourceSnapshotInternal = "fakeSnap"
+	const label = "fakeLabel"
 
-	qosPolicyGroup := &api.QosPolicyGroup{
+	qosPolicyGroup := api.QosPolicyGroup{
 		Name: "fakePolicyGroup",
 		Kind: api.QosPolicyGroupKind,
 	}
-	// Test1 : Error case: volumeExists returns error
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, fmt.Errorf("volumeExists returned error"))
+	storageDriverConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			DebugTraceFlags:   map[string]bool{"method": true},
+			StorageDriverName: tridentconfig.OntapNASStorageDriverName,
+		},
+	}
+	storageDriverConfigNVMe := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			DebugTraceFlags:   map[string]bool{"method": true},
+			StorageDriverName: tridentconfig.OntapNASStorageDriverName,
+		},
+		OntapStorageDriverPool: drivers.OntapStorageDriverPool{SANType: sa.NVMe},
+	}
 
-	err := cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
+	cloneVolumeConfig := storage.VolumeConfig{
+		InternalName:                internalName,
+		CloneSourceVolumeInternal:   cloneSourceVolumeInternal,
+		CloneSourceSnapshotInternal: cloneSourceSnapshotInternal,
+	}
+	cloneVolumeConfigNoSnapshot := storage.VolumeConfig{
+		InternalName:                internalName,
+		CloneSourceVolumeInternal:   cloneSourceVolumeInternal,
+		CloneSourceSnapshotInternal: "",
+	}
+	ctx := context.Background()
 
-	assert.Error(t, err)
+	tests := map[string]parameters{
+		"Error case: volumeExists returns error": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, fmt.Errorf("volumeExists returned error"))
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+		},
+		"Error case: volume already exists": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(true, nil)
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+		},
+		"No specific snapshot was requested": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, time.Now().UTC().Format(storage.SnapshotNameFormat),
+					"fakeSource").Return(fmt.Errorf("VolumeSnapshotCreate returned error"))
+			},
+			cloneVolumeConfig:   cloneVolumeConfigNoSnapshot,
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+			validateCloneVolumeConfig: func(t *testing.T, cloneVolumeConfig storage.VolumeConfig) {
+				assert.Empty(t, cloneVolumeConfig.CloneSourceSnapshotInternal)
+				assert.Empty(t, cloneVolumeConfig.CloneSourceSnapshot)
+			},
+		},
+		"Creating clone returns error": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(
+					ctx, internalName, cloneSourceVolumeInternal, cloneSourceSnapshotInternal, false,
+				).Return(fmt.Errorf("error creating clone"))
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+		},
+		"NVMe clone creation returns error": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(
+					ctx, internalName, cloneSourceVolumeInternal, cloneSourceSnapshotInternal, false,
+				).Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
+					maxFlexvolCloneWait).Return("", fmt.Errorf("error waiting for NVMe clone"))
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfigNVMe,
+			split:               false,
+			expectError:         true,
+		},
+		"VolumeSetComment returns error": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(
+					ctx, internalName, cloneSourceVolumeInternal, cloneSourceSnapshotInternal, false,
+				).Return(nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(fmt.Errorf("error creating clone"))
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
+					maxFlexvolCloneWait).Return("online", nil)
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+		},
+		"VolumeMount returns error": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(
+					ctx, internalName, cloneSourceVolumeInternal, cloneSourceSnapshotInternal, false,
+				).Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
+					maxFlexvolCloneWait).Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(fmt.Errorf("error mounting volume"))
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+		},
+		"Error setting QoS Policy": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(
+					ctx, internalName, cloneSourceVolumeInternal, cloneSourceSnapshotInternal, false,
+				).Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
+					maxFlexvolCloneWait).Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(nil)
+				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(
+					ctx, internalName, qosPolicyGroup,
+				).Return(fmt.Errorf("error setting qos policy"))
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfig,
+			split:               false,
+			expectError:         true,
+		},
+		"Error splitting clone": {
+			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(
+					ctx, internalName, cloneSourceVolumeInternal, cloneSourceSnapshotInternal, false,
+				).Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, internalName, gomock.Any(), gomock.Any(),
+					maxFlexvolCloneWait).Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, internalName, internalName, label).Return(nil)
+				mockAPI.EXPECT().VolumeMount(ctx, internalName, "/"+internalName).Return(nil)
+				mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, internalName, qosPolicyGroup).Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, internalName).Return(fmt.Errorf("error splitting clone"))
+			},
+			cloneVolumeConfig:   cloneVolumeConfig,
+			storageDriverConfig: storageDriverConfig,
+			split:               true,
+			expectError:         true,
+		},
+	}
 
-	// Test2 : Error case: volume already exists
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(true, nil)
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
+			if params.configureOntapAPI != nil {
+				params.configureOntapAPI(mockAPI)
+			}
 
-	assert.Error(t, err)
+			err := cloneFlexvol(
+				ctx, &params.cloneVolumeConfig, label, params.split, &params.storageDriverConfig, mockAPI, qosPolicyGroup,
+			)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
 
-	// Test3: no specific snapshot was requested
-	snap = ""
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
-	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, time.Now().UTC().Format(storage.SnapshotNameFormat),
-		source).Return(fmt.Errorf("VolumeSnapshotCreate returned error"))
-
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
-
-	assert.Error(t, err)
-
-	// Test4: Creating clone returned error
-	snap = "fakeSnap"
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(fmt.Errorf("Error creating clone"))
-
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
-
-	assert.Error(t, err)
-
-	// Test5: Error - NVMe clone creation returned erorr
-	config.SANType = sa.NVMe
-	snap = "fakeSnap"
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
-	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
-		maxFlexvolCloneWait).Return("", fmt.Errorf("error waiting for NVMe clone"))
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
-
-	assert.Error(t, err)
-
-	// Test6: Error - VolumeSetComment returned error
-	snap = "fakeSnap"
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(fmt.Errorf("Error creating clone"))
-	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
-		maxFlexvolCloneWait).Return("online", nil)
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
-
-	assert.Error(t, err)
-
-	// Test7: Error - VolumeMount returned error
-	snap = "fakeSnap"
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
-	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
-		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(nil)
-	mockAPI.EXPECT().VolumeMount(ctx, name, "/"+name).Return(fmt.Errorf("Error mounting volume"))
-
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
-
-	assert.Error(t, err)
-
-	// Test8: Error - Error setting QoS Poilcy
-	snap = "fakeSnap"
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
-	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
-		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(nil)
-	mockAPI.EXPECT().VolumeMount(ctx, name, "/"+name).Return(nil)
-	mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, name,
-		*qosPolicyGroup).Return(fmt.Errorf("Error setting qos policy"))
-
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
-
-	assert.Error(t, err)
-
-	// Test9: Error - splitting clone
-	snap = "fakeSnap"
-	split = true
-	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().VolumeExists(ctx, name).Return(false, nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, name, source, snap, false).Return(nil)
-	mockAPI.EXPECT().VolumeWaitForStates(ctx, name, gomock.Any(), gomock.Any(),
-		maxFlexvolCloneWait).Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, name, name, label).Return(nil)
-	mockAPI.EXPECT().VolumeMount(ctx, name, "/"+name).Return(nil)
-	mockAPI.EXPECT().VolumeSetQosPolicyGroupName(ctx, name, *qosPolicyGroup).Return(nil)
-	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, name).Return(fmt.Errorf("error splitting clone"))
-
-	err = cloneFlexvol(ctx, name, source, snap, label, split, config, mockAPI, *qosPolicyGroup)
-
-	assert.Error(t, err)
+			if params.validateCloneVolumeConfig != nil {
+				params.validateCloneVolumeConfig(t, params.cloneVolumeConfig)
+			}
+		})
+	}
 }
 
 func TestCreateFlexvolSnapshot(t *testing.T) {
@@ -6289,4 +6358,60 @@ func TestConstructPoolForLabels(t *testing.T) {
 
 	pool = ConstructPoolForLabels("", nil)
 	assert.Equal(t, sa.NewLabelOffer(nil), pool.Attributes()["labels"])
+}
+
+func TestDeleteAutomaticSnapshot(t *testing.T) {
+	type parameters struct {
+		volConfig                             storage.VolumeConfig
+		volDeleteError                        error
+		expectAPISnapshotDeleteFunctionCalled bool
+		snapshotDeleteError                   error
+	}
+
+	volConfig := getVolumeConfig()
+
+	volConfigWithInternalSnapshot := getVolumeConfig()
+	volConfigWithInternalSnapshot.CloneSourceSnapshotInternal = "snapshot-internal"
+
+	tests := map[string]parameters{
+		"volume config without internal snapshot": {
+			volConfig:                             volConfig,
+			expectAPISnapshotDeleteFunctionCalled: false,
+		},
+		"volume config with internal snapshot": {
+			volConfig:                             volConfigWithInternalSnapshot,
+			expectAPISnapshotDeleteFunctionCalled: true,
+		},
+		"volume config with internal snapshot: volume delete error": {
+			volConfig:                             volConfigWithInternalSnapshot,
+			expectAPISnapshotDeleteFunctionCalled: false,
+			volDeleteError:                        fmt.Errorf("volume delete error"),
+		},
+		"volume config with internal snapshot: snapshot delete error": {
+			volConfig:                             volConfigWithInternalSnapshot,
+			expectAPISnapshotDeleteFunctionCalled: true,
+			snapshotDeleteError:                   fmt.Errorf("snapshot delete error"),
+		},
+		"volume config with internal snapshot: snapshot not found": {
+			volConfig:                             volConfigWithInternalSnapshot,
+			expectAPISnapshotDeleteFunctionCalled: true,
+			snapshotDeleteError:                   api.NotFoundError("snapshot not found"),
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			snapshotDeleteAPIFunctionCalled := false
+			mockAPISnapshotDeleteFunction := func(ctx context.Context, s, s2 string) error {
+				snapshotDeleteAPIFunctionCalled = true
+				return params.snapshotDeleteError
+			}
+			_, storageDriver := newMockOntapNASDriver(t)
+
+			deleteAutomaticSnapshot(context.Background(), storageDriver, params.volDeleteError,
+				&params.volConfig, mockAPISnapshotDeleteFunction)
+
+			assert.Equal(t, params.expectAPISnapshotDeleteFunctionCalled, snapshotDeleteAPIFunctionCalled)
+		})
+	}
 }

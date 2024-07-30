@@ -49,7 +49,7 @@ type ZapiClientInterface interface {
 	// equivalent to filer::> lun create -vserver iscsi_vs -path /vol/v/lun1 -size 1g -ostype linux -space-reserve disabled -space-allocation enabled
 	LunCreate(
 		lunPath string, sizeInBytes int, osType string, qosPolicyGroup QosPolicyGroup,
-		spaceReserved bool, spaceAllocated bool,
+		spaceReserved, spaceAllocated bool,
 	) (*azgo.LunCreateBySizeResponse, error)
 	// LunCloneCreate clones a LUN from a snapshot
 	LunCloneCreate(
@@ -370,7 +370,7 @@ type ZapiClientInterface interface {
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
 	EmsAutosupportLog(
-		appVersion string, autoSupport bool, category string, computerName string, eventDescription string,
+		appVersion string, autoSupport bool, category, computerName, eventDescription string,
 		eventID int, eventSource string, logLevel int,
 	) (*azgo.EmsAutosupportLogResponse, error)
 	TieringPolicyValue(ctx context.Context) string

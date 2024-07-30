@@ -3,6 +3,7 @@
 package ontap
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -983,37 +984,90 @@ func TestNVMeCreate_Success(t *testing.T) {
 }
 
 func TestNVMeDestroy_VolumeExists(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	_, volConfig, _ := getNVMeCreateArgs(d)
+	type parameters struct {
+		configureMockOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		expectError           bool
+	}
 
-	// Volume exist api call error.
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, fmt.Errorf("api call failed"))
+	tests := map[string]parameters{
+		"volume exists API call return error": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(false, fmt.Errorf("api call failed"))
+			},
+			expectError: true,
+		},
+		"volume does not exist": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(false, nil)
+			},
+			expectError: false,
+		},
+	}
 
-	err := d.Destroy(ctx, volConfig)
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, mockAPI := newNVMeDriverAndMockApi(t)
+			_, volConfig, _ := getNVMeCreateArgs(d)
 
-	assert.ErrorContains(t, err, "api call failed")
-
-	// Volume doesn't exist to delete.
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-
-	err = d.Destroy(ctx, volConfig)
-
-	assert.NoError(t, err, "Volume exists.")
+			if params.configureMockOntapAPI != nil {
+				params.configureMockOntapAPI(mockAPI)
+			}
+			err := d.Destroy(ctx, volConfig)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestNVMeDestroy_SnapMirrorAPIError(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	d.Config.DriverContext = tridentconfig.ContextDocker
-	_, volConfig, _ := getNVMeCreateArgs(d)
+	type parameters struct {
+		configureMockOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		getVolumeConfig       func(driver *NVMeStorageDriver) storage.VolumeConfig
+	}
+	tests := map[string]parameters{
+		"volume configuration without internal snapshot": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).
+					Return(fmt.Errorf("snap mirror api call failed"))
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				return *volConfig
+			},
+		},
+		"volume configuration with internal snapshot": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).
+					Return(fmt.Errorf("snap mirror api call failed"))
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				volConfig.CloneSourceSnapshotInternal = "mockSnapshot"
+				return *volConfig
+			},
+		},
+	}
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, mockAPI := newNVMeDriverAndMockApi(t)
+			d.Config.DriverContext = tridentconfig.ContextDocker
 
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-	mAPI.EXPECT().SVMName().Return("svm")
-	mAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, gomock.Any()).
-		Return(fmt.Errorf("snap mirror api call failed"))
+			if params.configureMockOntapAPI != nil {
+				params.configureMockOntapAPI(mockAPI)
+			}
+			volConfig := params.getVolumeConfig(d)
+			err := d.Destroy(ctx, &volConfig)
 
-	err := d.Destroy(ctx, volConfig)
-
-	assert.ErrorContains(t, err, "snap mirror api call failed")
+			assert.ErrorContains(t, err, "snap mirror api call failed")
+		})
+	}
 }
 
 func TestNVMeDestroy_VolumeDestroy_FSx(t *testing.T) {
@@ -1060,27 +1114,127 @@ func TestNVMeDestroy_VolumeDestroy_FSx(t *testing.T) {
 }
 
 func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	d.Config.DriverContext = tridentconfig.ContextDocker
-	_, volConfig, _ := getNVMeCreateArgs(d)
+	type parameters struct {
+		configureMockOntapAPI func(mockAPI *mockapi.MockOntapAPI)
+		getVolumeConfig       func(driver *NVMeStorageDriver) storage.VolumeConfig
+		expectError           bool
+	}
 
-	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil).Times(2)
-	mAPI.EXPECT().SVMName().Return("svm").Times(2)
-	mAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, volConfig.InternalName, gomock.Any()).Return(nil).Times(2)
+	ctx := context.Background()
+	const cloneSourceSnapshot = "mockSnapshot"
 
-	// Volume destroy API call failed.
-	mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(fmt.Errorf("destroy volume failed"))
+	tests := map[string]parameters{
+		"Volume destroy API call return error": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("destroy volume failed"))
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				return *volConfig
+			},
+			expectError: true,
+		},
+		"volume Destroy error: volume config with internal snapshot": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("destroy volume failed"))
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				volConfig.CloneSourceSnapshotInternal = cloneSourceSnapshot
+				volConfig.CloneSourceSnapshot = ""
+				return *volConfig
+			},
+			expectError: true,
+		},
+		"happy path": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				return *volConfig
+			},
+			expectError: false,
+		},
+		"happy path: volume config with internal snapshot": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").Return(nil)
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				volConfig.CloneSourceSnapshotInternal = cloneSourceSnapshot
+				volConfig.CloneSourceSnapshot = ""
+				return *volConfig
+			},
+			expectError: false,
+		},
+		"volume config with internal snapshot: snapshot delete error": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").
+					Return(fmt.Errorf("failed to delete snapshot"))
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				volConfig.CloneSourceSnapshotInternal = cloneSourceSnapshot
+				volConfig.CloneSourceSnapshot = ""
+				return *volConfig
+			},
+			expectError: false,
+		},
+		"volume config with internal snapshot: snapshot delete not found error": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
+				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").
+					Return(api.NotFoundError("snapshot not found"))
+			},
+			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
+				_, volConfig, _ := getNVMeCreateArgs(driver)
+				volConfig.CloneSourceSnapshotInternal = cloneSourceSnapshot
+				volConfig.CloneSourceSnapshot = ""
+				return *volConfig
+			},
+			expectError: false,
+		},
+	}
 
-	err := d.Destroy(ctx, volConfig)
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, mockAPI := newNVMeDriverAndMockApi(t)
+			d.Config.DriverContext = tridentconfig.ContextDocker
 
-	assert.ErrorContains(t, err, "destroy volume failed")
+			if params.configureMockOntapAPI != nil {
+				params.configureMockOntapAPI(mockAPI)
+			}
+			volConfig := params.getVolumeConfig(d)
+			err := d.Destroy(ctx, &volConfig)
 
-	// Volume destroy success.
-	mAPI.EXPECT().VolumeDestroy(ctx, volConfig.InternalName, true).Return(nil)
-
-	err = d.Destroy(ctx, volConfig)
-
-	assert.NoError(t, err, "Failed to destroy volume.")
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestNVMeGetVolumeForImport_GetVolumeError(t *testing.T) {
@@ -1688,78 +1842,37 @@ func TestNVMeResize_VolumeLargerThanResizeRequest(t *testing.T) {
 }
 
 func TestCreateClone(t *testing.T) {
-	d, mAPI := newNVMeDriverAndMockApi(t)
-	_, volConfig, _ := getNVMeCreateArgs(d)
-	cloneConfig := &storage.VolumeConfig{
-		InternalName:                "cloneVol1",
-		Size:                        "200000000",
-		CloneSourceVolumeInternal:   "fakeSource",
-		CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+	type parameters struct {
+		configureMockOntapAPI     func(mockAPI *mockapi.MockOntapAPI)
+		configureDriver           func(driver *NVMeStorageDriver)
+		cloneVolConfig            storage.VolumeConfig
+		pool                      *storage.StoragePool
+		expectError               bool
+		validateCloneVolumeConfig func(t *testing.T, volConfig *storage.VolumeConfig)
 	}
-	vol := &api.Volume{Aggregates: []string{"data"}}
+
 	pool := storage.NewStoragePool(nil, "fakepool")
 	pool.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
 	pool.InternalAttributes()[SplitOnClone] = "true"
 	pool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"type": "clone",
 	})
-	d.Config.Labels = pool.GetLabels(ctx, "")
-	ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
-	volConfig.InternalID = "/vol/cloneVol1/namespace0"
 
-	// Test1: Success - creating clone
-	mAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
-	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
-	mAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
-	mAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-	mAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
-	mAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+	poolWithBadName := storage.NewStoragePool(nil, "")
+	poolWithBadName.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	poolWithBadName.InternalAttributes()[SplitOnClone] = "true"
+	poolWithBadName.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
 
-	err := d.CreateClone(ctx, volConfig, cloneConfig, pool)
+	poolWithNameTemplate := storage.NewStoragePool(nil, "fakepool")
+	poolWithNameTemplate.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	poolWithNameTemplate.InternalAttributes()[SplitOnClone] = "true"
+	poolWithNameTemplate.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	poolWithNameTemplate.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." + "RequestName}}"
 
-	assert.NoError(t, err)
-
-	// Test2: Error - Not able to check the volume
-	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("unable to get volume Info"))
-
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
-
-	assert.Error(t, err)
-
-	// Test3: Error - Flexvol not found
-	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, nil)
-
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
-
-	assert.Error(t, err)
-
-	// Test4: Success - Setting comment
-	vol.Comment = "fakeComment"
-	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
-
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
-
-	assert.NoError(t, err)
-
-	// Test5: Error - Storage pool name not set
-	pool.SetName("")
-
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
-
-	assert.Error(t, err)
-
-	// Test6: Success - Using Name Template
-	pool.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." + "RequestName}}"
-
-	d.physicalPools = map[string]storage.Pool{"pool1": pool}
-	d.Config.SplitOnClone = "false"
-
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
-
-	assert.NoError(t, err)
-
-	// Test7: Error - Storage pool attribute label exceeded
 	longLabelVal := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
 		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
 		"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI" +
@@ -1775,33 +1888,253 @@ func TestCreateClone(t *testing.T) {
 		"qGzRQawFEbbURWij9xleKsUr0yCjukyKsxuaOlwbXnoFh4V3wtidrwrNXieFD608EANwvCp7u2S8Q" +
 		"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
 		"lthQFQfHVgPpUZdzZMjXry"
-	labelMap := map[string]string{"key": longLabelVal}
 
-	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(labelMap)
-	d.Config.Labels = pool.GetLabels(ctx, "")
+	poolWithLongLabelVal := storage.NewStoragePool(nil, "fakepool")
+	poolWithLongLabelVal.InternalAttributes()[FileSystemType] = tridentconfig.FsExt4
+	poolWithLongLabelVal.InternalAttributes()[SplitOnClone] = "true"
+	poolWithLongLabelVal.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	poolWithLongLabelVal.Attributes()[sa.Labels] = sa.NewLabelOffer(map[string]string{"key": longLabelVal})
 
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
-
-	assert.Error(t, err)
-
-	// Test8: Error - GetLabelsJSON attribute label exceeded
-	d.physicalPools = nil
-	d.Config.Labels = map[string]string{
-		"cloud":      "anf",
-		longLabelVal: "dev-test-cluster-1",
+	tests := map[string]parameters{
+		"Success creating clone": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				vol := &api.Volume{Aggregates: []string{"data"}}
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        pool,
+			expectError: false,
+		},
+		"Success creating clone with snapshot": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				vol := &api.Volume{Aggregates: []string{"data"}}
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any())
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "",
+			},
+			pool:        pool,
+			expectError: false,
+			validateCloneVolumeConfig: func(t *testing.T, volConfig *storage.VolumeConfig) {
+				assert.Empty(t, volConfig.CloneSourceSnapshot)
+				assert.NotEmpty(t, volConfig.CloneSourceSnapshotInternal)
+			},
+		},
+		"Unable to check the volume": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("unable to get volume Info"))
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        pool,
+			expectError: true,
+		},
+		"Flexvol not found": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, nil)
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        pool,
+			expectError: true,
+		},
+		"Success setting comment": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        pool,
+			expectError: false,
+		},
+		"Storage pool name not set": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        poolWithBadName,
+			expectError: true,
+		},
+		"Success using Name Template": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+			},
+			configureDriver: func(driver *NVMeStorageDriver) {
+				driver.physicalPools = map[string]storage.Pool{"pool1": poolWithNameTemplate}
+				driver.Config.SplitOnClone = "false"
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        poolWithNameTemplate,
+			expectError: false,
+		},
+		"Storage pool attribute label too long": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+			},
+			configureDriver: func(driver *NVMeStorageDriver) {
+				driver.physicalPools = map[string]storage.Pool{"pool1": poolWithLongLabelVal}
+				driver.Config.SplitOnClone = "false"
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        poolWithLongLabelVal,
+			expectError: true,
+		},
+		"GetLabelsJSON attribute label too long": {
+			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).AnyTimes().Return(false, nil)
+				ns := &api.NVMeNamespace{Name: "/vol/cloneVol1/namespace0", Size: "100"}
+				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).AnyTimes().Return(ns, nil)
+				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), false).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeWaitForStates(ctx, "cloneVol1", []string{"online"}, []string{"error"}, maxFlexvolCloneWait).AnyTimes().Return("online", nil)
+				mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				mockAPI.EXPECT().VolumeCloneSplitStart(ctx, gomock.Any()).AnyTimes().Return(nil)
+				vol := &api.Volume{Aggregates: []string{"data"}, Comment: "fakeComment"}
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+			},
+			configureDriver: func(driver *NVMeStorageDriver) {
+				driver.physicalPools = nil
+				driver.Config.Labels = map[string]string{
+					"cloud":      "anf",
+					longLabelVal: "dev-test-cluster-1",
+				}
+				driver.Config.SplitOnClone = "false"
+			},
+			cloneVolConfig: storage.VolumeConfig{
+				InternalName:                "cloneVol1",
+				Size:                        "200000000",
+				CloneSourceVolumeInternal:   "fakeSource",
+				CloneSourceSnapshotInternal: "fakeSourceSnapshot",
+			},
+			pool:        poolWithLongLabelVal,
+			expectError: true,
+		},
 	}
 
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, mockAPI := newNVMeDriverAndMockApi(t)
+			d.Config.Labels = params.pool.GetLabels(ctx, "")
 
-	assert.Error(t, err)
+			if params.configureDriver != nil {
+				params.configureDriver(d)
+			}
 
-	// Test9: Error - Name template attribute label exceeded
-	pool.SetName("test")
-	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+			if params.configureMockOntapAPI != nil {
+				params.configureMockOntapAPI(mockAPI)
+			}
 
-	err = d.CreateClone(ctx, volConfig, cloneConfig, pool)
+			_, volConfig, _ := getNVMeCreateArgs(d)
+			volConfig.InternalID = "/vol/cloneVol1/namespace0"
 
-	assert.Error(t, err)
+			err := d.CreateClone(ctx, volConfig, &params.cloneVolConfig, params.pool)
+
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			if params.validateCloneVolumeConfig != nil {
+				params.validateCloneVolumeConfig(t, &params.cloneVolConfig)
+			}
+		})
+	}
 }
 
 func TestImport(t *testing.T) {
@@ -2037,7 +2370,8 @@ func TestGetBackendState(t *testing.T) {
 
 func TestEnablePublishEnforcement(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
-	vol := storage.Volume{Config: getVolumeConfig()}
+	config := getVolumeConfig()
+	vol := storage.Volume{Config: &config}
 
 	assert.True(t, d.CanEnablePublishEnforcement(), "Cannot enable publish enforcement.")
 

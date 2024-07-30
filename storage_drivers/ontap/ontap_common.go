@@ -3055,9 +3055,13 @@ func createFlexvolSnapshot(
 
 // cloneFlexvol creates a volume clone
 func cloneFlexvol(
-	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
+	ctx context.Context, cloneVolConfig *storage.VolumeConfig, labels string, split bool, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, qosPolicyGroup api.QosPolicyGroup,
 ) error {
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
+
 	fields := LogFields{
 		"Method":   "cloneFlexvol",
 		"Type":     "ontap_common",
@@ -3085,6 +3089,7 @@ func cloneFlexvol(
 		if err = client.VolumeSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}
+		cloneVolConfig.CloneSourceSnapshotInternal = snapshot
 	}
 
 	// Create the clone based on a snapshot
@@ -3466,4 +3471,57 @@ func ConstructPoolForLabels(nameTemplate string, labels map[string]string) *stor
 	})
 
 	return pool
+}
+
+// deleteAutomaticSnapshot deletes a snapshot that was created automatically during volume clone creation.
+// An automatic snapshot is detected by the presence of CloneSourceSnapshotInternal in the volume config
+// while CloneSourceSnapshot is not set.  This method is called after the volume has been deleted, and it
+// will only attempt snapshot deletion if the clone volume deletion completed without error.  This is a
+// best-effort method, and any errors encountered will be logged but not returned.
+func deleteAutomaticSnapshot(
+	ctx context.Context, driver storage.Driver, volDeleteError error, volConfig *storage.VolumeConfig,
+	snapshotDelete func(context.Context, string, string) error,
+) {
+	name := volConfig.InternalName
+	source := volConfig.CloneSourceVolumeInternal
+	snapshotInternal := volConfig.CloneSourceSnapshotInternal
+	snapshot := volConfig.CloneSourceSnapshot
+
+	fields := LogFields{
+		"Method":       "DeleteAutomaticSnapshot",
+		"Type":         "ontap_common",
+		"snapshotName": snapshotInternal,
+		"volumeName":   name,
+	}
+
+	methodDebugTraceFlags := driver.GetCommonConfig(ctx).DebugTraceFlags["method"]
+	Logd(ctx, driver.Name(), methodDebugTraceFlags).WithFields(fields).Trace(">>>> deleteAutomaticSnapshot")
+	defer Logd(ctx, driver.Name(), methodDebugTraceFlags).WithFields(fields).Trace("<<<< deleteAutomaticSnapshot")
+
+	logFields := LogFields{
+		"snapshotName":    snapshotInternal,
+		"cloneSourceName": source,
+		"cloneName":       name,
+	}
+
+	// Check if there is anything to do
+	if !(snapshot == "" && snapshotInternal != "") {
+		Logc(ctx).WithFields(logFields).Debug("No automatic clone source snapshot exists, skipping cleanup.")
+		return
+	}
+
+	// If the clone volume couldn't be deleted, don't attempt to delete any automatic snapshot.
+	if volDeleteError != nil {
+		Logc(ctx).WithFields(logFields).Debug("Error deleting volume, skipping automatic snapshot cleanup.")
+		return
+	}
+
+	if err := snapshotDelete(ctx, volConfig.CloneSourceSnapshotInternal, volConfig.CloneSourceVolumeInternal); err != nil {
+		if api.IsNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).Debug("Automatic snapshot not found, skipping cleanup.")
+		} else {
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting automatic snapshot. " +
+				"Any automatic snapshot must be manually deleted.")
+		}
+	}
 }

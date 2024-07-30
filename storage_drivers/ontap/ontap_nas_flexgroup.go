@@ -690,9 +690,13 @@ func (d *NASFlexGroupStorageDriver) Create(
 
 // cloneFlexgroup creates a flexgroup clone
 func cloneFlexgroup(
-	ctx context.Context, name, source, snapshot, labels string, split bool, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
+	ctx context.Context, cloneVolConfig *storage.VolumeConfig, labels string, split bool,
+	config *drivers.OntapStorageDriverConfig, client api.OntapAPI, useAsync bool, qosPolicyGroup api.QosPolicyGroup,
 ) error {
+	name := cloneVolConfig.InternalName
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
+
 	fields := LogFields{
 		"Method":   "cloneFlexgroup",
 		"Type":     "NASFlexgroupStorageDriver",
@@ -721,6 +725,7 @@ func cloneFlexgroup(
 		if err = client.FlexgroupSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}
+		cloneVolConfig.CloneSourceSnapshotInternal = snapshot
 	}
 
 	// Create the clone based on a snapshot
@@ -868,9 +873,9 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 		return err
 	}
 
-	if err := cloneFlexgroup(ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
-		cloneVolConfig.CloneSourceSnapshotInternal, labels, split, d.GetConfig(), d.GetAPI(), true,
-		qosPolicyGroup); err != nil {
+	if err := cloneFlexgroup(
+		ctx, cloneVolConfig, labels, split, d.GetConfig(), d.GetAPI(), true, qosPolicyGroup,
+	); err != nil {
 		return err
 	}
 
@@ -994,11 +999,17 @@ func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, volConfig *stor
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
+	var err error
+
+	defer func() {
+		deleteAutomaticSnapshot(ctx, d, err, volConfig, d.API.FlexgroupSnapshotDelete)
+	}()
+
 	// If volume exists and this is FSx, try the FSx SDK first so that any backup mirror relationship
 	// is cleaned up.  If the volume isn't found, then FSx may not know about it yet, so just try the
 	// underlying ONTAP delete call.  Any race condition with FSx will be resolved on a retry.
 	if d.AWSAPI != nil {
-		err := destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
+		err = destroyFSxVolume(ctx, d.AWSAPI, volConfig, &d.Config)
 		if err == nil || !errors.IsNotFoundError(err) {
 			return err
 		}
@@ -1007,13 +1018,13 @@ func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, volConfig *stor
 	// This call is async, but we will receive an immediate error back for anything but very rare volume deletion
 	// failures. Failures in this category are almost certainly likely to be beyond our capability to fix or even
 	// diagnose, so we defer to the ONTAP cluster admin
-	if err := d.API.FlexgroupDestroy(ctx, name, true); err != nil {
+	if err = d.API.FlexgroupDestroy(ctx, name, true); err != nil {
 		return err
 	}
 
 	// Delete an SMB share for an SMB volume.
 	if d.Config.NASType == sa.SMB {
-		if err := d.DestroySMBShare(ctx, name); err != nil {
+		if err = d.DestroySMBShare(ctx, name); err != nil {
 			return err
 		}
 	}
