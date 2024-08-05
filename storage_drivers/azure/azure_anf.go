@@ -418,7 +418,8 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 			if vpool.SnapshotDir != "" {
 				snapDirFormatted, err := utils.GetFormattedBool(vpool.SnapshotDir)
 				if err != nil {
-					Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.", vpool.SnapshotDir)
+					Logc(ctx).WithError(err).Errorf("Invalid boolean value for vpool's snapshotDir: %v.",
+						vpool.SnapshotDir)
 				}
 				snapshotDir = snapDirFormatted
 			}
@@ -1185,10 +1186,13 @@ func (d *NASStorageDriver) CreateClone(
 			return fmt.Errorf("could not retrieve newly-created snapshot")
 		}
 
+		// Save the snapshot name in the volume config, so we can auto-delete it later
+		cloneVolConfig.CloneSourceSnapshotInternal = sourceSnapshot.Name
+
 		Logc(ctx).WithFields(LogFields{
 			"snapshot": sourceSnapshot.Name,
 			"source":   sourceVolume.Name,
-		}).Debug("Created source snapshot.")
+		}).Info("Created source snapshot.")
 	}
 
 	// If RO clone is requested, don't create the volume on ANF backend and return nil
@@ -1483,7 +1487,9 @@ func (d *NASStorageDriver) updateTelemetryLabels(ctx context.Context, volume *ap
 // waitForVolumeCreate waits for volume creation to complete by reaching the Available state.  If the
 // volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
-func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.FileSystem, operation api.Operation) error {
+func (d *NASStorageDriver) waitForVolumeCreate(
+	ctx context.Context, volume *api.FileSystem, operation api.Operation,
+) error {
 	state, err := d.SDK.WaitForVolumeState(
 		ctx, volume, api.StateAvailable, []string{api.StateError}, d.volumeCreateTimeout, operation)
 	if err != nil {
@@ -1526,7 +1532,7 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 }
 
 // Destroy deletes a volume.
-func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) (err error) {
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -1538,8 +1544,18 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// Update resource cache as needed
-	if err := d.SDK.RefreshAzureResources(ctx); err != nil {
+	if err = d.SDK.RefreshAzureResources(ctx); err != nil {
 		return fmt.Errorf("could not update ANF resource cache; %v", err)
+	}
+
+	hasAutomaticSnapshot := false
+
+	// If this volume was cloned from an automatic snapshot, delete the snapshot after deleting the volume.
+	if volConfig.CloneSourceSnapshot == "" && volConfig.CloneSourceSnapshotInternal != "" {
+		hasAutomaticSnapshot = true
+		defer func() {
+			d.deleteAutomaticSnapshot(ctx, err, volConfig)
+		}()
 	}
 
 	// If volume doesn't exist, return success
@@ -1551,8 +1567,9 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 		Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
 		return nil
 	} else if extantVolume.ProvisioningState == api.StateDeleting {
-		// This is a retry, so give Docker more time before giving up again.  Don't wait in other contexts.
-		if d.Config.DriverContext == tridentconfig.ContextDocker {
+		// This is a retry, so give more time before giving up again. Only do this if the context is Docker or
+		// if the CSI volume was created out of an automatic snapshot. Don't wait in other contexts.
+		if d.Config.DriverContext == tridentconfig.ContextDocker || hasAutomaticSnapshot {
 			_, err = d.SDK.WaitForVolumeState(
 				ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), api.Delete)
 			return err
@@ -1567,13 +1584,100 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	Logc(ctx).WithField("volume", extantVolume.Name).Info("Volume deleted.")
 
-	// If Docker, wait for deletion to complete.  Don't wait in other contexts.
-	if d.Config.DriverContext == tridentconfig.ContextDocker {
+	// If Docker or if the CSI volume was created out of an automatic snapshot, wait for volume deletion to complete.
+	// Don't wait in other contexts.
+	if d.Config.DriverContext == tridentconfig.ContextDocker || hasAutomaticSnapshot {
 		_, err = d.SDK.WaitForVolumeState(
 			ctx, extantVolume, api.StateDeleted, []string{api.StateError}, d.defaultTimeout(), api.Delete)
 		return err
 	}
 	return nil
+}
+
+// deleteAutomaticSnapshot deletes a snapshot that was created automatically during volume clone creation.
+// An automatic snapshot is detected by the presence of CloneSourceSnapshotInternal in the volume config
+// while CloneSourceSnapshot is not set.  This method is called after the volume has been deleted, and it
+// will only attempt snapshot deletion if the clone volume deletion completed without error.  This is a
+// best-effort method, and any errors encountered will be logged but not returned.
+func (d *NASStorageDriver) deleteAutomaticSnapshot(
+	ctx context.Context, volDeleteError error, cloneVolConfig *storage.VolumeConfig,
+) {
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
+	cloneSourceName := cloneVolConfig.CloneSourceVolumeInternal
+	cloneName := cloneVolConfig.InternalName
+
+	fields := LogFields{
+		"Method":          "DeleteSnapshot",
+		"Type":            "NASStorageDriver",
+		"snapshotName":    snapshot,
+		"cloneSourceName": cloneSourceName,
+		"cloneName":       cloneName,
+	}
+
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> deleteAutomaticSnapshot")
+	defer Logd(ctx, d.Name(),
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< deleteAutomaticSnapshot")
+
+	logFields := LogFields{
+		"snapshotName":    snapshot,
+		"cloneSourceName": cloneSourceName,
+		"cloneName":       cloneName,
+	}
+
+	// Check if there is anything to do
+	if !(cloneVolConfig.CloneSourceSnapshot == "" && cloneVolConfig.CloneSourceSnapshotInternal != "") {
+		Logc(ctx).WithFields(logFields).Debug("No automatic clone source snapshot existed, skipping cleanup.")
+		return
+	}
+
+	// If the clone volume couldn't be deleted, don't attempt to delete any automatic snapshot.
+	if volDeleteError != nil {
+		Logc(ctx).WithFields(logFields).Debug("Error deleting volume, skipping automatic snapshot cleanup.")
+		return
+	}
+
+	// We always clone to the same capacity pool, so we can use the clone volume's info to construct
+	// the source volume ID.
+	_, resourceGroup, _, netappAccount, cPoolName, _, err := api.ParseVolumeID(cloneVolConfig.InternalID)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error parsing clone volume ID")
+	}
+
+	cloneSourceID := api.CreateVolumeID(d.Config.SubscriptionID, resourceGroup, netappAccount,
+		cPoolName, cloneSourceName)
+
+	// Get the volume
+	sourceVolume, err := d.SDK.VolumeByID(ctx, cloneSourceID)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).Debug("Volume for automatic snapshot not found, skipping cleanup.")
+		} else {
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Error checking for automatic snapshot volume. " +
+				"Any automatic snapshot must be manually deleted.")
+		}
+		return
+	}
+
+	// Get the snapshot
+	sourceSnapshot, err := d.SDK.SnapshotForVolume(ctx, sourceVolume, snapshot)
+	if err != nil {
+		// If the snapshot is already gone, return success
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithFields(logFields).Debug("Automatic snapshot not found, skipping cleanup.")
+		} else {
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Error checking for automatic snapshot. " +
+				"Any automatic snapshot must be manually deleted.")
+		}
+		return
+	}
+
+	// Delete the snapshot
+	if err = d.SDK.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot); err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Errorf("Automatic snapshot could not be " +
+			"cleaned up and must be manually deleted.")
+	}
+
+	return
 }
 
 // Publish the volume to the host specified in publishInfo.  This method may or may not be running on the host
@@ -2422,7 +2526,8 @@ func (d *NASStorageDriver) Update(
 
 	// Update snapshotDirectory for volume
 	if updateInfo.SnapshotDirectory != "" {
-		updatedVols, updateError = d.updateSnapshotDirectory(ctx, name, volume, updateInfo.SnapshotDirectory, allVolumes)
+		updatedVols, updateError = d.updateSnapshotDirectory(ctx, name, volume, updateInfo.SnapshotDirectory,
+			allVolumes)
 	}
 
 	return updatedVols, updateError
@@ -2439,7 +2544,8 @@ func (d *NASStorageDriver) updateSnapshotDirectory(
 		"snapshotDir": snapshotDir,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> updateSnapshotDirectory")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< updateSnapshotDirectory")
+	defer Logd(ctx, d.Name(),
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< updateSnapshotDirectory")
 
 	genericLogError := fmt.Sprintf("Failed to update snapshot directory for volume %v.", name)
 
@@ -2452,7 +2558,8 @@ func (d *NASStorageDriver) updateSnapshotDirectory(
 	// Validate request
 	snapDirBool, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
-		failureErr := errors.InvalidInputError(fmt.Sprintf("invalid value for snapshot directory %v; %v", snapshotDir, err))
+		failureErr := errors.InvalidInputError(fmt.Sprintf("invalid value for snapshot directory %v; %v", snapshotDir,
+			err))
 		Logc(ctx).WithError(failureErr).Error(genericLogError)
 		return nil, failureErr
 	}

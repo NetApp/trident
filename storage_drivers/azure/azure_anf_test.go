@@ -3284,7 +3284,8 @@ func TestCreate_NFSVolume_WithSnapDirMountOptionCombinations(t *testing.T) {
 		driver.initializeTelemetry(ctx, BackendUUID)
 
 		// Set test values in volume config; note that volConfig inherits mount option from storage class, so set from there
-		volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+		volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver,
+			storagePool)
 		volConfig.SnapshotDir = test.snapDirInVolConfig
 		volConfig.MountOptions = test.mountOptInPhyisicalPool
 
@@ -3934,6 +3935,8 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, cloneFilesystem.ID, cloneVolConfig.InternalID, "internal ID not set on volConfig")
+	assert.Equal(t, cloneVolConfig.CloneSourceSnapshotInternal, snapshot.Name,
+		"expected snapshot name to be set in CloneSourceSnapshotInternal ")
 }
 
 func TestCreateClone_Snapshot(t *testing.T) {
@@ -5694,9 +5697,10 @@ func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
 
 func getStructsForDestroyNFSVolume(
 	ctx context.Context, driver *NASStorageDriver,
-) (*storage.VolumeConfig, *api.FileSystem) {
+) (*storage.VolumeConfig, *api.FileSystem, *api.FileSystem, *api.Snapshot) {
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
+	srcVolumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "srcvol1")
 
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
@@ -5744,7 +5748,41 @@ func getStructsForDestroyNFSVolume(
 		NetworkFeatures:   api.NetworkFeaturesStandard,
 	}
 
-	return volConfig, filesystem
+	srcFilesystem := &api.FileSystem{
+		ID:                srcVolumeID,
+		ResourceGroup:     "RG1",
+		NetAppAccount:     "NA1",
+		CapacityPool:      "CP1",
+		Name:              "testsrcvol1",
+		FullName:          "RG1/NA1/CP1/testsrcvol1",
+		Location:          Location,
+		ExportPolicy:      exportPolicy,
+		Labels:            make(map[string]string),
+		ProvisioningState: api.StateAvailable,
+		CreationToken:     "trident-testsrcvol1",
+		ProtocolTypes:     []string{api.ProtocolTypeNFSv3},
+		QuotaInBytes:      VolumeSizeI64,
+		ServiceLevel:      api.ServiceLevelUltra,
+		SnapshotDirectory: true,
+		SubnetID:          subnetID,
+		UnixPermissions:   defaultUnixPermissions,
+		NetworkFeatures:   api.NetworkFeaturesStandard,
+	}
+
+	snapshot := &api.Snapshot{
+		ResourceGroup:     "RG1",
+		NetAppAccount:     "NA1",
+		CapacityPool:      "CP1",
+		Volume:            "srcvol1",
+		Name:              "snap1",
+		FullName:          "RG1/NA1/CP1/srcvol1/snap1",
+		Location:          Location,
+		Created:           time.Now(),
+		SnapshotID:        SnapshotID,
+		ProvisioningState: api.StateAvailable,
+	}
+
+	return volConfig, filesystem, srcFilesystem, snapshot
 }
 
 func getStructsForDestroySMBVolume(
@@ -5792,7 +5830,7 @@ func TestDestroy_NFSVolume_Docker(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
@@ -5810,22 +5848,93 @@ func TestDestroy_NFSVolume_CSI(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
 	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any()).Times(0)
 
 	result := driver.Destroy(ctx, volConfig)
 
 	assert.Nil(t, result, "not nil")
 }
 
+func TestDestroy_Clone_DeleteAutomaticSnapshot(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextCSI
+
+	volConfig, filesystem, srcFilesystem, snapshot := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig.CloneSourceVolumeInternal = "srcvol1"
+	volConfig.CloneSourceSnapshotInternal = "snap1"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, filesystem).Return(nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().VolumeByID(ctx, srcFilesystem.ID).Return(srcFilesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, srcFilesystem, volConfig.CloneSourceSnapshotInternal).Return(snapshot,
+		nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, srcFilesystem, snapshot).Return(nil).Times(1)
+
+	err := driver.Destroy(ctx, volConfig)
+
+	assert.Nil(t, err, "not nil")
+}
+
+func TestDestroy_Clone_DeleteAutomaticSnapshot_VolDeletingState(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextCSI
+
+	volConfig, filesystem, srcFilesystem, snapshot := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig.CloneSourceVolumeInternal = "srcvol1"
+	volConfig.CloneSourceSnapshotInternal = "snap1"
+	filesystem.ProvisioningState = api.StateDeleting
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateDeleted, []string{api.StateError},
+		driver.defaultTimeout(), api.Delete).Return(api.StateDeleted, nil).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, gomock.Any()).Times(0)
+	mockAPI.EXPECT().VolumeByID(ctx, srcFilesystem.ID).Return(srcFilesystem, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, srcFilesystem, volConfig.CloneSourceSnapshotInternal).Return(snapshot,
+		nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, srcFilesystem, snapshot).Return(nil).Times(1)
+
+	err := driver.Destroy(ctx, volConfig)
+
+	assert.Nil(t, err, "not nil")
+}
+
+func TestDestroy_Clone_DeleteAutomaticSnapshot_VolDeleteError(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+	driver.Config.DriverContext = tridentconfig.ContextCSI
+
+	volConfig, _, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig.CloneSourceVolumeInternal = "srcvol1"
+	volConfig.CloneSourceSnapshotInternal = "snap1"
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil,
+		errors.NotFoundError("volume not found")).Times(1)
+	mockAPI.EXPECT().DeleteVolume(ctx, gomock.Any()).Times(0)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+
+	err := driver.Destroy(ctx, volConfig)
+
+	assert.NotNil(t, err)
+}
+
 func TestDestroy_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, _, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 
@@ -5838,7 +5947,7 @@ func TestDestroy_VolumeExistsCheckFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, _, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, errFailed).Times(1)
@@ -5852,7 +5961,7 @@ func TestDestroy_AlreadyDeleted(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, _ := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, _, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
@@ -5867,7 +5976,7 @@ func TestDestroy_StillDeletingDeleted_Docker(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	filesystem.ProvisioningState = api.StateDeleting
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -5885,7 +5994,7 @@ func TestDestroy_StillDeleting_Docker(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	filesystem.ProvisioningState = api.StateDeleting
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -5902,7 +6011,7 @@ func TestDestroy_StillDeleting_CSI(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	filesystem.ProvisioningState = api.StateDeleting
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -5917,7 +6026,7 @@ func TestDestroy_DeleteFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
@@ -5933,7 +6042,7 @@ func TestDestroy_VolumeWaitFailed_Docker(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, filesystem, nil).Times(1)
@@ -5959,6 +6068,234 @@ func TestDestroy_SMBVolume(t *testing.T) {
 	result := driver.Destroy(ctx, volConfig)
 
 	assert.Nil(t, result, "not nil")
+}
+
+func getStructsForDeleteAutomaticSnapshot(ctx context.Context, driver *NASStorageDriver) (
+	srcVolume *api.FileSystem, cloneVolumeConfig *storage.VolumeConfig,
+	cloneVolume *api.FileSystem, snapshot *api.Snapshot,
+) {
+	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
+	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testvol1")
+	srcVolumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "testsrcvol1")
+
+	cloneVolumeConfig = &storage.VolumeConfig{
+		Version:                     "1",
+		Name:                        "testvol1",
+		InternalName:                "trident-testvol1",
+		Size:                        VolumeSizeStr,
+		InternalID:                  volumeID,
+		CloneSourceSnapshotInternal: "snap1",
+		CloneSourceVolume:           "testsrcvol1",
+		CloneSourceVolumeInternal:   "testsrcvol1",
+	}
+
+	labels := make(map[string]string)
+	labels[drivers.TridentLabelTag] = driver.getTelemetryLabels(ctx)
+	labels[storage.ProvisioningLabelTag] = ""
+
+	apiExportRule := api.ExportRule{
+		AllowedClients: defaultExportRule,
+		Cifs:           false,
+		Nfsv3:          true,
+		Nfsv41:         false,
+		RuleIndex:      1,
+		UnixReadOnly:   false,
+		UnixReadWrite:  true,
+	}
+	exportPolicy := api.ExportPolicy{
+		Rules: []api.ExportRule{apiExportRule},
+	}
+
+	cloneVolume = &api.FileSystem{
+		ID:                volumeID,
+		ResourceGroup:     "RG1",
+		NetAppAccount:     "NA1",
+		CapacityPool:      "CP1",
+		Name:              "testvol1",
+		FullName:          "RG1/NA1/CP1/testvol1",
+		Location:          Location,
+		ExportPolicy:      exportPolicy,
+		Labels:            make(map[string]string),
+		ProvisioningState: api.StateAvailable,
+		CreationToken:     "trident-testvol1",
+		ProtocolTypes:     []string{api.ProtocolTypeNFSv3},
+		QuotaInBytes:      VolumeSizeI64,
+		ServiceLevel:      api.ServiceLevelUltra,
+		SnapshotDirectory: true,
+		SubnetID:          subnetID,
+		UnixPermissions:   defaultUnixPermissions,
+		NetworkFeatures:   api.NetworkFeaturesStandard,
+	}
+
+	srcVolume = &api.FileSystem{
+		ID:                srcVolumeID,
+		ResourceGroup:     "RG1",
+		NetAppAccount:     "NA1",
+		CapacityPool:      "CP1",
+		Name:              "testsrcvol1",
+		FullName:          "RG1/NA1/CP1/testsrcvol1",
+		Location:          Location,
+		ExportPolicy:      exportPolicy,
+		Labels:            make(map[string]string),
+		ProvisioningState: api.StateAvailable,
+		CreationToken:     "trident-testsrcvol1",
+		ProtocolTypes:     []string{api.ProtocolTypeNFSv3},
+		QuotaInBytes:      VolumeSizeI64,
+		ServiceLevel:      api.ServiceLevelUltra,
+		SnapshotDirectory: true,
+		SubnetID:          subnetID,
+		UnixPermissions:   defaultUnixPermissions,
+		NetworkFeatures:   api.NetworkFeaturesStandard,
+	}
+
+	snapshot = &api.Snapshot{
+		ResourceGroup:     "RG1",
+		NetAppAccount:     "NA1",
+		CapacityPool:      "CP1",
+		Volume:            "testsrcvol1",
+		Name:              "snap1",
+		FullName:          "RG1/NA1/CP1/testsrcvol1/snap1",
+		Location:          Location,
+		Created:           time.Now(),
+		SnapshotID:        SnapshotID,
+		ProvisioningState: api.StateAvailable,
+	}
+
+	return srcVolume, cloneVolumeConfig, cloneVolume, snapshot
+}
+
+func Test_DeleteAutomaticSnapshot(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	srcVol, cloneVolConfig, _, snapshot := getStructsForDeleteAutomaticSnapshot(ctx, driver)
+
+	mockAPI.EXPECT().VolumeByID(ctx, srcVol.ID).Return(srcVol, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, srcVol, cloneVolConfig.CloneSourceSnapshotInternal).Return(snapshot,
+		nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, srcVol, snapshot).Return(nil).Times(1)
+
+	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
+}
+
+func Test_DeleteAutomaticSnapshot_NoSnapshot(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	_, cloneVolConfig, _, _ := getStructsForDeleteAutomaticSnapshot(ctx, driver)
+	cloneVolConfig.CloneSourceSnapshotInternal = ""
+
+	mockAPI.EXPECT().VolumeByID(ctx, gomock.Any()).Times(0)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+
+	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
+}
+
+func Test_DeleteAutomaticSnapshot_ExistingSrcSnapshot(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	_, cloneVolConfig, _, _ := getStructsForDeleteAutomaticSnapshot(ctx, driver)
+	cloneVolConfig.CloneSourceSnapshot = cloneVolConfig.CloneSourceSnapshotInternal
+
+	mockAPI.EXPECT().VolumeByID(ctx, gomock.Any()).Times(0)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+
+	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
+}
+
+func Test_DeleteAutomaticSnapshot_VolDeleteError(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	_, cloneVolConfig, _, _ := getStructsForDeleteAutomaticSnapshot(ctx, driver)
+
+	mockAPI.EXPECT().VolumeByID(ctx, gomock.Any()).Times(0)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+
+	driver.deleteAutomaticSnapshot(ctx, errors.New("volume delete error"), cloneVolConfig)
+}
+
+func Test_DeleteAutomaticSnapshot_VolByIDError(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	srcVol, cloneVolConfig, _, _ := getStructsForDeleteAutomaticSnapshot(ctx, driver)
+
+	tests := []struct {
+		name            string
+		volumeByIDError error
+	}{
+		{
+			name:            "Fails when volume not found for ID",
+			volumeByIDError: errors.NotFoundError("not found"),
+		},
+		{
+			name:            "Fails when volume for ID returns error other than not found",
+			volumeByIDError: errors.New("other error"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI.EXPECT().VolumeByID(ctx, srcVol.ID).Return(nil,
+				test.volumeByIDError).Times(1)
+			mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), cloneVolConfig.CloneSourceSnapshotInternal).Times(0)
+			mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+
+			driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
+		})
+	}
+}
+
+func Test_DeleteAutomaticSnapshot_SnapshotForVolumeError(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	srcVol, cloneVolConfig, _, _ := getStructsForDeleteAutomaticSnapshot(ctx, driver)
+
+	tests := []struct {
+		name                   string
+		snapshotForVolumeError error
+	}{
+		{
+			name:                   "Fails when snapshot for volume not found",
+			snapshotForVolumeError: errors.NotFoundError("not found"),
+		},
+		{
+			name:                   "Fails when snapshot for volume returns error other than not found",
+			snapshotForVolumeError: errors.New("other error"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockAPI.EXPECT().VolumeByID(ctx, srcVol.ID).Return(srcVol,
+				nil).Times(1)
+			mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(),
+				cloneVolConfig.CloneSourceSnapshotInternal).Return(nil, test.snapshotForVolumeError).Times(1)
+			mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+
+			driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
+		})
+	}
+}
+
+func Test_DeleteAutomaticSnapshot_DeleteSnapshotError(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	srcVol, cloneVolConfig, _, snapshot := getStructsForDeleteAutomaticSnapshot(ctx, driver)
+
+	mockAPI.EXPECT().VolumeByID(ctx, srcVol.ID).Return(srcVol, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, srcVol, cloneVolConfig.CloneSourceSnapshotInternal).Return(snapshot,
+		nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, srcVol, snapshot).Return(errors.New("delete failed")).Times(1)
+
+	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
 }
 
 func getStructsForPublishNFSVolume(
@@ -7135,7 +7472,7 @@ func TestResize(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	volConfig.InternalID = ""
 	newSize := uint64(VolumeSizeI64 * 2)
 
@@ -7154,7 +7491,7 @@ func TestResize_DiscoveryFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	newSize := uint64(VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
@@ -7170,7 +7507,7 @@ func TestResize_NonexistentVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	newSize := uint64(VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -7187,7 +7524,7 @@ func TestResize_VolumeNotAvailable(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	filesystem.ProvisioningState = api.StateError
 	newSize := uint64(VolumeSizeI64 * 2)
 
@@ -7205,7 +7542,7 @@ func TestResize_NoSizeChange(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	newSize := uint64(VolumeSizeI64)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -7222,7 +7559,7 @@ func TestResize_ShrinkingVolume(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	newSize := uint64(VolumeSizeI64 / 2)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -7239,7 +7576,7 @@ func TestResize_AboveMaximumSize(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	driver.Config.LimitVolumeSize = strconv.FormatInt(VolumeSizeI64+1, 10)
 	newSize := uint64(VolumeSizeI64 * 2)
 
@@ -7257,7 +7594,7 @@ func TestResize_VolumeResizeFailed(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.initializeTelemetry(ctx, BackendUUID)
 
-	volConfig, filesystem := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
 	newSize := uint64(VolumeSizeI64 * 2)
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
@@ -8130,7 +8467,8 @@ func TestUpdate_Success(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
-	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true),
+		gomock.Any()).Return(nil).AnyTimes()
 
 	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
 	allVolumes := map[string]*storage.Volume{
@@ -8327,7 +8665,8 @@ func TestUpdateSnapshotDirectory_DifferentSnapshotDir(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
-	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true), gomock.Any()).Return(nil).AnyTimes()
+	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true),
+		gomock.Any()).Return(nil).AnyTimes()
 
 	allVolumes := map[string]*storage.Volume{
 		volConfig.InternalName: {
