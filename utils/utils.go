@@ -1089,6 +1089,12 @@ func GetFormattedBool(value string) (string, error) {
 	return strconv.FormatBool(valBool), nil
 }
 
+// ParseBool wraps strconv.ParseBool to suppress errors. Returns false if strconv.ParseBool would return an error.
+func ParseBool(b string) bool {
+	v, _ := strconv.ParseBool(b)
+	return v
+}
+
 func shiftTextRight(text string, count int) string {
 	if text == "" {
 		return ""

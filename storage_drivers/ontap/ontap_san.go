@@ -343,6 +343,11 @@ func (d *SANStorageDriver) Create(
 	}
 	lunSizeBytes := GetVolumeSize(requestedSizeBytes, storagePool.InternalAttributes()[Size])
 
+	// Add a constant overhead for LUKS volumes to account for LUKS metadata. This overhead is
+	// part of the LUN but is not reported to the orchestrator.
+	reportedSize := lunSizeBytes
+	lunSizeBytes = incrementWithLUKSMetadataIfLUKSEnabled(ctx, lunSizeBytes, luksEncryption)
+
 	lunSize := strconv.FormatUint(lunSizeBytes, 10)
 	// Get the flexvol size based on the snapshot reserve
 	flexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, lunSizeBytes, snapshotReserveInt)
@@ -378,7 +383,7 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Update config to reflect values used to create volume
-	volConfig.Size = strconv.FormatUint(lunSizeBytes, 10)
+	volConfig.Size = strconv.FormatUint(reportedSize, 10)
 	volConfig.SpaceReserve = spaceReserve
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve
@@ -691,6 +696,14 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Use the LUN size
 	volConfig.Size = lunInfo.Size
+
+	if utils.ParseBool(volConfig.LUKSEncryption) {
+		newSize, err := subtractUintFromSizeString(volConfig.Size, utils.LUKSMetadataSize)
+		if err != nil {
+			return err
+		}
+		volConfig.Size = newSize
+	}
 
 	// Rename the volume or LUN if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
@@ -1348,12 +1361,16 @@ func (d *SANStorageDriver) Resize(
 		return fmt.Errorf("requested size %d is less than existing volume size %d", requestedSizeBytes, lunSizeBytes)
 	}
 
+	// Add a constant overhead for LUKS volumes to account for LUKS metadata.
+	requestedSizeBytes = incrementWithLUKSMetadataIfLUKSEnabled(ctx, requestedSizeBytes, volConfig.LUKSEncryption)
+
 	snapshotReserveInt, err := getSnapshotReserveFromOntap(ctx, name, d.API.VolumeInfo)
 	if err != nil {
 		Logc(ctx).WithField("name", name).Errorf("Could not get the snapshot reserve percentage for volume")
 	}
 
 	newFlexvolSize := drivers.CalculateVolumeSizeBytes(ctx, name, requestedSizeBytes, snapshotReserveInt)
+
 	newFlexvolSize = uint64(LUNMetadataBufferMultiplier * float64(newFlexvolSize))
 
 	sameLUNSize := utils.VolumeSizeWithinTolerance(int64(requestedSizeBytes), int64(currentLunSize),
@@ -1412,6 +1429,9 @@ func (d *SANStorageDriver) Resize(
 			return fmt.Errorf("volume resize failed")
 		}
 	}
+
+	// LUKS metadata size is not reported so remove it from LUN size
+	returnSize = decrementWithLUKSMetadataIfLUKSEnabled(ctx, returnSize, volConfig.LUKSEncryption)
 
 	volConfig.Size = strconv.FormatUint(returnSize, 10)
 	return nil

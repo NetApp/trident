@@ -6,7 +6,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -6358,6 +6360,64 @@ func TestConstructPoolForLabels(t *testing.T) {
 
 	pool = ConstructPoolForLabels("", nil)
 	assert.Equal(t, sa.NewLabelOffer(nil), pool.Attributes()["labels"])
+}
+
+func TestSubtractUintFromSizeString(t *testing.T) {
+	units := []string{"", "MB", "MiB", "GB", "GiB"}
+	count := 100
+	maxValue := int64(1000000000)
+
+	// Test for invalid size string
+	_, err := subtractUintFromSizeString("not a size", 0)
+	assert.ErrorContains(t, err, "invalid size")
+
+	// Fuzz tests
+	for range count {
+		sizeValue := rand.Int63n(maxValue + 1)
+		size := strconv.FormatInt(sizeValue, 10) + units[rand.Intn(len(units))]
+		val := uint64(rand.Int63n(maxValue))
+
+		sizeBytesString, err := utils.ConvertSizeToBytes(size)
+		assert.NoError(t, err)
+		sizeBytes, _ := strconv.ParseUint(sizeBytesString, 10, 64)
+
+		newSizeBytesString, err := subtractUintFromSizeString(size, val)
+
+		if val > sizeBytes {
+			assert.ErrorContains(t, err, "too large")
+		} else {
+			assert.NoError(t, err)
+
+			expected := strconv.FormatUint(sizeBytes-val, 10)
+			assert.Equal(t, expected, newSizeBytesString)
+		}
+	}
+}
+
+func TestIncrementWithLUKSMetadataIfLUKSEnabled(t *testing.T) {
+	size := uint64(1000000000)
+
+	actual := incrementWithLUKSMetadataIfLUKSEnabled(context.Background(), size, "true")
+	assert.Greater(t, actual, size)
+
+	actual = incrementWithLUKSMetadataIfLUKSEnabled(context.Background(), size, "false")
+	assert.Equal(t, actual, size)
+
+	actual = incrementWithLUKSMetadataIfLUKSEnabled(context.Background(), size, "blue")
+	assert.Equal(t, actual, size)
+}
+
+func TestDecrementWithLUKSMetadataIfLUKSEnabled(t *testing.T) {
+	size := uint64(1000000000)
+
+	actual := decrementWithLUKSMetadataIfLUKSEnabled(context.Background(), size, "true")
+	assert.Less(t, actual, size)
+
+	actual = decrementWithLUKSMetadataIfLUKSEnabled(context.Background(), size, "false")
+	assert.Equal(t, actual, size)
+
+	actual = decrementWithLUKSMetadataIfLUKSEnabled(context.Background(), size, "blue")
+	assert.Equal(t, actual, size)
 }
 
 func TestDeleteAutomaticSnapshot(t *testing.T) {

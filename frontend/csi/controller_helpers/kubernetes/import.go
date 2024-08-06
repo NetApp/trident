@@ -19,6 +19,7 @@ import (
 	"github.com/netapp/trident/frontend/csi"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -110,6 +111,12 @@ func (h *helper) ImportVolume(
 	}
 
 	dataSize := h.getDataSizeFromTotalSize(ctx, totalSize, snapshotReserve)
+
+	if luksAnnotation, ok := claim.GetObjectMeta().GetAnnotations()[AnnLUKSEncryption]; ok {
+		if utils.ParseBool(luksAnnotation) {
+			dataSize -= utils.LUKSMetadataSize
+		}
+	}
 
 	if claim.Spec.Resources.Requests == nil {
 		claim.Spec.Resources.Requests = v1.ResourceList{}

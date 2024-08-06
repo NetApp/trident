@@ -19,6 +19,9 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
+// LUKS2 requires ~16MiB for overhead. Default to 18MiB just in case.
+const LUKSMetadataSize = 18874368
+
 const (
 	luksDevicePrefix = "luks-"
 	devPrefix        = "/dev/"

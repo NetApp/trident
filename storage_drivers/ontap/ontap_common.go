@@ -3473,6 +3473,51 @@ func ConstructPoolForLabels(nameTemplate string, labels map[string]string) *stor
 	return pool
 }
 
+func subtractUintFromSizeString(size string, val uint64) (string, error) {
+	sizeBytesString, _ := utils.ConvertSizeToBytes(size)
+	sizeBytes, err := strconv.ParseUint(sizeBytesString, 10, 64)
+	if err != nil {
+		return "", fmt.Errorf("invalid size string: %v", err)
+	}
+	if val > sizeBytes {
+		return "", fmt.Errorf("right-hand term too large")
+	}
+	return strconv.FormatUint(sizeBytes-val, 10), nil
+}
+
+// adds LUKS overhead iff luksEncryption is a true boolean string. Logs an error if the luksEncryption string is not a boolean.
+func incrementWithLUKSMetadataIfLUKSEnabled(ctx context.Context, size uint64, luksEncryption string) uint64 {
+	isLUKS, err := strconv.ParseBool(luksEncryption)
+	if err != nil && luksEncryption != "" {
+		Logc(ctx).WithError(err).Debug("Could not parse luksEncryption string.")
+	}
+
+	if isLUKS {
+		return size + utils.LUKSMetadataSize
+	}
+
+	return size
+}
+
+// removes LUKS overhead iff luksEncryption is a true boolean string. Logs an error if the luksEncryption string is not a boolean or size is too small.
+func decrementWithLUKSMetadataIfLUKSEnabled(ctx context.Context, size uint64, luksEncryption string) uint64 {
+	isLUKS, err := strconv.ParseBool(luksEncryption)
+	if err != nil && luksEncryption != "" {
+		Logc(ctx).WithError(err).Debug("Could not parse luksEncryption string.")
+	}
+
+	if utils.LUKSMetadataSize > size {
+		Logc(ctx).WithError(err).WithField("size", size).Error("Size too small to subtract LUKS metadata.")
+		return 0
+	}
+
+	if isLUKS {
+		return size - utils.LUKSMetadataSize
+	}
+
+	return size
+}
+
 // deleteAutomaticSnapshot deletes a snapshot that was created automatically during volume clone creation.
 // An automatic snapshot is detected by the presence of CloneSourceSnapshotInternal in the volume config
 // while CloneSourceSnapshot is not set.  This method is called after the volume has been deleted, and it

@@ -447,14 +447,6 @@ func (d *SANEconomyStorageDriver) Create(
 	}
 	sizeBytes = GetVolumeSize(sizeBytes, storagePool.InternalAttributes()[Size])
 
-	lunSize := strconv.FormatUint(sizeBytes, 10)
-
-	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
-		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
-	); checkVolumeSizeLimitsError != nil {
-		return checkVolumeSizeLimitsError
-	}
-
 	// Ensure LUN name isn't too long
 	if len(name) > maxLunNameLength {
 		return fmt.Errorf("volume %s name exceeds the limit of %d characters", name, maxLunNameLength)
@@ -481,6 +473,19 @@ func (d *SANEconomyStorageDriver) Create(
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 		luksEncryption    = storagePool.InternalAttributes()[LUKSEncryption]
 	)
+
+	// Add a constant overhead for LUKS volumes to account for LUKS metadata. This overhead is
+	// part of the LUN but is not reported to the orchestrator.
+	reportedSize := sizeBytes
+	sizeBytes = incrementWithLUKSMetadataIfLUKSEnabled(ctx, sizeBytes, luksEncryption)
+
+	lunSize := strconv.FormatUint(sizeBytes, 10)
+
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
+		ctx, sizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
 
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
@@ -510,7 +515,7 @@ func (d *SANEconomyStorageDriver) Create(
 	}
 
 	// Update config to reflect values used to create volume
-	volConfig.Size = strconv.FormatUint(sizeBytes, 10)
+	volConfig.Size = strconv.FormatUint(reportedSize, 10)
 	volConfig.SpaceReserve = spaceReserve
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve
@@ -646,6 +651,8 @@ func (d *SANEconomyStorageDriver) Create(
 			Logc(ctx).WithField("error", err).Error("Failed to determine LUN size")
 			return err
 		}
+		// Remove LUKS metadata size from actual size of LUN
+		actualSize = decrementWithLUKSMetadataIfLUKSEnabled(ctx, actualSize, luksEncryption)
 		volConfig.Size = strconv.FormatUint(actualSize, 10)
 
 		// Save the fstype in a LUN attribute so we know what to do in Attach
@@ -882,6 +889,14 @@ func (d *SANEconomyStorageDriver) Import(
 		return fmt.Errorf("LUN %s is not online", extantLUN.Name)
 	}
 	volConfig.Size = extantLUN.Size
+
+	if utils.ParseBool(volConfig.LUKSEncryption) {
+		newSize, err := subtractUintFromSizeString(volConfig.Size, utils.LUKSMetadataSize)
+		if err != nil {
+			return err
+		}
+		volConfig.Size = newSize
+	}
 
 	if volConfig.ImportNotManaged {
 		// Volume/LUN import is not managed by Trident
@@ -2152,6 +2167,10 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
+	// Add a constant overhead for LUKS volumes to account for LUKS metadata. This overhead is
+	// part of the LUN but is not reported to the orchestrator.
+	sizeBytes = incrementWithLUKSMetadataIfLUKSEnabled(ctx, sizeBytes, volConfig.LUKSEncryption)
+
 	// Generic user-facing message
 	resizeError := errors.New("storage driver failed to resize the volume")
 
@@ -2251,6 +2270,8 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		Logc(ctx).WithField("error", err).Error("LUN resize failed.")
 		return fmt.Errorf("volume resize failed")
 	}
+	// LUKS metadata is not reported to orchestrator
+	returnSize = decrementWithLUKSMetadataIfLUKSEnabled(ctx, returnSize, volConfig.LUKSEncryption)
 
 	volConfig.Size = strconv.FormatUint(returnSize, 10)
 
