@@ -30,31 +30,13 @@ spec:
         azure.workload.identity/use: 'true'
         {{- end }}
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/arch
-                    operator: In
-                    values:
-                    - arm64
-                    - amd64
-                  - key: kubernetes.io/os
-                    operator: In
-                    values:
-                    - linux
-{{- if .Values.nodeSelector }}
-{{- range $key, $value := .Values.nodeSelector}}
-                  - key: {{ $key }}
-                    operator: In
-                    values:
-                    - {{ $value }}
- {{- end }} 
- {{- end }}
       {{- if .Values.affinity }}
       affinity:
-{{ toYaml .Values.affinity | indent 8 }}
+{{- toYaml .Values.affinity | nindent 8 }}       
+    {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
       {{- end }}
       {{- if .Values.tolerations }}
       tolerations:

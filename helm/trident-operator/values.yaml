@@ -16,8 +16,23 @@ deploymentAnnotations: {}
 tolerations: []
 
 ## Affinity for pod assignment
+## The following affinity configuration ensures that the Trident operator will only be scheduled on nodes with the specified architecture and OS, Hence, do not modify this section. To add custom affinity rules, please append your content to this configuration as needed
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-affinity: {}
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+              - arm64
+              - amd64
+            - key: kubernetes.io/os
+              operator: In
+              values:
+              - linux
+              
 
 # tridentControllerPluginNodeSelector additional nodeSelectors for the Pod running the Trident Controller CSI Plugin.
 # tridentControllerPluginNodeSelector : {}
