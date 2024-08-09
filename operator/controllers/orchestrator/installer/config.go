@@ -11,7 +11,7 @@ import (
 var (
 	DefaultTridentVersion = config.DefaultOrchestratorVersion
 
-	DefaultTridentRepo = "netapp/trident:" // Default repo from where to pull Trident Image
+	DefaultTridentRepo = "trident:" // Default repo from where to pull Trident Image
 
 	// TridentImage is the image that the operator installs by default
 	TridentImage = DefaultTridentRepo + DefaultTridentVersion

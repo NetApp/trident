@@ -530,21 +530,17 @@ func RemoveStringFromSliceConditionally(slice []string, s string, fn func(string
 	return
 }
 
-// SplitImageDomain accepts a container image name and splits off the domain portion, if any.
-func SplitImageDomain(name string) (domain, remainder string) {
-	i := strings.IndexRune(name, '/')
-	if i == -1 || (!strings.ContainsAny(name[:i], ".:") && name[:i] != "localhost") {
-		domain, remainder = "", name
-	} else {
-		domain, remainder = name[:i], name[i+1:]
-	}
-	return
+// GetBaseImageName accepts a container image name and return just the base image.
+func GetBaseImageName(name string) string {
+	imageParts := strings.Split(name, "/")
+	remainder := imageParts[len(imageParts)-1]
+	return remainder
 }
 
-// ReplaceImageRegistry accepts a container image name and a registry name (FQDN[:port]) and
+// ReplaceImageRegistry accepts a container image name and a registry name (FQDN[:port]/[subdir]*) and
 // returns the same image name with the supplied registry.
 func ReplaceImageRegistry(image, registry string) string {
-	_, remainder := SplitImageDomain(image)
+	remainder := GetBaseImageName(image)
 	if registry == "" {
 		return remainder
 	}

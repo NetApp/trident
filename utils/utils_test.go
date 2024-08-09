@@ -465,33 +465,36 @@ func TestSliceContainsStringConditionally(t *testing.T) {
 	}
 }
 
-func TestSplitImageDomain(t *testing.T) {
+func TestGetBaseImageName(t *testing.T) {
 	Log().Debug("Running TestSplitImageDomain...")
 
-	domain, remainder := SplitImageDomain("netapp/trident:19.10.0")
-	assert.Equal(t, "", domain)
-	assert.Equal(t, "netapp/trident:19.10.0", remainder)
+	remainder := GetBaseImageName("netapp/trident:19.10.0")
+	assert.Equal(t, "trident:19.10.0", remainder)
 
-	domain, remainder = SplitImageDomain("quay.io/k8scsi/csi-node-driver-registrar:v1.0.2")
-	assert.Equal(t, "quay.io", domain)
-	assert.Equal(t, "k8scsi/csi-node-driver-registrar:v1.0.2", remainder)
+	remainder = GetBaseImageName("")
+	assert.Equal(t, "", remainder)
 
-	domain, remainder = SplitImageDomain("mydomain:5000/k8scsi/csi-node-driver-registrar:v1.0.2")
-	assert.Equal(t, "mydomain:5000", domain)
-	assert.Equal(t, "k8scsi/csi-node-driver-registrar:v1.0.2", remainder)
+	remainder = GetBaseImageName("trident:19.10.0")
+	assert.Equal(t, "trident:19.10.0", remainder)
+
+	remainder = GetBaseImageName("quay.io/k8scsi/csi-node-driver-registrar:v1.0.2")
+	assert.Equal(t, "csi-node-driver-registrar:v1.0.2", remainder)
+
+	remainder = GetBaseImageName("mydomain:5000/k8scsi/csi-node-driver-registrar:v1.0.2")
+	assert.Equal(t, "csi-node-driver-registrar:v1.0.2", remainder)
 }
 
 func TestReplaceImageRegistry(t *testing.T) {
 	Log().Debug("Running ReplaceImageRegistry...")
 
 	image := ReplaceImageRegistry("netapp/trident:19.10.0", "")
-	assert.Equal(t, "netapp/trident:19.10.0", image)
+	assert.Equal(t, "trident:19.10.0", image)
 
 	image = ReplaceImageRegistry("netapp/trident:19.10.0", "mydomain:5000")
-	assert.Equal(t, "mydomain:5000/netapp/trident:19.10.0", image)
+	assert.Equal(t, "mydomain:5000/trident:19.10.0", image)
 
 	image = ReplaceImageRegistry("quay.io/k8scsi/csi-node-driver-registrar:v1.0.2", "mydomain:5000")
-	assert.Equal(t, "mydomain:5000/k8scsi/csi-node-driver-registrar:v1.0.2", image)
+	assert.Equal(t, "mydomain:5000/csi-node-driver-registrar:v1.0.2", image)
 }
 
 func TestFilterIPs(t *testing.T) {
