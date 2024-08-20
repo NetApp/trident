@@ -31,6 +31,7 @@ import (
 	"github.com/netapp/trident/frontend/docker"
 	"github.com/netapp/trident/frontend/metrics"
 	"github.com/netapp/trident/frontend/rest"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/utils"
@@ -394,6 +395,8 @@ func main() {
 		orchestrator.AddFrontend(ctx, dockerFrontend)
 		preBootstrapFrontends = append(preBootstrapFrontends, dockerFrontend)
 
+		// Set up fault-injection server for docker (single instance should run).
+		preBootstrapFrontends = append(preBootstrapFrontends, fiji.NewFrontend(":50000"))
 	} else if enableCSI {
 
 		config.CurrentDriverContext = config.ContextCSI
@@ -452,22 +455,29 @@ func main() {
 		}).Info("Initializing CSI frontend.")
 
 		var csiFrontend *csi.Plugin
+		var fijiFrontend frontend.Plugin
 		switch *csiRole {
 		case csi.CSIController:
 			txnMonitor = true
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator,
 				&controllerHelper, *enableForceDetach)
+
+			fijiFrontend = fiji.NewFrontend(":50001")
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
 				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
+
+			fijiFrontend = fiji.NewFrontend(":50000")
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
 				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach,
 				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
+
+			fijiFrontend = fiji.NewFrontend(":50000")
 		}
 		if err != nil {
 			Log().Fatalf("Unable to start the CSI frontend. %v", err)
@@ -483,6 +493,9 @@ func main() {
 			orchestrator.AddFrontend(ctx, crdController)
 			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
 		}
+
+		// Add the FIJI frontend to the pre-bootstrap frontends.
+		preBootstrapFrontends = append(preBootstrapFrontends, fijiFrontend)
 	}
 
 	// Create HTTP REST frontend

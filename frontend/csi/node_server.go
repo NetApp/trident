@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
@@ -50,6 +51,8 @@ var (
 	// NVMeNamespacesFlushRetry - Non-persistent map of Namespaces to maintain the flush errors if any.
 	// During NodeUnstageVolume, Trident shall return success after specific wait time (nvmeMaxFlushWaitDuration).
 	NVMeNamespacesFlushRetry = make(map[string]time.Time)
+
+	betweenAttachAndLUKSPassphrase = fiji.Register("betweenAttachAndLUKSPassphrase", "node_server")
 )
 
 func attemptLock(ctx context.Context, lockContext string, lockTimeout time.Duration) bool {
@@ -1194,6 +1197,10 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	if isLUKS {
+		if err := betweenAttachAndLUKSPassphrase.Inject(); err != nil {
+			return err
+		}
+
 		var luksDevice utils.LUKSDeviceInterface
 		luksDevice, err = utils.NewLUKSDeviceFromMappingPath(
 			ctx, publishInfo.DevicePath,
