@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
 )
 
@@ -199,4 +201,65 @@ func TestMountLUKSDevice_Negative(t *testing.T) {
 	luksFormatted, err = EnsureLUKSDeviceMappedOnHost(context.Background(), mockLUKSDevice, "pvc-test", secrets)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
+}
+
+func TestRemoveMultipathDeviceMapping(t *testing.T) {
+	originalCmd := command
+	// Reset 'command' at the end of the test
+	defer func() { command = originalCmd }()
+
+	client := mockexec.NewMockCommand(gomock.NewController(t))
+	command = client // Set package var to mock
+
+	tests := []struct {
+		name        string
+		devicePath  string
+		mockReturn  []byte
+		mockError   error
+		expectError bool
+	}{
+		{
+			name:        "Happy Path",
+			devicePath:  "/dev/mock-0",
+			mockReturn:  []byte("mock output"),
+			mockError:   nil,
+			expectError: false,
+		},
+		{
+			name:        "Blank Device Path",
+			devicePath:  "",
+			mockReturn:  nil,
+			mockError:   nil,
+			expectError: false,
+		},
+		{
+			name:        "Device does not exist",
+			devicePath:  "/dev/mapper/doesNotExist",
+			mockReturn:  []byte("'/dev/mapper/doesNotExist' is not a valid argument"),
+			mockError:   fmt.Errorf("error"),
+			expectError: false,
+		},
+		{
+			name:        "Negative case",
+			devicePath:  "/dev/mock-0",
+			mockReturn:  nil,
+			mockError:   fmt.Errorf("error"),
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.devicePath != "" {
+				client.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f", tt.devicePath).
+					Return(tt.mockReturn, tt.mockError)
+			}
+			err := RemoveMultipathDeviceMapping(context.TODO(), tt.devicePath)
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

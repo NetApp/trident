@@ -1406,14 +1406,14 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		return status.Error(codes.Internal, errStr)
 	}
 
+	// If there is multipath device, flush(remove) mappings
+	if err := utils.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice); err != nil {
+		return err
+	}
+
 	// Delete the device info we saved to the volume tracking info path so unstage can succeed.
 	if err := p.nodeHelper.DeleteTrackingInfo(ctx, volumeId); err != nil {
 		return status.Error(codes.Internal, err.Error())
-	}
-
-	// If there is multipath device, flush(remove) mappings
-	if unmappedMpathDevice != "" {
-		utils.RemoveMultipathDeviceMapping(ctx, unmappedMpathDevice)
 	}
 
 	return nil

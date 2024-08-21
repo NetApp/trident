@@ -467,18 +467,16 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 		if errors.IsISCSIDeviceFlushError(deviceErr) {
 			Logc(ctx).WithFields(
 				LogFields{
-					"error":  deviceErr,
 					"device": devicePath,
-				}).Debug("Flush failed.")
+				}).WithError(deviceErr).Debug("Flush failed.")
 			return deviceErr
 		}
 		if errors.IsTimeoutError(deviceErr) {
 			Logc(ctx).WithFields(LogFields{
-				"error":  deviceErr,
 				"device": devicePath,
 				"lun":    deviceInfo.LUN,
 				"host":   deviceInfo.Host,
-			}).Debug("Flush timed out.")
+			}).WithError(deviceErr).Debug("Flush timed out.")
 			return deviceErr
 		}
 	}
@@ -490,7 +488,14 @@ func multipathFlushDevice(ctx context.Context, deviceInfo *ScsiDeviceInfo) error
 		return err
 	}
 
-	RemoveMultipathDeviceMapping(ctx, devicePath)
+	if err = RemoveMultipathDeviceMapping(ctx, devicePath); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"device": devicePath,
+			"lun":    deviceInfo.LUN,
+			"host":   deviceInfo.Host,
+		}).WithError(deviceErr).Debug("Error during multipath flush.")
+		return err
+	}
 	return nil
 }
 
@@ -1143,25 +1148,32 @@ func PrepareDeviceAtMountPathForRemoval(ctx context.Context, mountpoint string, 
 
 // RemoveMultipathDeviceMapping uses "multipath -f <devicePath>" to flush(remove) unused map.
 // Unused maps can happen when Unstage is called on offline/deleted LUN.
-func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) {
+func RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error {
 	Logc(ctx).WithField("devicePath", devicePath).Debug(">>>> devices.RemoveMultipathDevicemapping")
 	defer Logc(ctx).Debug("<<<< devices.RemoveMultipathDeviceMapping")
 
 	if devicePath == "" {
-		return
+		return nil
 	}
 
 	out, err := command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, false, "-f", devicePath)
 	if err != nil {
-		// Nothing to do if it generates an error, but log it.
-		Logc(ctx).WithFields(LogFields{
-			"error":      err,
-			"output":     string(out),
-			"devicePath": devicePath,
-		}).Error("Error encountered in multipath flush(remove) mapping command.")
+		pathAlreadyRemoved := strings.Contains(string(out), fmt.Sprintf("'%s' is not a valid argument", devicePath))
+		if pathAlreadyRemoved {
+			Logc(ctx).WithFields(LogFields{
+				"output":     string(out),
+				"devicePath": devicePath,
+			}).WithError(err).Debug("Multipath device already removed.")
+		} else {
+			Logc(ctx).WithFields(LogFields{
+				"output":     string(out),
+				"devicePath": devicePath,
+			}).WithError(err).Error("Error encountered in multipath flush(remove) mapping command.")
+			return fmt.Errorf("failed to flush multipath device: %w", err)
+		}
 	}
 
-	return
+	return nil
 }
 
 // removeSCSIDevice informs Linux that a device will be removed.  The deviceInfo provided only needs
