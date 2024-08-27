@@ -187,6 +187,11 @@ chwrap_build = $(call go_build,chwrap,./chwrap,$1,$2)\
 	&& ./chwrap/make-tarball.sh $(call binary_path,chwrap,$1) $(call binary_path,chwrap.tar,$1)\
 	&& rm -f $(call binary_path,chwrap,$1)
 
+# node_prep_build is the go build command that compiles the node_prep binary from the source ./cmd/node_prep for
+# the named platform
+# usage: $(call node_prep_build,$(platform),$(linker_flags))
+node_prep_build = $(call go_build,node_prep,./cmd/node_prep, $1, $2)
+
 # binaries_for_platform returns a script to build all binaries required for platform. The binaries are tridentctl,
 # trident_orchestrator, chwrap.tar, and trident_operator. chwrap.tar and trident_operator are only built for linux
 # plaforms.
@@ -195,7 +200,8 @@ binaries_for_platform = $(call go_build,tridentctl,./cli,$1,$2)\
 	$(if $(findstring darwin,$1),,\
 		&& $(call go_build,trident_orchestrator,.,$1,$2)\
 		$(if $(findstring linux,$1),\
-			&& $(call chwrap_build,$1,$2) ))
+			&& $(call chwrap_build,$1,$2) \
+			&& $(call node_prep_build,$1,$2) ))
 
 # build_binaries_for_platforms returns a script to build all binaries for platforms. Attempts to add current directory
 # as a safe git directory, in case GO_SHELL uses a different user than the source repo.
@@ -231,6 +237,7 @@ docker_build_linux = $1 build \
 	--build-arg ARCH=$(call arch,$2) \
 	--build-arg BIN=$(call binary_path,trident_orchestrator,$2) \
 	--build-arg CLI_BIN=$(call binary_path,tridentctl,$2) \
+	--build-arg NODE_PREP_BIN=$(call binary_path,node_prep,$2) \
 	--build-arg CHWRAP_BIN=$(call binary_path,chwrap.tar,$2) \
 	--tag $3 \
 	--rm \
