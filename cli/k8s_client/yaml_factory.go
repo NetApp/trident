@@ -1294,6 +1294,7 @@ spec:
           requests:
             cpu: 10m
             memory: 40Mi
+      {IMAGE_PULL_SECRETS}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
