@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockNodeHelper is a mock of NodeHelper interface.
@@ -92,10 +92,10 @@ func (mr *MockNodeHelperMockRecorder) GetVolumeTrackingFiles() *gomock.Call {
 }
 
 // ListVolumeTrackingInfo mocks base method.
-func (m *MockNodeHelper) ListVolumeTrackingInfo(arg0 context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+func (m *MockNodeHelper) ListVolumeTrackingInfo(arg0 context.Context) (map[string]*models.VolumeTrackingInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumeTrackingInfo", arg0)
-	ret0, _ := ret[0].(map[string]*utils.VolumeTrackingInfo)
+	ret0, _ := ret[0].(map[string]*models.VolumeTrackingInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -107,10 +107,10 @@ func (mr *MockNodeHelperMockRecorder) ListVolumeTrackingInfo(arg0 interface{}) *
 }
 
 // ReadTrackingInfo mocks base method.
-func (m *MockNodeHelper) ReadTrackingInfo(arg0 context.Context, arg1 string) (*utils.VolumeTrackingInfo, error) {
+func (m *MockNodeHelper) ReadTrackingInfo(arg0 context.Context, arg1 string) (*models.VolumeTrackingInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadTrackingInfo", arg0, arg1)
-	ret0, _ := ret[0].(*utils.VolumeTrackingInfo)
+	ret0, _ := ret[0].(*models.VolumeTrackingInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -166,7 +166,7 @@ func (mr *MockNodeHelperMockRecorder) ValidateTrackingFile(arg0, arg1 interface{
 }
 
 // WriteTrackingInfo mocks base method.
-func (m *MockNodeHelper) WriteTrackingInfo(arg0 context.Context, arg1 string, arg2 *utils.VolumeTrackingInfo) error {
+func (m *MockNodeHelper) WriteTrackingInfo(arg0 context.Context, arg1 string, arg2 *models.VolumeTrackingInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteTrackingInfo", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -244,10 +244,10 @@ func (mr *MockVolumePublishManagerMockRecorder) GetVolumeTrackingFiles() *gomock
 }
 
 // ListVolumeTrackingInfo mocks base method.
-func (m *MockVolumePublishManager) ListVolumeTrackingInfo(arg0 context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+func (m *MockVolumePublishManager) ListVolumeTrackingInfo(arg0 context.Context) (map[string]*models.VolumeTrackingInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumeTrackingInfo", arg0)
-	ret0, _ := ret[0].(map[string]*utils.VolumeTrackingInfo)
+	ret0, _ := ret[0].(map[string]*models.VolumeTrackingInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -259,10 +259,10 @@ func (mr *MockVolumePublishManagerMockRecorder) ListVolumeTrackingInfo(arg0 inte
 }
 
 // ReadTrackingInfo mocks base method.
-func (m *MockVolumePublishManager) ReadTrackingInfo(arg0 context.Context, arg1 string) (*utils.VolumeTrackingInfo, error) {
+func (m *MockVolumePublishManager) ReadTrackingInfo(arg0 context.Context, arg1 string) (*models.VolumeTrackingInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadTrackingInfo", arg0, arg1)
-	ret0, _ := ret[0].(*utils.VolumeTrackingInfo)
+	ret0, _ := ret[0].(*models.VolumeTrackingInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -304,7 +304,7 @@ func (mr *MockVolumePublishManagerMockRecorder) ValidateTrackingFile(arg0, arg1 
 }
 
 // WriteTrackingInfo mocks base method.
-func (m *MockVolumePublishManager) WriteTrackingInfo(arg0 context.Context, arg1 string, arg2 *utils.VolumeTrackingInfo) error {
+func (m *MockVolumePublishManager) WriteTrackingInfo(arg0 context.Context, arg1 string, arg2 *models.VolumeTrackingInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteTrackingInfo", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

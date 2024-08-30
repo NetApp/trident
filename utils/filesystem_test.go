@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestReadJSONFile_Succeeds(t *testing.T) {
@@ -17,13 +18,13 @@ func TestReadJSONFile_Succeeds(t *testing.T) {
 	file, err := osFs.Create("foo.json")
 	assert.NoError(t, err)
 
-	pubInfo := &VolumePublishInfo{}
+	pubInfo := &models.VolumePublishInfo{}
 	pubInfo.NfsServerIP = "1.1.1.1"
 	pInfo, err := json.Marshal(pubInfo)
 	_, err = file.Write(pInfo)
 	assert.NoError(t, err)
 
-	returnedPubInfo := &VolumePublishInfo{}
+	returnedPubInfo := &models.VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.NoError(t, err, "did not expect error reading valid JSON")
 	assert.Equal(t, pubInfo.NfsServerIP, returnedPubInfo.NfsServerIP, "expected read to unmarshal correctly with the"+
@@ -41,7 +42,7 @@ func TestReadJSONFile_FailsWithIncompleteJSON(t *testing.T) {
 	_, err = file.Write([]byte("{"))
 	assert.NoError(t, err)
 
-	returnedPubInfo := &VolumePublishInfo{}
+	returnedPubInfo := &models.VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.True(t, errors.IsInvalidJSONError(err), "expected invalidJSONError due to file containing incomplete JSON")
 }
@@ -62,13 +63,13 @@ func TestReadJSONFile_FailsBecauseUnmarshalTypeError(t *testing.T) {
 	_, err = file.Write(pInfo)
 	assert.NoError(t, err)
 
-	returnedPubInfo := &VolumePublishInfo{}
+	returnedPubInfo := &models.VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.True(t, errors.IsInvalidJSONError(err), "expected invalidJSONError due to unmarshallable type in valid JSON")
 }
 
 func TestReadJSONFile_FailsBecauseNoFile(t *testing.T) {
-	returnedPubInfo := &VolumePublishInfo{}
+	returnedPubInfo := &models.VolumePublishInfo{}
 	err := JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.True(t, errors.IsNotFoundError(err), "expected NotFoundError when file doesn't exist")
 }
@@ -79,7 +80,7 @@ func TestReadJSONFile_FailsWithPermissionsError(t *testing.T) {
 	_, err := osFs.Create("foo.json")
 	assert.NoError(t, err)
 
-	returnedPubInfo := &VolumePublishInfo{}
+	returnedPubInfo := &models.VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.True(t, !errors.IsInvalidJSONError(err) && !errors.IsNotFoundError(err), "expected unwrapped error")
 }
@@ -93,7 +94,7 @@ func TestReadJSONFile_FailsWithSyntaxError(t *testing.T) {
 	_, err = file.Write([]byte("garbage"))
 	assert.NoError(t, err)
 
-	returnedPubInfo := &VolumePublishInfo{}
+	returnedPubInfo := &models.VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.True(t, errors.IsInvalidJSONError(err), "expected invalid JSON if syntax error")
 }
@@ -104,7 +105,7 @@ func TestReadJSONFile_FailsBecauseEmptyFile(t *testing.T) {
 	_, err := osFs.Create("foo.json")
 	assert.NoError(t, err)
 
-	returnedPubInfo := &VolumePublishInfo{}
+	returnedPubInfo := &models.VolumePublishInfo{}
 	err = JsonReaderWriter.ReadJSONFile(context.Background(), returnedPubInfo, "foo.json", "")
 	assert.Error(t, err, "expected an error from an empty file")
 	assert.True(t, errors.IsInvalidJSONError(err), "expected InvalidJSONError due to empty file")
@@ -114,7 +115,7 @@ func TestWriteJSONFile_Succeeds(t *testing.T) {
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
 
-	pubInfo := &VolumePublishInfo{}
+	pubInfo := &models.VolumePublishInfo{}
 	pubInfo.NfsServerIP = "1.1.1.1"
 
 	err := JsonReaderWriter.WriteJSONFile(context.Background(), pubInfo, "foo.json", "")
@@ -123,7 +124,7 @@ func TestWriteJSONFile_Succeeds(t *testing.T) {
 	assert.NoError(t, err, "expected file to exist after writing it")
 
 	contents, err := afero.ReadFile(osFs, "foo.json")
-	writtenPubInfo := &VolumePublishInfo{}
+	writtenPubInfo := &models.VolumePublishInfo{}
 	err = json.Unmarshal(contents, writtenPubInfo)
 	assert.NoError(t, err, "expected written file's contents to be JSON and unmarshallable")
 	assert.Equal(t, pubInfo.NfsServerIP, writtenPubInfo.NfsServerIP, "expected written field value to be present")
@@ -133,7 +134,7 @@ func TestWriteJSONFile_FailsOnReadOnlyFs(t *testing.T) {
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewReadOnlyFs(afero.NewMemMapFs())
 
-	pubInfo := &VolumePublishInfo{}
+	pubInfo := &models.VolumePublishInfo{}
 	pubInfo.NfsServerIP = "1.1.1.1"
 
 	err := JsonReaderWriter.WriteJSONFile(context.Background(), pubInfo, "foo.json", "")

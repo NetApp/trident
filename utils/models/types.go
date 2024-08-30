@@ -1,6 +1,6 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
-package utils
+package models
 
 import (
 	"context"
@@ -13,8 +13,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-//go:generate mockgen -destination=../mocks/mock_utils/mock_json_utils.go github.com/netapp/trident/utils JSONReaderWriter
-//go:generate mockgen -destination=../mocks/mock_utils/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils LUKSDeviceInterface
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_models/mock_json_utils.go github.com/netapp/trident/utils/models JSONReaderWriter
 
 type VolumeAccessInfo struct {
 	IscsiAccessInfo
@@ -296,27 +295,6 @@ type NodePrepBreadcrumb struct {
 type JSONReaderWriter interface {
 	WriteJSONFile(ctx context.Context, fileContents interface{}, filepath, fileDescription string) error
 	ReadJSONFile(ctx context.Context, fileContents interface{}, filepath, fileDescription string) error
-}
-
-type LUKSDeviceInterface interface {
-	RawDevicePath() string
-	MappedDevicePath() string
-	MappedDeviceName() string
-
-	IsLUKSFormatted(ctx context.Context) (bool, error)
-	IsOpen(ctx context.Context) (bool, error)
-
-	Open(ctx context.Context, luksPassphrase string) error
-	LUKSFormat(ctx context.Context, luksPassphrase string) error
-	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
-	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
-	CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error)
-	Resize(ctx context.Context, luksPassphrase string) error
-}
-
-type LUKSDevice struct {
-	rawDevicePath string
-	mappingName   string
 }
 
 // Data structure and related interfaces to help iSCSI self-healing
@@ -604,7 +582,7 @@ func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, erro
 		return nil, fmt.Errorf("portal value cannot be empty")
 	}
 
-	if iSCSISessionData, found := p.Info[parseHostportIP(portal)]; found {
+	if iSCSISessionData, found := p.Info[ParseHostportIP(portal)]; found {
 		return iSCSISessionData, nil
 	}
 
@@ -640,7 +618,7 @@ func (p *ISCSISessions) AddPortal(portal string, portalInfo PortalInfo) error {
 		PortalInfo: portalInfo,
 		LUNs:       newLUNInfo,
 	}
-	p.Info[parseHostportIP(portal)] = &iSCSISessionData
+	p.Info[ParseHostportIP(portal)] = &iSCSISessionData
 
 	return nil
 }
@@ -732,7 +710,7 @@ func (p *ISCSISessions) RemoveLUNFromPortal(portal string, l int32) {
 // RemovePortal removes portal (along with its PortalInfo and LUNInfo) from the map
 func (p *ISCSISessions) RemovePortal(portal string) {
 	if p != nil {
-		delete(p.Info, parseHostportIP(portal))
+		delete(p.Info, ParseHostportIP(portal))
 	}
 }
 
@@ -892,4 +870,26 @@ func (p ISCSISessions) String() string {
 // GoString prints Go-syntax representation of the map
 func (p ISCSISessions) GoString() string {
 	return p.String()
+}
+
+// ParseHostportIP returns just the IP address part of the given input IP address and strips any port information
+func ParseHostportIP(hostport string) string {
+	ipAddress := ""
+	if IPv6Check(hostport) {
+		// this is an IPv6 address, remove port value and add square brackets around the IP address
+		if hostport[0] == '[' {
+			ipAddress = strings.Split(hostport, "]")[0] + "]"
+		} else {
+			// assumption here is that without the square brackets its only IP address without port information
+			ipAddress = "[" + hostport + "]"
+		}
+	} else {
+		ipAddress = strings.Split(hostport, ":")[0]
+	}
+
+	return ipAddress
+}
+
+func IPv6Check(ip string) bool {
+	return strings.Count(ip, ":") >= 2
 }

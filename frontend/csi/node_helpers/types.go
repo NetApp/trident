@@ -6,7 +6,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 //go:generate mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_node_helpers/mock_node_helpers.go github.com/netapp/trident/frontend/csi/node_helpers NodeHelper,VolumePublishManager
@@ -26,10 +26,10 @@ type NodeHelper interface {
 // the CSI node. The node_helpers supply CO-specific details at certain
 // points of CSI workflows.
 type VolumePublishManager interface {
-	WriteTrackingInfo(context.Context, string, *utils.VolumeTrackingInfo) error
-	ReadTrackingInfo(context.Context, string) (*utils.VolumeTrackingInfo, error)
+	WriteTrackingInfo(context.Context, string, *models.VolumeTrackingInfo) error
+	ReadTrackingInfo(context.Context, string) (*models.VolumeTrackingInfo, error)
 	DeleteTrackingInfo(context.Context, string) error
-	ListVolumeTrackingInfo(context.Context) (map[string]*utils.VolumeTrackingInfo, error)
+	ListVolumeTrackingInfo(context.Context) (map[string]*models.VolumeTrackingInfo, error)
 	UpgradeVolumeTrackingFile(context.Context, string, map[string]struct{}, map[string]string) (bool, error)
 	DeleteFailedUpgradeTrackingFile(context.Context, os.FileInfo)
 	ValidateTrackingFile(context.Context, string) (bool, error)

@@ -26,6 +26,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -856,7 +857,7 @@ func (d *StorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeCo
 	return nil
 }
 
-func (d *StorageDriver) Publish(context.Context, *storage.VolumeConfig, *utils.VolumePublishInfo) error {
+func (d *StorageDriver) Publish(context.Context, *storage.VolumeConfig, *models.VolumePublishInfo) error {
 	return errors.New("fake driver does not support Publish")
 }
 
@@ -1297,7 +1298,7 @@ func (d StorageDriver) generateCreatingVolumes() map[string]fake.CreatingVolume 
 	return creatingVolumes
 }
 
-func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
+func (d *StorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockNVMeInterface is a mock of NVMeInterface interface.
@@ -36,7 +37,7 @@ func (m *MockNVMeInterface) EXPECT() *MockNVMeInterfaceMockRecorder {
 }
 
 // AddPublishedNVMeSession mocks base method.
-func (m *MockNVMeInterface) AddPublishedNVMeSession(arg0 *utils.NVMeSessions, arg1 *utils.VolumePublishInfo) {
+func (m *MockNVMeInterface) AddPublishedNVMeSession(arg0 *utils.NVMeSessions, arg1 *models.VolumePublishInfo) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "AddPublishedNVMeSession", arg0, arg1)
 }

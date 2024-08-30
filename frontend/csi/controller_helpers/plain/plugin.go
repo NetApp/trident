@@ -16,7 +16,7 @@ import (
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 type helper struct {
@@ -126,7 +126,7 @@ func (h *helper) GetNodeTopologyLabels(_ context.Context, _ string) (map[string]
 // GetNodePublicationState returns a set of flags that indicate whether, in certain circumstances,
 // a node may safely publish volumes.  If such checking is not enabled or otherwise appropriate,
 // this function returns nil.
-func (h *helper) GetNodePublicationState(_ context.Context, _ string) (*utils.NodePublicationStateFlags, error) {
+func (h *helper) GetNodePublicationState(_ context.Context, _ string) (*models.NodePublicationStateFlags, error) {
 	return nil, nil
 }
 

@@ -22,8 +22,8 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 type listResponse interface {
@@ -685,7 +685,7 @@ func volumeUpdater(
 		return http.StatusInternalServerError
 	}
 
-	updateVolRequest := &utils.VolumeUpdateInfo{}
+	updateVolRequest := &models.VolumeUpdateInfo{}
 	err := json.Unmarshal(body, updateVolRequest)
 	if err != nil {
 		updateResponse.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
@@ -964,7 +964,7 @@ func AddNode(w http.ResponseWriter, r *http.Request) {
 				response.setError(fmt.Errorf("response object must be of type AddNodeResponse"))
 				return http.StatusInternalServerError
 			}
-			node := new(utils.Node)
+			node := new(models.Node)
 			err := json.Unmarshal(body, node)
 			if err != nil {
 				response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
@@ -1054,7 +1054,7 @@ func nodeUpdater(
 		return http.StatusInternalServerError
 	}
 
-	nodePublicationState := new(utils.NodePublicationStateFlags)
+	nodePublicationState := new(models.NodePublicationStateFlags)
 	err := json.Unmarshal(body, nodePublicationState)
 	if err != nil {
 		response.setError(fmt.Errorf("invalid JSON: %s", err.Error()))
@@ -1119,8 +1119,8 @@ func UpdateNode(w http.ResponseWriter, r *http.Request) {
 }
 
 type GetNodeResponse struct {
-	Node  *utils.NodeExternal `json:"node"`
-	Error string              `json:"error,omitempty"`
+	Node  *models.NodeExternal `json:"node"`
+	Error string               `json:"error,omitempty"`
 }
 
 func GetNode(w http.ResponseWriter, r *http.Request) {
@@ -1174,8 +1174,8 @@ func DeleteNode(w http.ResponseWriter, r *http.Request) {
 }
 
 type VolumePublicationResponse struct {
-	VolumePublication *utils.VolumePublicationExternal `json:"volumePublication"`
-	Error             string                           `json:"error,omitempty"`
+	VolumePublication *models.VolumePublicationExternal `json:"volumePublication"`
+	Error             string                            `json:"error,omitempty"`
 }
 
 func GetVolumePublication(w http.ResponseWriter, r *http.Request) {
@@ -1194,8 +1194,8 @@ func GetVolumePublication(w http.ResponseWriter, r *http.Request) {
 }
 
 type VolumePublicationsResponse struct {
-	VolumePublications []*utils.VolumePublicationExternal `json:"volumePublications"`
-	Error              string                             `json:"error,omitempty"`
+	VolumePublications []*models.VolumePublicationExternal `json:"volumePublications"`
+	Error              string                              `json:"error,omitempty"`
 }
 
 func (r *VolumePublicationsResponse) setError(err error) {
@@ -1391,8 +1391,8 @@ func DeleteSnapshot(w http.ResponseWriter, r *http.Request) {
 }
 
 type GetCHAPResponse struct {
-	CHAP  *utils.IscsiChapInfo `json:"chap"`
-	Error string               `json:"error,omitempty"`
+	CHAP  *models.IscsiChapInfo `json:"chap"`
+	Error string                `json:"error,omitempty"`
 }
 
 func GetCHAP(w http.ResponseWriter, r *http.Request) {

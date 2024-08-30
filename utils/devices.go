@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -17,6 +17,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // LUKS2 requires ~16MiB for overhead. Default to 18MiB just in case.
@@ -603,7 +604,7 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 	for _, sessionDir := range sessionDirs {
 
 		var sessionNumber int
-		var iscsiChapInfo IscsiChapInfo
+		var iscsiChapInfo models.IscsiChapInfo
 		sessionName := sessionDir.Name()
 
 		if !strings.HasPrefix(sessionName, "session") {
@@ -648,14 +649,14 @@ func GetISCSIDevices(ctx context.Context, getCredentials bool) ([]*ScsiDeviceInf
 		targetIQN := sessionValues["targetIQN"]
 
 		if getCredentials {
-			iscsiChapInfo = IscsiChapInfo{
+			iscsiChapInfo = models.IscsiChapInfo{
 				IscsiUsername:        sessionValues["IscsiUsername"],
 				IscsiInitiatorSecret: sessionValues["IscsiInitiatorSecret"],
 				IscsiTargetUsername:  sessionValues["IscsiTargetUsername"],
 				IscsiTargetSecret:    sessionValues["IscsiTargetSecret"],
 			}
 
-			if iscsiChapInfo != (IscsiChapInfo{}) {
+			if iscsiChapInfo != (models.IscsiChapInfo{}) {
 				iscsiChapInfo.UseCHAP = true
 			}
 		}
@@ -871,7 +872,7 @@ func findDevicesForMultipathDevice(ctx context.Context, device string) []string 
 }
 
 // compareWithPublishedDevicePath verifies that published path matches the discovered device path
-func compareWithPublishedDevicePath(ctx context.Context, publishInfo *VolumePublishInfo,
+func compareWithPublishedDevicePath(ctx context.Context, publishInfo *models.VolumePublishInfo,
 	deviceInfo *ScsiDeviceInfo,
 ) (bool, error) {
 	isProbablyGhostDevice := false
@@ -925,7 +926,7 @@ func compareWithPublishedDevicePath(ctx context.Context, publishInfo *VolumePubl
 }
 
 // compareWithPublishedSerialNumber verifies that device serial number matches the discovered LUNs
-func compareWithPublishedSerialNumber(ctx context.Context, publishInfo *VolumePublishInfo,
+func compareWithPublishedSerialNumber(ctx context.Context, publishInfo *models.VolumePublishInfo,
 	deviceInfo *ScsiDeviceInfo,
 ) (bool, error) {
 	isProbablyGhostDevice := false
@@ -998,8 +999,8 @@ func compareWithPublishedSerialNumber(ctx context.Context, publishInfo *VolumePu
 // compareWithAllPublishInfos comparing all publications (allPublishInfos) for
 // LUN number uniqueness, if more than one publication exists with the same LUN number
 // then it indicates a larger problem that user needs to manually fix
-func compareWithAllPublishInfos(ctx context.Context, publishInfo *VolumePublishInfo,
-	allPublishInfos []VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
+func compareWithAllPublishInfos(ctx context.Context, publishInfo *models.VolumePublishInfo,
+	allPublishInfos []models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
 ) error {
 	// During unstaging at least 1 publish info should exist else
 	// there is some issue on the node.
@@ -1045,7 +1046,7 @@ func compareWithAllPublishInfos(ctx context.Context, publishInfo *VolumePublishI
 // verifyMultipathDevice verifies that device being removed is correct based on published device path,
 // device serial number (if present) or comparing all publications (allPublishInfos) for
 // LUN number uniqueness.
-func verifyMultipathDevice(ctx context.Context, publishInfo *VolumePublishInfo, allPublishInfos []VolumePublishInfo,
+func verifyMultipathDevice(ctx context.Context, publishInfo *models.VolumePublishInfo, allPublishInfos []models.VolumePublishInfo,
 	deviceInfo *ScsiDeviceInfo,
 ) (bool, error) {
 	// Ensure a correct multipath device is being discovered.
@@ -1071,7 +1072,7 @@ func verifyMultipathDevice(ctx context.Context, publishInfo *VolumePublishInfo, 
 // also verifies that device being removed is correct based on published device path,
 // device serial number (if present) or comparing all publications (allPublishInfos) for
 // LUN number uniqueness.
-func PrepareDeviceForRemoval(ctx context.Context, publishInfo *VolumePublishInfo, allPublishInfos []VolumePublishInfo, ignoreErrors,
+func PrepareDeviceForRemoval(ctx context.Context, publishInfo *models.VolumePublishInfo, allPublishInfos []models.VolumePublishInfo, ignoreErrors,
 	force bool,
 ) (string, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
@@ -1246,7 +1247,7 @@ type ScsiDeviceInfo struct {
 	IQN             string
 	SessionNumber   int
 	HostSessionMap  map[int]int
-	CHAPInfo        IscsiChapInfo
+	CHAPInfo        models.IscsiChapInfo
 }
 
 // getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
@@ -1400,6 +1401,29 @@ func waitForMultipathDeviceForLUN(ctx context.Context, lunID int, iSCSINodeName 
 	_, err = waitForMultipathDeviceForDevices(ctx, devices)
 
 	return err
+}
+
+//go:generate mockgen -destination=../mocks/mock_utils/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils LUKSDeviceInterface
+
+type LUKSDeviceInterface interface {
+	RawDevicePath() string
+	MappedDevicePath() string
+	MappedDeviceName() string
+
+	IsLUKSFormatted(ctx context.Context) (bool, error)
+	IsOpen(ctx context.Context) (bool, error)
+
+	Open(ctx context.Context, luksPassphrase string) error
+	LUKSFormat(ctx context.Context, luksPassphrase string) error
+	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
+	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
+	CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error)
+	Resize(ctx context.Context, luksPassphrase string) error
+}
+
+type LUKSDevice struct {
+	rawDevicePath string
+	mappingName   string
 }
 
 func NewLUKSDevice(rawDevicePath, volumeId string) (*LUKSDevice, error) {

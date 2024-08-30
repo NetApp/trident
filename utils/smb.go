@@ -7,13 +7,14 @@ import (
 	"fmt"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/models"
 )
 
 // AttachSMBVolume attaches the volume to the local host. This method must be able to accomplish its task using only the data passed in.
 // It may be assumed that this method always runs on the host to which the volume will be attached.
 
 func AttachSMBVolume(
-	ctx context.Context, name, mountpoint, username, password string, publishInfo *VolumePublishInfo,
+	ctx context.Context, name, mountpoint, username, password string, publishInfo *models.VolumePublishInfo,
 ) error {
 	Logc(ctx).Debug(">>>> smb.AttachSMBSVolume")
 	defer Logc(ctx).Debug("<<<< smb.AttachSMBVolume")

@@ -6,25 +6,25 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 type VolumePublicationCache struct {
 	l *sync.RWMutex
-	m map[string]map[string]*utils.VolumePublication
+	m map[string]map[string]*models.VolumePublication
 }
 
 // NewVolumePublicationCache returns a new reference to a VolumePublicationCache.
 func NewVolumePublicationCache() *VolumePublicationCache {
 	return &VolumePublicationCache{
 		l: &sync.RWMutex{},
-		m: make(map[string]map[string]*utils.VolumePublication),
+		m: make(map[string]map[string]*models.VolumePublication),
 	}
 }
 
 // Set adds or updates an entry in the cache. If no keys or value is supplied, it errors.
 // This expects the core's global lock is held.
-func (vpc *VolumePublicationCache) Set(volume, node string, value *utils.VolumePublication) error {
+func (vpc *VolumePublicationCache) Set(volume, node string, value *models.VolumePublication) error {
 	vpc.l.Lock()
 	defer vpc.l.Unlock()
 
@@ -38,7 +38,7 @@ func (vpc *VolumePublicationCache) Set(volume, node string, value *utils.VolumeP
 
 	// If the volume has no entry we need to initialize the inner map.
 	if vpc.m[volume] == nil {
-		vpc.m[volume] = map[string]*utils.VolumePublication{}
+		vpc.m[volume] = map[string]*models.VolumePublication{}
 	}
 
 	vpc.m[volume][node] = value.Copy()
@@ -47,7 +47,7 @@ func (vpc *VolumePublicationCache) Set(volume, node string, value *utils.VolumeP
 
 // Get returns a copy of a value for an entry in the cache.
 // Follow this with Set if changes to the returned value must exist in the cache.
-func (vpc *VolumePublicationCache) Get(volume, node string) *utils.VolumePublication {
+func (vpc *VolumePublicationCache) Get(volume, node string) *models.VolumePublication {
 	vpc.l.RLock()
 	defer vpc.l.RUnlock()
 
@@ -66,7 +66,7 @@ func (vpc *VolumePublicationCache) Get(volume, node string) *utils.VolumePublica
 // TryGet attempts to retrieve an entry from the cache. If a value is found, a copy is returned.
 // Callers should treat returned values as READ-ONLY.
 // Follow this with Set if changes to the returned value must exist in the cache.
-func (vpc *VolumePublicationCache) TryGet(volume, node string) (*utils.VolumePublication, bool) {
+func (vpc *VolumePublicationCache) TryGet(volume, node string) (*models.VolumePublication, bool) {
 	vpc.l.RLock()
 	defer vpc.l.RUnlock()
 
@@ -103,11 +103,11 @@ func (vpc *VolumePublicationCache) Delete(volume, node string) error {
 // ListPublications returns all publications.
 // Callers should treat returned values as READ-ONLY.
 // Follow this with SetMap if changes to the returned values must exist in the cache.
-func (vpc *VolumePublicationCache) ListPublications() []*utils.VolumePublication {
+func (vpc *VolumePublicationCache) ListPublications() []*models.VolumePublication {
 	vpc.l.RLock()
 	defer vpc.l.RUnlock()
 
-	publications := make([]*utils.VolumePublication, 0)
+	publications := make([]*models.VolumePublication, 0)
 	for _, nodeToPublications := range vpc.m {
 		for _, publication := range nodeToPublications {
 			if publication != nil {
@@ -122,11 +122,11 @@ func (vpc *VolumePublicationCache) ListPublications() []*utils.VolumePublication
 // ListPublicationsForVolume returns all publications for a volume.
 // Callers should treat returned values as READ-ONLY.
 // Follow this with SetMap if changes to the returned values must exist in the cache.
-func (vpc *VolumePublicationCache) ListPublicationsForVolume(volume string) []*utils.VolumePublication {
+func (vpc *VolumePublicationCache) ListPublicationsForVolume(volume string) []*models.VolumePublication {
 	vpc.l.RLock()
 	defer vpc.l.RUnlock()
 
-	publications := make([]*utils.VolumePublication, 0)
+	publications := make([]*models.VolumePublication, 0)
 	if volume != "" && vpc.m[volume] != nil {
 		// Case where volume is supplied but not node;
 		// return only publications relative to a volume.
@@ -141,11 +141,11 @@ func (vpc *VolumePublicationCache) ListPublicationsForVolume(volume string) []*u
 // ListPublicationsForNode returns all publications on a node.
 // Callers should treat returned values as READ-ONLY.
 // Follow this with SetMap if changes to the returned values must exist in the cache.
-func (vpc *VolumePublicationCache) ListPublicationsForNode(node string) []*utils.VolumePublication {
+func (vpc *VolumePublicationCache) ListPublicationsForNode(node string) []*models.VolumePublication {
 	vpc.l.RLock()
 	defer vpc.l.RUnlock()
 
-	publications := make([]*utils.VolumePublication, 0)
+	publications := make([]*models.VolumePublication, 0)
 	for _, nodeToPublications := range vpc.m {
 		if nodeToPublications[node] != nil {
 			publication := nodeToPublications[node]
@@ -158,7 +158,7 @@ func (vpc *VolumePublicationCache) ListPublicationsForNode(node string) []*utils
 
 // Map returns a copy of the internal map. If a slice is needed, use List instead.
 // Follow this with SetMap if changes to the returned values must exist in the cache.
-func (vpc *VolumePublicationCache) Map() map[string]map[string]*utils.VolumePublication {
+func (vpc *VolumePublicationCache) Map() map[string]map[string]*models.VolumePublication {
 	vpc.l.RLock()
 	defer vpc.l.RUnlock()
 
@@ -169,7 +169,7 @@ func (vpc *VolumePublicationCache) Map() map[string]map[string]*utils.VolumePubl
 // If no data is supplied, the internal map is initialized to an empty map.
 // Any data present in the map before is lost and only the new data is stored.
 // This expects the core's global lock is held.
-func (vpc *VolumePublicationCache) SetMap(data map[string]map[string]*utils.VolumePublication) {
+func (vpc *VolumePublicationCache) SetMap(data map[string]map[string]*models.VolumePublication) {
 	vpc.l.Lock()
 	defer vpc.l.Unlock()
 
@@ -182,15 +182,15 @@ func (vpc *VolumePublicationCache) Clear() {
 	vpc.l.Lock()
 	defer vpc.l.Unlock()
 
-	vpc.m = make(map[string]map[string]*utils.VolumePublication)
+	vpc.m = make(map[string]map[string]*models.VolumePublication)
 }
 
 // copyPublicationMap copies the supplied map of data with new space and copies of the values.
-func (vpc *VolumePublicationCache) copyPublicationMap(src map[string]map[string]*utils.VolumePublication) map[string]map[string]*utils.VolumePublication {
-	dst := make(map[string]map[string]*utils.VolumePublication, len(src))
+func (vpc *VolumePublicationCache) copyPublicationMap(src map[string]map[string]*models.VolumePublication) map[string]map[string]*models.VolumePublication {
+	dst := make(map[string]map[string]*models.VolumePublication, len(src))
 	for volume, nodeToPublication := range src {
 		if dst[volume] == nil {
-			dst[volume] = map[string]*utils.VolumePublication{}
+			dst[volume] = map[string]*models.VolumePublication{}
 		}
 		for node, publication := range nodeToPublication {
 			dst[volume][node] = publication.Copy()

@@ -17,7 +17,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	mockOrchestrator "github.com/netapp/trident/mocks/mock_core"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 var volumePublishManagerError = fmt.Errorf("volume tracking error")
@@ -67,8 +67,8 @@ func TestAddPublishedPath_FailsToWriteTrackingInfo(t *testing.T) {
 	ctx := context.TODO()
 	volumeID := "1234567890"
 	pathToAdd := "path/to/remove"
-	volTrackingInfo := &utils.VolumeTrackingInfo{
-		VolumePublishInfo:      utils.VolumePublishInfo{},
+	volTrackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo:      models.VolumePublishInfo{},
 		VolumeTrackingInfoPath: "",
 		StagingTargetPath:      "",
 		PublishedPaths: map[string]struct{}{
@@ -98,7 +98,7 @@ func TestAddPublishedPath_Succeeds(t *testing.T) {
 	ctx := context.TODO()
 	volumeID := "1234567890"
 	pathToAdd := "path/to/add"
-	volTrackingInfo := &utils.VolumeTrackingInfo{
+	volTrackingInfo := &models.VolumeTrackingInfo{
 		PublishedPaths: map[string]struct{}{},
 	}
 
@@ -144,8 +144,8 @@ func TestRemovePublishedPath_FailsToWriteTrackingInfo(t *testing.T) {
 	ctx := context.TODO()
 	volumeID := "1234567890"
 	pathToRemove := "path/to/remove"
-	volTrackingInfo := &utils.VolumeTrackingInfo{
-		VolumePublishInfo:      utils.VolumePublishInfo{},
+	volTrackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo:      models.VolumePublishInfo{},
 		VolumeTrackingInfoPath: "",
 		StagingTargetPath:      "",
 		PublishedPaths: map[string]struct{}{
@@ -175,8 +175,8 @@ func TestRemovePublishedPath_Succeeds(t *testing.T) {
 	ctx := context.TODO()
 	volumeID := "1234567890"
 	pathToRemove := "path/to/remove"
-	volTrackingInfo := &utils.VolumeTrackingInfo{
-		VolumePublishInfo:      utils.VolumePublishInfo{},
+	volTrackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo:      models.VolumePublishInfo{},
 		VolumeTrackingInfoPath: "",
 		StagingTargetPath:      "",
 		PublishedPaths: map[string]struct{}{

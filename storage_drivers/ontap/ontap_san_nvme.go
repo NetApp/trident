@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // NVMeNamespaceRegExp RegExp to match the namespace path either empty string or
@@ -742,7 +743,7 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 
 // Publish prepares the volume to attach/mount it to the pod.
 func (d *NVMeStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	// InternalName is of the format <storagePrefix><pvc_UUID>
 	name := volConfig.InternalName
@@ -849,7 +850,7 @@ func (d *NVMeStorageDriver) Publish(
 
 // Unpublish removes the attach publication of the volume.
 func (d *NVMeStorageDriver) Unpublish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -1201,7 +1202,7 @@ func (d *NVMeStorageDriver) getVolumeExternal(
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteOnce,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}
@@ -1368,7 +1369,7 @@ func (d *NVMeStorageDriver) Resize(
 }
 
 // ReconcileNodeAccess manages the k8s node access related changes for the driver.
-func (d *NVMeStorageDriver) ReconcileNodeAccess(_ context.Context, _ []*utils.Node, _, _ string) error {
+func (d *NVMeStorageDriver) ReconcileNodeAccess(_ context.Context, _ []*models.Node, _, _ string) error {
 	// Note(sphadnis):
 	// 1. NAS drivers takes care export policy rules.
 	// 2. SAN iSCSI driver needs to take care of per backend IGroup in reconcile node access.

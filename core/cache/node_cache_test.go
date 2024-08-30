@@ -6,14 +6,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestNodeCacheSetAndGet(t *testing.T) {
-	node1 := &utils.Node{
+	node1 := &models.Node{
 		Name: "node1",
 	}
-	node2 := &utils.Node{
+	node2 := &models.Node{
 		Name: "node2",
 	}
 	cache := NewNodeCache()
@@ -26,7 +26,7 @@ func TestNodeCacheSetAndGet(t *testing.T) {
 }
 
 func TestNodeCacheLen(t *testing.T) {
-	node1 := &utils.Node{
+	node1 := &models.Node{
 		Name: "node1",
 	}
 	cache := NewNodeCache()
@@ -37,10 +37,10 @@ func TestNodeCacheLen(t *testing.T) {
 }
 
 func TestNodeCacheList(t *testing.T) {
-	node1 := &utils.Node{
+	node1 := &models.Node{
 		Name: "node1",
 	}
-	node2 := &utils.Node{
+	node2 := &models.Node{
 		Name: "node2",
 	}
 	cache := NewNodeCache()
@@ -48,12 +48,12 @@ func TestNodeCacheList(t *testing.T) {
 
 	cache.Set(node1.Name, node1)
 	cache.Set(node2.Name, node2)
-	assert.ElementsMatch(t, []*utils.Node{node1, node2}, cache.List())
+	assert.ElementsMatch(t, []*models.Node{node1, node2}, cache.List())
 }
 
 // TestNodeCacheDelete tests delete removes entry and is idempotent
 func TestNodeCacheDelete(t *testing.T) {
-	node1 := &utils.Node{
+	node1 := &models.Node{
 		Name: "node1",
 	}
 	cache := NewNodeCache()
@@ -72,7 +72,7 @@ func TestNodeCacheDelete(t *testing.T) {
 // 2. Get node
 // 3. See no deadlock
 func TestNodeCacheGetUnblocked(t *testing.T) {
-	node1 := &utils.Node{
+	node1 := &models.Node{
 		Name: "node1",
 	}
 	cache := NewNodeCache()
@@ -99,23 +99,23 @@ func TestNodeCacheAccessorsWaitForWriteLock(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		accessor func(cache *NodeCache, node *utils.Node)
+		accessor func(cache *NodeCache, node *models.Node)
 	}{
 		{
 			name: "Get",
-			accessor: func(cache *NodeCache, node *utils.Node) {
+			accessor: func(cache *NodeCache, node *models.Node) {
 				_ = cache.Get(node.Name)
 			},
 		},
 		{
 			name: "Len",
-			accessor: func(cache *NodeCache, node *utils.Node) {
+			accessor: func(cache *NodeCache, node *models.Node) {
 				_ = cache.Len()
 			},
 		},
 		{
 			name: "List",
-			accessor: func(cache *NodeCache, node *utils.Node) {
+			accessor: func(cache *NodeCache, node *models.Node) {
 				_ = cache.List()
 			},
 		},
@@ -123,7 +123,7 @@ func TestNodeCacheAccessorsWaitForWriteLock(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			node1 := &utils.Node{
+			node1 := &models.Node{
 				Name: "node1",
 			}
 			cache := NewNodeCache()
@@ -155,17 +155,17 @@ func TestNodeCacheMutatorsWaitForReadLock(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		mutator func(cache *NodeCache, node *utils.Node)
+		mutator func(cache *NodeCache, node *models.Node)
 	}{
 		{
 			name: "Set",
-			mutator: func(cache *NodeCache, node *utils.Node) {
+			mutator: func(cache *NodeCache, node *models.Node) {
 				cache.Set(node.Name, node)
 			},
 		},
 		{
 			name: "Delete",
-			mutator: func(cache *NodeCache, node *utils.Node) {
+			mutator: func(cache *NodeCache, node *models.Node) {
 				cache.Delete(node.Name)
 			},
 		},
@@ -173,7 +173,7 @@ func TestNodeCacheMutatorsWaitForReadLock(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			node1 := &utils.Node{
+			node1 := &models.Node{
 				Name: "node1",
 			}
 			cache := NewNodeCache()

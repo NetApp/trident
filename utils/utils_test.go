@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -1385,7 +1386,7 @@ func TestParseHostportIP(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.InputIP, func(t *testing.T) {
-			assert.Equal(t, testCase.OutputIP, parseHostportIP(testCase.InputIP), "IP mismatch")
+			assert.Equal(t, testCase.OutputIP, models.ParseHostportIP(testCase.InputIP), "IP mismatch")
 		})
 	}
 }

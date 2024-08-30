@@ -22,6 +22,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var ctx = context.Background()
@@ -55,8 +56,8 @@ func generateFakePublishVolumeRequest() *csi.ControllerPublishVolumeRequest {
 	return req
 }
 
-func generateVolumePublicationFromCSIPublishRequest(req *csi.ControllerPublishVolumeRequest) *utils.VolumePublication {
-	vp := &utils.VolumePublication{
+func generateVolumePublicationFromCSIPublishRequest(req *csi.ControllerPublishVolumeRequest) *models.VolumePublication {
+	vp := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(req.GetVolumeId(), req.GetNodeId()),
 		VolumeName: req.GetVolumeId(),
 		NodeName:   req.GetNodeId(),
@@ -78,8 +79,8 @@ func generateFakeUnpublishVolumeRequest() *csi.ControllerUnpublishVolumeRequest 
 	return req
 }
 
-func generateFakeNode(nodeID string) *utils.Node {
-	fakeNode := &utils.Node{
+func generateFakeNode(nodeID string) *models.Node {
+	fakeNode := &models.Node{
 		Name:    nodeID,
 		Deleted: false,
 	}
@@ -185,7 +186,7 @@ func TestControllerPublishVolume_NVMeProtocol(t *testing.T) {
 	fakeNode := generateFakeNode(req.NodeId)
 	fakeVolumeExternal := generateFakeVolumeExternal(req.VolumeId)
 	fakeVolumeExternal.Config.Protocol = tridentconfig.Block
-	volumePublishInfo := &utils.VolumePublishInfo{
+	volumePublishInfo := &models.VolumePublishInfo{
 		SANType: sa.NVMe,
 	}
 

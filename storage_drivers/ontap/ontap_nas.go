@@ -21,6 +21,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -724,7 +725,7 @@ func (d *NASStorageDriver) Rename(ctx context.Context, name, newName string) err
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *NASStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -1272,7 +1273,7 @@ func (d *NASStorageDriver) Resize(
 }
 
 func (d *NASStorageDriver) ReconcileNodeAccess(
-	ctx context.Context, nodes []*utils.Node, backendUUID, _ string,
+	ctx context.Context, nodes []*models.Node, backendUUID, _ string,
 ) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

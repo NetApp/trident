@@ -11,7 +11,7 @@ import (
 	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 type Orchestrator interface {
@@ -38,9 +38,9 @@ type Orchestrator interface {
 	RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error)
 
 	AddVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
-	UpdateVolume(ctx context.Context, volume string, volumeUpdateInfo *utils.VolumeUpdateInfo) error
+	UpdateVolume(ctx context.Context, volume string, volumeUpdateInfo *models.VolumeUpdateInfo) error
 	UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames *[]string) error
-	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo) error
+	AttachVolume(ctx context.Context, volumeName, mountpoint string, publishInfo *models.VolumePublishInfo) error
 	CloneVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	DetachVolume(ctx context.Context, volumeName, mountpoint string) error
 	DeleteVolume(ctx context.Context, volume string) error
@@ -49,7 +49,7 @@ type Orchestrator interface {
 	GetVolumeForImport(ctx context.Context, volumeID, backendName string) (*storage.VolumeExternal, error)
 	ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig) (*storage.VolumeExternal, error)
 	ListVolumes(ctx context.Context) ([]*storage.VolumeExternal, error)
-	PublishVolume(ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo) error
+	PublishVolume(ctx context.Context, volumeName string, publishInfo *models.VolumePublishInfo) error
 	UnpublishVolume(ctx context.Context, volumeName, nodeName string) error
 	ResizeVolume(ctx context.Context, volumeName, newSize string) error
 	SetVolumeState(ctx context.Context, volumeName string, state storage.VolumeState) error
@@ -75,23 +75,23 @@ type Orchestrator interface {
 	GetStorageClass(ctx context.Context, scName string) (*storageclass.External, error)
 	ListStorageClasses(ctx context.Context) ([]*storageclass.External, error)
 
-	AddNode(ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback) error
-	UpdateNode(ctx context.Context, nodeName string, flags *utils.NodePublicationStateFlags) error
-	GetNode(ctx context.Context, nodeName string) (*utils.NodeExternal, error)
-	ListNodes(ctx context.Context) ([]*utils.NodeExternal, error)
+	AddNode(ctx context.Context, node *models.Node, nodeEventCallback NodeEventCallback) error
+	UpdateNode(ctx context.Context, nodeName string, flags *models.NodePublicationStateFlags) error
+	GetNode(ctx context.Context, nodeName string) (*models.NodeExternal, error)
+	ListNodes(ctx context.Context) ([]*models.NodeExternal, error)
 	DeleteNode(ctx context.Context, nodeName string) error
 	PeriodicallyReconcileNodeAccessOnBackends()
 	PeriodicallyReconcileBackendState(duration time.Duration)
 
-	ReconcileVolumePublications(ctx context.Context, attachedLegacyVolumes []*utils.VolumePublicationExternal) error
-	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*utils.VolumePublication, error)
-	ListVolumePublications(ctx context.Context) ([]*utils.VolumePublicationExternal, error)
+	ReconcileVolumePublications(ctx context.Context, attachedLegacyVolumes []*models.VolumePublicationExternal) error
+	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*models.VolumePublication, error)
+	ListVolumePublications(ctx context.Context) ([]*models.VolumePublicationExternal, error)
 	ListVolumePublicationsForVolume(
 		ctx context.Context, volumeName string,
-	) (publications []*utils.VolumePublicationExternal, err error)
+	) (publications []*models.VolumePublicationExternal, err error)
 	ListVolumePublicationsForNode(
 		ctx context.Context, nodeName string,
-	) (publications []*utils.VolumePublicationExternal, err error)
+	) (publications []*models.VolumePublicationExternal, err error)
 	DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) error
 
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
@@ -112,7 +112,7 @@ type Orchestrator interface {
 	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 
-	GetCHAP(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
+	GetCHAP(ctx context.Context, volumeName, nodeName string) (*models.IscsiChapInfo, error)
 
 	GetLogLevel(ctx context.Context) (string, error)
 	SetLogLevel(ctx context.Context, level string) error

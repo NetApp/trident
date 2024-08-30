@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	utilserrors "github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var failed = errors.New("failed")
@@ -399,7 +400,7 @@ func TestEconomyGetChapInfo(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *utils.IscsiChapInfo
+		want   *models.IscsiChapInfo
 	}{
 		{
 			name: "driverInitialized",
@@ -421,7 +422,7 @@ func TestEconomyGetChapInfo(t *testing.T) {
 				in1: "volume",
 				in2: "node",
 			},
-			want: &utils.IscsiChapInfo{
+			want: &models.IscsiChapInfo{
 				UseCHAP:              true,
 				IscsiUsername:        "foo",
 				IscsiInitiatorSecret: "bar",
@@ -449,7 +450,7 @@ func TestEconomyGetChapInfo(t *testing.T) {
 				in1: "volume",
 				in2: "node",
 			},
-			want: &utils.IscsiChapInfo{
+			want: &models.IscsiChapInfo{
 				UseCHAP:              true,
 				IscsiUsername:        "biz",
 				IscsiInitiatorSecret: "baz",
@@ -2303,11 +2304,11 @@ func TestOntapSanEconomyVolumePublish(t *testing.T) {
 		FileSystem:       "xfs",
 		ImportNotManaged: true,
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		HostIQN:          []string{"host_iqn"},
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 		Unmanaged:        false,
 	}
 
@@ -2342,11 +2343,11 @@ func TestOntapSanEconomyVolumePublishSLMError(t *testing.T) {
 		Encryption:   "false",
 		FileSystem:   "xfs",
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		HostIQN:          []string{"host_iqn"},
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 		Unmanaged:        false,
 	}
 
@@ -2381,11 +2382,11 @@ func TestOntapSanEconomyVolumePublish_LUNDoesNotExist(t *testing.T) {
 		Encryption:   "false",
 		FileSystem:   "xfs",
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		HostIQN:          []string{"host_iqn"},
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 		Unmanaged:        false,
 	}
 
@@ -2421,11 +2422,11 @@ func TestOntapSanEconomyVolumePublish_GetISCSITargetInfoFailed(t *testing.T) {
 		Encryption:   "false",
 		FileSystem:   "xfs",
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		HostIQN:          []string{"host_iqn"},
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 		Unmanaged:        false,
 	}
 
@@ -2450,12 +2451,12 @@ func TestOntapSanEconomyVolumeUnpublish_LegacyVolume(t *testing.T) {
 
 	volConfig := &storage.VolumeConfig{
 		InternalName: "lun0",
-		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: false},
+		AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: false},
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: false},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: false},
 	}
 
 	err := d.Unpublish(ctx, volConfig, publishInfo)
@@ -2477,12 +2478,12 @@ func TestOntapSanEconomyVolumeUnpublish_LunListFails(t *testing.T) {
 	volumeName := "lun0"
 	volConfig := &storage.VolumeConfig{
 		InternalName: volumeName,
-		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+		AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: true},
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 	}
 
 	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
@@ -2505,12 +2506,12 @@ func TestOntapSanEconomyVolumeUnpublish_LUNDoesNotExist(t *testing.T) {
 	volumeName := "lun0"
 	volConfig := &storage.VolumeConfig{
 		InternalName: volumeName,
-		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+		AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: true},
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 	}
 
 	lunPathPattern := d.helper.GetLUNPathPattern(volumeName)
@@ -2542,12 +2543,12 @@ func TestOntapSanEconomyVolumeUnpublish_LUNMapInfoFails(t *testing.T) {
 	}
 	volConfig := &storage.VolumeConfig{
 		InternalName: "lun0",
-		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+		AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: true},
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 	}
 
 	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
@@ -2583,12 +2584,12 @@ func TestOntapSanEconomyVolumeUnpublish_IgroupListLUNsMappedFails(t *testing.T) 
 	}
 	volConfig := &storage.VolumeConfig{
 		InternalName: "lun0",
-		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+		AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: true},
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 	}
 
 	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
@@ -2626,12 +2627,12 @@ func TestOntapSanEconomyVolumeUnpublish_IgroupDestroyFails(t *testing.T) {
 	}
 	volConfig := &storage.VolumeConfig{
 		InternalName: "lun0",
-		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+		AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: true},
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 	}
 
 	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
@@ -2669,12 +2670,12 @@ func TestOntapSanEconomyVolumeUnpublishX(t *testing.T) {
 	}
 	volConfig := &storage.VolumeConfig{
 		InternalName: "lun0",
-		AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: true},
+		AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: true},
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 	}
 
 	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
@@ -2786,13 +2787,13 @@ func TestOntapSanEconomyVolumeUnpublish(t *testing.T) {
 		t.Run(tr.name, func(t *testing.T) {
 			volConfig := &storage.VolumeConfig{
 				InternalName: volumeName,
-				AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+				AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
 			}
 
-			publishInfo := &utils.VolumePublishInfo{
+			publishInfo := &models.VolumePublishInfo{
 				HostName:         "bar",
 				TridentUUID:      "1234",
-				VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+				VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
 			}
 
 			mockCtrl := gomock.NewController(t)
@@ -5345,9 +5346,9 @@ func TestOntapSanEconomyEnablePublishEnforcement_FailsCheckingIfLUNExists(t *tes
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},
@@ -5371,9 +5372,9 @@ func TestOntapSanEconomyEnablePublishEnforcement_LUNDoesNotExist(t *testing.T) {
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},
@@ -5402,9 +5403,9 @@ func TestOntapSanEconomyEnablePublishEnforcement_FailsToUnmapAllIgroups(t *testi
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},
@@ -5438,9 +5439,9 @@ func TestOntapSanEconomyEnablePublishEnforcement_EnablesAccessControl(t *testing
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},

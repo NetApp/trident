@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 //go:build linux
 
@@ -14,8 +14,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 
-	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	mockluks "github.com/netapp/trident/mocks/mock_utils/mock_luks"
+
+	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
 )

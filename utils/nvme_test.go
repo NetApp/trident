@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/models"
 )
 
 var (
@@ -88,7 +90,7 @@ func TestSortSubsystemsUsingSessions(t *testing.T) {
 
 func TestNVMeHandler_AddPublishedNVMeSession(t *testing.T) {
 	nh := NewNVMeHandler()
-	volPubInfo := &VolumePublishInfo{}
+	volPubInfo := &models.VolumePublishInfo{}
 	volPubInfo.NVMeSubsystemNQN = testSubsystem1.NQN
 
 	// Uninitialized published sessions case.
@@ -145,7 +147,7 @@ func TestNVMeSessions_RemoveNamespaceFromSession(t *testing.T) {
 
 func TestNVMeHandler_RemovePublishedNVMeSession(t *testing.T) {
 	nh := NewNVMeHandler()
-	volPubInfo := &VolumePublishInfo{}
+	volPubInfo := &models.VolumePublishInfo{}
 	volPubInfo.NVMeSubsystemNQN = testSubsystem1.NQN
 
 	// Uninitialized published sessions case.

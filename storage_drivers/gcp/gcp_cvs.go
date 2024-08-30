@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -1354,7 +1355,7 @@ func (d *NFSStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *NFSStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 	fields := LogFields{
@@ -2010,7 +2011,7 @@ func (d *NFSStorageDriver) getVolumeExternal(volumeAttrs *api.Volume) *storage.V
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 		ServiceLevel:    api.UserServiceLevelFromAPIServiceLevel(volumeAttrs.ServiceLevel),
@@ -2042,7 +2043,7 @@ func (d *NFSStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 	return bitmap
 }
 
-func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
+func (d *NFSStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

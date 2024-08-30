@@ -17,6 +17,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 const HTTPClientTimeout = time.Second * 30
@@ -125,7 +126,7 @@ type CreateNodeResponse struct {
 }
 
 // CreateNode registers the node with the CSI controller server
-func (c *ControllerRestClient) CreateNode(ctx context.Context, node *utils.Node) (CreateNodeResponse, error) {
+func (c *ControllerRestClient) CreateNode(ctx context.Context, node *models.Node) (CreateNodeResponse, error) {
 	nodeData, err := json.MarshalIndent(node, "", " ")
 	if err != nil {
 		return CreateNodeResponse{}, fmt.Errorf("error parsing create node request; %v", err)
@@ -156,11 +157,11 @@ func (c *ControllerRestClient) CreateNode(ctx context.Context, node *utils.Node)
 }
 
 type GetNodeResponse struct {
-	Node  *utils.NodeExternal `json:"node"`
-	Error string              `json:"error,omitempty"`
+	Node  *models.NodeExternal `json:"node"`
+	Error string               `json:"error,omitempty"`
 }
 
-func (c *ControllerRestClient) GetNode(ctx context.Context, nodeName string) (*utils.NodeExternal, error) {
+func (c *ControllerRestClient) GetNode(ctx context.Context, nodeName string) (*models.NodeExternal, error) {
 	url := config.NodeURL + "/" + nodeName
 	getRequest := func() (*http.Response, []byte, error) {
 		resp, body, err := c.InvokeAPI(ctx, nil, "GET", url, false, false)
@@ -196,7 +197,7 @@ type UpdateNodeResponse struct {
 }
 
 func (c *ControllerRestClient) UpdateNode(
-	ctx context.Context, nodeName string, nodeState *utils.NodePublicationStateFlags,
+	ctx context.Context, nodeName string, nodeState *models.NodePublicationStateFlags,
 ) error {
 	body, err := json.Marshal(nodeState)
 	if err != nil {
@@ -278,15 +279,15 @@ func (c *ControllerRestClient) DeleteNode(ctx context.Context, nodeName string) 
 }
 
 type GetCHAPResponse struct {
-	CHAP  *utils.IscsiChapInfo `json:"chap"`
-	Error string               `json:"error,omitempty"`
+	CHAP  *models.IscsiChapInfo `json:"chap"`
+	Error string                `json:"error,omitempty"`
 }
 
 // GetChap requests the current CHAP credentials for a given volume/node pair from the Trident controller
-func (c *ControllerRestClient) GetChap(ctx context.Context, volumeID, nodeName string) (*utils.IscsiChapInfo, error) {
+func (c *ControllerRestClient) GetChap(ctx context.Context, volumeID, nodeName string) (*models.IscsiChapInfo, error) {
 	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", config.ChapURL+"/"+volumeID+"/"+nodeName, false, true)
 	if err != nil {
-		return &utils.IscsiChapInfo{}, fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
+		return &models.IscsiChapInfo{}, fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
 	}
 	getResponse := GetCHAPResponse{}
 	if err := json.Unmarshal(respBody, &getResponse); err != nil {
@@ -302,21 +303,21 @@ func (c *ControllerRestClient) GetChap(ctx context.Context, volumeID, nodeName s
 }
 
 type ListVolumePublicationsResponse struct {
-	VolumePublications []*utils.VolumePublicationExternal `json:"volumePublications"`
-	Error              string                             `json:"error,omitempty"`
+	VolumePublications []*models.VolumePublicationExternal `json:"volumePublications"`
+	Error              string                              `json:"error,omitempty"`
 }
 
 // ListVolumePublicationsForNode requests volume publications that exist on the host node from Trident controller.
 func (c *ControllerRestClient) ListVolumePublicationsForNode(
 	ctx context.Context, nodeName string,
-) ([]*utils.VolumePublicationExternal, error) {
+) ([]*models.VolumePublicationExternal, error) {
 	// Set up the resource path.
 	url := fmt.Sprintf("%s/%s/%s", config.NodeURL, nodeName, "publication")
 
 	// Invoke the controller API.
 	resp, respBody, err := c.InvokeAPI(ctx, nil, "GET", url, false, false)
 	if err != nil {
-		return []*utils.VolumePublicationExternal{},
+		return []*models.VolumePublicationExternal{},
 			fmt.Errorf("could not communicate with the Trident CSI Controller: %v", err)
 	}
 

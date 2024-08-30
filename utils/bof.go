@@ -16,12 +16,13 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var BofUtils = NewBlockOnFileReconcileUtils()
 
 func AttachBlockOnFileVolume(
-	ctx context.Context, mountPath string, publishInfo *VolumePublishInfo,
+	ctx context.Context, mountPath string, publishInfo *models.VolumePublishInfo,
 ) (string, string, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
@@ -559,7 +560,7 @@ func SafeToRemoveNFSMount(ctx context.Context, nfsMountPoint string) bool {
 // ReconcileBlockOnFileVolumeInfo returns true if any of the expected conditions for a present volume are true (e.g. the
 // expected loop device exists).
 func (h *BlockOnFileReconcileHelper) ReconcileBlockOnFileVolumeInfo(
-	ctx context.Context, trackingInfo *VolumeTrackingInfo,
+	ctx context.Context, trackingInfo *models.VolumeTrackingInfo,
 ) (bool, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 

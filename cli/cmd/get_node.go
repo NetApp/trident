@@ -14,8 +14,8 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func init() {
@@ -52,7 +52,7 @@ func nodeList(nodeNames []string) error {
 		}
 	}
 
-	nodes := make([]utils.NodeExternal, 0, 10)
+	nodes := make([]models.NodeExternal, 0, 10)
 
 	// Get the actual node objects
 	for _, nodeName := range nodeNames {
@@ -92,7 +92,7 @@ func GetNodes() ([]string, error) {
 	return listNodesResponse.Nodes, nil
 }
 
-func GetNode(nodeName string) (*utils.NodeExternal, error) {
+func GetNode(nodeName string) (*models.NodeExternal, error) {
 	url := BaseURL() + "/node/" + nodeName
 
 	response, responseBody, err := api.InvokeRESTAPI("GET", url, nil)
@@ -118,7 +118,7 @@ func GetNode(nodeName string) (*utils.NodeExternal, error) {
 	return getNodeResponse.Node, nil
 }
 
-func WriteNodes(nodes []utils.NodeExternal) {
+func WriteNodes(nodes []models.NodeExternal) {
 	switch OutputFormat {
 	case FormatJSON:
 		WriteJSON(api.MultipleNodeResponse{Items: nodes})
@@ -133,7 +133,7 @@ func WriteNodes(nodes []utils.NodeExternal) {
 	}
 }
 
-func writeNodeTable(nodes []utils.NodeExternal) {
+func writeNodeTable(nodes []models.NodeExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name"})
 
@@ -146,7 +146,7 @@ func writeNodeTable(nodes []utils.NodeExternal) {
 	table.Render()
 }
 
-func writeWideNodeTable(nodes []utils.NodeExternal) {
+func writeWideNodeTable(nodes []models.NodeExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	header := []string{
@@ -175,7 +175,7 @@ func writeWideNodeTable(nodes []utils.NodeExternal) {
 	table.Render()
 }
 
-func writeNodeNames(nodes []utils.NodeExternal) {
+func writeNodeNames(nodes []models.NodeExternal) {
 	for _, n := range nodes {
 		fmt.Println(n.Name)
 	}

@@ -18,8 +18,8 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var mockIPs = []string{"0.0.0.0", "1.1.1.1"}
@@ -1423,7 +1423,7 @@ func TestPublish(t *testing.T) {
 		AccessType: VolTypeRW,
 	}
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:    "fakeHostName",
 		TridentUUID: "fakeUUID",
 	}
@@ -1544,7 +1544,7 @@ func TestUnpublish(t *testing.T) {
 		InternalName: "fakeInternalName",
 	}
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:    "fakeHostName",
 		TridentUUID: "fakeUUID",
 	}

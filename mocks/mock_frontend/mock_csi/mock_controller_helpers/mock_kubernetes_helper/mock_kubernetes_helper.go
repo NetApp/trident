@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	storage "github.com/netapp/trident/storage"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockK8SControllerHelperPlugin is a mock of K8SControllerHelperPlugin interface.
@@ -79,10 +79,10 @@ func (mr *MockK8SControllerHelperPluginMockRecorder) GetName() *gomock.Call {
 }
 
 // GetNodePublicationState mocks base method.
-func (m *MockK8SControllerHelperPlugin) GetNodePublicationState(arg0 context.Context, arg1 string) (*utils.NodePublicationStateFlags, error) {
+func (m *MockK8SControllerHelperPlugin) GetNodePublicationState(arg0 context.Context, arg1 string) (*models.NodePublicationStateFlags, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNodePublicationState", arg0, arg1)
-	ret0, _ := ret[0].(*utils.NodePublicationStateFlags)
+	ret0, _ := ret[0].(*models.NodePublicationStateFlags)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

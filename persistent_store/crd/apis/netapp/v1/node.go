@@ -8,10 +8,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 // NewTridentNode creates a new node CRD object from a internal utils.TridentNode object.
-func NewTridentNode(persistent *utils.Node) (*TridentNode, error) {
+func NewTridentNode(persistent *models.Node) (*TridentNode, error) {
 	node := &TridentNode{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",
@@ -32,7 +33,7 @@ func NewTridentNode(persistent *utils.Node) (*TridentNode, error) {
 
 // Apply applies changes from an internal utils.TridentNode
 // object to its Kubernetes CRD equivalent.
-func (in *TridentNode) Apply(persistent *utils.Node) error {
+func (in *TridentNode) Apply(persistent *models.Node) error {
 	if NameFix(persistent.Name) != in.ObjectMeta.Name {
 		return ErrNamesDontMatch
 	}
@@ -63,19 +64,19 @@ func (in *TridentNode) Apply(persistent *utils.Node) error {
 
 // Persistent converts a Kubernetes CRD object into its internal
 // utils.TridentNode equivalent.
-func (in *TridentNode) Persistent() (*utils.Node, error) {
-	publicationState := utils.NodePublicationState(in.PublicationState)
+func (in *TridentNode) Persistent() (*models.Node, error) {
+	publicationState := models.NodePublicationState(in.PublicationState)
 
 	if publicationState == "" {
-		publicationState = utils.NodeClean
+		publicationState = models.NodeClean
 	}
-	persistent := &utils.Node{
+	persistent := &models.Node{
 		Name:             in.Name,
 		IQN:              in.IQN,
 		NQN:              in.NQN,
 		IPs:              in.IPs,
-		NodePrep:         &utils.NodePrep{},
-		HostInfo:         &utils.HostSystem{},
+		NodePrep:         &models.NodePrep{},
+		HostInfo:         &models.HostSystem{},
 		Deleted:          in.Deleted,
 		PublicationState: publicationState,
 	}

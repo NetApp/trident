@@ -9,7 +9,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -52,7 +52,7 @@ type ControllerHelper interface {
 	// GetNodePublicationState returns a set of flags that indicate whether, in certain circumstances,
 	// a node may safely publish volumes.  If such checking is not enabled or otherwise appropriate,
 	// this function returns nil.
-	GetNodePublicationState(ctx context.Context, nodeName string) (*utils.NodePublicationStateFlags, error)
+	GetNodePublicationState(ctx context.Context, nodeName string) (*models.NodePublicationStateFlags, error)
 
 	// RecordVolumeEvent accepts the name of a CSI volume and writes the specified
 	// event message in a manner appropriate to the container orchestrator.

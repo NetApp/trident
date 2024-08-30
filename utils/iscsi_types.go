@@ -2,6 +2,8 @@ package utils
 
 import (
 	"context"
+
+	"github.com/netapp/trident/utils/models"
 )
 
 //go:generate mockgen -destination=../mocks/mock_utils/mock_iscsi_utils.go github.com/netapp/trident/utils IscsiReconcileUtils
@@ -13,7 +15,7 @@ type IscsiReconcileUtils interface {
 	GetMultipathDeviceBySerial(context.Context, string) (string, error)
 	GetMultipathDeviceDisks(context.Context, string) ([]string, error)
 	GetDevicesForLUN(paths []string) ([]string, error)
-	ReconcileISCSIVolumeInfo(ctx context.Context, trackingInfo *VolumeTrackingInfo) (bool, error)
+	ReconcileISCSIVolumeInfo(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (bool, error)
 }
 
 type IscsiReconcileHelper struct{}

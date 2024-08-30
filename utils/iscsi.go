@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -21,6 +21,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -73,7 +74,7 @@ func IsPerNodeIgroup(igroup string) bool {
 
 // AttachISCSIVolumeRetry attaches a volume with retry by invoking AttachISCSIVolume with backoff.
 func AttachISCSIVolumeRetry(
-	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string,
+	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
 	timeout time.Duration,
 ) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolumeRetry")
@@ -114,7 +115,7 @@ func AttachISCSIVolumeRetry(
 // The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
 // If multipath device size is found to be inconsistent with device size, then the correct size is returned.
 func AttachISCSIVolume(
-	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo,
+	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo,
 	secrets map[string]string,
 ) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachISCSIVolume")
@@ -853,8 +854,8 @@ func portalsToLogin(ctx context.Context, targetIQN string, portals []string) ([]
 			// Portals (portalsNotLoggedIn) may/may not contain anything after ":", so instead of matching complete
 			// portal value (with e.Portal), check if e.Portal's IP address matches portal's IP address
 			matchFunc := func(main, val string) bool {
-				mainIpAddress := parseHostportIP(main)
-				valIpAddress := parseHostportIP(val)
+				mainIpAddress := models.ParseHostportIP(main)
+				valIpAddress := models.ParseHostportIP(val)
 
 				return mainIpAddress == valIpAddress
 			}
@@ -1527,7 +1528,7 @@ func GetAllVolumeIDs(ctx context.Context, trackingFileDirectory string) []string
 }
 
 // LoginISCSITarget logs in to an iSCSI target.
-func LoginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, portal string) error {
+func LoginISCSITarget(ctx context.Context, publishInfo *models.VolumePublishInfo, portal string) error {
 	Logc(ctx).WithFields(LogFields{
 		"IQN":     publishInfo.IscsiTargetIQN,
 		"Portal":  portal,
@@ -1637,7 +1638,7 @@ func LoginISCSITarget(ctx context.Context, publishInfo *VolumePublishInfo, porta
 }
 
 // EnsureISCSISessions this is to make sure that Trident establishes iSCSI sessions with the given list of portals
-func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, portals []string) (bool, error) {
+func EnsureISCSISessions(ctx context.Context, publishInfo *models.VolumePublishInfo, portals []string) (bool, error) {
 	logFields := LogFields{
 		"targetIQN":  publishInfo.IscsiTargetIQN,
 		"portalsIps": portals,
@@ -1716,7 +1717,7 @@ func EnsureISCSISessions(ctx context.Context, publishInfo *VolumePublishInfo, po
 
 	for _, portalInfo := range loggedInPortals {
 		// Recheck to ensure a session is now open
-		sessionExists, err := iSCSISessionExists(ctx, parseHostportIP(portalInfo))
+		sessionExists, err := iSCSISessionExists(ctx, models.ParseHostportIP(portalInfo))
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"err":      err,
@@ -1816,7 +1817,7 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 					return fmt.Errorf("set replacement timeout failed: %v", err)
 				}
 				// Log in to target
-				publishInfo := &VolumePublishInfo{}
+				publishInfo := &models.VolumePublishInfo{}
 				publishInfo.UseCHAP = false
 				publishInfo.IscsiTargetIQN = target.TargetName
 				err = LoginISCSITarget(ctx, publishInfo, target.PortalIP)
@@ -1934,7 +1935,7 @@ func ISCSIPreChecks(ctx context.Context) error {
 // ReconcileISCSIVolumeInfo returns true if any of the expected conditions for a present volume are true (e.g. the
 // expected LUN exists).
 func (h *IscsiReconcileHelper) ReconcileISCSIVolumeInfo(
-	ctx context.Context, trackingInfo *VolumeTrackingInfo,
+	ctx context.Context, trackingInfo *models.VolumeTrackingInfo,
 ) (bool, error) {
 	pubInfo := trackingInfo.VolumePublishInfo
 	lun := int(pubInfo.IscsiLunNumber)
@@ -2043,7 +2044,7 @@ func InitiateScanForAllLUNs(ctx context.Context, iSCSINodeName string) error {
 }
 
 // RemoveLUNFromSessions removes portal LUN mappings
-func RemoveLUNFromSessions(ctx context.Context, publishInfo *VolumePublishInfo, sessions *ISCSISessions) {
+func RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions) {
 	if sessions == nil || len(sessions.Info) == 0 {
 		Logc(ctx).Debug("No sessions found, nothing to remove.")
 		return
@@ -2057,7 +2058,7 @@ func RemoveLUNFromSessions(ctx context.Context, publishInfo *VolumePublishInfo, 
 }
 
 // RemovePortalsFromSession removes portals from portal LUN mapping
-func RemovePortalsFromSession(ctx context.Context, publishInfo *VolumePublishInfo, sessions *ISCSISessions) {
+func RemovePortalsFromSession(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions) {
 	if sessions == nil || len(sessions.Info) == 0 {
 		Logc(ctx).Debug("No sessions found, nothing to remove.")
 		return
@@ -2074,22 +2075,22 @@ func RemovePortalsFromSession(ctx context.Context, publishInfo *VolumePublishInf
 // populates the map against the portal.
 // NOTE: sessionNumber should only be passed if there is only one portal/targetportal entry in publishInfo.
 func AddISCSISession(
-	ctx context.Context, sessions *ISCSISessions, publishInfo *VolumePublishInfo,
-	volID, sessionNumber string, reasonInvalid PortalInvalid,
+	ctx context.Context, sessions *models.ISCSISessions, publishInfo *models.VolumePublishInfo,
+	volID, sessionNumber string, reasonInvalid models.PortalInvalid,
 ) {
 	if sessions == nil {
 		// Initialize and use it
-		sessions = &ISCSISessions{Info: make(map[string]*ISCSISessionData)}
+		sessions = &models.ISCSISessions{Info: make(map[string]*models.ISCSISessionData)}
 	}
 
 	iSCSITargetIQN := publishInfo.IscsiTargetIQN
 
 	// Check if TargetIQN is empty
-	if reasonInvalid == NotInvalid {
+	if reasonInvalid == models.NotInvalid {
 		if iSCSITargetIQN == "" {
 			Logc(ctx).Errorf("Portal '%v' is missing target IQN; it may not be considered for iSCSI self-healing.",
 				publishInfo.IscsiTargetPortal)
-			reasonInvalid = MissingTargetIQN
+			reasonInvalid = models.MissingTargetIQN
 		}
 	}
 
@@ -2102,7 +2103,7 @@ func AddISCSISession(
 		}
 	}
 
-	newLUNData := LUNData{
+	newLUNData := models.LUNData{
 		LUN:   publishInfo.IscsiLunNumber,
 		VolID: volID,
 	}
@@ -2114,14 +2115,14 @@ func AddISCSISession(
 	}
 
 	// Extract required portal info
-	credentials := IscsiChapInfo{
+	credentials := models.IscsiChapInfo{
 		UseCHAP:              publishInfo.UseCHAP,
 		IscsiUsername:        publishInfo.IscsiUsername,
 		IscsiInitiatorSecret: publishInfo.IscsiInitiatorSecret,
 		IscsiTargetUsername:  publishInfo.IscsiTargetUsername,
 		IscsiTargetSecret:    publishInfo.IscsiTargetSecret,
 	}
-	portalInfo := PortalInfo{
+	portalInfo := models.PortalInfo{
 		ISCSITargetIQN:         publishInfo.IscsiTargetIQN,
 		Credentials:            credentials,
 		LastAccessTime:         time.Time{},
@@ -2154,7 +2155,7 @@ func AddISCSISession(
 	}
 }
 
-func PopulateCurrentSessions(ctx context.Context, currentMapping *ISCSISessions) error {
+func PopulateCurrentSessions(ctx context.Context, currentMapping *models.ISCSISessions) error {
 	sessionInfos, err := getISCSISessionInfo(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get iSCSI session information")
@@ -2211,8 +2212,8 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *ISCSISessions)
 			continue
 		}
 
-		var publishInfo VolumePublishInfo
-		publishInfo.IscsiAccessInfo = IscsiAccessInfo{
+		var publishInfo models.VolumePublishInfo
+		publishInfo.IscsiAccessInfo = models.IscsiAccessInfo{
 			IscsiLunNumber:    int32(lunNumber),
 			IscsiTargetIQN:    iscsiDevice.IQN,
 			IscsiTargetPortal: targetPortal,
@@ -2221,15 +2222,15 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *ISCSISessions)
 
 		logFields["IscsiPortal"] = targetPortal
 
-		reasonInvalid := NotInvalid
+		reasonInvalid := models.NotInvalid
 		if SliceContainsString(duplicatePortals, targetPortal) {
 			Logc(ctx).WithFields(logFields).Warning("Portal value is not unique.")
 
-			reasonInvalid = DuplicatePortals // Could be a result of bug in open-iscsi
+			reasonInvalid = models.DuplicatePortals // Could be a result of bug in open-iscsi
 		} else if iscsiDevice.MultipathDevice == "" {
 			Logc(ctx).WithFields(logFields).Warning("Multipath device not found.")
 
-			reasonInvalid = MissingMpathDevice // Could be a result of previous invalid multipathing config
+			reasonInvalid = models.MissingMpathDevice // Could be a result of previous invalid multipathing config
 		}
 
 		newCtx := context.WithValue(ctx, SessionInfoSource, SessionSourceCurrentStatus)
@@ -2244,7 +2245,7 @@ func PopulateCurrentSessions(ctx context.Context, currentMapping *ISCSISessions)
 // NOTE: Since we do not expect notStalePortals to be very-large (in millions or even in 1000s),
 // sorting on the basis of lastAccessTime should not be an expensive operation.
 func InspectAllISCSISessions(
-	ctx context.Context, publishedSessions, currentSessions *ISCSISessions,
+	ctx context.Context, publishedSessions, currentSessions *models.ISCSISessions,
 	iSCSISessionWaitTime time.Duration,
 ) ([]string, []string) {
 	timeNow := time.Now()
@@ -2266,7 +2267,7 @@ func InspectAllISCSISessions(
 
 		logFields := LogFields{"portal": portal}
 
-		var publishedPortalInfo, currentPortalInfo *PortalInfo
+		var publishedPortalInfo, currentPortalInfo *models.PortalInfo
 
 		// GET publishedSessionData and publishedPortalInfo
 		if publishedSessionData == nil {
@@ -2283,8 +2284,8 @@ func InspectAllISCSISessions(
 		publishedPortalInfo = &publishedSessionData.PortalInfo
 
 		if noCurrentSessionExists {
-			Logc(ctx).WithFields(logFields).Debugf("Portal requires %v; no current session found.", LoginScan)
-			publishedSessionData.Remediation = LoginScan
+			Logc(ctx).WithFields(logFields).Debugf("Portal requires %v; no current session found.", models.LoginScan)
+			publishedSessionData.Remediation = models.LoginScan
 
 			candidateNonStalePortal = append(candidateNonStalePortal, portal)
 			continue
@@ -2295,7 +2296,7 @@ func InspectAllISCSISessions(
 		if err != nil {
 			if errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(logFields).Warning("Portal is missing from the current sessions.")
-				publishedSessionData.Remediation = LoginScan
+				publishedSessionData.Remediation = models.LoginScan
 
 				candidateNonStalePortal = append(candidateNonStalePortal, portal)
 			} else {
@@ -2331,7 +2332,7 @@ func InspectAllISCSISessions(
 			action := isStalePortal(ctx, publishedPortalInfo, currentPortalInfo, iSCSISessionWaitTime, timeNow, portal)
 			publishedSessionData.Remediation = action
 
-			if action != NoAction {
+			if action != models.NoAction {
 				candidateStalePortals = append(candidateStalePortals, portal)
 			}
 			continue
@@ -2346,7 +2347,7 @@ func InspectAllISCSISessions(
 		action := isNonStalePortal(ctx, publishedSessionData, currentSessionData, portal)
 		publishedSessionData.Remediation = action
 
-		if action != NoAction {
+		if action != models.NoAction {
 			candidateNonStalePortal = append(candidateNonStalePortal, portal)
 		} else {
 			// The reason we update the last access time for healthy portals here is to ensure these portals
@@ -2376,9 +2377,9 @@ func InspectAllISCSISessions(
 // 2. Compare timeNow with the FirstIdentifiedStaleAt; if it exceeds iSCSISessionWaitTime then it returns true;
 // 3. Else do nothing and continue
 func isStalePortal(
-	ctx context.Context, publishedPortalInfo, currentPortalInfo *PortalInfo,
+	ctx context.Context, publishedPortalInfo, currentPortalInfo *models.PortalInfo,
 	iSCSISessionWaitTime time.Duration, timeNow time.Time, portal string,
-) ISCSIAction {
+) models.ISCSIAction {
 	logFields := LogFields{
 		"portal":            portal,
 		"CHAPInUse":         publishedPortalInfo.CHAPInUse(),
@@ -2392,7 +2393,7 @@ func isStalePortal(
 		if publishedPortalInfo.Credentials != currentPortalInfo.Credentials {
 			Logc(ctx).WithFields(logFields).Warning("Portal's published credentials do not match current credentials" +
 				" in-use.")
-			return LogoutLoginScan
+			return models.LogoutLoginScan
 		}
 	}
 
@@ -2402,21 +2403,21 @@ func isStalePortal(
 	} else if timeNow.Sub(publishedPortalInfo.FirstIdentifiedStaleAt) >= iSCSISessionWaitTime {
 		Logc(ctx).WithFields(logFields).Warningf("Portal exceeded stale wait time at %v; adding to stale portals list.",
 			timeNow)
-		return LogoutLoginScan
+		return models.LogoutLoginScan
 	} else {
 		Logc(ctx).WithFields(logFields).Warningf("Portal has not exceeded stale wait time at %v.", timeNow)
 	}
 
-	return NoAction
+	return models.NoAction
 }
 
 // isNonStalePortal attempts to identify if a session has any issues other than being stale.
 // For sessions with no current issues it attempts to identify any strange behavior or state it should
 // not be in.
 func isNonStalePortal(
-	ctx context.Context, publishedSessionData, currentSessionData *ISCSISessionData,
+	ctx context.Context, publishedSessionData, currentSessionData *models.ISCSISessionData,
 	portal string,
-) ISCSIAction {
+) models.ISCSIAction {
 	logFields := LogFields{
 		"portal":            portal,
 		"CHAPInUse":         publishedSessionData.PortalInfo.CHAPInUse(),
@@ -2427,7 +2428,7 @@ func isNonStalePortal(
 	publishedLUNs := publishedSessionData.LUNs
 	if missingLUNs := currentSessionData.LUNs.IdentifyMissingLUNs(publishedLUNs); len(missingLUNs) > 0 {
 		Logc(ctx).WithFields(logFields).Warningf("Portal is missing LUN Number(s): %v.", missingLUNs)
-		return Scan
+		return models.Scan
 	}
 
 	// Additional checks are for informational purposes only - no immediate action required.
@@ -2448,11 +2449,11 @@ func isNonStalePortal(
 		}
 	}
 
-	return NoAction
+	return models.NoAction
 }
 
 // SortPortals sorts portals on the basis of their lastAccessTime
-func SortPortals(portals []string, publishedSessions *ISCSISessions) {
+func SortPortals(portals []string, publishedSessions *models.ISCSISessions) {
 	if len(portals) > 1 {
 		sort.Slice(portals, func(i, j int) bool {
 			// Get last access time from publish info for both

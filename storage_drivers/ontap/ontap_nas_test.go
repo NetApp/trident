@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -3145,8 +3146,8 @@ func TestOntapNasStorageDriverGetCommonConfig(t *testing.T) {
 
 func TestOntapNasStorageDriverReconcileNodeAccess(t *testing.T) {
 	_, driver := newMockOntapNASDriver(t)
-	nodes := make([]*utils.Node, 0)
-	nodes = append(nodes, &utils.Node{Name: "node1"})
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1"})
 
 	result := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
 
@@ -4532,7 +4533,7 @@ func TestOntapNasStorageDriverVolumePublish_NASType_None(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	result := driver.Publish(ctx, volConfig, &utils.VolumePublishInfo{})
+	result := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 
 	assert.NoError(t, result)
 }
@@ -4553,7 +4554,7 @@ func TestOntapNasStorageDriverVolumePublish_NASType_SMB(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	result := driver.Publish(ctx, volConfig, &utils.VolumePublishInfo{})
+	result := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 
 	assert.NoError(t, result)
 }

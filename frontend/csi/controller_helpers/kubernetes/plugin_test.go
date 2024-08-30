@@ -32,6 +32,7 @@ import (
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -345,21 +346,21 @@ func TestUpdateNode(t *testing.T) {
 		key           string
 		taint         v1.Taint
 		condition     v1.NodeCondition
-		expectedFlags *utils.NodePublicationStateFlags
+		expectedFlags *models.NodePublicationStateFlags
 		error         error
 	}{
 		{
 			key:           "nodeNotReady",
 			taint:         nodeOutOfServiceTaint,
 			condition:     nodeReadyConditionFalse,
-			expectedFlags: &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
 			error:         nil,
 		},
 		{
 			key:           "nodeUnknown",
 			taint:         nodeOutOfServiceTaint,
 			condition:     nodeReadyConditionUnknown,
-			expectedFlags: &utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			expectedFlags: &models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
 			error:         errors.New("failed"),
 		},
 	}
@@ -420,7 +421,7 @@ func TestGetNodePublicationState(t *testing.T) {
 		ForceDetach   bool
 		Taint         v1.Taint
 		Condition     v1.NodeCondition
-		ExpectedFlags *utils.NodePublicationStateFlags
+		ExpectedFlags *models.NodePublicationStateFlags
 		ExpectedError error
 	}{
 		{
@@ -441,42 +442,42 @@ func TestGetNodePublicationState(t *testing.T) {
 			true,
 			noTaint,
 			nodeReadyConditionTrue,
-			&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(true)},
 			nil,
 		},
 		{
 			true,
 			nodeOutOfServiceTaint,
 			nodeReadyConditionTrue,
-			&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(true), AdministratorReady: utils.Ptr(false)},
 			nil,
 		},
 		{
 			true,
 			noTaint,
 			nodeReadyConditionUnknown,
-			&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
 			nil,
 		},
 		{
 			true,
 			nodeOutOfServiceTaint,
 			nodeReadyConditionUnknown,
-			&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
 			nil,
 		},
 		{
 			true,
 			noTaint,
 			nodeReadyConditionFalse,
-			&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
+			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(true)},
 			nil,
 		},
 		{
 			true,
 			nodeOutOfServiceTaint,
 			nodeReadyConditionFalse,
-			&utils.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
+			&models.NodePublicationStateFlags{OrchestratorReady: utils.Ptr(false), AdministratorReady: utils.Ptr(false)},
 			nil,
 		},
 	}
@@ -747,7 +748,7 @@ func TestReconcileVolumePublications(t *testing.T) {
 		Config: &storage.VolumeConfig{
 			Name:       volume,
 			AccessMode: "ReadWriteOnce",
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				ReadOnly: false,
 			},
 		},
@@ -899,12 +900,12 @@ func TestListAttachmentsAsPublications(t *testing.T) {
 		Config: &storage.VolumeConfig{
 			Name:       volumeID,
 			AccessMode: "ReadWriteOnce",
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				ReadOnly: false,
 			},
 		},
 	}
-	publications := []*utils.VolumePublicationExternal{
+	publications := []*models.VolumePublicationExternal{
 		{
 			Name:       utils.GenerateVolumePublishName(volumeID, node),
 			VolumeName: volumeID,
@@ -946,12 +947,12 @@ func TestListAttachmentsAsPublications_FailsToGetVolume(t *testing.T) {
 		Config: &storage.VolumeConfig{
 			Name:       volumeID,
 			AccessMode: "ReadWriteOnce",
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				ReadOnly: false,
 			},
 		},
 	}
-	publications := []*utils.VolumePublicationExternal{
+	publications := []*models.VolumePublicationExternal{
 		{
 			Name:       utils.GenerateVolumePublishName(volumeID, node),
 			VolumeName: volumeID,

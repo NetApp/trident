@@ -9,6 +9,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // GetFilesystemStats unused stub function
@@ -34,7 +35,7 @@ func GetDeviceFilePath(ctx context.Context, _, volumeId string) (string, error) 
 }
 
 // GetUnmountPath is a dummy added for compilation.
-func GetUnmountPath(ctx context.Context, trackingInfo *VolumeTrackingInfo) (string, error) {
+func GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
 	Logc(ctx).Debug(">>>> filesystem_darwin.GetUnmountPath")
 	defer Logc(ctx).Debug("<<<< filesystem_darwin.GetUnmountPath")
 

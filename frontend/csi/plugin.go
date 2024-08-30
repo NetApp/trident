@@ -23,6 +23,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -43,7 +44,7 @@ type Plugin struct {
 	unsafeDetach      bool
 	enableForceDetach bool
 
-	hostInfo *utils.HostSystem
+	hostInfo *models.HostSystem
 
 	restClient       controllerAPI.TridentController
 	controllerHelper controllerhelpers.ControllerHelper

@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var QtreeInternalIDRegex = regexp.MustCompile(`^/svm/(?P<svm>[^/]+)/flexvol/(?P<flexvol>[^/]+)/qtree/(?P<qtree>[^/]+)$`)
@@ -614,7 +615,7 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *NASQtreeStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -671,7 +672,7 @@ func (d *NASQtreeStorageDriver) Publish(
 }
 
 func (d *NASQtreeStorageDriver) publishQtreeShare(
-	ctx context.Context, qtree, flexvol string, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, qtree, flexvol string, publishInfo *models.VolumePublishInfo,
 ) error {
 	fields := LogFields{
 		"Method": "publishQtreeShare",
@@ -1895,7 +1896,7 @@ func (d *NASQtreeStorageDriver) getVolumeExternal(
 		UnixPermissions: qtree.UnixPermissions,
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 		InternalID:      d.CreateQtreeInternalID(d.Config.SVM, qtree.Volume, qtree.Name),
@@ -2201,7 +2202,7 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(ctx context.Context, flexvol strin
 }
 
 func (d *NASQtreeStorageDriver) ReconcileNodeAccess(
-	ctx context.Context, nodes []*utils.Node, backendUUID, _ string,
+	ctx context.Context, nodes []*models.Node, backendUUID, _ string,
 ) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
@@ -2350,7 +2351,7 @@ func (d *NASQtreeStorageDriver) EnsureSMBShare(
 
 func (d *NASQtreeStorageDriver) Update(
 	ctx context.Context, volConfig *storage.VolumeConfig,
-	updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*storage.Volume,
+	updateInfo *models.VolumeUpdateInfo, allVolumes map[string]*storage.Volume,
 ) (map[string]*storage.Volume, error) {
 	fields := LogFields{
 		"Method":     "Update",

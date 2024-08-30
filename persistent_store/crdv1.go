@@ -18,8 +18,8 @@ import (
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // Compile time checks to ensure CRDClientV1 implements Client & CRDClient
@@ -1244,7 +1244,7 @@ func (k *CRDClientV1) DeleteStorageClass(ctx context.Context, sc *storageclass.S
 	return err
 }
 
-func (k *CRDClientV1) AddOrUpdateNode(ctx context.Context, node *utils.Node) error {
+func (k *CRDClientV1) AddOrUpdateNode(ctx context.Context, node *models.Node) error {
 	// look to see if it's an existing one we need to update
 	existingNode, err := k.crdClient.TridentV1().TridentNodes(k.namespace).Get(ctx, v1.NameFix(node.Name), getOpts)
 	if err != nil {
@@ -1280,7 +1280,7 @@ func (k *CRDClientV1) AddOrUpdateNode(ctx context.Context, node *utils.Node) err
 	return nil
 }
 
-func (k *CRDClientV1) GetNode(ctx context.Context, nName string) (*utils.Node, error) {
+func (k *CRDClientV1) GetNode(ctx context.Context, nName string) (*models.Node, error) {
 	node, err := k.crdClient.TridentV1().TridentNodes(k.namespace).Get(ctx, v1.NameFix(nName), getOpts)
 	if err != nil {
 		return nil, err
@@ -1294,13 +1294,13 @@ func (k *CRDClientV1) GetNode(ctx context.Context, nName string) (*utils.Node, e
 	return persistentNode, nil
 }
 
-func (k *CRDClientV1) GetNodes(ctx context.Context) ([]*utils.Node, error) {
+func (k *CRDClientV1) GetNodes(ctx context.Context) ([]*models.Node, error) {
 	nodeList, err := k.crdClient.TridentV1().TridentNodes(k.namespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	results := make([]*utils.Node, 0)
+	results := make([]*models.Node, 0)
 
 	for _, item := range nodeList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -1322,7 +1322,7 @@ func (k *CRDClientV1) GetNodes(ctx context.Context) ([]*utils.Node, error) {
 	return results, nil
 }
 
-func (k *CRDClientV1) DeleteNode(ctx context.Context, n *utils.Node) error {
+func (k *CRDClientV1) DeleteNode(ctx context.Context, n *models.Node) error {
 	err := k.crdClient.TridentV1().TridentNodes(k.namespace).Delete(ctx, v1.NameFix(n.Name), k.deleteOpts())
 
 	if k8sapierrors.IsNotFound(err) {
@@ -1332,7 +1332,7 @@ func (k *CRDClientV1) DeleteNode(ctx context.Context, n *utils.Node) error {
 	return err
 }
 
-func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *utils.VolumePublication) error {
+func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *models.VolumePublication) error {
 	newPublication, err := v1.NewTridentVolumePublication(publication)
 	if err != nil {
 		return err
@@ -1349,7 +1349,7 @@ func (k *CRDClientV1) AddVolumePublication(ctx context.Context, publication *uti
 	return nil
 }
 
-func (k *CRDClientV1) UpdateVolumePublication(ctx context.Context, publication *utils.VolumePublication) error {
+func (k *CRDClientV1) UpdateVolumePublication(ctx context.Context, publication *models.VolumePublication) error {
 	existingPublication, err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Get(ctx,
 		v1.NameFix(publication.Name), getOpts)
 	if err != nil {
@@ -1367,7 +1367,7 @@ func (k *CRDClientV1) UpdateVolumePublication(ctx context.Context, publication *
 	return nil
 }
 
-func (k *CRDClientV1) GetVolumePublication(ctx context.Context, nName string) (*utils.VolumePublication, error) {
+func (k *CRDClientV1) GetVolumePublication(ctx context.Context, nName string) (*models.VolumePublication, error) {
 	publication, err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Get(ctx, v1.NameFix(nName),
 		getOpts)
 	if err != nil {
@@ -1385,13 +1385,13 @@ func (k *CRDClientV1) GetVolumePublication(ctx context.Context, nName string) (*
 	return persistentPublication, nil
 }
 
-func (k *CRDClientV1) GetVolumePublications(ctx context.Context) ([]*utils.VolumePublication, error) {
+func (k *CRDClientV1) GetVolumePublications(ctx context.Context) ([]*models.VolumePublication, error) {
 	publicationList, err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	results := make([]*utils.VolumePublication, 0)
+	results := make([]*models.VolumePublication, 0)
 
 	for _, item := range publicationList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -1413,7 +1413,7 @@ func (k *CRDClientV1) GetVolumePublications(ctx context.Context) ([]*utils.Volum
 	return results, nil
 }
 
-func (k *CRDClientV1) DeleteVolumePublication(ctx context.Context, vp *utils.VolumePublication) error {
+func (k *CRDClientV1) DeleteVolumePublication(ctx context.Context, vp *models.VolumePublication) error {
 	err := k.crdClient.TridentV1().TridentVolumePublications(k.namespace).Delete(ctx, v1.NameFix(vp.Name),
 		k.deleteOpts())
 

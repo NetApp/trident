@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -26,6 +26,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -46,7 +47,7 @@ var (
 	iscsiUtils     = utils.IscsiUtils
 	bofUtils       = utils.BofUtils
 
-	publishedISCSISessions, currentISCSISessions utils.ISCSISessions
+	publishedISCSISessions, currentISCSISessions models.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   utils.NVMeSessions
 	// NVMeNamespacesFlushRetry - Non-persistent map of Namespaces to maintain the flush errors if any.
 	// During NodeUnstageVolume, Trident shall return success after specific wait time (nvmeMaxFlushWaitDuration).
@@ -458,7 +459,7 @@ func (p *Plugin) NodeExpandVolume(
 }
 
 func (p *Plugin) nodeExpandVolume(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64, stagingTargetPath string,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64, stagingTargetPath string,
 	volumeId string, secrets map[string]string,
 ) error {
 	protocol, err := getVolumeProtocolFromPublishInfo(publishInfo)
@@ -546,7 +547,7 @@ func (p *Plugin) nodeExpandVolume(
 
 // nodePrepareISCSIVolumeForExpansion readies volume expansion for Block (i.e. iSCSI) volumes
 func nodePrepareISCSIVolumeForExpansion(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64,
 ) error {
 	lunID := int(publishInfo.IscsiLunNumber)
 
@@ -582,7 +583,7 @@ func nodePrepareISCSIVolumeForExpansion(
 
 // nodePrepareBlockOnFileVolumeForExpansion readies volume expansion for BlockOnFile volumes
 func nodePrepareBlockOnFileVolumeForExpansion(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, requiredBytes int64,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64,
 ) error {
 	Logc(ctx).WithFields(LogFields{
 		"nfsUniqueID":   publishInfo.NfsUniqueID,
@@ -649,12 +650,12 @@ func (p *Plugin) NodeGetInfo(
 	}, nil
 }
 
-func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
+func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 	// Only get the host system info if we don't have the info yet.
 	if p.hostInfo == nil {
 		host, err := utils.GetHostSystemInfo(ctx)
 		if err != nil {
-			p.hostInfo = &utils.HostSystem{}
+			p.hostInfo = &models.HostSystem{}
 			Logc(ctx).WithError(err).Warn("Unable to get host system information.")
 		} else {
 			p.hostInfo = host
@@ -733,7 +734,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 	p.hostInfo.Services = services
 
 	// Generate node object.
-	node := &utils.Node{
+	node := &models.Node{
 		Name:     p.nodeName,
 		IQN:      iscsiWWN,
 		NQN:      nvmeNQN,
@@ -743,7 +744,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *utils.Node {
 		Deleted:  false,
 		// If the node is already known to exist Trident CSI Controllers persistence layer,
 		// that state will be used instead. Otherwise, node state defaults to clean.
-		PublicationState: utils.NodeClean,
+		PublicationState: models.NodeClean,
 	}
 	return node
 }
@@ -803,7 +804,7 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 func (p *Plugin) nodeStageNFSVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: "nfs",
 	}
@@ -821,7 +822,7 @@ func (p *Plugin) nodeStageNFSVolume(
 		return nil, err
 	}
 
-	volTrackingInfo := &utils.VolumeTrackingInfo{
+	volTrackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: *publishInfo,
 		StagingTargetPath: stagingTargetPath,
 		PublishedPaths:    map[string]struct{}{},
@@ -907,7 +908,7 @@ func (p *Plugin) nodePublishNFSVolume(
 func (p *Plugin) nodeStageSMBVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: utils.SMB,
 	}
@@ -926,7 +927,7 @@ func (p *Plugin) nodeStageSMBVolume(
 		return nil, err
 	}
 
-	volTrackingInfo := &utils.VolumeTrackingInfo{
+	volTrackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: *publishInfo,
 		StagingTargetPath: stagingTargetPath,
 		PublishedPaths:    map[string]struct{}{},
@@ -1031,7 +1032,7 @@ func (p *Plugin) nodePublishSMBVolume(
 	return &csi.NodePublishVolumeResponse{}, nil
 }
 
-func unstashIscsiTargetPortals(publishInfo *utils.VolumePublishInfo, reqPublishInfo map[string]string) error {
+func unstashIscsiTargetPortals(publishInfo *models.VolumePublishInfo, reqPublishInfo map[string]string) error {
 	count, err := strconv.Atoi(reqPublishInfo["iscsiTargetPortalCount"])
 	if nil != err {
 		return err
@@ -1070,15 +1071,15 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 
 		if publishInfo.SANType != sa.NVMe {
 			newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceTrackingInfo)
-			utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", utils.NotInvalid)
+			utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
 		} else {
 			p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
 		}
 	}
 }
 
-func (p *Plugin) readAllTrackingFiles(ctx context.Context) []utils.VolumePublishInfo {
-	publishInfos := make([]utils.VolumePublishInfo, 0)
+func (p *Plugin) readAllTrackingFiles(ctx context.Context) []models.VolumePublishInfo {
+	publishInfos := make([]models.VolumePublishInfo, 0)
 	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
@@ -1098,7 +1099,7 @@ func (p *Plugin) readAllTrackingFiles(ctx context.Context) []utils.VolumePublish
 }
 
 func (p *Plugin) nodeStageISCSIVolume(
-	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) (err error) {
 	var useCHAP bool
 	useCHAP, err = strconv.ParseBool(req.PublishContext["useCHAP"])
@@ -1170,7 +1171,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	// This should result in Trident having all it needs to for CSI NodeUnstageVolume should an attachment fail.
 	defer func() {
 		// Always write a volume tracking info for use in node publish & unstage calls.
-		volTrackingInfo := &utils.VolumeTrackingInfo{
+		volTrackingInfo := &models.VolumeTrackingInfo{
 			VolumePublishInfo: *publishInfo,
 			StagingTargetPath: stagingTargetPath,
 			PublishedPaths:    map[string]struct{}{},
@@ -1235,7 +1236,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	// Beyond here if there is a problem with the session or there are missing LUNs
 	// then self-healing should be able to fix those issues.
 	newCtx := context.WithValue(ctx, utils.SessionInfoSource, utils.SessionSourceNodeStage)
-	utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", utils.NotInvalid)
+	utils.AddISCSISession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", models.NotInvalid)
 	return nil
 }
 
@@ -1243,7 +1244,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 // with a retry logic based on the publish information passed in.
 func (p *Plugin) ensureAttachISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
-	publishInfo *utils.VolumePublishInfo, attachTimeout time.Duration,
+	publishInfo *models.VolumePublishInfo, attachTimeout time.Duration,
 ) (int64, error) {
 	var err error
 	var mpathSize int64
@@ -1273,7 +1274,7 @@ func (p *Plugin) ensureAttachISCSIVolume(
 }
 
 func (p *Plugin) updateChapInfoFromController(
-	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) error {
 	chapInfo, err := p.restClient.GetChap(ctx, req.GetVolumeId(), p.nodeName)
 	if err != nil {
@@ -1290,7 +1291,7 @@ func (p *Plugin) updateChapInfoFromController(
 }
 
 func (p *Plugin) nodeUnstageISCSIVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) error {
 	// Remove Portal/LUN entries in self-healing map.
 	utils.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
@@ -1420,7 +1421,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 }
 
 func (p *Plugin) nodeUnstageISCSIVolumeRetry(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	nodeUnstageISCSIVolumeNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Failed to unstage the volume, retrying.")
@@ -1522,7 +1523,7 @@ func (p *Plugin) nodeStageNFSBlockVolume(
 		return nil, err
 	}
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		Localhost: true,
 	}
 
@@ -1565,7 +1566,7 @@ func (p *Plugin) nodeStageNFSBlockVolume(
 		return nil, err
 	}
 
-	volTrackingInfo := &utils.VolumeTrackingInfo{
+	volTrackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: *publishInfo,
 		StagingTargetPath: stagingTargetPath,
 		PublishedPaths:    map[string]struct{}{},
@@ -1579,7 +1580,7 @@ func (p *Plugin) nodeStageNFSBlockVolume(
 }
 
 func (p *Plugin) nodeUnstageNFSBlockVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	volumeId, _, err := p.getVolumeIdAndStagingPath(req)
 	if err != nil {
@@ -1821,7 +1822,7 @@ func (p *Plugin) reconcileNodePublicationState(ctx context.Context) error {
 	}
 
 	// For now, only cleanup the node iff the node is not clean.
-	if node.PublicationState == utils.NodeClean {
+	if node.PublicationState == models.NodeClean {
 		Logc(ctx).Debug("Node is clean, nothing to do.")
 		return nil
 	}
@@ -1867,7 +1868,7 @@ func (p *Plugin) performNodeCleanup(ctx context.Context) error {
 // discoverDesiredPublicationState discovers the desired state of published volumes on the CSI controller and returns
 // a mapping of volumeID -> publications.
 func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (
-	map[string]*utils.VolumePublicationExternal, error,
+	map[string]*models.VolumePublicationExternal, error,
 ) {
 	Logc(ctx).Debug("Discovering desired publication state.")
 
@@ -1876,7 +1877,7 @@ func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (
 		return nil, fmt.Errorf("failed to get desired publication state")
 	}
 
-	desiredPublicationState := make(map[string]*utils.VolumePublicationExternal, len(publications))
+	desiredPublicationState := make(map[string]*models.VolumePublicationExternal, len(publications))
 	for _, pub := range publications {
 		desiredPublicationState[pub.VolumeName] = pub
 	}
@@ -1886,7 +1887,7 @@ func (p *Plugin) discoverDesiredPublicationState(ctx context.Context) (
 
 // discoverActualPublicationState discovers the actual state of published volumes on the node and returns
 // a mapping of volumeID -> tracking information.
-func (p *Plugin) discoverActualPublicationState(ctx context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+func (p *Plugin) discoverActualPublicationState(ctx context.Context) (map[string]*models.VolumeTrackingInfo, error) {
 	Logc(ctx).Debug("Discovering actual publication state.")
 
 	actualPublicationState, err := p.nodeHelper.ListVolumeTrackingInfo(ctx)
@@ -1901,13 +1902,13 @@ func (p *Plugin) discoverActualPublicationState(ctx context.Context) (map[string
 // of publications in the controller and returns the delta between the two.
 func (p *Plugin) discoverStalePublications(
 	ctx context.Context,
-	actualPublicationState map[string]*utils.VolumeTrackingInfo,
-	desiredPublicationState map[string]*utils.VolumePublicationExternal,
-) map[string]*utils.VolumeTrackingInfo {
+	actualPublicationState map[string]*models.VolumeTrackingInfo,
+	desiredPublicationState map[string]*models.VolumePublicationExternal,
+) map[string]*models.VolumeTrackingInfo {
 	Logc(ctx).Debug("Discovering stale volume publications.")
 
 	// Track the delta between actual (node-side) and desired (controller-side) publication state.
-	stalePublications := make(map[string]*utils.VolumeTrackingInfo, 0)
+	stalePublications := make(map[string]*models.VolumeTrackingInfo, 0)
 
 	// Reconcile the actual state of publications to the desired state of publications.
 	for volumeID, trackingInfo := range actualPublicationState {
@@ -1927,7 +1928,7 @@ func (p *Plugin) discoverStalePublications(
 // cleanStalePublications cleans published paths on the host node for attached volumes with no matching publication
 // object in the CSI controller. It should never publish volumes to the node.
 func (p *Plugin) cleanStalePublications(
-	ctx context.Context, stalePublications map[string]*utils.VolumeTrackingInfo,
+	ctx context.Context, stalePublications map[string]*models.VolumeTrackingInfo,
 ) error {
 	Logc(ctx).Debug("Cleaning stale node publication state.")
 
@@ -1979,15 +1980,15 @@ func (p *Plugin) cleanStalePublications(
 	return err
 }
 
-func (p *Plugin) updateNodePublicationState(ctx context.Context, nodeState utils.NodePublicationState) error {
+func (p *Plugin) updateNodePublicationState(ctx context.Context, nodeState models.NodePublicationState) error {
 	// Check if node is cleanable in the first place and bail if Trident shouldn't mark it as clean.
-	if nodeState != utils.NodeCleanable {
+	if nodeState != models.NodeCleanable {
 		Logc(ctx).Debugf("Controller node state is not cleanable; state was: [%s]", nodeState)
 		return nil
 	}
 
 	Logc(ctx).Debug("Updating node publication state.")
-	nodeStateFlags := &utils.NodePublicationStateFlags{
+	nodeStateFlags := &models.NodePublicationStateFlags{
 		ProvisionerReady: utils.Ptr(true),
 	}
 	if err := p.restClient.UpdateNode(ctx, p.nodeName, nodeStateFlags); err != nil {
@@ -2001,10 +2002,10 @@ func (p *Plugin) updateNodePublicationState(ctx context.Context, nodeState utils
 
 // selfHealingRectifySession rectifies a session which has been identified as ghost session.
 // If it is determined that re-login is required, perform re login to the sessions and then scan for all the LUNs.
-func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, action utils.ISCSIAction) error {
+func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, action models.ISCSIAction) error {
 	var err error
 	var volumeID string
-	var publishInfo utils.VolumePublishInfo
+	var publishInfo models.VolumePublishInfo
 	iSCSILoginTimeout := 10 * time.Second
 
 	if portal == "" {
@@ -2021,7 +2022,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 	lunID, targetIQN := publishInfo.IscsiLunNumber, publishInfo.IscsiTargetIQN
 
 	switch action {
-	case utils.LogoutLoginScan:
+	case models.LogoutLoginScan:
 		if err = utils.ISCSILogout(ctx, targetIQN, portal); err != nil {
 			return fmt.Errorf("error while logging out of target %s", targetIQN)
 		} else {
@@ -2029,7 +2030,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		}
 		// Logout is successful, fallthrough to perform login.
 		fallthrough
-	case utils.LoginScan:
+	case models.LoginScan:
 		// Set FilesystemType to "raw" so that we only heal the session connectivity and not perform the mount and
 		// filesystem related operations.
 		publishInfo.FilesystemType = tridentconfig.FsRaw
@@ -2063,7 +2064,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		Logc(ctx).Debug("Login to target is successful.")
 		// Login is successful, fallthrough to perform scan
 		fallthrough
-	case utils.Scan:
+	case models.Scan:
 		if p.deprecatedIgroupInUse(ctx) {
 			Logc(ctx).WithField("lunID", lunID).Debug("Initiating SCSI scan for exact LUN.")
 
@@ -2133,7 +2134,7 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	}
 
 	// Reset current sessions
-	currentISCSISessions = utils.ISCSISessions{}
+	currentISCSISessions = models.ISCSISessions{}
 
 	// Reset published iSCSI session remediation information
 	if err := publishedISCSISessions.ResetAllRemediationValues(); err != nil {
@@ -2186,7 +2187,7 @@ func (p *Plugin) fixISCSISessions(ctx context.Context, portals []string, portalT
 
 		// First get the fix action
 		fixAction := publishedISCSISessions.Info[portal].Remediation
-		isNonStaleSessionFix := fixAction != utils.LogoutLoginScan
+		isNonStaleSessionFix := fixAction != models.LogoutLoginScan
 
 		// Check if there is a need to stop the loop from running
 		// NOTE: The loop should run at least once for all portal types.
@@ -2292,7 +2293,7 @@ func (p *Plugin) updateNodeLoggingConfig() {
 
 func (p *Plugin) nodeStageNVMeVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
-	publishInfo *utils.VolumePublishInfo,
+	publishInfo *models.VolumePublishInfo,
 ) error {
 	var isLUKS bool
 	var err error
@@ -2334,7 +2335,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 		}
 	}
 
-	volTrackingInfo := &utils.VolumeTrackingInfo{
+	volTrackingInfo := &models.VolumeTrackingInfo{
 		VolumePublishInfo: *publishInfo,
 		StagingTargetPath: stagingTargetPath,
 		PublishedPaths:    map[string]struct{}{},
@@ -2356,7 +2357,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 // - If the subsystem has <= 1 Namespaces connected to it, then disconnect.
 // - Remove the tracking file for the volume/Namespace.
 func (p *Plugin) nodeUnstageNVMeVolume(
-	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *utils.VolumePublishInfo, force bool,
+	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	disconnect := p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
 		publishInfo.NVMeNamespaceUUID)
@@ -2551,7 +2552,7 @@ func (p *Plugin) nodeStageSANVolume(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		Localhost:      true,
 		FilesystemType: fstype,
 		SharedTarget:   sharedTarget,

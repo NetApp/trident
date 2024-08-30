@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 // Copyright 2017 The Kubernetes Authors.
 
@@ -18,6 +18,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func ParseEndpoint(ep string) (string, string, error) {
@@ -79,7 +80,7 @@ func logGRPC(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, h
 
 // encryptCHAPPublishInfo will encrypt the CHAP credentials from volumePublish and add them to publishInfo
 func encryptCHAPPublishInfo(
-	ctx context.Context, publishInfo map[string]string, volumePublishInfo *utils.VolumePublishInfo, aesKey []byte,
+	ctx context.Context, publishInfo map[string]string, volumePublishInfo *models.VolumePublishInfo, aesKey []byte,
 ) error {
 	var err error
 	if publishInfo["encryptedIscsiUsername"], err = crypto.EncryptStringWithAES(
@@ -108,7 +109,7 @@ func encryptCHAPPublishInfo(
 // decryptCHAPPublishInfo will decrypt the CHAP credentials from req and replace empty plaintext credential fields in
 // publishInfo with their decrypted counterparts
 func decryptCHAPPublishInfo(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, publishContext map[string]string, aesKey []byte,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, publishContext map[string]string, aesKey []byte,
 ) error {
 	var err error
 
@@ -163,7 +164,7 @@ func containsEncryptedCHAP(input map[string]string) bool {
 
 // getVolumeProtocolFromPublishInfo examines the publish info read from the staging target path and determines
 // the protocol type from the volume (File or Block or Block-on-File).
-func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (config.Protocol, error) {
+func getVolumeProtocolFromPublishInfo(publishInfo *models.VolumePublishInfo) (config.Protocol, error) {
 	nfsIP := publishInfo.VolumeAccessInfo.NfsServerIP
 	iqn := publishInfo.VolumeAccessInfo.IscsiTargetIQN
 	subvolName := publishInfo.VolumeAccessInfo.SubvolumeName
@@ -209,7 +210,7 @@ func getVolumeProtocolFromPublishInfo(publishInfo *utils.VolumePublishInfo) (con
 // performProtocolSpecificReconciliation checks the protocol-specific conditions that signify whether a volume exists.
 // Nothing is done for NFS because NodeUnstageVolume for NFS only checks for the staging path. The ISCSI and Block on
 // File conditions are the same conditions that are checked in NodeUnstageVolume.
-func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *utils.VolumeTrackingInfo) (bool, error) {
+func performProtocolSpecificReconciliation(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (bool, error) {
 	Logc(ctx).Trace(">>>> performProtocolSpecificReconciliation")
 	defer Logc(ctx).Trace("<<<< performProtocolSpecificReconciliation")
 

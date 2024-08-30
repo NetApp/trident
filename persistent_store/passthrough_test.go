@@ -16,6 +16,7 @@ import (
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	testutils "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 func getFakeBackend() *storage.StorageBackend {
@@ -87,8 +88,8 @@ func getFakeStorageClassWithName(name string, iops int, snapshots bool, provType
 	return sc.New(scConfig)
 }
 
-func getFakeNode() *utils.Node {
-	return &utils.Node{
+func getFakeNode() *models.Node {
+	return &models.Node{
 		Name:    "testNode",
 		IQN:     "myIQN",
 		IPs:     []string{"1.1.1.1", "2.2.2.2"},

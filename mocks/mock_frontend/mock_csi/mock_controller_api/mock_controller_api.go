@@ -11,7 +11,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockTridentController is a mock of TridentController interface.
@@ -38,7 +38,7 @@ func (m *MockTridentController) EXPECT() *MockTridentControllerMockRecorder {
 }
 
 // CreateNode mocks base method.
-func (m *MockTridentController) CreateNode(arg0 context.Context, arg1 *utils.Node) (controllerAPI.CreateNodeResponse, error) {
+func (m *MockTridentController) CreateNode(arg0 context.Context, arg1 *models.Node) (controllerAPI.CreateNodeResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNode", arg0, arg1)
 	ret0, _ := ret[0].(controllerAPI.CreateNodeResponse)
@@ -67,10 +67,10 @@ func (mr *MockTridentControllerMockRecorder) DeleteNode(arg0, arg1 interface{}) 
 }
 
 // GetChap mocks base method.
-func (m *MockTridentController) GetChap(arg0 context.Context, arg1, arg2 string) (*utils.IscsiChapInfo, error) {
+func (m *MockTridentController) GetChap(arg0 context.Context, arg1, arg2 string) (*models.IscsiChapInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetChap", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*utils.IscsiChapInfo)
+	ret0, _ := ret[0].(*models.IscsiChapInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -82,10 +82,10 @@ func (mr *MockTridentControllerMockRecorder) GetChap(arg0, arg1, arg2 interface{
 }
 
 // GetNode mocks base method.
-func (m *MockTridentController) GetNode(arg0 context.Context, arg1 string) (*utils.NodeExternal, error) {
+func (m *MockTridentController) GetNode(arg0 context.Context, arg1 string) (*models.NodeExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
-	ret0, _ := ret[0].(*utils.NodeExternal)
+	ret0, _ := ret[0].(*models.NodeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -128,10 +128,10 @@ func (mr *MockTridentControllerMockRecorder) InvokeAPI(arg0, arg1, arg2, arg3, a
 }
 
 // ListVolumePublicationsForNode mocks base method.
-func (m *MockTridentController) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
+func (m *MockTridentController) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*models.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumePublicationsForNode", arg0, arg1)
-	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
+	ret0, _ := ret[0].([]*models.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -143,7 +143,7 @@ func (mr *MockTridentControllerMockRecorder) ListVolumePublicationsForNode(arg0,
 }
 
 // UpdateNode mocks base method.
-func (m *MockTridentController) UpdateNode(arg0 context.Context, arg1 string, arg2 *utils.NodePublicationStateFlags) error {
+func (m *MockTridentController) UpdateNode(arg0 context.Context, arg1 string, arg2 *models.NodePublicationStateFlags) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateNode", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

@@ -12,6 +12,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // The Trident build process builds the Trident CLI client for both linux and windows.
@@ -33,7 +34,7 @@ func SMBActiveOnHost(ctx context.Context) (bool, error) {
 }
 
 // GetHostSystemInfo returns the information about OS type and platform
-func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
+func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	osInfo, err := sysinfo.Host()
 	if err != nil {
 		return nil, err
@@ -42,7 +43,7 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 	// For windows, host.OS.Distro will correspond 'windows'
 	// host.OS.Version will correspond to 'Windows Server 20xx Datacenter'
 
-	host := &HostSystem{}
+	host := &models.HostSystem{}
 	host.OS.Distro = osInfo.Info().OS.Platform
 	host.OS.Version = osInfo.Info().OS.Name
 

@@ -30,6 +30,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestMain(m *testing.M) {
@@ -6300,7 +6301,7 @@ func Test_DeleteAutomaticSnapshot_DeleteSnapshotError(t *testing.T) {
 
 func getStructsForPublishNFSVolume(
 	ctx context.Context, driver *NASStorageDriver,
-) (*storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo) {
+) (*storage.VolumeConfig, *api.FileSystem, *models.VolumePublishInfo) {
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
 
@@ -6310,8 +6311,8 @@ func getStructsForPublishNFSVolume(
 		InternalName: "trident-testvol1",
 		Size:         VolumeSizeStr,
 		InternalID:   volumeID,
-		AccessInfo: utils.VolumeAccessInfo{
-			NfsAccessInfo: utils.NfsAccessInfo{
+		AccessInfo: models.VolumeAccessInfo{
+			NfsAccessInfo: models.NfsAccessInfo{
 				NfsPath: "/trident-testvol1",
 			},
 		},
@@ -6350,14 +6351,14 @@ func getStructsForPublishNFSVolume(
 		MountTargets:      mountTargets,
 	}
 
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 
 	return volConfig, filesystem, publishInfo
 }
 
 func getStructsForPublishSMBVolume(
 	ctx context.Context, driver *NASStorageDriver,
-) (*storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo) {
+) (*storage.VolumeConfig, *api.FileSystem, *models.VolumePublishInfo) {
 	subnetID := api.CreateSubnetID(SubscriptionID, "RG2", "VN1", "SN1")
 	volumeID := api.CreateVolumeID(SubscriptionID, "RG1", "NA1", "CP1", "importMe")
 
@@ -6367,8 +6368,8 @@ func getStructsForPublishSMBVolume(
 		InternalName: "trident-testvol1",
 		Size:         VolumeSizeStr,
 		InternalID:   volumeID,
-		AccessInfo: utils.VolumeAccessInfo{
-			SMBAccessInfo: utils.SMBAccessInfo{
+		AccessInfo: models.VolumeAccessInfo{
+			SMBAccessInfo: models.SMBAccessInfo{
 				SMBPath: "\\trident-testvol1",
 			},
 		},
@@ -6406,7 +6407,7 @@ func getStructsForPublishSMBVolume(
 		MountTargets:      mountTargets,
 	}
 
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 
 	return volConfig, filesystem, publishInfo
 }
@@ -8470,7 +8471,7 @@ func TestUpdate_Success(t *testing.T) {
 	mockAPI.EXPECT().ModifyVolume(ctx, filesystem, gomock.Any(), gomock.Any(), utils.Ptr(true),
 		gomock.Any()).Return(nil).AnyTimes()
 
-	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
+	updateInfo := &models.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
 	allVolumes := map[string]*storage.Volume{
 		volConfig.Name: {
 			Config:      volConfig,
@@ -8551,7 +8552,7 @@ func TestUpdate_ErrorInAPIOperation(t *testing.T) {
 	mockACP.EXPECT().IsFeatureEnabled(gomock.Any(), acp.FeatureReadOnlyClone).Return(nil).AnyTimes()
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(mockError).AnyTimes()
 
-	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
+	updateInfo := &models.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
 	allVolumes := map[string]*storage.Volume{
 		volConfig.InternalName: {
 			Config:      volConfig,
@@ -8598,7 +8599,7 @@ func TestUpdate_VolumeStateNotAvailable(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).AnyTimes()
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).AnyTimes()
 
-	updateInfo := &utils.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
+	updateInfo := &models.VolumeUpdateInfo{SnapshotDirectory: "TRUE"}
 	allVolumes := map[string]*storage.Volume{
 		volConfig.InternalName: {
 			Config:      volConfig,

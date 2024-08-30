@@ -33,6 +33,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	tridentmodels "github.com/netapp/trident/utils/models"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -274,7 +275,7 @@ func ensureExportPolicyExists(ctx context.Context, policyName string, clientAPI 
 // publishShare ensures that the volume has the correct export policy applied.
 func publishShare(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig,
-	publishInfo *utils.VolumePublishInfo, volumeName string,
+	publishInfo *tridentmodels.VolumePublishInfo, volumeName string,
 	ModifyVolumeExportPolicy func(ctx context.Context, volumeName, policyName string) error,
 ) error {
 	fields := LogFields{
@@ -310,7 +311,7 @@ func getExportPolicyName(backendUUID string) string {
 // This should be used during publish to make sure access is available if the policy has somehow been deleted.
 // Otherwise we should not need to reconcile, which could be expensive.
 func ensureNodeAccess(
-	ctx context.Context, publishInfo *utils.VolumePublishInfo, clientAPI api.OntapAPI,
+	ctx context.Context, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI,
 	config *drivers.OntapStorageDriverConfig,
 ) error {
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
@@ -325,7 +326,7 @@ func ensureNodeAccess(
 }
 
 func reconcileNASNodeAccess(
-	ctx context.Context, nodes []*utils.Node, config *drivers.OntapStorageDriverConfig, clientAPI api.OntapAPI,
+	ctx context.Context, nodes []*tridentmodels.Node, config *drivers.OntapStorageDriverConfig, clientAPI api.OntapAPI,
 	policyName string,
 ) error {
 	if !config.AutoExportPolicy {
@@ -351,7 +352,7 @@ func reconcileNASNodeAccess(
 }
 
 func getDesiredExportPolicyRules(
-	ctx context.Context, nodes []*utils.Node, config *drivers.OntapStorageDriverConfig,
+	ctx context.Context, nodes []*tridentmodels.Node, config *drivers.OntapStorageDriverConfig,
 ) ([]string, error) {
 	rules := make([]string, 0)
 	for _, node := range nodes {
@@ -628,7 +629,7 @@ func getNodeSpecificIgroupName(nodeName, tridentUUID string) string {
 // and publish
 func PublishLUN(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig, ips []string,
-	publishInfo *utils.VolumePublishInfo, lunPath, igroupName, iSCSINodeName string,
+	publishInfo *tridentmodels.VolumePublishInfo, lunPath, igroupName, iSCSINodeName string,
 ) error {
 	fields := LogFields{
 		"Method":        "PublishLUN",
@@ -693,7 +694,7 @@ func PublishLUN(
 
 	if config.DriverContext == tridentconfig.ContextCSI {
 		// Get the info about the targeted node
-		var targetNode *utils.Node
+		var targetNode *tridentmodels.Node
 		for _, node := range publishInfo.Nodes {
 			if node.Name == publishInfo.HostName {
 				targetNode = node
@@ -765,7 +766,7 @@ func PublishLUN(
 }
 
 // addUniqueIscsiIGroupName added iscsiIgroup name in the IscsiIgroup name string if it is not present.
-func addUniqueIscsiIGroupName(publishInfo *utils.VolumePublishInfo, igroupName string) {
+func addUniqueIscsiIGroupName(publishInfo *tridentmodels.VolumePublishInfo, igroupName string) {
 	if publishInfo.IscsiIgroup == "" {
 		publishInfo.IscsiIgroup = igroupName
 	} else {
@@ -1901,7 +1902,7 @@ func getVolumeExternalCommon(
 		UnixPermissions: volume.UnixPermissions,
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      tridentmodels.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}

@@ -6,11 +6,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 // NewTridentVolumePublication creates a new volume publication CRD object from an internal
 // utils.VolumePublication object.
-func NewTridentVolumePublication(persistent *utils.VolumePublication) (*TridentVolumePublication, error) {
+func NewTridentVolumePublication(persistent *models.VolumePublication) (*TridentVolumePublication, error) {
 	publication := &TridentVolumePublication{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "trident.netapp.io/v1",
@@ -31,7 +32,7 @@ func NewTridentVolumePublication(persistent *utils.VolumePublication) (*TridentV
 
 // Apply applies changes from an internal utils.VolumePublication
 // object to its Kubernetes CRD equivalent.
-func (in *TridentVolumePublication) Apply(persistent *utils.VolumePublication) error {
+func (in *TridentVolumePublication) Apply(persistent *models.VolumePublication) error {
 	if NameFix(persistent.Name) != in.ObjectMeta.Name {
 		return ErrNamesDontMatch
 	}
@@ -45,8 +46,8 @@ func (in *TridentVolumePublication) Apply(persistent *utils.VolumePublication) e
 	return nil
 }
 
-func (in *TridentVolumePublication) Persistent() (*utils.VolumePublication, error) {
-	persistent := &utils.VolumePublication{
+func (in *TridentVolumePublication) Persistent() (*models.VolumePublication, error) {
+	persistent := &models.VolumePublication{
 		Name:       in.Name,
 		NodeName:   in.NodeID,
 		VolumeName: in.VolumeID,

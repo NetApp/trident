@@ -17,6 +17,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const volumePublishInfoFilename = "volumePublishInfo.json"
@@ -50,7 +51,7 @@ func (v *VolumePublishManager) GetVolumeTrackingFiles() ([]os.FileInfo, error) {
 // Trident's own volume tracking location (/var/lib/trident/tracking) so that node bookkeeping is possible for
 // features like force detach
 func (v *VolumePublishManager) WriteTrackingInfo(
-	ctx context.Context, volumeID string, trackingInfo *utils.VolumeTrackingInfo,
+	ctx context.Context, volumeID string, trackingInfo *models.VolumeTrackingInfo,
 ) error {
 	fields := LogFields{"volumeID": volumeID}
 	Logc(ctx).WithFields(fields).Trace(">>>> WriteTrackingInfo")
@@ -78,7 +79,7 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 // and returns the staging target path, publish info and publish paths for a volume
 func (v *VolumePublishManager) ReadTrackingInfo(
 	ctx context.Context, volumeID string,
-) (*utils.VolumeTrackingInfo, error) {
+) (*models.VolumeTrackingInfo, error) {
 	fields := LogFields{"volumeID": volumeID}
 	Logc(ctx).WithFields(fields).Trace(">>>> ReadTrackingInfo")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< ReadTrackingInfo")
@@ -88,8 +89,8 @@ func (v *VolumePublishManager) ReadTrackingInfo(
 
 func (v *VolumePublishManager) readTrackingInfo(
 	ctx context.Context, volumeID string,
-) (*utils.VolumeTrackingInfo, error) {
-	var volumeTrackingInfo utils.VolumeTrackingInfo
+) (*models.VolumeTrackingInfo, error) {
+	var volumeTrackingInfo models.VolumeTrackingInfo
 	filename := volumeID + ".json"
 	err := utils.JsonReaderWriter.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
 		"volume tracking info")
@@ -111,7 +112,7 @@ func (v *VolumePublishManager) readTrackingInfo(
 }
 
 // ListVolumeTrackingInfo returns a map of tracking files to their contents (volume tracking information).
-func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[string]*utils.VolumeTrackingInfo, error) {
+func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[string]*models.VolumeTrackingInfo, error) {
 	Logc(ctx).Debug(">>>> ListVolumeTrackingInfo")
 	defer Logc(ctx).Debug("<<<< ListVolumeTrackingInfo")
 
@@ -128,7 +129,7 @@ func (v *VolumePublishManager) ListVolumeTrackingInfo(ctx context.Context) (map[
 	}
 
 	// Discover the tracking files and their volume tracking info.
-	trackingFiles := make(map[string]*utils.VolumeTrackingInfo, len(files))
+	trackingFiles := make(map[string]*models.VolumeTrackingInfo, len(files))
 	for _, file := range files {
 		volumeID := strings.ReplaceAll(file.Name(), ".json", "")
 		trackingInfo, err := v.readTrackingInfo(ctx, volumeID)
@@ -163,7 +164,7 @@ func (v *VolumePublishManager) DeleteTrackingInfo(ctx context.Context, volumeID 
 // tracking file has devicePath.
 // NOTE: In 24.07 these checks can be removed.
 func (v *VolumePublishManager) ensureTrackingFileCorrect(
-	ctx context.Context, volumeId string, volumeTrackingInfo *utils.VolumeTrackingInfo,
+	ctx context.Context, volumeId string, volumeTrackingInfo *models.VolumeTrackingInfo,
 	publishedPaths map[string]struct{}, pvToDeviceMappings map[string]string,
 ) {
 	logFields := LogFields{
@@ -235,7 +236,7 @@ func (v *VolumePublishManager) ensureTrackingFileCorrect(
 // populateDevicePath attempts to recover a missing devicePath (if missing) in tracking file.
 // NOTE: In 24.07 these checks can be removed.
 func (v *VolumePublishManager) populateDevicePath(ctx context.Context, volumeId string,
-	volumeTrackingInfo *utils.VolumeTrackingInfo,
+	volumeTrackingInfo *models.VolumeTrackingInfo,
 ) {
 	logFields := LogFields{
 		"volumeID":          volumeId,
@@ -277,8 +278,8 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 	Logc(ctx).WithFields(fields).Trace(">>>> UpgradeVolumeTrackingFile")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< UpgradeVolumeTrackingFile")
 
-	volumeTrackingInfo := &utils.VolumeTrackingInfo{}
-	publishInfo := &utils.VolumePublishInfo{}
+	volumeTrackingInfo := &models.VolumeTrackingInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 
 	errorTemplate := "error upgrading the volume tracking file for volume: %s :%v"
 
@@ -349,7 +350,7 @@ func (v *VolumePublishManager) UpgradeVolumeTrackingFile(
 
 // ValidateTrackingFile checks whether a tracking file needs to be deleted.
 func (v *VolumePublishManager) ValidateTrackingFile(ctx context.Context, volumeId string) (bool, error) {
-	var trackingInfo utils.VolumeTrackingInfo
+	var trackingInfo models.VolumeTrackingInfo
 	fields := LogFields{"volumeId": volumeId}
 	Logc(ctx).WithFields(fields).Trace(">>>> ValidateTrackingFile")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< ValidateTrackingFile")
@@ -453,6 +454,6 @@ func deleteStagedDeviceInfo(ctx context.Context, stagingPath, volumeId string) {
 }
 
 // isUpgradeWindowsTrackingFile verifies if this is windows tracking file.
-func (v *VolumePublishManager) isUpgradedWindowsTrackingFile(trackInfo *utils.VolumeTrackingInfo) bool {
+func (v *VolumePublishManager) isUpgradedWindowsTrackingFile(trackInfo *models.VolumeTrackingInfo) bool {
 	return runtime.GOOS == "windows" && trackInfo.FilesystemType == utils.SMB
 }

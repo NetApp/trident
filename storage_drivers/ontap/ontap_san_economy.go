@@ -22,6 +22,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/crypto"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -1026,10 +1027,10 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 			return fmt.Errorf("error reading LUN maps for volume %s: %v", name, err)
 		}
 		if lunID >= 0 {
-			publishInfo := utils.VolumePublishInfo{
+			publishInfo := models.VolumePublishInfo{
 				DevicePath: "",
-				VolumeAccessInfo: utils.VolumeAccessInfo{
-					IscsiAccessInfo: utils.IscsiAccessInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetIQN: iSCSINodeName,
 						IscsiLunNumber: int32(lunID),
 					},
@@ -1130,7 +1131,7 @@ func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucke
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *SANEconomyStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -1185,7 +1186,7 @@ func (d *SANEconomyStorageDriver) Publish(
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *SANEconomyStorageDriver) Unpublish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -2076,7 +2077,7 @@ func (d *SANEconomyStorageDriver) getVolumeExternal(
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteOnce,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}
@@ -2333,7 +2334,7 @@ func (d *SANEconomyStorageDriver) resizeFlexvol(ctx context.Context, flexvol str
 }
 
 func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
-	ctx context.Context, nodes []*utils.Node, backendUUID, tridentUUID string,
+	ctx context.Context, nodes []*models.Node, backendUUID, tridentUUID string,
 ) error {
 	// Discover known nodes
 	nodeNames := make([]string, len(nodes))
@@ -2376,8 +2377,8 @@ func (d SANEconomyStorageDriver) GetCommonConfig(context.Context) *drivers.Commo
 	return d.Config.CommonStorageDriverConfig
 }
 
-func (d *SANEconomyStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*utils.IscsiChapInfo, error) {
-	return &utils.IscsiChapInfo{
+func (d *SANEconomyStorageDriver) GetChapInfo(_ context.Context, _, _ string) (*models.IscsiChapInfo, error) {
+	return &models.IscsiChapInfo{
 		UseCHAP:              d.Config.UseCHAP,
 		IscsiUsername:        d.Config.ChapUsername,
 		IscsiInitiatorSecret: d.Config.ChapInitiatorSecret,

@@ -14,7 +14,7 @@ import (
 	storage "github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
 	storagedrivers "github.com/netapp/trident/storage_drivers"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockDriver is a mock of Driver interface.
@@ -391,7 +391,7 @@ func (mr *MockDriverMockRecorder) Name() *gomock.Call {
 }
 
 // Publish mocks base method.
-func (m *MockDriver) Publish(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *utils.VolumePublishInfo) error {
+func (m *MockDriver) Publish(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Publish", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -405,7 +405,7 @@ func (mr *MockDriverMockRecorder) Publish(arg0, arg1, arg2 interface{}) *gomock.
 }
 
 // ReconcileNodeAccess mocks base method.
-func (m *MockDriver) ReconcileNodeAccess(arg0 context.Context, arg1 []*utils.Node, arg2, arg3 string) error {
+func (m *MockDriver) ReconcileNodeAccess(arg0 context.Context, arg1 []*models.Node, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileNodeAccess", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)

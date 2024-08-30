@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const flexgroupCreateTimeout = 60 * time.Second
@@ -1036,7 +1037,7 @@ func (d *NASFlexGroupStorageDriver) Destroy(ctx context.Context, volConfig *stor
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *NASFlexGroupStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -1596,7 +1597,7 @@ func (d *NASFlexGroupStorageDriver) getVolumeExternal(volumeAttrs *azgo.VolumeAt
 		UnixPermissions: volumeSecurityUnixAttrs.Permissions(),
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 	}
@@ -1670,7 +1671,7 @@ func (d *NASFlexGroupStorageDriver) Resize(
 }
 
 func (d *NASFlexGroupStorageDriver) ReconcileNodeAccess(
-	ctx context.Context, nodes []*utils.Node, backendUUID, _ string,
+	ctx context.Context, nodes []*models.Node, backendUUID, _ string,
 ) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {

@@ -4,7 +4,7 @@ package api
 
 import (
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 type ErrorResponse struct {
@@ -45,11 +45,11 @@ type MultipleVolumeResponse struct {
 }
 
 type MultipleVolumePublicationResponse struct {
-	Items []utils.VolumePublicationExternal `json:"items"`
+	Items []models.VolumePublicationExternal `json:"items"`
 }
 
 type MultipleNodeResponse struct {
-	Items []utils.NodeExternal `json:"items"`
+	Items []models.NodeExternal `json:"items"`
 }
 
 type MultipleSnapshotResponse struct {

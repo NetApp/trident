@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockBlockOnFileReconcileUtils is a mock of BlockOnFileReconcileUtils interface.
@@ -52,7 +53,7 @@ func (mr *MockBlockOnFileReconcileUtilsMockRecorder) GetLoopDeviceAttachedToFile
 }
 
 // ReconcileBlockOnFileVolumeInfo mocks base method.
-func (m *MockBlockOnFileReconcileUtils) ReconcileBlockOnFileVolumeInfo(arg0 context.Context, arg1 *utils.VolumeTrackingInfo) (bool, error) {
+func (m *MockBlockOnFileReconcileUtils) ReconcileBlockOnFileVolumeInfo(arg0 context.Context, arg1 *models.VolumeTrackingInfo) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileBlockOnFileVolumeInfo", arg0, arg1)
 	ret0, _ := ret[0].(bool)

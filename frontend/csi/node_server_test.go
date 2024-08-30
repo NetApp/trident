@@ -19,13 +19,14 @@ import (
 	mockUtils "github.com/netapp/trident/mocks/mock_utils"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestUpdateChapInfoFromController_Success(t *testing.T) {
 	testCtx := context.Background()
 	volumeName := "foo"
 	nodeName := "bar"
-	expectedChapInfo := utils.IscsiChapInfo{
+	expectedChapInfo := models.IscsiChapInfo{
 		UseCHAP:              true,
 		IscsiUsername:        "user",
 		IscsiInitiatorSecret: "pass",
@@ -43,7 +44,7 @@ func TestUpdateChapInfoFromController_Success(t *testing.T) {
 	}
 
 	fakeRequest := &csi.NodeStageVolumeRequest{VolumeId: volumeName}
-	testPublishInfo := &utils.VolumePublishInfo{}
+	testPublishInfo := &models.VolumePublishInfo{}
 
 	err := nodeServer.updateChapInfoFromController(testCtx, fakeRequest, testPublishInfo)
 	assert.Nil(t, err, "Unexpected error")
@@ -54,7 +55,7 @@ func TestUpdateChapInfoFromController_Error(t *testing.T) {
 	testCtx := context.Background()
 	volumeName := "foo"
 	nodeName := "bar"
-	expectedChapInfo := utils.IscsiChapInfo{
+	expectedChapInfo := models.IscsiChapInfo{
 		UseCHAP:              true,
 		IscsiUsername:        "user",
 		IscsiInitiatorSecret: "pass",
@@ -72,17 +73,17 @@ func TestUpdateChapInfoFromController_Error(t *testing.T) {
 	}
 
 	fakeRequest := &csi.NodeStageVolumeRequest{VolumeId: volumeName}
-	testPublishInfo := &utils.VolumePublishInfo{}
+	testPublishInfo := &models.VolumePublishInfo{}
 
 	err := nodeServer.updateChapInfoFromController(testCtx, fakeRequest, testPublishInfo)
 	assert.NotNil(t, err, "Unexpected success")
 	assert.NotEqualValues(t, expectedChapInfo, testPublishInfo.IscsiAccessInfo.IscsiChapInfo)
-	assert.EqualValues(t, utils.IscsiChapInfo{}, testPublishInfo.IscsiAccessInfo.IscsiChapInfo)
+	assert.EqualValues(t, models.IscsiChapInfo{}, testPublishInfo.IscsiAccessInfo.IscsiChapInfo)
 }
 
 type PortalAction struct {
 	Portal string
-	Action utils.ISCSIAction
+	Action models.ISCSIAction
 }
 
 func TestFixISCSISessions(t *testing.T) {
@@ -102,7 +103,7 @@ func TestFixISCSISessions(t *testing.T) {
 
 	iqnList := []string{"IQN1", "IQN2", "IQN3", "IQN4"}
 
-	chapCredentials := []utils.IscsiChapInfo{
+	chapCredentials := []models.IscsiChapInfo{
 		{
 			UseCHAP: false,
 		},
@@ -122,32 +123,32 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 	}
 
-	sessionData1 := utils.ISCSISessionData{
-		PortalInfo: utils.PortalInfo{
+	sessionData1 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
 			ISCSITargetIQN: iqnList[0],
 			Credentials:    chapCredentials[2],
 		},
-		LUNs: utils.LUNs{
+		LUNs: models.LUNs{
 			Info: mapCopyHelper(lunList1),
 		},
 	}
 
-	sessionData2 := utils.ISCSISessionData{
-		PortalInfo: utils.PortalInfo{
+	sessionData2 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
 			ISCSITargetIQN: iqnList[1],
 			Credentials:    chapCredentials[2],
 		},
-		LUNs: utils.LUNs{
+		LUNs: models.LUNs{
 			Info: mapCopyHelper(lunList2),
 		},
 	}
 
-	type PreRun func(publishedSessions, currentSessions *utils.ISCSISessions, portalActions []PortalAction)
+	type PreRun func(publishedSessions, currentSessions *models.ISCSISessions, portalActions []PortalAction)
 
 	inputs := []struct {
 		TestName           string
-		PublishedPortals   *utils.ISCSISessions
-		CurrentPortals     *utils.ISCSISessions
+		PublishedPortals   *models.ISCSISessions
+		CurrentPortals     *models.ISCSISessions
 		PortalActions      []PortalAction
 		StopAt             time.Time
 		AddNewNodeOps      bool // If there exist a new node operation would request lock.
@@ -156,21 +157,21 @@ func TestFixISCSISessions(t *testing.T) {
 	}{
 		{
 			TestName: "No current sessions exist then all the non-stale sessions are fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{}},
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.NoAction},
-				{Portal: ipList[1], Action: utils.NoAction},
-				{Portal: ipList[2], Action: utils.NoAction},
+				{Portal: ipList[0], Action: models.NoAction},
+				{Portal: ipList[1], Action: models.NoAction},
+				{Portal: ipList[2], Action: models.NoAction},
 			},
 			StopAt:        time.Now().Add(100 * time.Second),
 			AddNewNodeOps: false,
 			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -184,21 +185,21 @@ func TestFixISCSISessions(t *testing.T) {
 		{
 			TestName: "No current sessions exist AND self-heal exceeded max time AND NO node operation waiting then" +
 				" all the non-stale sessions are fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{}},
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.NoAction},
-				{Portal: ipList[1], Action: utils.NoAction},
-				{Portal: ipList[2], Action: utils.NoAction},
+				{Portal: ipList[0], Action: models.NoAction},
+				{Portal: ipList[1], Action: models.NoAction},
+				{Portal: ipList[2], Action: models.NoAction},
 			},
 			StopAt:        time.Now().Add(-time.Second * 100),
 			AddNewNodeOps: false,
 			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -211,21 +212,21 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 		{
 			TestName: "No current sessions exist AND exist a node operation waiting then first non-stale sessions is fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{}},
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.NoAction},
-				{Portal: ipList[1], Action: utils.NoAction},
-				{Portal: ipList[2], Action: utils.NoAction},
+				{Portal: ipList[0], Action: models.NoAction},
+				{Portal: ipList[1], Action: models.NoAction},
+				{Portal: ipList[2], Action: models.NoAction},
 			},
 			StopAt:        time.Now().Add(time.Second * 100),
 			AddNewNodeOps: true,
 			PortalsFixed:  []string{ipList[1]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -239,21 +240,21 @@ func TestFixISCSISessions(t *testing.T) {
 		{
 			TestName: "No current sessions exist AND self-heal exceeded max time AND exist a node operation waiting" +
 				" for lock then first non-stale sessions is fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{}},
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.NoAction},
-				{Portal: ipList[1], Action: utils.NoAction},
-				{Portal: ipList[2], Action: utils.NoAction},
+				{Portal: ipList[0], Action: models.NoAction},
+				{Portal: ipList[1], Action: models.NoAction},
+				{Portal: ipList[2], Action: models.NoAction},
 			},
 			StopAt:        time.Time{},
 			AddNewNodeOps: true,
 			PortalsFixed:  []string{ipList[1]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -266,25 +267,25 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 		{
 			TestName: "Current sessions exist but missing LUNs then all the non-stale sessions are fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.NoAction},
-				{Portal: ipList[1], Action: utils.NoAction},
-				{Portal: ipList[2], Action: utils.NoAction},
+				{Portal: ipList[0], Action: models.NoAction},
+				{Portal: ipList[1], Action: models.NoAction},
+				{Portal: ipList[2], Action: models.NoAction},
 			},
 			StopAt:        time.Now().Add(100 * time.Second),
 			AddNewNodeOps: false,
 			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -292,13 +293,13 @@ func TestFixISCSISessions(t *testing.T) {
 				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow.Add(5 * time.Millisecond)
 				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
 
-				currentSessions.Info[ipList[0]].LUNs = utils.LUNs{
+				currentSessions.Info[ipList[0]].LUNs = models.LUNs{
 					Info: nil,
 				}
-				currentSessions.Info[ipList[1]].LUNs = utils.LUNs{
+				currentSessions.Info[ipList[1]].LUNs = models.LUNs{
 					Info: nil,
 				}
-				currentSessions.Info[ipList[2]].LUNs = utils.LUNs{
+				currentSessions.Info[ipList[2]].LUNs = models.LUNs{
 					Info: nil,
 				}
 
@@ -308,25 +309,25 @@ func TestFixISCSISessions(t *testing.T) {
 		{
 			TestName: "Current sessions exist but missing LUNs AND exist a node operation waiting" +
 				" for lock then first non-stale sessions is fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.NoAction},
-				{Portal: ipList[1], Action: utils.NoAction},
-				{Portal: ipList[2], Action: utils.NoAction},
+				{Portal: ipList[0], Action: models.NoAction},
+				{Portal: ipList[1], Action: models.NoAction},
+				{Portal: ipList[2], Action: models.NoAction},
 			},
 			StopAt:        time.Now().Add(100 * time.Second),
 			AddNewNodeOps: true,
 			PortalsFixed:  []string{ipList[1]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -334,13 +335,13 @@ func TestFixISCSISessions(t *testing.T) {
 				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow
 				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
 
-				currentSessions.Info[ipList[0]].LUNs = utils.LUNs{
+				currentSessions.Info[ipList[0]].LUNs = models.LUNs{
 					Info: nil,
 				}
-				currentSessions.Info[ipList[1]].LUNs = utils.LUNs{
+				currentSessions.Info[ipList[1]].LUNs = models.LUNs{
 					Info: nil,
 				}
-				currentSessions.Info[ipList[2]].LUNs = utils.LUNs{
+				currentSessions.Info[ipList[2]].LUNs = models.LUNs{
 					Info: nil,
 				}
 
@@ -349,25 +350,25 @@ func TestFixISCSISessions(t *testing.T) {
 		},
 		{
 			TestName: "Current sessions are stale then all the stale sessions are fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.LogoutLoginScan},
-				{Portal: ipList[1], Action: utils.LogoutLoginScan},
-				{Portal: ipList[2], Action: utils.LogoutLoginScan},
+				{Portal: ipList[0], Action: models.LogoutLoginScan},
+				{Portal: ipList[1], Action: models.LogoutLoginScan},
+				{Portal: ipList[2], Action: models.LogoutLoginScan},
 			},
 			StopAt:        time.Now().Add(100 * time.Second),
 			AddNewNodeOps: false,
 			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -381,25 +382,25 @@ func TestFixISCSISessions(t *testing.T) {
 		{
 			TestName: "Current sessions are stale AND only exist a node operation waiting" +
 				" for lock BUT self-heal has not exceeded then all stale sessions are fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.LogoutLoginScan},
-				{Portal: ipList[1], Action: utils.LogoutLoginScan},
-				{Portal: ipList[2], Action: utils.LogoutLoginScan},
+				{Portal: ipList[0], Action: models.LogoutLoginScan},
+				{Portal: ipList[1], Action: models.LogoutLoginScan},
+				{Portal: ipList[2], Action: models.LogoutLoginScan},
 			},
 			StopAt:        time.Now().Add(100 * time.Second),
 			AddNewNodeOps: true,
 			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -413,25 +414,25 @@ func TestFixISCSISessions(t *testing.T) {
 		{
 			TestName: "Current sessions are stale AND exist a node operation waiting" +
 				" for lock AND self-heal exceeds time then first stale sessions is fixed",
-			PublishedPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &utils.ISCSISessions{Info: map[string]*utils.ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
 			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: utils.LogoutLoginScan},
-				{Portal: ipList[1], Action: utils.LogoutLoginScan},
-				{Portal: ipList[2], Action: utils.LogoutLoginScan},
+				{Portal: ipList[0], Action: models.LogoutLoginScan},
+				{Portal: ipList[1], Action: models.LogoutLoginScan},
+				{Portal: ipList[2], Action: models.LogoutLoginScan},
 			},
 			StopAt:        time.Time{},
 			AddNewNodeOps: true,
 			PortalsFixed:  []string{ipList[1]},
-			SimulateConditions: func(publishedSessions, currentSessions *utils.ISCSISessions,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
@@ -500,13 +501,13 @@ func TestFixISCSISessions(t *testing.T) {
 	}
 }
 
-func setRemediation(sessions *utils.ISCSISessions, portalActions []PortalAction) {
+func setRemediation(sessions *models.ISCSISessions, portalActions []PortalAction) {
 	for _, portalAction := range portalActions {
 		sessions.Info[portalAction.Portal].Remediation = portalAction.Action
 	}
 }
 
-func getPortals(sessions *utils.ISCSISessions, portalActions []PortalAction) []string {
+func getPortals(sessions *models.ISCSISessions, portalActions []PortalAction) []string {
 	portals := make([]string, len(portalActions))
 
 	for idx, portalAction := range portalActions {
@@ -528,15 +529,15 @@ func mapCopyHelper(input map[int32]string) map[int32]string {
 	return output
 }
 
-func structCopyHelper(input utils.ISCSISessionData) *utils.ISCSISessionData {
+func structCopyHelper(input models.ISCSISessionData) *models.ISCSISessionData {
 	clone, err := copystructure.Copy(input)
 	if err != nil {
-		return &utils.ISCSISessionData{}
+		return &models.ISCSISessionData{}
 	}
 
-	output, ok := clone.(utils.ISCSISessionData)
+	output, ok := clone.(models.ISCSISessionData)
 	if !ok {
-		return &utils.ISCSISessionData{}
+		return &models.ISCSISessionData{}
 	}
 
 	return &output
@@ -566,7 +567,7 @@ func TestRefreshTimerPeriod(t *testing.T) {
 func TestDiscoverDesiredPublicationState_GetsNoPublicationsWithoutError(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "bar"
-	var expectedPublications []*utils.VolumePublicationExternal
+	var expectedPublications []*models.VolumePublicationExternal
 
 	mockCtrl := gomock.NewController(t)
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
@@ -587,7 +588,7 @@ func TestDiscoverDesiredPublicationState_GetsNoPublicationsWithoutError(t *testi
 func TestDiscoverDesiredPublicationState_GetsPublicationsWithoutError(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "bar"
-	expectedPublications := []*utils.VolumePublicationExternal{
+	expectedPublications := []*models.VolumePublicationExternal{
 		{
 			Name:       utils.GenerateVolumePublishName("foo", nodeName),
 			NodeName:   nodeName,
@@ -623,7 +624,7 @@ func TestDiscoverDesiredPublicationState_GetsPublicationsWithoutError(t *testing
 func TestDiscoverDesiredPublicationState_FailsToGetPublicationsWithError(t *testing.T) {
 	ctx := context.Background()
 	nodeName := "bar"
-	expectedPublications := []*utils.VolumePublicationExternal{
+	expectedPublications := []*models.VolumePublicationExternal{
 		{
 			Name:       utils.GenerateVolumePublishName("foo", nodeName),
 			NodeName:   nodeName,
@@ -657,9 +658,9 @@ func TestDiscoverDesiredPublicationState_FailsToGetPublicationsWithError(t *test
 
 func TestDiscoverActualPublicationState_FindsTrackingInfoWithoutError(t *testing.T) {
 	ctx := context.Background()
-	expectedPublicationState := map[string]*utils.VolumeTrackingInfo{
+	expectedPublicationState := map[string]*models.VolumeTrackingInfo{
 		"pvc-85987a99-648d-4d84-95df-47d0256ca2ab": {
-			VolumePublishInfo: utils.VolumePublishInfo{},
+			VolumePublishInfo: models.VolumePublishInfo{},
 			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
 			PublishedPaths: map[string]struct{}{
@@ -668,7 +669,7 @@ func TestDiscoverActualPublicationState_FindsTrackingInfoWithoutError(t *testing
 			},
 		},
 		"pvc-85987a99-648d-4d84-95df-47d0256ca2ac": {
-			VolumePublishInfo: utils.VolumePublishInfo{},
+			VolumePublishInfo: models.VolumePublishInfo{},
 			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787de/globalmount",
 			PublishedPaths: map[string]struct{}{
@@ -743,7 +744,7 @@ func TestDiscoverStalePublications_DiscoversStalePublicationsCorrectly(t *testin
 	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
 	volumeTwo := "pvc-85987a99-648d-4d84-95df-47d0256ca2ac"
 	volumeThree := "pvc-85987a99-648d-4d84-95df-47d0256ca2ad"
-	desiredPublicationState := map[string]*utils.VolumePublicationExternal{
+	desiredPublicationState := map[string]*models.VolumePublicationExternal{
 		volumeOne: {
 			Name:       utils.GenerateVolumePublishName(volumeOne, nodeName),
 			NodeName:   nodeName,
@@ -752,9 +753,9 @@ func TestDiscoverStalePublications_DiscoversStalePublicationsCorrectly(t *testin
 		// This shouldn't be counted as a stale publication.
 		volumeThree: nil,
 	}
-	actualPublicationState := map[string]*utils.VolumeTrackingInfo{
+	actualPublicationState := map[string]*models.VolumeTrackingInfo{
 		volumeOne: {
-			VolumePublishInfo: utils.VolumePublishInfo{},
+			VolumePublishInfo: models.VolumePublishInfo{},
 			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
 			PublishedPaths: map[string]struct{}{
@@ -764,7 +765,7 @@ func TestDiscoverStalePublications_DiscoversStalePublicationsCorrectly(t *testin
 		},
 		// This is what should be counted as "stale".
 		volumeTwo: {
-			VolumePublishInfo: utils.VolumePublishInfo{},
+			VolumePublishInfo: models.VolumePublishInfo{},
 			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787de/globalmount",
 			PublishedPaths: map[string]struct{}{
@@ -789,16 +790,16 @@ func TestPerformNodeCleanup_ShouldNotDiscoverAnyStalePublications(t *testing.T) 
 	ctx := context.Background()
 	nodeName := "bar"
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	desiredPublicationState := []*utils.VolumePublicationExternal{
+	desiredPublicationState := []*models.VolumePublicationExternal{
 		{
 			Name:       utils.GenerateVolumePublishName(volume, nodeName),
 			NodeName:   nodeName,
 			VolumeName: volume,
 		},
 	}
-	actualPublicationState := map[string]*utils.VolumeTrackingInfo{
+	actualPublicationState := map[string]*models.VolumeTrackingInfo{
 		volume: {
-			VolumePublishInfo: utils.VolumePublishInfo{},
+			VolumePublishInfo: models.VolumePublishInfo{},
 			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
 			PublishedPaths: map[string]struct{}{
@@ -829,7 +830,7 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverDesiredPublicationsFromControlle
 	ctx := context.Background()
 	nodeName := "bar"
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	desiredPublicationState := []*utils.VolumePublicationExternal{
+	desiredPublicationState := []*models.VolumePublicationExternal{
 		{
 			Name:       utils.GenerateVolumePublishName(volume, nodeName),
 			NodeName:   nodeName,
@@ -857,16 +858,16 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverActualPublicationsFromHost(t *te
 	ctx := context.Background()
 	nodeName := "bar"
 	volume := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	desiredPublicationState := []*utils.VolumePublicationExternal{
+	desiredPublicationState := []*models.VolumePublicationExternal{
 		{
 			Name:       utils.GenerateVolumePublishName(volume, nodeName),
 			NodeName:   nodeName,
 			VolumeName: volume,
 		},
 	}
-	actualPublicationState := map[string]*utils.VolumeTrackingInfo{
+	actualPublicationState := map[string]*models.VolumeTrackingInfo{
 		volume: {
-			VolumePublishInfo: utils.VolumePublishInfo{},
+			VolumePublishInfo: models.VolumePublishInfo{},
 			StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 				"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
 			PublishedPaths: map[string]struct{}{
@@ -895,7 +896,7 @@ func TestPerformNodeCleanup_ShouldFailToDiscoverActualPublicationsFromHost(t *te
 
 func TestUpdateNodePublicationState_NodeNotCleanable(t *testing.T) {
 	ctx := context.Background()
-	nodeState := utils.NodeDirty
+	nodeState := models.NodeDirty
 	nodeServer := &Plugin{
 		role:              CSINode,
 		enableForceDetach: true,
@@ -904,16 +905,16 @@ func TestUpdateNodePublicationState_NodeNotCleanable(t *testing.T) {
 	err := nodeServer.updateNodePublicationState(ctx, nodeState)
 	assert.NoError(t, err, "expected no error")
 
-	nodeState = utils.NodeClean
+	nodeState = models.NodeClean
 	err = nodeServer.updateNodePublicationState(ctx, nodeState)
 	assert.NoError(t, err, "expected no error")
 }
 
 func TestUpdateNodePublicationState_FailsToUpdateNodeAsCleaned(t *testing.T) {
 	ctx := context.Background()
-	nodeState := utils.NodeCleanable
+	nodeState := models.NodeCleanable
 	nodeName := "foo"
-	nodeStateFlags := &utils.NodePublicationStateFlags{
+	nodeStateFlags := &models.NodePublicationStateFlags{
 		ProvisionerReady: utils.Ptr(true),
 	}
 
@@ -933,9 +934,9 @@ func TestUpdateNodePublicationState_FailsToUpdateNodeAsCleaned(t *testing.T) {
 
 func TestUpdateNodePublicationState_SuccessfullyUpdatesNodeAsCleaned(t *testing.T) {
 	ctx := context.Background()
-	nodeState := utils.NodeCleanable
+	nodeState := models.NodeCleanable
 	nodeName := "foo"
-	nodeStateFlags := &utils.NodePublicationStateFlags{
+	nodeStateFlags := &models.NodePublicationStateFlags{
 		ProvisionerReady: utils.Ptr(true),
 	}
 
@@ -1067,24 +1068,24 @@ func TestAttemptLock_Success(t *testing.T) {
 
 func TestOutdatedAccessControlInUse(t *testing.T) {
 	tt := map[string]struct {
-		tracking map[string]*utils.VolumeTrackingInfo
+		tracking map[string]*models.VolumeTrackingInfo
 		expected bool
 	}{
 		"when default trident igroup is used for one volume": {
-			tracking: map[string]*utils.VolumeTrackingInfo{
+			tracking: map[string]*models.VolumeTrackingInfo{
 				"one": {
-					VolumePublishInfo: utils.VolumePublishInfo{
-						VolumeAccessInfo: utils.VolumeAccessInfo{
-							IscsiAccessInfo: utils.IscsiAccessInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
 								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
 							},
 						},
 					},
 				},
 				"two": {
-					VolumePublishInfo: utils.VolumePublishInfo{
-						VolumeAccessInfo: utils.VolumeAccessInfo{
-							IscsiAccessInfo: utils.IscsiAccessInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
 								IscsiIgroup: "trident",
 							},
 						},
@@ -1094,20 +1095,20 @@ func TestOutdatedAccessControlInUse(t *testing.T) {
 			expected: true,
 		},
 		"when custom trident igroup is used for one volume": {
-			tracking: map[string]*utils.VolumeTrackingInfo{
+			tracking: map[string]*models.VolumeTrackingInfo{
 				"one": {
-					VolumePublishInfo: utils.VolumePublishInfo{
-						VolumeAccessInfo: utils.VolumeAccessInfo{
-							IscsiAccessInfo: utils.IscsiAccessInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
 								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
 							},
 						},
 					},
 				},
 				"two": {
-					VolumePublishInfo: utils.VolumePublishInfo{
-						VolumeAccessInfo: utils.VolumeAccessInfo{
-							IscsiAccessInfo: utils.IscsiAccessInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
 								IscsiIgroup: "my-trident-igroup",
 							},
 						},
@@ -1117,20 +1118,20 @@ func TestOutdatedAccessControlInUse(t *testing.T) {
 			expected: true,
 		},
 		"when per-node igroups are used for all volumes": {
-			tracking: map[string]*utils.VolumeTrackingInfo{
+			tracking: map[string]*models.VolumeTrackingInfo{
 				"one": {
-					VolumePublishInfo: utils.VolumePublishInfo{
-						VolumeAccessInfo: utils.VolumeAccessInfo{
-							IscsiAccessInfo: utils.IscsiAccessInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
 								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
 							},
 						},
 					},
 				},
 				"two": {
-					VolumePublishInfo: utils.VolumePublishInfo{
-						VolumeAccessInfo: utils.VolumeAccessInfo{
-							IscsiAccessInfo: utils.IscsiAccessInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
 								IscsiIgroup: "node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z",
 							},
 						},

@@ -9,14 +9,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestAttachSMBVolume(t *testing.T) {
 	ctx := context.Background()
 
-	volumePublishInfo := &VolumePublishInfo{
-		VolumeAccessInfo: VolumeAccessInfo{
-			SMBAccessInfo: SMBAccessInfo{
+	volumePublishInfo := &models.VolumePublishInfo{
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			SMBAccessInfo: models.SMBAccessInfo{
 				SMBServer: "tri-fb18.TRIDENT.COM",
 				SMBPath:   "\\test-smb-path",
 			},

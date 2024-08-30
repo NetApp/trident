@@ -1,3 +1,5 @@
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
+
 package csi
 
 import (
@@ -14,8 +16,10 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/mocks/mock_utils"
+	"github.com/netapp/trident/mocks/mock_utils/mock_models"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestNewVolumePublishManager(t *testing.T) {
@@ -49,7 +53,7 @@ func TestGetVolumeTrackingFiles(t *testing.T) {
 
 func TestWriteTrackingInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	mockJSONUtils := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	mockJSONUtils := mock_models.NewMockJSONReaderWriter(mockCtrl)
 
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
@@ -59,7 +63,7 @@ func TestWriteTrackingInfo(t *testing.T) {
 
 	volId := "pvc-123"
 	fName := volId + ".json"
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.FilesystemType = "ext4"
 	trackInfo.StagingTargetPath = "."
 	_, err := osFs.Create("tmp-" + fName)
@@ -79,7 +83,7 @@ func TestWriteTrackingInfo(t *testing.T) {
 
 func TestReadTrackingInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	mockJSONUtils := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	mockJSONUtils := mock_models.NewMockJSONReaderWriter(mockCtrl)
 
 	defer func() { osFs = afero.NewOsFs() }()
 	osFs = afero.NewMemMapFs()
@@ -89,11 +93,11 @@ func TestReadTrackingInfo(t *testing.T) {
 
 	volId := "pvc-123"
 	fName := volId + ".json"
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.FilesystemType = "ext4"
 	trackInfo.StagingTargetPath = "."
 	fsType := "ext4"
-	emptyTrackInfo := &utils.VolumeTrackingInfo{}
+	emptyTrackInfo := &models.VolumeTrackingInfo{}
 
 	// SetArg sets the supplied argument to the given value. ReadJSONFile accepts an interface{} and unmarshals the JSON
 	// into the provided struct. It accepts an interface{} so that it can generically read any JSON file, regardless of
@@ -104,7 +108,7 @@ func TestReadTrackingInfo(t *testing.T) {
 	assert.Equal(t, fsType, trackInfo.FilesystemType, "tracking file did not have expected value in it")
 	assert.NoError(t, err, "tracking file should have been written")
 
-	emptyTrackInfo = &utils.VolumeTrackingInfo{}
+	emptyTrackInfo = &models.VolumeTrackingInfo{}
 	mockJSONUtils.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName,
 		"volume tracking info").Return(errors.New("foo"))
 	_, err = v.ReadTrackingInfo(context.Background(), volId)
@@ -145,8 +149,8 @@ func TestListVolumeTrackingInfo_FailsWhenNoTrackingFilesFound(t *testing.T) {
 func TestListVolumeTrackingInfo_FailsToReadTrackingInfo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 
-	defer func(original utils.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
-	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	defer func(original models.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
+	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
 	utils.JsonReaderWriter = jsonReaderWriter
 
 	defer func(original afero.Fs) { osFs = original }(osFs)
@@ -156,8 +160,8 @@ func TestListVolumeTrackingInfo_FailsToReadTrackingInfo(t *testing.T) {
 	trackPath := config.VolumeTrackingInfoPath
 	v := NewVolumePublishManager(trackPath)
 	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	volumeTrackingInfo := &utils.VolumeTrackingInfo{
-		VolumePublishInfo: utils.VolumePublishInfo{},
+	volumeTrackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo: models.VolumePublishInfo{},
 		StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 			"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
 		PublishedPaths: map[string]struct{}{
@@ -194,8 +198,8 @@ func TestListVolumeTrackingInfo_FailsToReadTrackingInfo(t *testing.T) {
 func TestListVolumeTrackingInfo_SucceedsToListTrackingFileInformation(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 
-	defer func(original utils.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
-	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	defer func(original models.JSONReaderWriter) { utils.JsonReaderWriter = original }(utils.JsonReaderWriter)
+	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
 	utils.JsonReaderWriter = jsonReaderWriter
 
 	defer func(original afero.Fs) { osFs = original }(osFs)
@@ -205,8 +209,8 @@ func TestListVolumeTrackingInfo_SucceedsToListTrackingFileInformation(t *testing
 	trackPath := config.VolumeTrackingInfoPath
 	v := NewVolumePublishManager(trackPath)
 	volumeOne := "pvc-85987a99-648d-4d84-95df-47d0256ca2ab"
-	volumeTrackingInfo := &utils.VolumeTrackingInfo{
-		VolumePublishInfo: utils.VolumePublishInfo{},
+	volumeTrackingInfo := &models.VolumeTrackingInfo{
+		VolumePublishInfo: models.VolumePublishInfo{},
 		StagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/csi.trident.netapp.io/" +
 			"6b1f46a23d50f8d6a2e2f24c63c3b6e73f82e8b982bdb41da4eb1d0b49d787dd/globalmount",
 		PublishedPaths: map[string]struct{}{
@@ -263,7 +267,7 @@ func TestDeleteTrackingInfo(t *testing.T) {
 
 func TestUpgradeVolumeTrackingFile(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
 	original := utils.JsonReaderWriter
 	defer func() { utils.JsonReaderWriter = original }()
 	utils.JsonReaderWriter = jsonReaderWriter
@@ -272,9 +276,9 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 
 	stagePath := "/foo"
 	trackPath := "/bar"
-	trackInfoAndPath := utils.VolumeTrackingInfo{}
+	trackInfoAndPath := models.VolumeTrackingInfo{}
 	trackInfoAndPath.StagingTargetPath = stagePath
-	pubInfoNfsIp := utils.VolumePublishInfo{}
+	pubInfoNfsIp := models.VolumePublishInfo{}
 	pubInfoNfsIp.NfsServerIP = "1.1.1.1"
 	volName := "pvc-123"
 	fName := volName + ".json"
@@ -330,7 +334,7 @@ func TestUpgradeVolumeTrackingFile(t *testing.T) {
 
 func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
 	original := utils.JsonReaderWriter
 	defer func() { utils.JsonReaderWriter = original }()
 	utils.JsonReaderWriter = jsonReaderWriter
@@ -340,11 +344,11 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) 
 	stagePath := "/foo"
 	trackPath := "/bar"
 
-	basePubInfo := utils.VolumePublishInfo{}
+	basePubInfo := models.VolumePublishInfo{}
 	basePubInfo.NfsServerIP = "1.1.1.1"
 	basePubInfo.FilesystemType = "somefs"
 
-	trackInfoAndPath := utils.VolumeTrackingInfo{}
+	trackInfoAndPath := models.VolumeTrackingInfo{}
 	trackInfoAndPath.StagingTargetPath = stagePath
 
 	volName := "pvc-123"
@@ -421,7 +425,7 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathBeforeUpgrade(t *testing.T) 
 
 func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
 	original := utils.JsonReaderWriter
 	defer func() { utils.JsonReaderWriter = original }()
 	utils.JsonReaderWriter = jsonReaderWriter
@@ -431,11 +435,11 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 	stagePath := "/foo"
 	trackPath := "/bar"
 
-	basePubInfo := utils.VolumePublishInfo{}
+	basePubInfo := models.VolumePublishInfo{}
 	basePubInfo.NfsServerIP = "1.1.1.1"
 	basePubInfo.FilesystemType = "somefs"
 
-	trackInfoAndPath := utils.VolumeTrackingInfo{}
+	trackInfoAndPath := models.VolumeTrackingInfo{}
 	trackInfoAndPath.StagingTargetPath = stagePath
 	trackInfoAndPath.PublishedPaths = map[string]struct{}{
 		"path1": {},
@@ -569,7 +573,7 @@ func TestUpgradeVolumeTrackingFile_MissingDevicePathAfterUpgrade(t *testing.T) {
 
 func TestValidateTrackingFile(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	jsonReaderWriter := mock_utils.NewMockJSONReaderWriter(mockCtrl)
+	jsonReaderWriter := mock_models.NewMockJSONReaderWriter(mockCtrl)
 	mockBofUtils := mock_utils.NewMockBlockOnFileReconcileUtils(mockCtrl)
 
 	defer func() { osFs = afero.NewOsFs() }()
@@ -592,13 +596,13 @@ func TestValidateTrackingFile(t *testing.T) {
 	volName := "pvc-123"
 	fName := volName + ".json"
 	fsType := "ext4"
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.StagingTargetPath = stagePath
 	trackInfo.FilesystemType = fsType
 	// Make protocol reconcile choose BOF.
 	trackInfo.NfsServerIP = "1.1.1.1"
 	trackInfo.SubvolumeName = "bar"
-	emptyTrackInfo := &utils.VolumeTrackingInfo{}
+	emptyTrackInfo := &models.VolumeTrackingInfo{}
 
 	// If staging path doesn't exist, check protocol specific reconciliation steps.
 	jsonReaderWriter.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, gomock.Any()).

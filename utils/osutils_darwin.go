@@ -9,6 +9,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // The Trident build process builds the Trident CLI client for both linux and darwin.
@@ -23,7 +24,7 @@ func getIPAddresses(ctx context.Context) ([]net.Addr, error) {
 }
 
 // GetHostSystemInfo unused stub function
-func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
+func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_darwin.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_darwin.GetHostSystemInfo")
 	return nil, errors.UnsupportedError("GetHostSystemInfo is not supported for darwin")

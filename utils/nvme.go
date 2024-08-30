@@ -14,6 +14,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const NVMeAttachTimeout = 20 * time.Second
@@ -245,7 +246,7 @@ func extractIPFromNVMeAddress(a string) string {
 }
 
 func AttachNVMeVolumeRetry(
-	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string,
+	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
 	timeout time.Duration,
 ) error {
 	Logc(ctx).Debug(">>>> nvme.AttachNVMeVolumeRetry")
@@ -274,7 +275,7 @@ func AttachNVMeVolumeRetry(
 }
 
 func AttachNVMeVolume(
-	ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo, secrets map[string]string,
+	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
 ) error {
 	nvmeHandler := NewNVMeHandler()
 	nvmeSubsys := nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
@@ -301,7 +302,7 @@ func AttachNVMeVolume(
 	return nil
 }
 
-func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *VolumePublishInfo) error {
+func NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo) error {
 	if publishInfo.FilesystemType == fsRaw {
 		return nil
 	}
@@ -504,7 +505,7 @@ func (s *NVMeSessions) ResetRemediationForAll() {
 }
 
 // AddPublishedNVMeSession adds the published NVMeSession to the given session map.
-func (nh *NVMeHandler) AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *VolumePublishInfo) {
+func (nh *NVMeHandler) AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *models.VolumePublishInfo) {
 	if pubSessions == nil {
 		return
 	}

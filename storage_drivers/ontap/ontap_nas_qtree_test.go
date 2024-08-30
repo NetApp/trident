@@ -27,6 +27,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var (
@@ -1023,10 +1024,9 @@ func TestPublish_Success_WithNASTypeNone(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
 	volConfig := &storage.VolumeConfig{
-		Size:       "1g",
-		Encryption: "false",
-		AccessInfo: utils.VolumeAccessInfo{NfsAccessInfo: utils.
-			NfsAccessInfo{NfsPath: "/testVol/testVolInternal"}},
+		Size:            "1g",
+		Encryption:      "false",
+		AccessInfo:      models.VolumeAccessInfo{NfsAccessInfo: models.NfsAccessInfo{NfsPath: "/testVol/testVolInternal"}},
 		FileSystem:      "nfs",
 		Name:            volName,
 		InternalName:    volNameInternal,
@@ -1040,7 +1040,7 @@ func TestPublish_Success_WithNASTypeNone(t *testing.T) {
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
 
 	// Publish
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 	result := driver.Publish(ctx, volConfig, publishInfo)
 
 	assert.NoError(t, result, "Expected no error in publish, got error")
@@ -1071,7 +1071,7 @@ func TestPublish_Success_WithNASTypeSMB(t *testing.T) {
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(true, volName, nil)
 
 	// Publish
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 	result := driver.Publish(ctx, volConfig, publishInfo)
 
 	assert.NoError(t, result, "Expected no error in publish, got error")
@@ -1126,7 +1126,7 @@ func TestPublish_WithDifferentInternalId(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			// Publish
-			result := driver.Publish(ctx, test.volConfig, &utils.VolumePublishInfo{})
+			result := driver.Publish(ctx, test.volConfig, &models.VolumePublishInfo{})
 
 			if test.expectError {
 				assert.Error(tt, result, "Expected error in publish, got nil")
@@ -1153,14 +1153,14 @@ func TestPublish_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).Return(false, volName, mockError)
 
-	result1 := driver.Publish(ctx, volConfig, &utils.VolumePublishInfo{})
+	result1 := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 	assert.Error(t, result1, "Expected error when api failed to check qtree existence, got nil")
 
 	// CASE 2: When Qtree does not exist
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).Return(false, volName, nil)
 
-	result2 := driver.Publish(ctx, volConfig, &utils.VolumePublishInfo{})
+	result2 := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 	assert.Error(t, result2, "Expected error when qtree does not exist, got nil")
 }
 
@@ -1168,7 +1168,7 @@ func TestPublishQtreeShare_Success(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
 
-	publishInfo := utils.VolumePublishInfo{
+	publishInfo := models.VolumePublishInfo{
 		BackendUUID: BackendUUID,
 		Unmanaged:   false,
 	}
@@ -1191,7 +1191,7 @@ func TestPublishQtreeShare_WithUnmanagedPublishInfo(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
 
-	publishInfo := utils.VolumePublishInfo{
+	publishInfo := models.VolumePublishInfo{
 		BackendUUID: BackendUUID,
 		Unmanaged:   true,
 	}
@@ -1208,7 +1208,7 @@ func TestPublishQtreeShare_WithErrorInApiOperation(t *testing.T) {
 	// Create required info
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
-	publishInfo := utils.VolumePublishInfo{
+	publishInfo := models.VolumePublishInfo{
 		BackendUUID: BackendUUID,
 		Unmanaged:   false,
 	}
@@ -3573,8 +3573,8 @@ func TestResizeFlexvol_WithErrorInApiOperation(t *testing.T) {
 }
 
 func TestReconcileNodeAccess_Success(t *testing.T) {
-	nodes := make([]*utils.Node, 0)
-	nodes = append(nodes, &utils.Node{Name: "node1"})
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1"})
 
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.AutoExportPolicy = true
@@ -5153,7 +5153,7 @@ func TestNASQtreeStorageDriver_UpdateVolume_Success(t *testing.T) {
 		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
 	}
 
-	updateInfo := &utils.VolumeUpdateInfo{
+	updateInfo := &models.VolumeUpdateInfo{
 		SnapshotDirectory: "false",
 		PoolLevel:         true,
 	}
@@ -5203,7 +5203,7 @@ func TestNASQtreeStorageDriver_UpdateVolume_Failure(t *testing.T) {
 		"pvc-99138d85-6259-4830-ada0-30e45e21f843": mockVol3,
 	}
 
-	updateInfo := &utils.VolumeUpdateInfo{
+	updateInfo := &models.VolumeUpdateInfo{
 		SnapshotDirectory: "false",
 		PoolLevel:         true,
 	}
@@ -5372,7 +5372,7 @@ func getMockVolume(name, internalID string) *storage.Volume {
 			Name:          name,
 			InternalName:  name,
 			Size:          "10Mi",
-			AccessInfo:    utils.VolumeAccessInfo{},
+			AccessInfo:    models.VolumeAccessInfo{},
 			ReadOnlyClone: false,
 			InternalID:    internalID,
 		},

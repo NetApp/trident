@@ -14,6 +14,7 @@ import (
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/models"
 )
 
 func mapCopyHelper(input map[int32]string) map[int32]string {
@@ -26,15 +27,15 @@ func mapCopyHelper(input map[int32]string) map[int32]string {
 	return output
 }
 
-func structCopyHelper(input ISCSISessionData) *ISCSISessionData {
+func structCopyHelper(input models.ISCSISessionData) *models.ISCSISessionData {
 	clone, err := copystructure.Copy(input)
 	if err != nil {
-		return &ISCSISessionData{}
+		return &models.ISCSISessionData{}
 	}
 
-	output, ok := clone.(ISCSISessionData)
+	output, ok := clone.(models.ISCSISessionData)
 	if !ok {
-		return &ISCSISessionData{}
+		return &models.ISCSISessionData{}
 	}
 
 	return &output
@@ -260,7 +261,7 @@ func TestIsStalePortal(t *testing.T) {
 
 	iqnList := []string{"IQN1", "IQN2", "IQN3", "IQN4"}
 
-	chapCredentials := []IscsiChapInfo{
+	chapCredentials := []models.IscsiChapInfo{
 		{
 			UseCHAP: false,
 		},
@@ -280,40 +281,40 @@ func TestIsStalePortal(t *testing.T) {
 		},
 	}
 
-	sessionData1 := ISCSISessionData{
-		PortalInfo: PortalInfo{
+	sessionData1 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
 			ISCSITargetIQN: iqnList[0],
 			Credentials:    chapCredentials[2],
 		},
 	}
 
-	sessionData2 := ISCSISessionData{
-		PortalInfo: PortalInfo{
+	sessionData2 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
 			ISCSITargetIQN: iqnList[1],
 			Credentials:    chapCredentials[2],
 		},
 	}
 
-	type PreRun func(publishedSessions, currentSessions *ISCSISessions, portal string)
+	type PreRun func(publishedSessions, currentSessions *models.ISCSISessions, portal string)
 
 	inputs := []struct {
 		TestName           string
-		PublishedPortals   *ISCSISessions
-		CurrentPortals     *ISCSISessions
+		PublishedPortals   *models.ISCSISessions
+		CurrentPortals     *models.ISCSISessions
 		SessionWaitTime    time.Duration
 		TimeNow            time.Time
 		Portal             string
-		ResultAction       ISCSIAction
+		ResultAction       models.ISCSIAction
 		SimulateConditions PreRun
 	}{
 		{
 			TestName: "CHAP in use and Source is NodeStage and Credentials Mismatch",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -321,20 +322,20 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    LogoutLoginScan,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.LogoutLoginScan,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Source = SessionSourceNodeStage
 				currentSessions.Info[portal].PortalInfo.Credentials = chapCredentials[1]
 			},
 		},
 		{
 			TestName: "CHAP in use and Source is NodeStage and Credentials NOT Mismatch and First time stale",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -342,8 +343,8 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Source = SessionSourceNodeStage
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Time{}
 			},
@@ -351,12 +352,12 @@ func TestIsStalePortal(t *testing.T) {
 		{
 			TestName: "CHAP in use and Source is NOT NodeStage and NOT First time stale but NOT exceeds Session Wait" +
 				" Time",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -364,20 +365,20 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(2 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
 			},
 		},
 		{
 			TestName: "CHAP in use and Source is NOT NodeStage and NOT First time stale and exceeds Session Wait" +
 				" Time",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -385,19 +386,19 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(20 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    LogoutLoginScan,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.LogoutLoginScan,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
 			},
 		},
 		{
 			TestName: "CHAP NOT in use and First time stale",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -405,8 +406,8 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Credentials = chapCredentials[0]
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Time{}
 			},
@@ -414,12 +415,12 @@ func TestIsStalePortal(t *testing.T) {
 		{
 			TestName: "CHAP NOT in use and NOT First time stale but NOT exceeds Session Wait" +
 				" Time",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -427,8 +428,8 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(2 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Credentials = chapCredentials[0]
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
 			},
@@ -436,12 +437,12 @@ func TestIsStalePortal(t *testing.T) {
 		{
 			TestName: "CHAP NOT in use and NOT First time stale and exceeds Session Wait" +
 				" Time",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -449,8 +450,8 @@ func TestIsStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now().Add(20 * time.Second),
 			Portal:          ipList[0],
-			ResultAction:    LogoutLoginScan,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.LogoutLoginScan,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Credentials = chapCredentials[0]
 				publishedSessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt = time.Now()
 			},
@@ -494,7 +495,7 @@ func TestIsNonStalePortal(t *testing.T) {
 
 	iqnList := []string{"IQN1", "IQN2", "IQN3", "IQN4"}
 
-	chapCredentials := []IscsiChapInfo{
+	chapCredentials := []models.IscsiChapInfo{
 		{
 			UseCHAP: false,
 		},
@@ -514,46 +515,46 @@ func TestIsNonStalePortal(t *testing.T) {
 		},
 	}
 
-	sessionData1 := ISCSISessionData{
-		PortalInfo: PortalInfo{
+	sessionData1 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
 			ISCSITargetIQN: iqnList[0],
 			Credentials:    chapCredentials[2],
 		},
-		LUNs: LUNs{
+		LUNs: models.LUNs{
 			Info: mapCopyHelper(lunList1),
 		},
 	}
 
-	sessionData2 := ISCSISessionData{
-		PortalInfo: PortalInfo{
+	sessionData2 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
 			ISCSITargetIQN: iqnList[1],
 			Credentials:    chapCredentials[2],
 		},
-		LUNs: LUNs{
+		LUNs: models.LUNs{
 			Info: mapCopyHelper(lunList2),
 		},
 	}
 
-	type PreRun func(publishedSessions, currentSessions *ISCSISessions, portal string)
+	type PreRun func(publishedSessions, currentSessions *models.ISCSISessions, portal string)
 
 	inputs := []struct {
 		TestName           string
-		PublishedPortals   *ISCSISessions
-		CurrentPortals     *ISCSISessions
+		PublishedPortals   *models.ISCSISessions
+		CurrentPortals     *models.ISCSISessions
 		SessionWaitTime    time.Duration
 		TimeNow            time.Time
 		Portal             string
-		ResultAction       ISCSIAction
+		ResultAction       models.ISCSIAction
 		SimulateConditions PreRun
 	}{
 		{
 			TestName: "Current Portal Missing All LUNs",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -561,19 +562,19 @@ func TestIsNonStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    Scan,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
-				currentSessions.Info[portal].LUNs = LUNs{}
+			ResultAction:    models.Scan,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
+				currentSessions.Info[portal].LUNs = models.LUNs{}
 			},
 		},
 		{
 			TestName: "Current Portal Missing One LUNs",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -581,19 +582,19 @@ func TestIsNonStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    Scan,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.Scan,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				delete(currentSessions.Info[portal].LUNs.Info, 2)
 			},
 		},
 		{
 			TestName: "Published Portal Missing All LUNs",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -601,19 +602,19 @@ func TestIsNonStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
-				publishedSessions.Info[portal].LUNs = LUNs{}
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
+				publishedSessions.Info[portal].LUNs = models.LUNs{}
 			},
 		},
 		{
 			TestName: "CHAP notification, Published and Current portals have CHAP but mismatch",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -621,20 +622,20 @@ func TestIsNonStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Source = SessionSourceNodeStage
 				currentSessions.Info[portal].PortalInfo.Credentials = chapCredentials[1]
 			},
 		},
 		{
 			TestName: "CHAP notification, Published portals ha CHAP but not Current Portal",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -642,20 +643,20 @@ func TestIsNonStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Source = SessionSourceNodeStage
 				currentSessions.Info[portal].PortalInfo.Credentials = chapCredentials[0]
 			},
 		},
 		{
 			TestName: "CHAP notification, Current portals ha CHAP but not Published Portal",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
@@ -663,8 +664,8 @@ func TestIsNonStalePortal(t *testing.T) {
 			SessionWaitTime: 10 * time.Second,
 			TimeNow:         time.Now(),
 			Portal:          ipList[0],
-			ResultAction:    NoAction,
-			SimulateConditions: func(publishedSessions, currentSessions *ISCSISessions, portal string) {
+			ResultAction:    models.NoAction,
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions, portal string) {
 				publishedSessions.Info[portal].PortalInfo.Source = SessionSourceNodeStage
 				publishedSessions.Info[portal].PortalInfo.Credentials = chapCredentials[0]
 			},
@@ -690,27 +691,27 @@ func TestIsNonStalePortal(t *testing.T) {
 func TestSortPortals(t *testing.T) {
 	ipList := []string{"1.2.3.4", "2.3.4.5", "3.4.5.6", "4.5.6.7", "5.6.7.8", "6.7.8.9", "7.8.9.10", "8.9.10.11"}
 
-	sessionData := ISCSISessionData{
-		PortalInfo: PortalInfo{
+	sessionData := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
 			ISCSITargetIQN: "IQN1",
 		},
 	}
 
-	type PreRun func(publishedSessions *ISCSISessions, portal []string)
+	type PreRun func(publishedSessions *models.ISCSISessions, portal []string)
 
 	inputs := []struct {
 		TestName           string
-		PublishedPortals   *ISCSISessions
+		PublishedPortals   *models.ISCSISessions
 		InputPortals       []string
 		ResultPortals      []string
 		SimulateConditions PreRun
 	}{
 		{
 			TestName:         "Zero size list preserves Zero size list",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{}},
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			InputPortals:     []string{},
 			ResultPortals:    []string{},
-			SimulateConditions: func(publishedSessions *ISCSISessions, portals []string) {
+			SimulateConditions: func(publishedSessions *models.ISCSISessions, portals []string) {
 				// Populate Published Portals
 				for _, portal := range portals {
 					publishedSessions.Info[portal] = structCopyHelper(sessionData)
@@ -719,10 +720,10 @@ func TestSortPortals(t *testing.T) {
 		},
 		{
 			TestName:         "One size list preserves One size list",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{}},
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			InputPortals:     []string{ipList[0]},
 			ResultPortals:    []string{ipList[0]},
-			SimulateConditions: func(publishedSessions *ISCSISessions, portals []string) {
+			SimulateConditions: func(publishedSessions *models.ISCSISessions, portals []string) {
 				// Populate Published Portals
 				for _, portal := range portals {
 					publishedSessions.Info[portal] = structCopyHelper(sessionData)
@@ -731,10 +732,10 @@ func TestSortPortals(t *testing.T) {
 		},
 		{
 			TestName:         "Two size sorts on the basis of Access time",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{}},
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			InputPortals:     []string{ipList[0], ipList[4]},
 			ResultPortals:    []string{ipList[4], ipList[0]},
-			SimulateConditions: func(publishedSessions *ISCSISessions, portals []string) {
+			SimulateConditions: func(publishedSessions *models.ISCSISessions, portals []string) {
 				// Populate Published Portals
 				for idx := len(portals) - 1; idx >= 0; idx-- {
 					publishedSessions.Info[portals[idx]] = structCopyHelper(sessionData)
@@ -745,10 +746,10 @@ func TestSortPortals(t *testing.T) {
 		},
 		{
 			TestName:         "Same access time results in the same order",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{}},
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			InputPortals:     append([]string{}, ipList...),
 			ResultPortals:    append([]string{}, ipList...),
-			SimulateConditions: func(publishedSessions *ISCSISessions, portals []string) {
+			SimulateConditions: func(publishedSessions *models.ISCSISessions, portals []string) {
 				// Populate Published Portals
 				for _, portal := range portals {
 					publishedSessions.Info[portal] = structCopyHelper(sessionData)
@@ -757,10 +758,10 @@ func TestSortPortals(t *testing.T) {
 		},
 		{
 			TestName:         "Increasing access time results in the reverse order",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{}},
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			InputPortals:     append([]string{}, ipList...),
 			ResultPortals:    reverseSlice(ipList),
-			SimulateConditions: func(publishedSessions *ISCSISessions, portals []string) {
+			SimulateConditions: func(publishedSessions *models.ISCSISessions, portals []string) {
 				// Populate Published Portals
 				for idx := len(portals) - 1; idx >= 0; idx-- {
 					publishedSessions.Info[portals[idx]] = structCopyHelper(sessionData)
@@ -771,10 +772,10 @@ func TestSortPortals(t *testing.T) {
 		},
 		{
 			TestName:         "Increasing access time results in the reverse order with the exception of 3 items",
-			PublishedPortals: &ISCSISessions{Info: map[string]*ISCSISessionData{}},
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			InputPortals:     ipList,
 			ResultPortals:    append(ipList[0:3], reverseSlice(ipList[3:])...),
-			SimulateConditions: func(publishedSessions *ISCSISessions, portals []string) {
+			SimulateConditions: func(publishedSessions *models.ISCSISessions, portals []string) {
 				// Populate Published Portals
 				for idx := len(portals) - 1; idx >= 0; idx-- {
 					publishedSessions.Info[portals[idx]] = structCopyHelper(sessionData)

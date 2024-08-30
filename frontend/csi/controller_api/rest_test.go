@@ -21,6 +21,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 var (
@@ -135,7 +136,7 @@ func mockGetChap(w http.ResponseWriter, r *http.Request) {
 	sc := http.StatusCreated
 
 	if str[5] == "node1" {
-		chapInfo := utils.IscsiChapInfo{}
+		chapInfo := models.IscsiChapInfo{}
 		chapInfo.UseCHAP = true
 		chap.CHAP = &chapInfo
 		sc = http.StatusOK
@@ -238,7 +239,7 @@ func TestCreateNode(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		node := utils.Node{}
+		node := models.Node{}
 		node.Name = test.nodeName
 		t.Run(fmt.Sprintf("CreateNode: %d", i), func(t *testing.T) {
 			server := getHttpServer(config.NodeURL+"/"+test.nodeName, test.mockFunction)
@@ -260,7 +261,7 @@ func TestCreateNodeFailedInvokeAPICall(t *testing.T) {
 	ctx = context.Background()
 	controllerRestClient.url = ""
 	controllerRestClient.httpClient = *http.DefaultClient
-	node := utils.Node{}
+	node := models.Node{}
 	node.Name = "VSM1"
 	_, err := controllerRestClient.CreateNode(ctx, &node)
 
@@ -318,7 +319,7 @@ func TestGetNode(t *testing.T) {
 					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 					r.URL.Path = url
 					fakeNodeResponse := &GetNodeResponse{
-						Node: &utils.NodeExternal{
+						Node: &models.NodeExternal{
 							Name: nodeName,
 						},
 						Error: "",
@@ -416,12 +417,12 @@ func TestUpdateNode(t *testing.T) {
 	controllerRestClient := ControllerRestClient{}
 	ctx = context.Background()
 	tests := map[string]struct {
-		nodeState            *utils.NodePublicationStateFlags
+		nodeState            *models.NodePublicationStateFlags
 		mockHandlerGenerator func(string, string) func(w http.ResponseWriter, r *http.Request)
 		isErrorExpected      bool
 	}{
 		"passes with status accepted": {
-			nodeState: &utils.NodePublicationStateFlags{},
+			nodeState: &models.NodePublicationStateFlags{},
 			mockHandlerGenerator: func(
 				url, nodeName string,
 			) func(w http.ResponseWriter, r *http.Request) {
@@ -443,7 +444,7 @@ func TestUpdateNode(t *testing.T) {
 			isErrorExpected: false,
 		},
 		"fails when api never writes a response": {
-			nodeState: &utils.NodePublicationStateFlags{},
+			nodeState: &models.NodePublicationStateFlags{},
 			mockHandlerGenerator: func(
 				_, nodeName string,
 			) func(w http.ResponseWriter, r *http.Request) {
@@ -455,7 +456,7 @@ func TestUpdateNode(t *testing.T) {
 			isErrorExpected: true,
 		},
 		"fails with unexpected status": {
-			nodeState: &utils.NodePublicationStateFlags{},
+			nodeState: &models.NodePublicationStateFlags{},
 			mockHandlerGenerator: func(
 				url, nodeName string,
 			) func(w http.ResponseWriter, r *http.Request) {
@@ -674,7 +675,7 @@ func TestListVolumePublicationsForNode(t *testing.T) {
 					w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 					r.URL.Path = url
 					fakeListVolumePublicationsResponse := &ListVolumePublicationsResponse{
-						VolumePublications: []*utils.VolumePublicationExternal{
+						VolumePublications: []*models.VolumePublicationExternal{
 							{
 								Name:       utils.GenerateVolumePublishName(volumeName, nodeName),
 								VolumeName: volumeName,

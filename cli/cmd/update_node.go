@@ -15,6 +15,7 @@ import (
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var (
@@ -84,7 +85,7 @@ var updateNodeCmd = &cobra.Command{
 }
 
 func nodeUpdate(nodeName string, orchestratorReady, administratorReady, provisionerReady *bool) error {
-	nodeFlags := utils.NodePublicationStateFlags{
+	nodeFlags := models.NodePublicationStateFlags{
 		OrchestratorReady:  orchestratorReady,
 		AdministratorReady: administratorReady,
 		ProvisionerReady:   provisionerReady,
@@ -124,7 +125,7 @@ func nodeUpdate(nodeName string, orchestratorReady, administratorReady, provisio
 		return fmt.Errorf("node was empty")
 	}
 
-	nodes := make([]utils.NodeExternal, 0, 1)
+	nodes := make([]models.NodeExternal, 0, 1)
 	nodes = append(nodes, *node)
 	WriteNodes(nodes)
 	return nil

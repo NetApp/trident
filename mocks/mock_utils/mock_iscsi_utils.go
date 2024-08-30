@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockIscsiReconcileUtils is a mock of IscsiReconcileUtils interface.
@@ -124,7 +124,7 @@ func (mr *MockIscsiReconcileUtilsMockRecorder) GetSysfsBlockDirsForLUN(arg0, arg
 }
 
 // ReconcileISCSIVolumeInfo mocks base method.
-func (m *MockIscsiReconcileUtils) ReconcileISCSIVolumeInfo(arg0 context.Context, arg1 *utils.VolumeTrackingInfo) (bool, error) {
+func (m *MockIscsiReconcileUtils) ReconcileISCSIVolumeInfo(arg0 context.Context, arg1 *models.VolumeTrackingInfo) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileISCSIVolumeInfo", arg0, arg1)
 	ret0, _ := ret[0].(bool)

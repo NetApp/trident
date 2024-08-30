@@ -10,6 +10,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func getFilesystemSize(ctx context.Context, _ string) (int64, error) {
@@ -36,7 +37,7 @@ func GetDeviceFilePath(ctx context.Context, _, volumeId string) (string, error) 
 }
 
 // GetUnmountPath returns unmount path for volume
-func GetUnmountPath(ctx context.Context, trackingInfo *VolumeTrackingInfo) (string, error) {
+func GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error) {
 	Logc(ctx).Debug(">>>> osutils_windows.GetUnmountPath")
 	defer Logc(ctx).Debug("<<<< osutils_windows.GetUnmountPath")
 

@@ -14,11 +14,12 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_luks"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {
 	// SMB
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.VolumePublishInfo.SMBPath = "foo"
 
 	proto, err := getVolumeProtocolFromPublishInfo(&trackInfo.VolumePublishInfo)
@@ -26,7 +27,7 @@ func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// ISCSI
-	trackInfo = &utils.VolumeTrackingInfo{}
+	trackInfo = &models.VolumeTrackingInfo{}
 	iqn := "foo"
 	trackInfo.VolumePublishInfo.IscsiTargetIQN = iqn
 
@@ -35,7 +36,7 @@ func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Block on file
-	trackInfo = &utils.VolumeTrackingInfo{}
+	trackInfo = &models.VolumeTrackingInfo{}
 	testIP := "1.1.1.1"
 	subVolName := "foo"
 	trackInfo.VolumePublishInfo.NfsServerIP = testIP
@@ -46,7 +47,7 @@ func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// NFS
-	trackInfo = &utils.VolumeTrackingInfo{}
+	trackInfo = &models.VolumeTrackingInfo{}
 	testIP = "1.1.1.1"
 	trackInfo.VolumePublishInfo.NfsServerIP = testIP
 
@@ -55,13 +56,13 @@ func TestGetVolumeProtocolFromPublishInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Bad Protocol
-	trackInfo = &utils.VolumeTrackingInfo{}
+	trackInfo = &models.VolumeTrackingInfo{}
 	proto, err = getVolumeProtocolFromPublishInfo(&trackInfo.VolumePublishInfo)
 	assert.Error(t, err)
 }
 
 func TestPerformProtocolSpecificReconciliation_BadProtocol(t *testing.T) {
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	res, err := performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.False(t, res)
 	assert.Error(t, err)
@@ -80,21 +81,21 @@ func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 
 	iqn := "bar"
 
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	trackInfo.VolumePublishInfo.IscsiTargetIQN = iqn
 	mockIscsiUtils.EXPECT().ReconcileISCSIVolumeInfo(context.Background(), trackInfo).Return(false, nil)
 	res, err := performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.False(t, res)
 	assert.NoError(t, err)
 
-	trackInfo = &utils.VolumeTrackingInfo{}
+	trackInfo = &models.VolumeTrackingInfo{}
 	trackInfo.VolumePublishInfo.IscsiTargetIQN = iqn
 	mockIscsiUtils.EXPECT().ReconcileISCSIVolumeInfo(context.Background(), trackInfo).Return(true, nil)
 	res, err = performProtocolSpecificReconciliation(context.Background(), trackInfo)
 	assert.True(t, res)
 	assert.NoError(t, err)
 
-	trackInfo = &utils.VolumeTrackingInfo{}
+	trackInfo = &models.VolumeTrackingInfo{}
 	trackInfo.VolumePublishInfo.IscsiTargetIQN = iqn
 	mockIscsiUtils.EXPECT().ReconcileISCSIVolumeInfo(context.Background(), trackInfo).Return(true, errors.New("error"))
 	res, err = performProtocolSpecificReconciliation(context.Background(), trackInfo)
@@ -104,7 +105,7 @@ func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 
 func TestPerformProtocolSpecificReconciliation_NFS(t *testing.T) {
 	defer func() { iscsiUtils = utils.IscsiUtils; bofUtils = utils.BofUtils }()
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	testIP := "1.1.1.1"
 	trackInfo.VolumePublishInfo.NfsServerIP = testIP
 	res, err := performProtocolSpecificReconciliation(context.Background(), trackInfo)
@@ -122,7 +123,7 @@ func TestPerformProtocolSpecificReconciliation_BOF(t *testing.T) {
 	}
 
 	// Block on file
-	trackInfo := &utils.VolumeTrackingInfo{}
+	trackInfo := &models.VolumeTrackingInfo{}
 	testIP := "1.1.1.1"
 	subVolName := "foo"
 	trackInfo.VolumePublishInfo.NfsServerIP = testIP

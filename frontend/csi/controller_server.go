@@ -24,6 +24,7 @@ import (
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func (p *Plugin) CreateVolume(
@@ -306,7 +307,7 @@ func (p *Plugin) DeleteVolume(
 	return &csi.DeleteVolumeResponse{}, nil
 }
 
-func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *utils.VolumePublishInfo) {
+func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *models.VolumePublishInfo) {
 	count := 1 + len(volumePublishInfo.IscsiPortals)
 	publishInfo["iscsiTargetPortalCount"] = strconv.Itoa(count)
 	publishInfo["p1"] = volumePublishInfo.IscsiTargetPortal
@@ -354,7 +355,7 @@ func (p *Plugin) ControllerPublishVolume(
 	}
 
 	// Set up volume publish info with what we know about the node
-	volumePublishInfo := &utils.VolumePublishInfo{
+	volumePublishInfo := &models.VolumePublishInfo{
 		Localhost:      false,
 		HostIQN:        []string{nodeInfo.IQN},
 		HostNQN:        nodeInfo.NQN,
@@ -447,7 +448,7 @@ func (p *Plugin) ControllerPublishVolume(
 	return &csi.ControllerPublishVolumeResponse{PublishContext: publishInfo}, nil
 }
 
-func (p *Plugin) verifyVolumePublicationIsNew(ctx context.Context, vp *utils.VolumePublication) error {
+func (p *Plugin) verifyVolumePublicationIsNew(ctx context.Context, vp *models.VolumePublication) error {
 	existingPub, err := p.orchestrator.GetVolumePublication(ctx, vp.VolumeName, vp.NodeName)
 	if err != nil {
 		// Volume publication was not found or an error occurred
@@ -462,7 +463,7 @@ func (p *Plugin) verifyVolumePublicationIsNew(ctx context.Context, vp *utils.Vol
 	}
 }
 
-func populatePublishInfoFromCSIPublishRequest(info *utils.VolumePublishInfo, req *csi.ControllerPublishVolumeRequest) {
+func populatePublishInfoFromCSIPublishRequest(info *models.VolumePublishInfo, req *csi.ControllerPublishVolumeRequest) {
 	info.ReadOnly = req.GetReadonly()
 	if req.VolumeCapability != nil {
 		if req.VolumeCapability.GetAccessMode() != nil {

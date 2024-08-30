@@ -23,6 +23,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // Driver provides a common interface for storage related operations
@@ -50,7 +51,7 @@ type Driver interface {
 	GetStorageBackendSpecs(ctx context.Context, backend Backend) error
 	GetStorageBackendPhysicalPoolNames(ctx context.Context) []string
 	GetProtocol(ctx context.Context) tridentconfig.Protocol
-	Publish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
+	Publish(ctx context.Context, volConfig *VolumeConfig, publishInfo *models.VolumePublishInfo) error
 	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
 	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
 	GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error)
@@ -69,12 +70,12 @@ type Driver interface {
 	// available if using the passthrough store (i.e. Docker).
 	GetVolumeExternalWrappers(context.Context, chan *VolumeExternalWrapper)
 	GetUpdateType(ctx context.Context, driver Driver) *roaring.Bitmap
-	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, backendUUID, tridentUUID string) error
+	ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, backendUUID, tridentUUID string) error
 	GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig
 }
 
 type Unpublisher interface {
-	Unpublish(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
+	Unpublish(ctx context.Context, volConfig *VolumeConfig, publishInfo *models.VolumePublishInfo) error
 }
 
 // Mirrorer provides a common interface for backends that support mirror replication
@@ -106,7 +107,7 @@ type StateGetter interface {
 type VolumeUpdater interface {
 	Update(
 		ctx context.Context, volConfig *VolumeConfig,
-		updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*Volume,
+		updateInfo *models.VolumeUpdateInfo, allVolumes map[string]*Volume,
 	) (map[string]*Volume, error)
 }
 
@@ -125,7 +126,7 @@ type StorageBackend struct {
 }
 
 func (b *StorageBackend) UpdateVolume(
-	ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo,
+	ctx context.Context, volConfig *VolumeConfig, updateInfo *models.VolumeUpdateInfo,
 ) (map[string]*Volume, error) {
 	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
@@ -605,7 +606,7 @@ func (b *StorageBackend) CloneVolume(
 }
 
 func (b *StorageBackend) PublishVolume(
-	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
@@ -629,7 +630,7 @@ func (b *StorageBackend) PublishVolume(
 }
 
 func (b *StorageBackend) UnpublishVolume(
-	ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	Logc(ctx).WithFields(LogFields{
 		"backend":        b.name,
@@ -1020,7 +1021,7 @@ func (b *StorageBackend) InvalidateNodeAccess() {
 // ReconcileNodeAccess will ensure that the driver only has allowed access
 // to its volumes from active nodes in the k8s cluster. This is usually
 // handled via export policies or initiators
-func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, tridentUUID string) error {
+func (b *StorageBackend) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, tridentUUID string) error {
 	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
 		// Only reconcile backends that need it
 		if b.nodeAccessUpToDate {
@@ -1422,7 +1423,7 @@ func (b *StorageBackend) GetMirrorTransferTime(ctx context.Context, localInterna
 	return mirrorDriver.GetMirrorTransferTime(ctx, localInternalVolumeName)
 }
 
-func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error) {
+func (b *StorageBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*models.IscsiChapInfo, error) {
 	chapEnabledDriver, ok := b.driver.(ChapEnabled)
 	if !ok {
 		return nil, errors.UnsupportedError(fmt.Sprintf(

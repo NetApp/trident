@@ -23,6 +23,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/gcp/gcnvapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func newTestGCNVDriver(mockAPI gcnvapi.GCNV) *NASStorageDriver {
@@ -4753,7 +4754,7 @@ func TestDestroy_SMBVolume(t *testing.T) {
 	assert.Nil(t, result, "not nil")
 }
 
-func getStructsForPublishNFSVolume(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *gcnvapi.Volume, *utils.VolumePublishInfo) {
+func getStructsForPublishNFSVolume(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *gcnvapi.Volume, *models.VolumePublishInfo) {
 	exportPolicy := &gcnvapi.ExportPolicy{
 		Rules: []gcnvapi.ExportRule{
 			{
@@ -4805,12 +4806,12 @@ func getStructsForPublishNFSVolume(ctx context.Context, driver *NASStorageDriver
 		SecurityStyle:     "Unix",
 	}
 
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 
 	return volConfig, volume, publishInfo
 }
 
-func getStructsForPublishSMBVolume(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *gcnvapi.Volume, *utils.VolumePublishInfo) {
+func getStructsForPublishSMBVolume(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *gcnvapi.Volume, *models.VolumePublishInfo) {
 	volConfig := &storage.VolumeConfig{
 		Version:      "1",
 		Name:         "testvol1",
@@ -4846,7 +4847,7 @@ func getStructsForPublishSMBVolume(ctx context.Context, driver *NASStorageDriver
 		SnapshotDirectory: false,
 	}
 
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 
 	return volConfig, volume, publishInfo
 }

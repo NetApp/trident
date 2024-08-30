@@ -13,8 +13,8 @@ import (
 	"github.com/netapp/trident/cli/api"
 	"github.com/netapp/trident/frontend/rest"
 	"github.com/netapp/trident/storage"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 var (
@@ -95,7 +95,7 @@ func updateVolume(volumeName, snapDirValue string, poolLevelVal bool) error {
 
 	snapDirBool, _ := strconv.ParseBool(snapDirValue)
 
-	request := utils.VolumeUpdateInfo{
+	request := models.VolumeUpdateInfo{
 		SnapshotDirectory: strconv.FormatBool(snapDirBool),
 		PoolLevel:         poolLevelVal,
 	}

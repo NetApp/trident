@@ -14,7 +14,7 @@ import (
 	config "github.com/netapp/trident/config"
 	storage "github.com/netapp/trident/storage"
 	storageattribute "github.com/netapp/trident/storage_attribute"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockBackend is a mock of Backend interface.
@@ -282,10 +282,10 @@ func (mr *MockBackendMockRecorder) GetBackendState(arg0 interface{}) *gomock.Cal
 }
 
 // GetChapInfo mocks base method.
-func (m *MockBackend) GetChapInfo(arg0 context.Context, arg1, arg2 string) (*utils.IscsiChapInfo, error) {
+func (m *MockBackend) GetChapInfo(arg0 context.Context, arg1, arg2 string) (*models.IscsiChapInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetChapInfo", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*utils.IscsiChapInfo)
+	ret0, _ := ret[0].(*models.IscsiChapInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -510,7 +510,7 @@ func (mr *MockBackendMockRecorder) Online() *gomock.Call {
 }
 
 // PublishVolume mocks base method.
-func (m *MockBackend) PublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *utils.VolumePublishInfo) error {
+func (m *MockBackend) PublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -524,7 +524,7 @@ func (mr *MockBackendMockRecorder) PublishVolume(arg0, arg1, arg2 interface{}) *
 }
 
 // ReconcileNodeAccess mocks base method.
-func (m *MockBackend) ReconcileNodeAccess(arg0 context.Context, arg1 []*utils.Node, arg2 string) error {
+func (m *MockBackend) ReconcileNodeAccess(arg0 context.Context, arg1 []*models.Node, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileNodeAccess", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -768,7 +768,7 @@ func (mr *MockBackendMockRecorder) Terminate(arg0 interface{}) *gomock.Call {
 }
 
 // UnpublishVolume mocks base method.
-func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *utils.VolumePublishInfo) error {
+func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnpublishVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -796,7 +796,7 @@ func (mr *MockBackendMockRecorder) UpdateMirror(arg0, arg1, arg2 interface{}) *g
 }
 
 // UpdateVolume mocks base method.
-func (m *MockBackend) UpdateVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *utils.VolumeUpdateInfo) (map[string]*storage.Volume, error) {
+func (m *MockBackend) UpdateVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *models.VolumeUpdateInfo) (map[string]*storage.Volume, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(map[string]*storage.Volume)

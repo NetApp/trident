@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2024 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -25,6 +25,7 @@ import (
 	"golang.org/x/text/language"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -37,12 +38,12 @@ const (
 	// Darwin is a constant value for the runtime.GOOS that represents Apple MacOS
 	Darwin = "darwin"
 
-	PrepPending       NodePrepStatus = "pending"
-	PrepRunning       NodePrepStatus = "running"
-	PrepCompleted     NodePrepStatus = "completed"
-	PrepFailed        NodePrepStatus = "failed"
-	PrepOutdated      NodePrepStatus = "outdated"
-	PrepPreConfigured NodePrepStatus = "preconfigured"
+	PrepPending       models.NodePrepStatus = "pending"
+	PrepRunning       models.NodePrepStatus = "running"
+	PrepCompleted     models.NodePrepStatus = "completed"
+	PrepFailed        models.NodePrepStatus = "failed"
+	PrepOutdated      models.NodePrepStatus = "outdated"
+	PrepPreConfigured models.NodePrepStatus = "preconfigured"
 
 	Centos = "centos"
 	RHEL   = "rhel"
@@ -946,24 +947,6 @@ func AppendToStringList(stringList, newItem, sep string) string {
 
 	stringListItems = append(stringListItems, newItem)
 	return strings.Join(stringListItems, sep)
-}
-
-// parseHostportIP returns just the IP address part of the given input IP address and strips any port information
-func parseHostportIP(hostport string) string {
-	ipAddress := ""
-	if IPv6Check(hostport) {
-		// this is an IPv6 address, remove port value and add square brackets around the IP address
-		if hostport[0] == '[' {
-			ipAddress = strings.Split(hostport, "]")[0] + "]"
-		} else {
-			// assumption here is that without the square brackets its only IP address without port information
-			ipAddress = "[" + hostport + "]"
-		}
-	} else {
-		ipAddress = strings.Split(hostport, ":")[0]
-	}
-
-	return ipAddress
 }
 
 // ensureHostportFormatted ensures IPv6 hostport is in correct format

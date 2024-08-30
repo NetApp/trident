@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/solidfire/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -1141,10 +1142,10 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
-		publishInfo := utils.VolumePublishInfo{
+		publishInfo := models.VolumePublishInfo{
 			DevicePath: "",
-			VolumeAccessInfo: utils.VolumeAccessInfo{
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+			VolumeAccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
 					IscsiTargetIQN: v.Iqn,
 					IscsiLunNumber: 0,
 				},
@@ -1175,7 +1176,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *SANStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
 
@@ -1885,7 +1886,7 @@ func (d *SANStorageDriver) getVolumeExternal(externalName string, volumeAttrs *a
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteOnce,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       strconv.FormatInt(volumeAttrs.BlockSize, 10),
 		FileSystem:      "",
 	}
@@ -2005,7 +2006,7 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	return nil
 }
 
-func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
+func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

@@ -18,6 +18,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -47,7 +48,7 @@ var (
 
 type jsonReaderWriter struct{}
 
-func NewJSONReaderWriter() JSONReaderWriter {
+func NewJSONReaderWriter() models.JSONReaderWriter {
 	return &jsonReaderWriter{}
 }
 
@@ -188,7 +189,7 @@ func repairVolume(ctx context.Context, device, fstype string) {
 
 // ExpandFilesystemOnNode will expand the filesystem of an already expanded volume.
 func ExpandFilesystemOnNode(
-	ctx context.Context, publishInfo *VolumePublishInfo, stagedTargetPath, fsType, mountOptions string,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, stagedTargetPath, fsType, mountOptions string,
 ) (int64, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 

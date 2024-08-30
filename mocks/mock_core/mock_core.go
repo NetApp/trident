@@ -14,7 +14,7 @@ import (
 	frontend "github.com/netapp/trident/frontend"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockOrchestrator is a mock of Orchestrator interface.
@@ -68,7 +68,7 @@ func (mr *MockOrchestratorMockRecorder) AddFrontend(arg0, arg1 interface{}) *gom
 }
 
 // AddNode mocks base method.
-func (m *MockOrchestrator) AddNode(arg0 context.Context, arg1 *utils.Node, arg2 core.NodeEventCallback) error {
+func (m *MockOrchestrator) AddNode(arg0 context.Context, arg1 *models.Node, arg2 core.NodeEventCallback) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddNode", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -126,7 +126,7 @@ func (mr *MockOrchestratorMockRecorder) AddVolumeTransaction(arg0, arg1 interfac
 }
 
 // AttachVolume mocks base method.
-func (m *MockOrchestrator) AttachVolume(arg0 context.Context, arg1, arg2 string, arg3 *utils.VolumePublishInfo) error {
+func (m *MockOrchestrator) AttachVolume(arg0 context.Context, arg1, arg2 string, arg3 *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AttachVolume", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -384,10 +384,10 @@ func (mr *MockOrchestratorMockRecorder) GetBackendByBackendUUID(arg0, arg1 inter
 }
 
 // GetCHAP mocks base method.
-func (m *MockOrchestrator) GetCHAP(arg0 context.Context, arg1, arg2 string) (*utils.IscsiChapInfo, error) {
+func (m *MockOrchestrator) GetCHAP(arg0 context.Context, arg1, arg2 string) (*models.IscsiChapInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCHAP", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*utils.IscsiChapInfo)
+	ret0, _ := ret[0].(*models.IscsiChapInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -459,10 +459,10 @@ func (mr *MockOrchestratorMockRecorder) GetMirrorTransferTime(arg0, arg1 interfa
 }
 
 // GetNode mocks base method.
-func (m *MockOrchestrator) GetNode(arg0 context.Context, arg1 string) (*utils.NodeExternal, error) {
+func (m *MockOrchestrator) GetNode(arg0 context.Context, arg1 string) (*models.NodeExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
-	ret0, _ := ret[0].(*utils.NodeExternal)
+	ret0, _ := ret[0].(*models.NodeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -626,10 +626,10 @@ func (mr *MockOrchestratorMockRecorder) GetVolumeForImport(arg0, arg1, arg2 inte
 }
 
 // GetVolumePublication mocks base method.
-func (m *MockOrchestrator) GetVolumePublication(arg0 context.Context, arg1, arg2 string) (*utils.VolumePublication, error) {
+func (m *MockOrchestrator) GetVolumePublication(arg0 context.Context, arg1, arg2 string) (*models.VolumePublication, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumePublication", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*utils.VolumePublication)
+	ret0, _ := ret[0].(*models.VolumePublication)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -731,10 +731,10 @@ func (mr *MockOrchestratorMockRecorder) ListLoggingWorkflows(arg0 interface{}) *
 }
 
 // ListNodes mocks base method.
-func (m *MockOrchestrator) ListNodes(arg0 context.Context) ([]*utils.NodeExternal, error) {
+func (m *MockOrchestrator) ListNodes(arg0 context.Context) ([]*models.NodeExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListNodes", arg0)
-	ret0, _ := ret[0].([]*utils.NodeExternal)
+	ret0, _ := ret[0].([]*models.NodeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -821,10 +821,10 @@ func (mr *MockOrchestratorMockRecorder) ListSubordinateVolumes(arg0, arg1 interf
 }
 
 // ListVolumePublications mocks base method.
-func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context) ([]*utils.VolumePublicationExternal, error) {
+func (m *MockOrchestrator) ListVolumePublications(arg0 context.Context) ([]*models.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumePublications", arg0)
-	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
+	ret0, _ := ret[0].([]*models.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -836,10 +836,10 @@ func (mr *MockOrchestratorMockRecorder) ListVolumePublications(arg0 interface{})
 }
 
 // ListVolumePublicationsForNode mocks base method.
-func (m *MockOrchestrator) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
+func (m *MockOrchestrator) ListVolumePublicationsForNode(arg0 context.Context, arg1 string) ([]*models.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumePublicationsForNode", arg0, arg1)
-	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
+	ret0, _ := ret[0].([]*models.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -851,10 +851,10 @@ func (mr *MockOrchestratorMockRecorder) ListVolumePublicationsForNode(arg0, arg1
 }
 
 // ListVolumePublicationsForVolume mocks base method.
-func (m *MockOrchestrator) ListVolumePublicationsForVolume(arg0 context.Context, arg1 string) ([]*utils.VolumePublicationExternal, error) {
+func (m *MockOrchestrator) ListVolumePublicationsForVolume(arg0 context.Context, arg1 string) ([]*models.VolumePublicationExternal, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListVolumePublicationsForVolume", arg0, arg1)
-	ret0, _ := ret[0].([]*utils.VolumePublicationExternal)
+	ret0, _ := ret[0].([]*models.VolumePublicationExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -920,7 +920,7 @@ func (mr *MockOrchestratorMockRecorder) PromoteMirror(arg0, arg1, arg2, arg3, ar
 }
 
 // PublishVolume mocks base method.
-func (m *MockOrchestrator) PublishVolume(arg0 context.Context, arg1 string, arg2 *utils.VolumePublishInfo) error {
+func (m *MockOrchestrator) PublishVolume(arg0 context.Context, arg1 string, arg2 *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -949,7 +949,7 @@ func (mr *MockOrchestratorMockRecorder) ReadSnapshotsForVolume(arg0, arg1 interf
 }
 
 // ReconcileVolumePublications mocks base method.
-func (m *MockOrchestrator) ReconcileVolumePublications(arg0 context.Context, arg1 []*utils.VolumePublicationExternal) error {
+func (m *MockOrchestrator) ReconcileVolumePublications(arg0 context.Context, arg1 []*models.VolumePublicationExternal) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileVolumePublications", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -1176,7 +1176,7 @@ func (mr *MockOrchestratorMockRecorder) UpdateMirror(arg0, arg1, arg2 interface{
 }
 
 // UpdateNode mocks base method.
-func (m *MockOrchestrator) UpdateNode(arg0 context.Context, arg1 string, arg2 *utils.NodePublicationStateFlags) error {
+func (m *MockOrchestrator) UpdateNode(arg0 context.Context, arg1 string, arg2 *models.NodePublicationStateFlags) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateNode", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -1190,7 +1190,7 @@ func (mr *MockOrchestratorMockRecorder) UpdateNode(arg0, arg1, arg2 interface{})
 }
 
 // UpdateVolume mocks base method.
-func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 *utils.VolumeUpdateInfo) error {
+func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 *models.VolumeUpdateInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVolume", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

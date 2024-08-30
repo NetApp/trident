@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -85,8 +85,8 @@ func constructIscsiVolumeConfig() *VolumeConfig {
 		Size:         "1Gi",
 		StorageClass: "san-sc",
 		AccessMode:   "0",
-		AccessInfo: utils.VolumeAccessInfo{
-			IscsiAccessInfo: utils.IscsiAccessInfo{
+		AccessInfo: models.VolumeAccessInfo{
+			IscsiAccessInfo: models.IscsiAccessInfo{
 				IscsiTargetPortal: "10.0.0.0",
 				IscsiPortals: []string{
 					"10.0.0.0", "10.0.0.1",
@@ -95,7 +95,7 @@ func constructIscsiVolumeConfig() *VolumeConfig {
 				IscsiLunNumber: 0,
 				IscsiInterface: "",
 				IscsiIgroup:    "per-node-igroup",
-				IscsiChapInfo: utils.IscsiChapInfo{
+				IscsiChapInfo: models.IscsiChapInfo{
 					UseCHAP:              false,
 					IscsiUsername:        "user",
 					IscsiInitiatorSecret: "shh!",
@@ -119,8 +119,8 @@ func constructNFSVolumeConfig() *VolumeConfig {
 		Size:         "1Gi",
 		StorageClass: "nas-sc",
 		AccessMode:   "1",
-		AccessInfo: utils.VolumeAccessInfo{
-			NfsAccessInfo: utils.NfsAccessInfo{
+		AccessInfo: models.VolumeAccessInfo{
+			NfsAccessInfo: models.NfsAccessInfo{
 				NfsServerIP: "10.0.0.0",
 				NfsPath:     "/nfsshare",
 				NfsUniqueID: "uuid4",
@@ -141,8 +141,8 @@ func constructSMBVolumeConfig() *VolumeConfig {
 		Size:         "1Gi",
 		StorageClass: "nas-sc",
 		AccessMode:   "1",
-		AccessInfo: utils.VolumeAccessInfo{
-			SMBAccessInfo: utils.SMBAccessInfo{
+		AccessInfo: models.VolumeAccessInfo{
+			SMBAccessInfo: models.SMBAccessInfo{
 				SMBServer: "server",
 				SMBPath:   "/smbshare",
 			},
@@ -162,8 +162,8 @@ func constructNfsBlockVolumeConfig() *VolumeConfig {
 		Size:         "1Gi",
 		StorageClass: "nas-sc",
 		AccessMode:   "1",
-		AccessInfo: utils.VolumeAccessInfo{
-			NfsBlockAccessInfo: utils.NfsBlockAccessInfo{
+		AccessInfo: models.VolumeAccessInfo{
+			NfsBlockAccessInfo: models.NfsBlockAccessInfo{
 				SubvolumeName:         "bar",
 				SubvolumeMountOptions: "mountoptions",
 				NFSMountpoint:         "/share",

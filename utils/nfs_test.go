@@ -9,14 +9,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestAttachNFSVolume(t *testing.T) {
 	ctx := context.Background()
 
-	volumePublishInfo := &VolumePublishInfo{
-		VolumeAccessInfo: VolumeAccessInfo{
-			NfsAccessInfo: NfsAccessInfo{
+	volumePublishInfo := &models.VolumePublishInfo{
+		VolumeAccessInfo: models.VolumeAccessInfo{
+			NfsAccessInfo: models.NfsAccessInfo{
 				NfsServerIP: "1.1.1.1",
 				NfsPath:     "/test/nfs/path",
 			},

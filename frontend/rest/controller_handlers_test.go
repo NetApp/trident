@@ -23,6 +23,7 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func generateHTTPRequest(method, body string) *http.Request {
@@ -210,7 +211,7 @@ func TestUpdateVolume(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
-	mockOrchestrator.EXPECT().UpdateVolume(r.Context(), gomock.Any(), &utils.VolumeUpdateInfo{
+	mockOrchestrator.EXPECT().UpdateVolume(r.Context(), gomock.Any(), &models.VolumeUpdateInfo{
 		SnapshotDirectory: "true",
 		PoolLevel:         true,
 	}).Return(nil)
@@ -251,7 +252,7 @@ func TestVolumeUpdater_Success(t *testing.T) {
 	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
 	mockOrchestrator.EXPECT().UpdateVolume(
-		request.Context(), volName, &utils.VolumeUpdateInfo{
+		request.Context(), volName, &models.VolumeUpdateInfo{
 			SnapshotDirectory: "true",
 			PoolLevel:         true,
 		}).Return(nil)
@@ -305,7 +306,7 @@ func TestVolumeUpdater_Failure(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &models.VolumeUpdateInfo{
 		SnapshotDirectory: "true",
 		PoolLevel:         true,
 	}).Return(invalidInputErr)
@@ -320,7 +321,7 @@ func TestVolumeUpdater_Failure(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &models.VolumeUpdateInfo{
 		SnapshotDirectory: "true",
 		PoolLevel:         true,
 	}).Return(notFoundErr)
@@ -336,7 +337,7 @@ func TestVolumeUpdater_Failure(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &models.VolumeUpdateInfo{
 		SnapshotDirectory: "true",
 		PoolLevel:         true,
 	}).Return(fakeErr)
@@ -351,7 +352,7 @@ func TestVolumeUpdater_Failure(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator
-	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &utils.VolumeUpdateInfo{
+	mockOrchestrator.EXPECT().UpdateVolume(request.Context(), volName, &models.VolumeUpdateInfo{
 		SnapshotDirectory: "true",
 		PoolLevel:         true,
 	}).Return(nil)
@@ -381,7 +382,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 	mockK8sHelper := mockk8scontrollerhelper.NewMockK8SControllerHelperPlugin(mockCtrl)
 
 	// Setup values to return from mocked calls.
-	nodeStateFlags := &utils.NodePublicationStateFlags{
+	nodeStateFlags := &models.NodePublicationStateFlags{
 		OrchestratorReady:  utils.Ptr(true),
 		AdministratorReady: utils.Ptr(true),
 		ProvisionerReady:   nil,
@@ -403,7 +404,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 	wg.Add(3)
 	gomock.InOrder(
 		mockOrchestrator.EXPECT().ListNodes(gomock.Any()).
-			DoAndReturn(func(_ context.Context) ([]utils.Node, error) {
+			DoAndReturn(func(_ context.Context) ([]models.Node, error) {
 				m.Lock()
 				defer m.Unlock()
 				time.Sleep(200 * time.Millisecond)
@@ -415,7 +416,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 			}),
 		mockK8sHelper.EXPECT().GetNodePublicationState(gomock.Any(), gomock.Any()).Return(nodeStateFlags, nil).Times(1),
 		mockOrchestrator.EXPECT().UpdateNode(gomock.Any(), gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ context.Context, _ string, _ *utils.NodePublicationStateFlags) error {
+			DoAndReturn(func(_ context.Context, _ string, _ *models.NodePublicationStateFlags) error {
 				m.Lock()
 				defer m.Unlock()
 				updateNodeCalled = time.Now()
@@ -437,7 +438,7 @@ func TestUpdateNodeIsAsync(t *testing.T) {
 		// Ensure this request occurs after first request.
 		time.Sleep(20 * time.Millisecond)
 
-		nodeState := utils.NodePublicationStateFlags{ProvisionerReady: utils.Ptr(true)}
+		nodeState := models.NodePublicationStateFlags{ProvisionerReady: utils.Ptr(true)}
 		data, err := json.Marshal(nodeState)
 		if err != nil {
 			t.Error("could not create request body")
@@ -468,7 +469,7 @@ func TestGetNode(t *testing.T) {
 	orchestrator = mockOrchestrator
 	server := httptest.NewServer(NewRouter(false))
 	nodeName := "foo"
-	nodeExternal := &utils.NodeExternal{Name: nodeName}
+	nodeExternal := &models.NodeExternal{Name: nodeName}
 	mockOrchestrator.EXPECT().GetNode(gomock.Any(), nodeName).Return(nodeExternal, nil)
 
 	// Build a new request to the GetNode route.

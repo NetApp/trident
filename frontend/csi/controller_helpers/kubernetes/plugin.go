@@ -43,6 +43,7 @@ import (
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -71,7 +72,7 @@ var (
 type K8SControllerHelperPlugin interface {
 	frontend.Plugin
 	ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
-	GetNodePublicationState(ctx context.Context, nodeName string) (*utils.NodePublicationStateFlags, error)
+	GetNodePublicationState(ctx context.Context, nodeName string) (*models.NodePublicationStateFlags, error)
 }
 
 type helper struct {
@@ -558,11 +559,11 @@ func (h *helper) reconcileVolumePublications(ctx context.Context) error {
 // listAttachmentsAsPublications returns a list of Kubernetes volume attachments as Trident volume publications.
 func (h *helper) listAttachmentsAsPublications(
 	ctx context.Context, attachments []k8sstoragev1.VolumeAttachment,
-) ([]*utils.VolumePublicationExternal, error) {
+) ([]*models.VolumePublicationExternal, error) {
 	Logc(ctx).Debug("Converting Kubernetes volume attachments to Trident publications.")
 	defer Logc(ctx).Debug("Converted Kubernetes volume attachments to Trident publications.")
 
-	publications := make([]*utils.VolumePublicationExternal, 0)
+	publications := make([]*models.VolumePublicationExternal, 0)
 	for _, attachment := range attachments {
 
 		// If the attachment is invalid, don't add it.
@@ -594,7 +595,7 @@ func (h *helper) listAttachmentsAsPublications(
 		}
 
 		// Build an external publication to supply to the core
-		publication := &utils.VolumePublicationExternal{
+		publication := &models.VolumePublicationExternal{
 			Name:       utils.GenerateVolumePublishName(volumeName, nodeName),
 			VolumeName: volumeName,
 			NodeName:   nodeName,
@@ -1226,7 +1227,7 @@ func (h *helper) processNode(ctx context.Context, node *v1.Node, eventType strin
 // this function returns nil.
 func (h *helper) GetNodePublicationState(
 	ctx context.Context, nodeName string,
-) (*utils.NodePublicationStateFlags, error) {
+) (*models.NodePublicationStateFlags, error) {
 	if !h.enableForceDetach {
 		return nil, nil
 	}
@@ -1245,7 +1246,7 @@ func (h *helper) GetNodePublicationState(
 
 // getNodePublicationState returns a set of flags that indicate whether a node may safely publish volumes.
 // To be safe, a node must have a Ready=true condition and not have the "node.kubernetes.io/out-of-service" taint.
-func (h *helper) getNodePublicationState(node *v1.Node) *utils.NodePublicationStateFlags {
+func (h *helper) getNodePublicationState(node *v1.Node) *models.NodePublicationStateFlags {
 	ready, outOfService := false, false
 
 	// Look for non-Ready condition
@@ -1264,7 +1265,7 @@ func (h *helper) getNodePublicationState(node *v1.Node) *utils.NodePublicationSt
 		}
 	}
 
-	return &utils.NodePublicationStateFlags{
+	return &models.NodePublicationStateFlags{
 		OrchestratorReady:  utils.Ptr(ready),
 		AdministratorReady: utils.Ptr(!outOfService),
 	}

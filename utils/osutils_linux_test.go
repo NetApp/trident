@@ -18,6 +18,7 @@ import (
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestGetIPAddresses(t *testing.T) {
@@ -121,7 +122,7 @@ func TestISCSIActiveOnHost(t *testing.T) {
 
 	type args struct {
 		ctx  context.Context
-		host HostSystem
+		host models.HostSystem
 	}
 	type expected struct {
 		active bool
@@ -137,7 +138,7 @@ func TestISCSIActiveOnHost(t *testing.T) {
 			name: "ActiveCentos",
 			args: args{
 				ctx:  context.Background(),
-				host: HostSystem{OS: SystemOS{Distro: Centos}},
+				host: models.HostSystem{OS: models.SystemOS{Distro: Centos}},
 			},
 			expected: expected{
 				active: true,
@@ -149,7 +150,7 @@ func TestISCSIActiveOnHost(t *testing.T) {
 			name: "ActiveRHEL",
 			args: args{
 				ctx:  context.Background(),
-				host: HostSystem{OS: SystemOS{Distro: RHEL}},
+				host: models.HostSystem{OS: models.SystemOS{Distro: RHEL}},
 			},
 			expected: expected{
 				active: true,
@@ -161,7 +162,7 @@ func TestISCSIActiveOnHost(t *testing.T) {
 			name: "ActiveUbuntu",
 			args: args{
 				ctx:  context.Background(),
-				host: HostSystem{OS: SystemOS{Distro: Ubuntu}},
+				host: models.HostSystem{OS: models.SystemOS{Distro: Ubuntu}},
 			},
 			expected: expected{
 				active: true,
@@ -173,7 +174,7 @@ func TestISCSIActiveOnHost(t *testing.T) {
 			name: "InactiveRHEL",
 			args: args{
 				ctx:  context.Background(),
-				host: HostSystem{OS: SystemOS{Distro: RHEL}},
+				host: models.HostSystem{OS: models.SystemOS{Distro: RHEL}},
 			},
 			expected: expected{
 				active: false,
@@ -185,7 +186,7 @@ func TestISCSIActiveOnHost(t *testing.T) {
 			name: "UnknownDistro",
 			args: args{
 				ctx:  context.Background(),
-				host: HostSystem{OS: SystemOS{Distro: "SUSE"}},
+				host: models.HostSystem{OS: models.SystemOS{Distro: "SUSE"}},
 			},
 			expected: expected{
 				active: true,

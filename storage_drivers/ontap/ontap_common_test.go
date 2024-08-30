@@ -29,6 +29,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	tridentmodels "github.com/netapp/trident/utils/models"
 )
 
 // ToIPAddressPointer takes a models.IPAddress and returns a pointer
@@ -2503,7 +2504,7 @@ func TestEnsureNodeAccess(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-fakeUUID").AnyTimes().Return(true, nil)
-	volInfo := &utils.VolumePublishInfo{
+	volInfo := &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeUUID",
 	}
 
@@ -2519,7 +2520,7 @@ func TestEnsureNodeAccess(t *testing.T) {
 	mockRestClient.EXPECT().SvmList(ctx, gomock.Any()).AnyTimes()
 	mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-fakeUUID").AnyTimes().Return(false, nil)
 
-	volInfo = &utils.VolumePublishInfo{
+	volInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeUUID",
 	}
 
@@ -2536,7 +2537,7 @@ func TestEnsureNodeAccess(t *testing.T) {
 	mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-fakeUUID").AnyTimes().Return(false,
 		fmt.Errorf("Error returned while checking policy"))
 
-	volInfo = &utils.VolumePublishInfo{
+	volInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeUUID",
 	}
 
@@ -3098,11 +3099,11 @@ func TestGetDesiredExportPolicyRules(t *testing.T) {
 		AutoExportCIDRs: inputCIDRs,
 	}
 
-	node := utils.Node{
+	node := tridentmodels.Node{
 		IPs: inputIPs,
 	}
 
-	nodeList := []*utils.Node{&node}
+	nodeList := []*tridentmodels.Node{&node}
 
 	_, err := getDesiredExportPolicyRules(ctx, nodeList, config)
 
@@ -3127,10 +3128,10 @@ func TestReconcileNASNodeAccess(t *testing.T) {
 		AutoExportPolicy:          true,
 	}
 
-	node := utils.Node{
+	node := tridentmodels.Node{
 		IPs: inputIPs,
 	}
-	nodeList := []*utils.Node{&node}
+	nodeList := []*tridentmodels.Node{&node}
 
 	policyName := "fakePolicy"
 
@@ -4091,7 +4092,7 @@ func TestPublishShare(t *testing.T) {
 		AutoExportPolicy:          true,
 	}
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
 		Unmanaged:   false,
 	}
@@ -4137,13 +4138,13 @@ func TestAddUniqueIscsiIGroupName(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
-			volumeAccessInfo := utils.VolumeAccessInfo{
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+			volumeAccessInfo := tridentmodels.VolumeAccessInfo{
+				IscsiAccessInfo: tridentmodels.IscsiAccessInfo{
 					IscsiIgroup: test.IscsiAccessInfo,
 				},
 			}
 
-			publishInfo := &utils.VolumePublishInfo{
+			publishInfo := &tridentmodels.VolumePublishInfo{
 				VolumeAccessInfo: volumeAccessInfo,
 			}
 			addUniqueIscsiIGroupName(publishInfo, test.IscsiIgroup)
@@ -4162,10 +4163,10 @@ func TestPublishLun(t *testing.T) {
 	iSCSINodeName := "fakeiSCSINodeName"
 	ips := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "7.7.7.7", "8.8.8.8"}
 
-	node := utils.Node{
+	node := tridentmodels.Node{
 		IPs: ips,
 	}
-	nodeList := []*utils.Node{&node}
+	nodeList := []*tridentmodels.Node{&node}
 
 	dummyLun := &api.Lun{
 		Comment:      "dummyLun",
@@ -4188,7 +4189,7 @@ func TestPublishLun(t *testing.T) {
 		UseCHAP:                   true,
 	}
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
 		Localhost:   false,
 		Unmanaged:   true,
@@ -4242,7 +4243,7 @@ func TestPublishLun(t *testing.T) {
 	assert.Error(t, err)
 
 	// Test 5 - EnsureIgroupAdded returns error
-	publishInfo = &utils.VolumePublishInfo{
+	publishInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
 		Localhost:   false,
 		Unmanaged:   false,
@@ -5773,9 +5774,9 @@ func TestEnableSANPublishEnforcement_DoesNotEnableForUnmangedImport(t *testing.T
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: tridentmodels.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: tridentmodels.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},
@@ -5801,9 +5802,9 @@ func TestEnableSANPublishEnforcement_FailsToUnmapLunFromAllIgroups(t *testing.T)
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: tridentmodels.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: tridentmodels.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},
@@ -5830,9 +5831,9 @@ func TestEnableSANPublishEnforcement_Succeeds(t *testing.T) {
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: tridentmodels.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: tridentmodels.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},

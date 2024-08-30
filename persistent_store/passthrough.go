@@ -19,8 +19,8 @@ import (
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 type PassthroughClient struct {
@@ -399,39 +399,39 @@ func (c *PassthroughClient) DeleteStorageClass(context.Context, *sc.StorageClass
 	return nil
 }
 
-func (c *PassthroughClient) AddOrUpdateNode(context.Context, *utils.Node) error {
+func (c *PassthroughClient) AddOrUpdateNode(context.Context, *models.Node) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetNode(_ context.Context, nName string) (*utils.Node, error) {
+func (c *PassthroughClient) GetNode(_ context.Context, nName string) (*models.Node, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, nName)
 }
 
-func (c *PassthroughClient) GetNodes(context.Context) ([]*utils.Node, error) {
-	return make([]*utils.Node, 0), nil
+func (c *PassthroughClient) GetNodes(context.Context) ([]*models.Node, error) {
+	return make([]*models.Node, 0), nil
 }
 
-func (c *PassthroughClient) DeleteNode(context.Context, *utils.Node) error {
+func (c *PassthroughClient) DeleteNode(context.Context, *models.Node) error {
 	return nil
 }
 
-func (c *PassthroughClient) AddVolumePublication(context.Context, *utils.VolumePublication) error {
+func (c *PassthroughClient) AddVolumePublication(context.Context, *models.VolumePublication) error {
 	return nil
 }
 
-func (c *PassthroughClient) UpdateVolumePublication(context.Context, *utils.VolumePublication) error {
+func (c *PassthroughClient) UpdateVolumePublication(context.Context, *models.VolumePublication) error {
 	return nil
 }
 
-func (c *PassthroughClient) GetVolumePublication(_ context.Context, vpName string) (*utils.VolumePublication, error) {
+func (c *PassthroughClient) GetVolumePublication(_ context.Context, vpName string) (*models.VolumePublication, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, vpName)
 }
 
-func (c *PassthroughClient) GetVolumePublications(context.Context) ([]*utils.VolumePublication, error) {
-	return make([]*utils.VolumePublication, 0), nil
+func (c *PassthroughClient) GetVolumePublications(context.Context) ([]*models.VolumePublication, error) {
+	return make([]*models.VolumePublication, 0), nil
 }
 
-func (c *PassthroughClient) DeleteVolumePublication(context.Context, *utils.VolumePublication) error {
+func (c *PassthroughClient) DeleteVolumePublication(context.Context, *models.VolumePublication) error {
 	return nil
 }
 

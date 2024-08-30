@@ -18,6 +18,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 type statFSResult struct {
@@ -54,7 +55,7 @@ func ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
 }
 
 // GetHostSystemInfo returns information about the host system
-func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
+func GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	Logc(ctx).Debug(">>>> osutils_linux.GetHostSystemInfo")
 	defer Logc(ctx).Debug("<<<< osutils_linux.GetHostSystemInfo")
 
@@ -89,7 +90,7 @@ func GetHostSystemInfo(ctx context.Context) (*HostSystem, error) {
 
 	// sysInfo library is linux-only, so we must translate the data
 	// into a platform agnostic struct here to return further up the stack
-	host := &HostSystem{}
+	host := &models.HostSystem{}
 	host.OS.Distro = osInfo.Vendor
 	host.OS.Version = osInfo.Version
 	host.OS.Release = osInfo.Release

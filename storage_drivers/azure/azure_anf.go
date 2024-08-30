@@ -30,6 +30,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -1684,7 +1685,7 @@ func (d *NASStorageDriver) deleteAutomaticSnapshot(
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *NASStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	var volume *api.FileSystem
 	var err error
@@ -2375,7 +2376,7 @@ func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *api.FileSystem) *stora
 		UnixPermissions: volumeAttrs.UnixPermissions,
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 		ServiceLevel:    volumeAttrs.ServiceLevel,
@@ -2419,7 +2420,7 @@ func (d *NASStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.D
 
 // ReconcileNodeAccess updates a per-backend export policy to match the set of Kubernetes cluster
 // nodes.  Not supported by this driver.
-func (d *NASStorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*utils.Node, _, _ string) error {
+func (d *NASStorageDriver) ReconcileNodeAccess(ctx context.Context, _ []*models.Node, _, _ string) error {
 	fields := LogFields{
 		"Method": "ReconcileNodeAccess",
 		"Type":   "NASStorageDriver",
@@ -2471,7 +2472,7 @@ func constructVolumeAccessPath(
 
 func (d *NASStorageDriver) Update(
 	ctx context.Context, volConfig *storage.VolumeConfig,
-	updateInfo *utils.VolumeUpdateInfo, allVolumes map[string]*storage.Volume,
+	updateInfo *models.VolumeUpdateInfo, allVolumes map[string]*storage.Volume,
 ) (map[string]*storage.Volume, error) {
 	name := volConfig.Name
 	fields := LogFields{

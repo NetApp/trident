@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func newTestOntapNASFlexgroupDriver(
@@ -3066,7 +3067,7 @@ func TestOntapNasFlexgroupStorageDriverVolumePublish_NASType_None(t *testing.T) 
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	result := driver.Publish(ctx, volConfig, &utils.VolumePublishInfo{})
+	result := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 
 	assert.NoError(t, result)
 }
@@ -3087,7 +3088,7 @@ func TestOntapNasSFlexgrouptorageDriverVolumePublish_NASType_SMB(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
-	result := driver.Publish(ctx, volConfig, &utils.VolumePublishInfo{})
+	result := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 
 	assert.NoError(t, result)
 }
@@ -4121,8 +4122,8 @@ func TestOntapNasFlexgroupStorageDriverStoreConfig(t *testing.T) {
 
 func TestOntapNasFlexgroupStorageDriverReconcileNodeAccess(t *testing.T) {
 	_, driver := newMockOntapNASFlexgroupDriver(t)
-	nodes := make([]*utils.Node, 0)
-	nodes = append(nodes, &utils.Node{Name: "node1"})
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1"})
 
 	result := driver.ReconcileNodeAccess(ctx, nodes, "1234", "")
 

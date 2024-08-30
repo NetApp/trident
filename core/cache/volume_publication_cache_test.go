@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestVolumePublicationCacheSet(t *testing.T) {
@@ -19,13 +20,13 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 	tests := map[string]struct {
 		volumeID    string
 		nodeID      string
-		publication *utils.VolumePublication
+		publication *models.VolumePublication
 		expectError bool
 	}{
 		"set publication with valid keys": {
 			volumeID: volumeID,
 			nodeID:   nodeID,
-			publication: &utils.VolumePublication{
+			publication: &models.VolumePublication{
 				Name: utils.GenerateVolumePublishName(volumeID, nodeID),
 			},
 			expectError: false,
@@ -33,7 +34,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 		"set publication without nodeID": {
 			volumeID: volumeID,
 			nodeID:   "",
-			publication: &utils.VolumePublication{
+			publication: &models.VolumePublication{
 				Name: utils.GenerateVolumePublishName(volumeID, ""),
 			},
 			expectError: true,
@@ -41,7 +42,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 		"set publication without volumeID": {
 			volumeID: "",
 			nodeID:   nodeID,
-			publication: &utils.VolumePublication{
+			publication: &models.VolumePublication{
 				Name: utils.GenerateVolumePublishName("", nodeID),
 			},
 			expectError: true,
@@ -49,7 +50,7 @@ func TestVolumePublicationCacheSet(t *testing.T) {
 		"set publication without nodeID or volumeID": {
 			volumeID: "",
 			nodeID:   "",
-			publication: &utils.VolumePublication{
+			publication: &models.VolumePublication{
 				Name: utils.GenerateVolumePublishName("", ""),
 			},
 			expectError: true,
@@ -101,7 +102,7 @@ func TestVolumePublicationCacheGet(t *testing.T) {
 	// Create test variables.
 	volumeID := "foo"
 	nodeID := "bar"
-	publication := &utils.VolumePublication{
+	publication := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
@@ -130,7 +131,7 @@ func TestVolumePublicationCacheTryGet(t *testing.T) {
 	// Create test variables.
 	volumeID := "foo"
 	nodeID := "bar"
-	publication := &utils.VolumePublication{
+	publication := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
@@ -168,7 +169,7 @@ func TestVolumePublicationCacheDelete(t *testing.T) {
 	// Create test variables.
 	volumeID := "foo"
 	nodeID := "bar"
-	publication := &utils.VolumePublication{
+	publication := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
@@ -206,17 +207,17 @@ func TestVolumePublicationCacheListPublications(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	volumeIDTwo := "baz"
-	pubOne := &utils.VolumePublication{
+	pubOne := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
-	pubTwo := &utils.VolumePublication{
+	pubTwo := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
-	data := map[string]map[string]*utils.VolumePublication{
+	data := map[string]map[string]*models.VolumePublication{
 		volumeID: {
 			nodeID: pubOne,
 		},
@@ -252,17 +253,17 @@ func TestVolumePublicationCacheListPublicationsForVolume(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	volumeIDTwo := "baz"
-	pubOne := &utils.VolumePublication{
+	pubOne := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
-	pubTwo := &utils.VolumePublication{
+	pubTwo := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
-	data := map[string]map[string]*utils.VolumePublication{
+	data := map[string]map[string]*models.VolumePublication{
 		volumeID: {
 			nodeID: pubOne,
 		},
@@ -274,7 +275,7 @@ func TestVolumePublicationCacheListPublicationsForVolume(t *testing.T) {
 	tests := map[string]struct {
 		volumeID string
 		nodeID   string
-		data     map[string]map[string]*utils.VolumePublication
+		data     map[string]map[string]*models.VolumePublication
 	}{
 		"lists publications when volume ID is valid and cache data exists": {
 			volumeID: volumeID,
@@ -334,17 +335,17 @@ func TestVolumePublicationCacheListPublicationsForNode(t *testing.T) {
 	volumeID := "foo"
 	nodeID := "bar"
 	volumeIDTwo := "baz"
-	pubOne := &utils.VolumePublication{
+	pubOne := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
-	pubTwo := &utils.VolumePublication{
+	pubTwo := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
-	data := map[string]map[string]*utils.VolumePublication{
+	data := map[string]map[string]*models.VolumePublication{
 		volumeID: {
 			nodeID: pubOne,
 		},
@@ -356,7 +357,7 @@ func TestVolumePublicationCacheListPublicationsForNode(t *testing.T) {
 	tests := map[string]struct {
 		volumeID string
 		nodeID   string
-		data     map[string]map[string]*utils.VolumePublication
+		data     map[string]map[string]*models.VolumePublication
 	}{
 		"lists publications when node ID is valid and cache data exists": {
 			nodeID: nodeID,
@@ -415,21 +416,21 @@ func TestVolumePublicationCacheLen(t *testing.T) {
 	// Create test variables.
 	volumeID := "foo"
 	nodeID := "bar"
-	publication := &utils.VolumePublication{
+	publication := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
 
 	volumeIDTwo := "baz"
-	publicationTwo := &utils.VolumePublication{
+	publicationTwo := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
 
 	// Create a map to set the internal cache to.
-	data := map[string]map[string]*utils.VolumePublication{
+	data := map[string]map[string]*models.VolumePublication{
 		volumeID: {
 			nodeID: publication,
 		},
@@ -466,21 +467,21 @@ func TestVolumePublicationCacheMap(t *testing.T) {
 	// Create test variables.
 	volumeID := "foo"
 	nodeID := "bar"
-	publication := &utils.VolumePublication{
+	publication := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
 
 	volumeIDTwo := "baz"
-	publicationTwo := &utils.VolumePublication{
+	publicationTwo := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
 
 	// Create a map to set the internal cache to.
-	data := map[string]map[string]*utils.VolumePublication{
+	data := map[string]map[string]*models.VolumePublication{
 		volumeID: {
 			nodeID: publication,
 		},
@@ -509,21 +510,21 @@ func TestVolumePublicationCacheSetMap(t *testing.T) {
 	// Create test variables.
 	volumeID := "foo"
 	nodeID := "bar"
-	publication := &utils.VolumePublication{
+	publication := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,
 	}
 
 	volumeIDTwo := "baz"
-	publicationTwo := &utils.VolumePublication{
+	publicationTwo := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeIDTwo, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeIDTwo,
 	}
 
 	// Create a map to set the internal cache to.
-	data := map[string]map[string]*utils.VolumePublication{
+	data := map[string]map[string]*models.VolumePublication{
 		volumeID: {
 			nodeID: publication,
 		},
@@ -567,7 +568,7 @@ func TestVolumePublicationCacheClear(t *testing.T) {
 	// Create test variables.
 	volumeID := "foo"
 	nodeID := "bar"
-	publication := &utils.VolumePublication{
+	publication := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volumeID, nodeID),
 		NodeName:   nodeID,
 		VolumeName: volumeID,

@@ -23,8 +23,8 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/gcp/api"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -1840,7 +1840,7 @@ func TestPublish(t *testing.T) {
 	d.Config.NfsMountOptions = ""
 	mountPoint := api.MountPoint{Server: "0.0.0.0", Export: "/tmp"}
 	volume := &api.Volume{MountPoints: []api.MountPoint{mountPoint}}
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 
 	gcpClient.EXPECT().GetVolumeByCreationToken(ctx, gomock.Any()).Return(volume, nil)
 
@@ -2436,8 +2436,8 @@ func TestGetUpdate(t *testing.T) {
 
 func TestReconcileNodeAccess(t *testing.T) {
 	d := newTestGCPDriver(nil)
-	node1 := utils.Node{Name: "node-name"}
-	nodes := []*utils.Node{&node1}
+	node1 := models.Node{Name: "node-name"}
+	nodes := []*models.Node{&node1}
 	err := d.ReconcileNodeAccess(ctx, nodes, "", "")
 	assert.NoError(t, err, "Reconcile node access failed")
 }

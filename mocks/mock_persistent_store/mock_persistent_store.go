@@ -13,7 +13,7 @@ import (
 	persistentstore "github.com/netapp/trident/persistent_store"
 	storage "github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockStoreClient is a mock of Client interface.
@@ -54,7 +54,7 @@ func (mr *MockStoreClientMockRecorder) AddBackend(arg0, arg1 interface{}) *gomoc
 }
 
 // AddOrUpdateNode mocks base method.
-func (m *MockStoreClient) AddOrUpdateNode(arg0 context.Context, arg1 *utils.Node) error {
+func (m *MockStoreClient) AddOrUpdateNode(arg0 context.Context, arg1 *models.Node) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddOrUpdateNode", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -110,7 +110,7 @@ func (mr *MockStoreClientMockRecorder) AddVolume(arg0, arg1 interface{}) *gomock
 }
 
 // AddVolumePublication mocks base method.
-func (m *MockStoreClient) AddVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
+func (m *MockStoreClient) AddVolumePublication(arg0 context.Context, arg1 *models.VolumePublication) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddVolumePublication", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -166,7 +166,7 @@ func (mr *MockStoreClientMockRecorder) DeleteBackends(arg0 interface{}) *gomock.
 }
 
 // DeleteNode mocks base method.
-func (m *MockStoreClient) DeleteNode(arg0 context.Context, arg1 *utils.Node) error {
+func (m *MockStoreClient) DeleteNode(arg0 context.Context, arg1 *models.Node) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteNode", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -236,7 +236,7 @@ func (mr *MockStoreClientMockRecorder) DeleteVolume(arg0, arg1 interface{}) *gom
 }
 
 // DeleteVolumePublication mocks base method.
-func (m *MockStoreClient) DeleteVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
+func (m *MockStoreClient) DeleteVolumePublication(arg0 context.Context, arg1 *models.VolumePublication) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteVolumePublication", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -337,10 +337,10 @@ func (mr *MockStoreClientMockRecorder) GetConfig() *gomock.Call {
 }
 
 // GetNode mocks base method.
-func (m *MockStoreClient) GetNode(arg0 context.Context, arg1 string) (*utils.Node, error) {
+func (m *MockStoreClient) GetNode(arg0 context.Context, arg1 string) (*models.Node, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
-	ret0, _ := ret[0].(*utils.Node)
+	ret0, _ := ret[0].(*models.Node)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -352,10 +352,10 @@ func (mr *MockStoreClientMockRecorder) GetNode(arg0, arg1 interface{}) *gomock.C
 }
 
 // GetNodes mocks base method.
-func (m *MockStoreClient) GetNodes(arg0 context.Context) ([]*utils.Node, error) {
+func (m *MockStoreClient) GetNodes(arg0 context.Context) ([]*models.Node, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNodes", arg0)
-	ret0, _ := ret[0].([]*utils.Node)
+	ret0, _ := ret[0].([]*models.Node)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -486,10 +486,10 @@ func (mr *MockStoreClientMockRecorder) GetVolume(arg0, arg1 interface{}) *gomock
 }
 
 // GetVolumePublication mocks base method.
-func (m *MockStoreClient) GetVolumePublication(arg0 context.Context, arg1 string) (*utils.VolumePublication, error) {
+func (m *MockStoreClient) GetVolumePublication(arg0 context.Context, arg1 string) (*models.VolumePublication, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumePublication", arg0, arg1)
-	ret0, _ := ret[0].(*utils.VolumePublication)
+	ret0, _ := ret[0].(*models.VolumePublication)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -501,10 +501,10 @@ func (mr *MockStoreClientMockRecorder) GetVolumePublication(arg0, arg1 interface
 }
 
 // GetVolumePublications mocks base method.
-func (m *MockStoreClient) GetVolumePublications(arg0 context.Context) ([]*utils.VolumePublication, error) {
+func (m *MockStoreClient) GetVolumePublications(arg0 context.Context) ([]*models.VolumePublication, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumePublications", arg0)
-	ret0, _ := ret[0].([]*utils.VolumePublication)
+	ret0, _ := ret[0].([]*models.VolumePublication)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -659,7 +659,7 @@ func (mr *MockStoreClientMockRecorder) UpdateVolume(arg0, arg1 interface{}) *gom
 }
 
 // UpdateVolumePublication mocks base method.
-func (m *MockStoreClient) UpdateVolumePublication(arg0 context.Context, arg1 *utils.VolumePublication) error {
+func (m *MockStoreClient) UpdateVolumePublication(arg0 context.Context, arg1 *models.VolumePublication) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVolumePublication", arg0, arg1)
 	ret0, _ := ret[0].(error)

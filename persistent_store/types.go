@@ -11,7 +11,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 type StoreType string
@@ -63,16 +63,16 @@ type Client interface {
 	GetStorageClasses(ctx context.Context) ([]*storageclass.Persistent, error)
 	DeleteStorageClass(ctx context.Context, sc *storageclass.StorageClass) error
 
-	AddOrUpdateNode(ctx context.Context, n *utils.Node) error
-	GetNode(ctx context.Context, nName string) (*utils.Node, error)
-	GetNodes(ctx context.Context) ([]*utils.Node, error)
-	DeleteNode(ctx context.Context, n *utils.Node) error
+	AddOrUpdateNode(ctx context.Context, n *models.Node) error
+	GetNode(ctx context.Context, nName string) (*models.Node, error)
+	GetNodes(ctx context.Context) ([]*models.Node, error)
+	DeleteNode(ctx context.Context, n *models.Node) error
 
-	AddVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
-	UpdateVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
-	GetVolumePublication(ctx context.Context, vpName string) (*utils.VolumePublication, error)
-	GetVolumePublications(ctx context.Context) ([]*utils.VolumePublication, error)
-	DeleteVolumePublication(ctx context.Context, vp *utils.VolumePublication) error
+	AddVolumePublication(ctx context.Context, vp *models.VolumePublication) error
+	UpdateVolumePublication(ctx context.Context, vp *models.VolumePublication) error
+	GetVolumePublication(ctx context.Context, vpName string) (*models.VolumePublication, error)
+	GetVolumePublications(ctx context.Context) ([]*models.VolumePublication, error)
+	DeleteVolumePublication(ctx context.Context, vp *models.VolumePublication) error
 
 	AddSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotPersistent, error)

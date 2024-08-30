@@ -35,7 +35,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap"
 	"github.com/netapp/trident/storage_drivers/solidfire"
 	tridenttesting "github.com/netapp/trident/testing"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 var (
@@ -877,7 +877,7 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 func TestKubernetesAddOrUpdateNode(t *testing.T) {
 	p, _ := GetTestKubernetesClient()
 
-	utilsNode := &utils.Node{
+	utilsNode := &models.Node{
 		Name: "test",
 		IQN:  "iqn",
 		IPs: []string{

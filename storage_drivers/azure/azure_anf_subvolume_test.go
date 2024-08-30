@@ -20,6 +20,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 func newTestANFSubvolumeDriver(mockAPI api.Azure) *NASBlockStorageDriver {
@@ -2410,7 +2411,7 @@ func TestSubvolumeDestroy_ErrorParsingVolumeConfig(t *testing.T) {
 }
 
 func getStructsForSubvolumePublish() (
-	*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig, *api.FileSystem, *utils.VolumePublishInfo,
+	*drivers.AzureNASStorageDriverConfig, *storage.VolumeConfig, *api.FileSystem, *models.VolumePublishInfo,
 ) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -2492,7 +2493,7 @@ func getStructsForSubvolumePublish() (
 		MountTargets:      mountTargets,
 	}
 
-	publishInfo := &utils.VolumePublishInfo{}
+	publishInfo := &models.VolumePublishInfo{}
 
 	return config, volConfig, filesystem, publishInfo
 }
@@ -4329,14 +4330,14 @@ func TestSubvolumeGetUpdateType_CredentialsChange(t *testing.T) {
 }
 
 func TestSubvolumeReconcileNodeAccess(t *testing.T) {
-	node1 := &utils.Node{
+	node1 := &models.Node{
 		Name: "node-1",
 	}
-	node2 := &utils.Node{
+	node2 := &models.Node{
 		Name: "node-2",
 	}
 
-	nodes := []*utils.Node{
+	nodes := []*models.Node{
 		node1, node2,
 	}
 

@@ -9,12 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func TestISCSIActiveOnHost(t *testing.T) {
 	ctx := context.Background()
-	host := HostSystem{
-		OS: SystemOS{
+	host := models.HostSystem{
+		OS: models.SystemOS{
 			Distro: "darwin",
 		},
 		Services: []string{"srv-1", "srv-2"},

@@ -5,6 +5,8 @@ package utils
 import (
 	"context"
 	"time"
+
+	"github.com/netapp/trident/utils/models"
 )
 
 //go:generate mockgen -destination=../mocks/mock_utils/mock_nvme_utils.go github.com/netapp/trident/utils NVMeInterface
@@ -146,7 +148,7 @@ type NVMeInterface interface {
 	GetHostNqn(ctx context.Context) (string, error)
 	NewNVMeSubsystem(ctx context.Context, subsNqn string) NVMeSubsystemInterface
 	NewNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
-	AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *VolumePublishInfo)
+	AddPublishedNVMeSession(pubSessions *NVMeSessions, publishInfo *models.VolumePublishInfo)
 	RemovePublishedNVMeSession(pubSessions *NVMeSessions, subNQN, nsUUID string) bool
 	PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error
 	InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *NVMeSessions) []NVMeSubsystem

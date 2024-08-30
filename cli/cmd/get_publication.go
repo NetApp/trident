@@ -16,7 +16,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/rest"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 var (
@@ -64,7 +64,7 @@ var getPublicationCmd = &cobra.Command{
 	},
 }
 
-func GetVolumePublication(volumeName, nodeName string) (*utils.VolumePublicationExternal, error) {
+func GetVolumePublication(volumeName, nodeName string) (*models.VolumePublicationExternal, error) {
 	var err error
 
 	url := BaseURL() + "/publication/" + volumeName + "/" + nodeName
@@ -93,7 +93,7 @@ func volumePublicationGet() error {
 		return err
 	}
 
-	pubs := make([]utils.VolumePublicationExternal, 0, 1)
+	pubs := make([]models.VolumePublicationExternal, 0, 1)
 	pubs = append(pubs, *pub)
 
 	WriteVolumePublications(pubs)
@@ -125,7 +125,7 @@ func volumePublicationsList(cmd *cobra.Command) error {
 		return err
 	}
 
-	pubs := make([]utils.VolumePublicationExternal, 0, len(listPublicationsResponse.VolumePublications))
+	pubs := make([]models.VolumePublicationExternal, 0, len(listPublicationsResponse.VolumePublications))
 	for _, pub := range listPublicationsResponse.VolumePublications {
 		pubs = append(pubs, *pub)
 	}
@@ -135,7 +135,7 @@ func volumePublicationsList(cmd *cobra.Command) error {
 	return nil
 }
 
-func WriteVolumePublications(pubs []utils.VolumePublicationExternal) {
+func WriteVolumePublications(pubs []models.VolumePublicationExternal) {
 	switch OutputFormat {
 	case FormatJSON:
 		WriteJSON(api.MultipleVolumePublicationResponse{Items: pubs})
@@ -150,7 +150,7 @@ func WriteVolumePublications(pubs []utils.VolumePublicationExternal) {
 	}
 }
 
-func writeVolumePublicationTable(pubs []utils.VolumePublicationExternal) {
+func writeVolumePublicationTable(pubs []models.VolumePublicationExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Node", "Volume"})
 
@@ -164,7 +164,7 @@ func writeVolumePublicationTable(pubs []utils.VolumePublicationExternal) {
 	table.Render()
 }
 
-func writeWideVolumePublicationTable(pubs []utils.VolumePublicationExternal) {
+func writeWideVolumePublicationTable(pubs []models.VolumePublicationExternal) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Name", "Node", "Volume", "ReadOnly", "Dirty", "AccessMode"})
 
@@ -181,7 +181,7 @@ func writeWideVolumePublicationTable(pubs []utils.VolumePublicationExternal) {
 	table.Render()
 }
 
-func writeVolumePublicationNames(pubs []utils.VolumePublicationExternal) {
+func writeVolumePublicationNames(pubs []models.VolumePublicationExternal) {
 	for _, pub := range pubs {
 		fmt.Println(pub.Name)
 	}

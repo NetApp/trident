@@ -32,6 +32,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -2077,7 +2078,7 @@ func (o *TridentOrchestrator) addVolumeFinish(
 // UpdateVolume updates the allowed fields of a volume in the backend, persistent store and cache.
 func (o *TridentOrchestrator) UpdateVolume(
 	ctx context.Context, volumeName string,
-	volumeUpdateInfo *utils.VolumeUpdateInfo,
+	volumeUpdateInfo *models.VolumeUpdateInfo,
 ) error {
 	fields := LogFields{
 		"Method":     "UpdateVolume",
@@ -3227,7 +3228,7 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 }
 
 func (o *TridentOrchestrator) PublishVolume(
-	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volumeName string, publishInfo *models.VolumePublishInfo,
 ) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -3250,7 +3251,7 @@ func (o *TridentOrchestrator) PublishVolume(
 }
 
 func (o *TridentOrchestrator) publishVolume(
-	ctx context.Context, volumeName string, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volumeName string, publishInfo *models.VolumePublishInfo,
 ) error {
 	fields := LogFields{
 		"volumeName": volumeName,
@@ -3290,7 +3291,7 @@ func (o *TridentOrchestrator) publishVolume(
 		if nodeInfo == nil {
 			return fmt.Errorf("node %s not found", publishInfo.HostName)
 		}
-		if nodeInfo.PublicationState != utils.NodeClean {
+		if nodeInfo.PublicationState != models.NodeClean {
 			return errors.NodeNotSafeToPublishForBackendError(publishInfo.HostName, backend.GetDriverName())
 		}
 	}
@@ -3379,8 +3380,8 @@ func (o *TridentOrchestrator) publishVolume(
 	return nil
 }
 
-func generateVolumePublication(volName string, publishInfo *utils.VolumePublishInfo) *utils.VolumePublication {
-	vp := &utils.VolumePublication{
+func generateVolumePublication(volName string, publishInfo *models.VolumePublishInfo) *models.VolumePublication {
+	vp := &models.VolumePublication{
 		Name:       utils.GenerateVolumePublishName(volName, publishInfo.HostName),
 		VolumeName: volName,
 		NodeName:   publishInfo.HostName,
@@ -3460,7 +3461,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		Logc(ctx).WithError(err).WithField("Node info not found for node ", nodeName)
 		return err
 	}
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:    nodeName,
 		TridentUUID: o.uuid,
 		HostNQN:     nodeInfo.NQN,
@@ -3481,7 +3482,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	}
 
 	// Build list of nodes to which the volume remains published.
-	nodeMap := make(map[string]*utils.Node)
+	nodeMap := make(map[string]*models.Node)
 	for _, pub := range o.listVolumePublicationsForVolumeAndSubordinates(ctx, volume.Config.Name) {
 
 		// Exclude the publication we are unpublishing.
@@ -3545,7 +3546,7 @@ func isDockerPluginMode() bool {
 // use the storage controller API.  It may be assumed that this method always runs on the host to
 // which the volume will be attached.
 func (o *TridentOrchestrator) AttachVolume(
-	ctx context.Context, volumeName, mountpoint string, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volumeName, mountpoint string, publishInfo *models.VolumePublishInfo,
 ) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -5036,7 +5037,7 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 		return nil
 	}
 
-	var nodes []*utils.Node
+	var nodes []*models.Node
 	if b.CanEnablePublishEnforcement() {
 		nodes = o.publishedNodesForBackend(b)
 	} else {
@@ -5046,7 +5047,7 @@ func (o *TridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, 
 }
 
 // publishedNodesForBackend returns the nodes that a backend has published volumes to
-func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*utils.Node {
+func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*models.Node {
 	pubs := o.volumePublications.ListPublications()
 	volumes := b.Volumes()
 	m := make(map[string]struct{})
@@ -5057,7 +5058,7 @@ func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*uti
 		}
 	}
 
-	nodes := make([]*utils.Node, 0, len(m))
+	nodes := make([]*models.Node, 0, len(m))
 	for n := range m {
 		if node := o.nodes.Get(n); node != nil {
 			nodes = append(nodes, node)
@@ -5187,7 +5188,7 @@ func (o *TridentOrchestrator) PeriodicallyReconcileBackendState(pollInterval tim
 }
 
 func (o *TridentOrchestrator) AddNode(
-	ctx context.Context, node *utils.Node, nodeEventCallback NodeEventCallback,
+	ctx context.Context, node *models.Node, nodeEventCallback NodeEventCallback,
 ) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -5234,7 +5235,7 @@ func (o *TridentOrchestrator) AddNode(
 }
 
 func (o *TridentOrchestrator) UpdateNode(
-	ctx context.Context, nodeName string, flags *utils.NodePublicationStateFlags,
+	ctx context.Context, nodeName string, flags *models.NodePublicationStateFlags,
 ) (err error) {
 	if o.bootstrapError != nil {
 		return o.bootstrapError
@@ -5265,22 +5266,22 @@ func (o *TridentOrchestrator) UpdateNode(
 		Logc(ctx).WithFields(logFields).WithField("state", node.PublicationState).Trace("Pre-state transition.")
 
 		switch node.PublicationState {
-		case utils.NodeClean:
+		case models.NodeClean:
 			if flags.IsNodeDirty() {
-				node.PublicationState = utils.NodeDirty
+				node.PublicationState = models.NodeDirty
 				Logc(ctx).WithFields(logFields).Info("Transitioning Node state from Clean to Dirty.")
 			}
-		case utils.NodeCleanable:
+		case models.NodeCleanable:
 			if flags.IsNodeDirty() {
-				node.PublicationState = utils.NodeDirty
+				node.PublicationState = models.NodeDirty
 				Logc(ctx).WithFields(logFields).Info("Transitioning Node state from Cleanable to Dirty.")
 			} else if flags.IsNodeCleaned() {
-				node.PublicationState = utils.NodeClean
+				node.PublicationState = models.NodeClean
 				Logc(ctx).WithFields(logFields).Info("Transitioning Node state from Cleanable to Clean.")
 			}
-		case utils.NodeDirty:
+		case models.NodeDirty:
 			if flags.IsNodeCleanable() {
-				node.PublicationState = utils.NodeCleanable
+				node.PublicationState = models.NodeCleanable
 				Logc(ctx).WithFields(logFields).Info("Transitioning Node state from Dirty to Cleanable.")
 			}
 		}
@@ -5305,7 +5306,7 @@ func (o *TridentOrchestrator) invalidateAllBackendNodeAccess() {
 	}
 }
 
-func (o *TridentOrchestrator) GetNode(ctx context.Context, nodeName string) (node *utils.NodeExternal, err error) {
+func (o *TridentOrchestrator) GetNode(ctx context.Context, nodeName string) (node *models.NodeExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5324,7 +5325,7 @@ func (o *TridentOrchestrator) GetNode(ctx context.Context, nodeName string) (nod
 	return n.ConstructExternal(), nil
 }
 
-func (o *TridentOrchestrator) ListNodes(ctx context.Context) (nodes []*utils.NodeExternal, err error) {
+func (o *TridentOrchestrator) ListNodes(ctx context.Context) (nodes []*models.NodeExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5334,7 +5335,7 @@ func (o *TridentOrchestrator) ListNodes(ctx context.Context) (nodes []*utils.Nod
 	defer recordTiming("node_list", &err)()
 
 	internalNodes := o.nodes.List()
-	nodes = make([]*utils.NodeExternal, 0, len(internalNodes))
+	nodes = make([]*models.NodeExternal, 0, len(internalNodes))
 	for _, node := range internalNodes {
 		nodes = append(nodes, node.ConstructExternal())
 	}
@@ -5410,7 +5411,7 @@ func (o *TridentOrchestrator) deleteNode(ctx context.Context, nodeName string) (
 //	2. Bootstrapping has bootstrapped all Trident volumes and known publications from CO persistence.
 //	3. [0,n] legacy volumes are supplied.
 func (o *TridentOrchestrator) ReconcileVolumePublications(
-	ctx context.Context, attachedLegacyVolumes []*utils.VolumePublicationExternal,
+	ctx context.Context, attachedLegacyVolumes []*models.VolumePublicationExternal,
 ) (reconcileErr error) {
 	Logc(ctx).Debug(">>>>>> ReconcileVolumePublications")
 	defer Logc(ctx).Debug("<<<<<< ReconcileVolumePublications")
@@ -5438,7 +5439,7 @@ func (o *TridentOrchestrator) ReconcileVolumePublications(
 			continue
 		}
 
-		publication := &utils.VolumePublication{
+		publication := &models.VolumePublication{
 			Name:       attachedLegacyVolume.Name,
 			NodeName:   nodeName,
 			VolumeName: volumeName,
@@ -5463,7 +5464,7 @@ func (o *TridentOrchestrator) ReconcileVolumePublications(
 
 // addVolumePublication adds a volume publication to the persistent store and sets the value on the cache.
 func (o *TridentOrchestrator) addVolumePublication(
-	ctx context.Context, publication *utils.VolumePublication,
+	ctx context.Context, publication *models.VolumePublication,
 ) error {
 	Logc(ctx).WithFields(LogFields{
 		"volumeName": publication.VolumeName,
@@ -5484,7 +5485,7 @@ func (o *TridentOrchestrator) addVolumePublication(
 // GetVolumePublication returns the volume publication for a given volume/node pair
 func (o *TridentOrchestrator) GetVolumePublication(
 	ctx context.Context, volumeName, nodeName string,
-) (publication *utils.VolumePublication, err error) {
+) (publication *models.VolumePublication, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -5504,7 +5505,7 @@ func (o *TridentOrchestrator) GetVolumePublication(
 // ListVolumePublications returns a list of all volume publications.
 func (o *TridentOrchestrator) ListVolumePublications(
 	ctx context.Context,
-) (publications []*utils.VolumePublicationExternal, err error) {
+) (publications []*models.VolumePublicationExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	Logc(ctx).Debug(">>>>>> ListVolumePublications")
@@ -5518,7 +5519,7 @@ func (o *TridentOrchestrator) ListVolumePublications(
 
 	// Get all publications as a list.
 	internalPubs := o.volumePublications.ListPublications()
-	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
+	publications = make([]*models.VolumePublicationExternal, 0, len(internalPubs))
 	for _, pub := range internalPubs {
 		publications = append(publications, pub.ConstructExternal())
 	}
@@ -5528,7 +5529,7 @@ func (o *TridentOrchestrator) ListVolumePublications(
 // ListVolumePublicationsForVolume returns a list of all volume publications for a given volume.
 func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 	ctx context.Context, volumeName string,
-) (publications []*utils.VolumePublicationExternal, err error) {
+) (publications []*models.VolumePublicationExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	fields := LogFields{"volumeName": volumeName}
@@ -5543,7 +5544,7 @@ func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 
 	// Get all publications for a volume as a list.
 	internalPubs := o.volumePublications.ListPublicationsForVolume(volumeName)
-	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
+	publications = make([]*models.VolumePublicationExternal, 0, len(internalPubs))
 	for _, pub := range internalPubs {
 		publications = append(publications, pub.ConstructExternal())
 	}
@@ -5553,8 +5554,8 @@ func (o *TridentOrchestrator) ListVolumePublicationsForVolume(
 // Change the signature of the func here to return error.
 func (o *TridentOrchestrator) listVolumePublicationsForVolumeAndSubordinates(
 	_ context.Context, volumeName string,
-) (publications []*utils.VolumePublication) {
-	publications = []*utils.VolumePublication{}
+) (publications []*models.VolumePublication) {
+	publications = []*models.VolumePublication{}
 
 	// Get volume
 	volume, ok := o.volumes[volumeName]
@@ -5593,7 +5594,7 @@ func (o *TridentOrchestrator) listVolumePublicationsForVolumeAndSubordinates(
 // ListVolumePublicationsForNode returns a list of all volume publications for a given node.
 func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	ctx context.Context, nodeName string,
-) (publications []*utils.VolumePublicationExternal, err error) {
+) (publications []*models.VolumePublicationExternal, err error) {
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError
 	}
@@ -5610,7 +5611,7 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 
 	// Retrieve only publications on the node.
 	internalPubs := o.volumePublications.ListPublicationsForNode(nodeName)
-	publications = make([]*utils.VolumePublicationExternal, 0, len(internalPubs))
+	publications = make([]*models.VolumePublicationExternal, 0, len(internalPubs))
 	for _, pub := range internalPubs {
 		publications = append(publications, pub.ConstructExternal())
 	}
@@ -6003,7 +6004,7 @@ func (o *TridentOrchestrator) GetMirrorTransferTime(
 
 func (o *TridentOrchestrator) GetCHAP(
 	ctx context.Context, volumeName, nodeName string,
-) (chapInfo *utils.IscsiChapInfo, err error) {
+) (chapInfo *models.IscsiChapInfo, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {

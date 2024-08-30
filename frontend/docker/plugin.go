@@ -24,6 +24,7 @@ import (
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -459,7 +460,7 @@ func (p *Plugin) Mount(request *volume.MountRequest) (*volume.MountResponse, err
 	}
 
 	// First call PublishVolume to make the volume available to the node
-	publishInfo := &utils.VolumePublishInfo{Localhost: true, HostName: "localhost"}
+	publishInfo := &models.VolumePublishInfo{Localhost: true, HostName: "localhost"}
 	if err = p.orchestrator.PublishVolume(ctx, request.Name, publishInfo); err != nil {
 		err = fmt.Errorf("error publishing volume %s: %v", request.Name, err)
 		Logc(ctx).Error(err)

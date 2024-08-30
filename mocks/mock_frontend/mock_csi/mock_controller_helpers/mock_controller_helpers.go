@@ -12,7 +12,7 @@ import (
 	config "github.com/netapp/trident/config"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	storage "github.com/netapp/trident/storage"
-	utils "github.com/netapp/trident/utils"
+	models "github.com/netapp/trident/utils/models"
 )
 
 // MockControllerHelper is a mock of ControllerHelper interface.
@@ -39,10 +39,10 @@ func (m *MockControllerHelper) EXPECT() *MockControllerHelperMockRecorder {
 }
 
 // GetNodePublicationState mocks base method.
-func (m *MockControllerHelper) GetNodePublicationState(arg0 context.Context, arg1 string) (*utils.NodePublicationStateFlags, error) {
+func (m *MockControllerHelper) GetNodePublicationState(arg0 context.Context, arg1 string) (*models.NodePublicationStateFlags, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNodePublicationState", arg0, arg1)
-	ret0, _ := ret[0].(*utils.NodePublicationStateFlags)
+	ret0, _ := ret[0].(*models.NodePublicationStateFlags)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

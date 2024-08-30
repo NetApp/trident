@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/azure/api"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -1104,7 +1105,7 @@ func (d *NASBlockStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
 func (d *NASBlockStorageDriver) Publish(
-	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *utils.VolumePublishInfo,
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	// Get the subvolume
 	creationToken := volConfig.InternalName
@@ -1979,7 +1980,7 @@ func (d *NASBlockStorageDriver) getSubvolumeExternal(subVolumeAttrs *api.Subvolu
 		UnixPermissions: "",
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteOnce,
-		AccessInfo:      utils.VolumeAccessInfo{},
+		AccessInfo:      models.VolumeAccessInfo{},
 		BlockSize:       "",
 		FileSystem:      "",
 		ServiceLevel:    "",
@@ -2023,7 +2024,7 @@ func (d *NASBlockStorageDriver) GetUpdateType(_ context.Context, driverOrig stor
 
 // ReconcileNodeAccess updates a per-backend export policy to match the set of Kubernetes cluster
 // nodes.  Not supported by this driver.
-func (d *NASBlockStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, _, _ string) error {
+func (d *NASBlockStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, _, _ string) error {
 	nodeNames := make([]string, 0)
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)

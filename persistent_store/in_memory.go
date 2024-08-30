@@ -11,7 +11,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 type InMemoryClient struct {
@@ -23,10 +23,10 @@ type InMemoryClient struct {
 	storageClassesAdded     int
 	volumeTxns              map[string]*storage.VolumeTransaction
 	volumeTxnsAdded         int
-	volumePublications      map[string]*utils.VolumePublication
+	volumePublications      map[string]*models.VolumePublication
 	volumePublicationsAdded int
 	version                 *config.PersistentStateVersion
-	nodes                   map[string]*utils.Node
+	nodes                   map[string]*models.Node
 	nodesAdded              int
 	snapshots               map[string]*storage.SnapshotPersistent
 	snapshotsAdded          int
@@ -39,8 +39,8 @@ func NewInMemoryClient() *InMemoryClient {
 		volumes:            make(map[string]*storage.VolumeExternal),
 		storageClasses:     make(map[string]*sc.Persistent),
 		volumeTxns:         make(map[string]*storage.VolumeTransaction),
-		volumePublications: make(map[string]*utils.VolumePublication),
-		nodes:              make(map[string]*utils.Node),
+		volumePublications: make(map[string]*models.VolumePublication),
+		nodes:              make(map[string]*models.Node),
 		snapshots:          make(map[string]*storage.SnapshotPersistent),
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: "memory", OrchestratorAPIVersion: config.OrchestratorAPIVersion,
@@ -276,7 +276,7 @@ func (c *InMemoryClient) DeleteStorageClass(_ context.Context, s *sc.StorageClas
 	return nil
 }
 
-func (c *InMemoryClient) AddOrUpdateNode(_ context.Context, n *utils.Node) error {
+func (c *InMemoryClient) AddOrUpdateNode(_ context.Context, n *models.Node) error {
 	exists := false
 	if _, ok := c.nodes[n.Name]; ok {
 		exists = true
@@ -288,7 +288,7 @@ func (c *InMemoryClient) AddOrUpdateNode(_ context.Context, n *utils.Node) error
 	return nil
 }
 
-func (c *InMemoryClient) GetNode(_ context.Context, nName string) (*utils.Node, error) {
+func (c *InMemoryClient) GetNode(_ context.Context, nName string) (*models.Node, error) {
 	ret, ok := c.nodes[nName]
 	if !ok {
 		return nil, NewPersistentStoreError(KeyNotFoundErr, nName)
@@ -296,8 +296,8 @@ func (c *InMemoryClient) GetNode(_ context.Context, nName string) (*utils.Node, 
 	return ret, nil
 }
 
-func (c *InMemoryClient) GetNodes(context.Context) ([]*utils.Node, error) {
-	ret := make([]*utils.Node, 0, len(c.nodes))
+func (c *InMemoryClient) GetNodes(context.Context) ([]*models.Node, error) {
+	ret := make([]*models.Node, 0, len(c.nodes))
 	if c.nodesAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
 		return ret, nil
@@ -308,12 +308,12 @@ func (c *InMemoryClient) GetNodes(context.Context) ([]*utils.Node, error) {
 	return ret, nil
 }
 
-func (c *InMemoryClient) DeleteNode(_ context.Context, n *utils.Node) error {
+func (c *InMemoryClient) DeleteNode(_ context.Context, n *models.Node) error {
 	delete(c.nodes, n.Name)
 	return nil
 }
 
-func (c *InMemoryClient) AddVolumePublication(_ context.Context, vp *utils.VolumePublication) error {
+func (c *InMemoryClient) AddVolumePublication(_ context.Context, vp *models.VolumePublication) error {
 	if _, exists := c.volumePublications[vp.Name]; !exists {
 		c.volumePublicationsAdded++
 	}
@@ -321,11 +321,11 @@ func (c *InMemoryClient) AddVolumePublication(_ context.Context, vp *utils.Volum
 	return nil
 }
 
-func (c *InMemoryClient) UpdateVolumePublication(_ context.Context, vp *utils.VolumePublication) error {
+func (c *InMemoryClient) UpdateVolumePublication(_ context.Context, vp *models.VolumePublication) error {
 	return c.AddVolumePublication(context.TODO(), vp)
 }
 
-func (c *InMemoryClient) GetVolumePublication(_ context.Context, vpName string) (*utils.VolumePublication, error) {
+func (c *InMemoryClient) GetVolumePublication(_ context.Context, vpName string) (*models.VolumePublication, error) {
 	ret, ok := c.volumePublications[vpName]
 	if !ok {
 		return nil, NewPersistentStoreError(KeyNotFoundErr, vpName)
@@ -333,8 +333,8 @@ func (c *InMemoryClient) GetVolumePublication(_ context.Context, vpName string) 
 	return ret, nil
 }
 
-func (c *InMemoryClient) GetVolumePublications(context.Context) ([]*utils.VolumePublication, error) {
-	ret := make([]*utils.VolumePublication, 0, len(c.volumePublications))
+func (c *InMemoryClient) GetVolumePublications(context.Context) ([]*models.VolumePublication, error) {
+	ret := make([]*models.VolumePublication, 0, len(c.volumePublications))
 	if c.volumePublicationsAdded == 0 {
 		// Try to match etcd semantics as closely as possible.
 		return ret, nil
@@ -345,7 +345,7 @@ func (c *InMemoryClient) GetVolumePublications(context.Context) ([]*utils.Volume
 	return ret, nil
 }
 
-func (c *InMemoryClient) DeleteVolumePublication(_ context.Context, vp *utils.VolumePublication) error {
+func (c *InMemoryClient) DeleteVolumePublication(_ context.Context, vp *models.VolumePublication) error {
 	delete(c.volumePublications, vp.Name)
 	return nil
 }

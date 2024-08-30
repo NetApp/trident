@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 func init() {
@@ -18,7 +18,7 @@ func init() {
 
 func TestNewNode(t *testing.T) {
 	// Build node
-	utilsNode := &utils.Node{
+	utilsNode := &models.Node{
 		Name: "test",
 		IQN:  "iqn",
 		IPs: []string{

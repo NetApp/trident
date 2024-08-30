@@ -12,7 +12,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	storageattribute "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/utils/models"
 )
 
 type Backend interface {
@@ -49,10 +49,10 @@ type Backend interface {
 		ctx context.Context, sourceVolConfig, cloneVolConfig *VolumeConfig, storagePool Pool, retry bool,
 	) (*Volume, error)
 	PublishVolume(
-		ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo,
+		ctx context.Context, volConfig *VolumeConfig, publishInfo *models.VolumePublishInfo,
 	) error
-	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, publishInfo *utils.VolumePublishInfo) error
-	UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *utils.VolumeUpdateInfo) (map[string]*Volume, error)
+	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, publishInfo *models.VolumePublishInfo) error
+	UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *models.VolumeUpdateInfo) (map[string]*Volume, error)
 	GetVolumeForImport(ctx context.Context, volumeID string) (*VolumeExternal, error)
 	ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error)
 	ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error
@@ -69,7 +69,7 @@ type Backend interface {
 	HasVolumes() bool
 	Terminate(ctx context.Context)
 	InvalidateNodeAccess()
-	ReconcileNodeAccess(ctx context.Context, nodes []*utils.Node, tridentUUID string) error
+	ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, tridentUUID string) error
 	CanGetState() bool
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
 	ConstructExternal(ctx context.Context) *BackendExternal
@@ -88,7 +88,7 @@ type PublishEnforceable interface {
 }
 
 type ChapEnabled interface {
-	GetChapInfo(ctx context.Context, volumeName, nodeName string) (*utils.IscsiChapInfo, error)
+	GetChapInfo(ctx context.Context, volumeName, nodeName string) (*models.IscsiChapInfo, error)
 }
 
 type Pool interface {

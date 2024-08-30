@@ -22,8 +22,8 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 func getCommonConfig() *drivers.CommonStorageDriverConfig {
@@ -360,7 +360,7 @@ func TestGetChapInfo(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *utils.IscsiChapInfo
+		want   *models.IscsiChapInfo
 	}{
 		{
 			name: "driverInitialized",
@@ -384,7 +384,7 @@ func TestGetChapInfo(t *testing.T) {
 				in1: "volume",
 				in2: "node",
 			},
-			want: &utils.IscsiChapInfo{
+			want: &models.IscsiChapInfo{
 				UseCHAP:              true,
 				IscsiUsername:        "foo",
 				IscsiInitiatorSecret: "bar",
@@ -414,7 +414,7 @@ func TestGetChapInfo(t *testing.T) {
 				in1: "volume",
 				in2: "node",
 			},
-			want: &utils.IscsiChapInfo{
+			want: &models.IscsiChapInfo{
 				UseCHAP:              true,
 				IscsiUsername:        "biz",
 				IscsiInitiatorSecret: "baz",
@@ -555,13 +555,13 @@ func TestOntapSanUnpublish(t *testing.T) {
 		t.Run(tr.name, func(t *testing.T) {
 			volConfig := &storage.VolumeConfig{
 				InternalName: "foo",
-				AccessInfo:   utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+				AccessInfo:   models.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
 			}
 
-			publishInfo := &utils.VolumePublishInfo{
+			publishInfo := &models.VolumePublishInfo{
 				HostName:         "bar",
 				TridentUUID:      "1234",
-				VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+				VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
 			}
 
 			igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
@@ -600,11 +600,11 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		HostIQN:          []string{"host_iqn"},
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 		Unmanaged:        false,
 	}
 
@@ -642,7 +642,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:    "bar",
 		HostIQN:     []string{"host_iqn"},
 		TridentUUID: "1234",
@@ -684,11 +684,11 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		HostIQN:          []string{"host_iqn"},
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 		Unmanaged:        false,
 	}
 
@@ -3326,8 +3326,8 @@ func TestOntapSANStorageDriverResize_VolumeSizeFail(t *testing.T) {
 func TestOntapSANStorageDriverReconcileNodeAccess(t *testing.T) {
 	ctx := context.Background()
 	mockAPI, driver := newMockOntapSANDriver(t)
-	nodes := make([]*utils.Node, 0)
-	nodes = append(nodes, &utils.Node{Name: "node1"})
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1"})
 
 	igroupName := "igroup1"
 	mockAPI.EXPECT().IgroupList(ctx).Return([]string{igroupName}, nil)
@@ -3342,8 +3342,8 @@ func TestOntapSANStorageDriverReconcileNodeAccess(t *testing.T) {
 func TestOntapSANStorageDriverReconcileNodeAccess_fail(t *testing.T) {
 	ctx := context.Background()
 	mockAPI, driver := newMockOntapSANDriver(t)
-	nodes := make([]*utils.Node, 0)
-	nodes = append(nodes, &utils.Node{Name: "node1"})
+	nodes := make([]*models.Node, 0)
+	nodes = append(nodes, &models.Node{Name: "node1"})
 
 	igroupName := "igroup1"
 	mockAPI.EXPECT().IgroupList(ctx).Return([]string{igroupName}, nil)
@@ -3367,11 +3367,11 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
 
-	publishInfo := &utils.VolumePublishInfo{
+	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
 		HostIQN:          []string{"host_iqn"},
 		TridentUUID:      "1234",
-		VolumeAccessInfo: utils.VolumeAccessInfo{PublishEnforcement: true},
+		VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: true},
 		Unmanaged:        false,
 	}
 
@@ -4573,9 +4573,9 @@ func TestOntapSANStorageDriverEnablePublishEnforcement(t *testing.T) {
 		Config: &storage.VolumeConfig{
 			Name:         volName,
 			InternalName: internalVolName,
-			AccessInfo: utils.VolumeAccessInfo{
+			AccessInfo: models.VolumeAccessInfo{
 				PublishEnforcement: false,
-				IscsiAccessInfo: utils.IscsiAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
 					IscsiLunNumber: 1,
 				},
 			},
