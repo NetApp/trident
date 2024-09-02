@@ -4020,13 +4020,27 @@ func TestGetUpdateType_OtherChanges(t *testing.T) {
 	result := newDriver.GetUpdateType(ctx, oldDriver)
 
 	expectedBitmap := &roaring.Bitmap{}
-	expectedBitmap.Add(storage.InvalidVolumeAccessInfoChange)
 	expectedBitmap.Add(storage.UsernameChange)
 	expectedBitmap.Add(storage.PasswordChange)
 	expectedBitmap.Add(storage.PrefixChange)
 	expectedBitmap.Add(storage.CredentialsChange)
 
 	assert.Equal(t, expectedBitmap, result, "bitmap mismatch")
+}
+
+func TestGetUpdateType_NilDataLIF(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	oldDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	oldDriver.Config.DataLIF = "10.0.2.11"
+
+	newDriver := newTestOntapSanEcoDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	newDriver.Config.DataLIF = "10.0.2.10"
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.False(t, result.Contains(storage.InvalidVolumeAccessInfoChange), "Nil DataLIF should be valid.")
 }
 
 func TestGetUpdateType_Failure(t *testing.T) {

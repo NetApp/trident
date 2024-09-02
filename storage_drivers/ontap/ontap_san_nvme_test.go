@@ -623,11 +623,21 @@ func TestNVMeGetUpdateType_OtherUpdates(t *testing.T) {
 
 	bMap := d1.GetUpdateType(ctx, d2)
 
-	assert.True(t, bMap.Contains(storage.InvalidVolumeAccessInfoChange), "Unchanged dataLIFs.")
 	assert.True(t, bMap.Contains(storage.PasswordChange), "Unchanged password.")
 	assert.True(t, bMap.Contains(storage.UsernameChange), "Unchanged username.")
 	assert.True(t, bMap.Contains(storage.CredentialsChange), "Unchanged credentials.")
 	assert.True(t, bMap.Contains(storage.PrefixChange), "Unchanged prefix.")
+}
+
+func TestNVMeGetUpdateType_NilDataLIF(t *testing.T) {
+	d1 := newNVMeDriver(nil, nil, nil)
+	d2 := newNVMeDriver(nil, nil, nil)
+
+	d2.Config.DataLIF = ""
+
+	bMap := d1.GetUpdateType(ctx, d2)
+
+	assert.False(t, bMap.Contains(storage.InvalidVolumeAccessInfoChange), "Nil DataLIF should be valid.")
 }
 
 func TestNVMeGetCommonConfig(t *testing.T) {

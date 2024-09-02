@@ -3054,9 +3054,20 @@ func TestOntapSANStorageDriverGetUpdateType(t *testing.T) {
 	expectedBitmap.Add(storage.PasswordChange)
 	expectedBitmap.Add(storage.PrefixChange)
 	expectedBitmap.Add(storage.CredentialsChange)
-	expectedBitmap.Add(storage.InvalidVolumeAccessInfoChange)
 
 	assert.Equal(t, expectedBitmap, result, "bitmap mismatch")
+}
+
+func TestOntapSANStorageDriverGetUpdateType_NilDataLIF(t *testing.T) {
+	mockAPI, oldDriver := newMockOntapSANDriver(t)
+	oldDriver.Config.DataLIF = "1.2.3.1"
+
+	newDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
+	newDriver.Config.DataLIF = ""
+
+	result := newDriver.GetUpdateType(ctx, oldDriver)
+
+	assert.False(t, result.Contains(storage.InvalidVolumeAccessInfoChange), "Nil DataLIF should be valid.")
 }
 
 func TestOntapSANStorageDriverGetUpdateType_Failure(t *testing.T) {

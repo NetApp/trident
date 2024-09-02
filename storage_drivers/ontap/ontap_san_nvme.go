@@ -1227,10 +1227,6 @@ func (d *NVMeStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.
 		return bitmap
 	}
 
-	if d.Config.DataLIF != dOrig.Config.DataLIF {
-		bitmap.Add(storage.InvalidVolumeAccessInfoChange)
-	}
-
 	if d.Config.Password != dOrig.Config.Password {
 		bitmap.Add(storage.PasswordChange)
 	}

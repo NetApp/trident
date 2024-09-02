@@ -2102,10 +2102,6 @@ func (d *SANEconomyStorageDriver) GetUpdateType(_ context.Context, driverOrig st
 		return bitmap
 	}
 
-	if d.Config.DataLIF != dOrig.Config.DataLIF {
-		bitmap.Add(storage.InvalidVolumeAccessInfoChange)
-	}
-
 	if d.Config.Password != dOrig.Config.Password {
 		bitmap.Add(storage.PasswordChange)
 	}
