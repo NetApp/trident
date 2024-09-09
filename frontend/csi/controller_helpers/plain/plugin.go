@@ -166,3 +166,7 @@ func (h *helper) SupportsFeature(_ context.Context, feature controllerhelpers.Fe
 		return false
 	}
 }
+
+func (h *helper) IsTopologyInUse(_ context.Context) bool {
+	return false
+}

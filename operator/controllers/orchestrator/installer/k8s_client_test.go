@@ -3665,7 +3665,6 @@ func TestPutDeployment(t *testing.T) {
 		UseIPv6:              false,
 		SilenceAutosupport:   true,
 		Version:              version,
-		TopologyEnabled:      false,
 	}
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	k8sClientErr := fmt.Errorf("k8s error")

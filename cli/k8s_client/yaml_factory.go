@@ -444,10 +444,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	if args.AutosupportHostname != "" {
 		autosupportHostnameLine = fmt.Sprint("- -hostname=", args.AutosupportHostname)
 	}
-	provisionerFeatureGates := ""
-	if args.TopologyEnabled {
-		provisionerFeatureGates = "- --feature-gates=Topology=True"
-	}
 
 	if args.Labels == nil {
 		args.Labels = make(map[string]string)
@@ -517,7 +513,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_DEBUG}", autosupportDebugLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}",
 		strconv.FormatBool(args.SilenceAutosupport))
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{PROVISIONER_FEATURE_GATES}", provisionerFeatureGates)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
@@ -655,7 +650,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v4.0.1
+        image: {CSI_SIDECAR_REGISTRY}/csi-provisioner:v5.1.0
         imagePullPolicy: {IMAGE_PULL_POLICY}
         securityContext:
           capabilities:
@@ -667,7 +662,6 @@ spec:
         - "--csi-address=$(ADDRESS)"
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
-        {PROVISIONER_FEATURE_GATES}
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS

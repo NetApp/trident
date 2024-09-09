@@ -141,7 +141,6 @@ func getInstallYaml(semVersion *versionutils.Version) (string, error) {
 		UseIPv6:                 false,
 		SilenceAutosupport:      true,
 		Version:                 semVersion,
-		TopologyEnabled:         false,
 		HTTPRequestTimeout:      tridentconfig.HTTPTimeoutString,
 		ServiceAccountName:      getControllerRBACResourceName(),
 	}

@@ -1409,3 +1409,69 @@ func TestValidateStorageClassParameters(t *testing.T) {
 		})
 	}
 }
+
+func TestIsTopologyInUse(t *testing.T) {
+	ctx := context.TODO()
+	_, plugin := newMockPlugin(t)
+
+	tt := map[string]struct {
+		labels      map[string]string
+		injectError bool
+		expected    bool
+	}{
+		"node with nil labels": {
+			labels:   nil,
+			expected: false,
+		},
+		"node with empty labels": {
+			labels:   map[string]string{},
+			expected: false,
+		},
+		"node with labels, but no topology labels": {
+			labels:   map[string]string{"hostname.kubernetes.io/name": "host1"},
+			expected: false,
+		},
+		"node with non-region topology label": {
+			labels:   map[string]string{"topology.kubernetes.io/zone": "zone1"},
+			expected: false,
+		},
+		"node with multiple topology labels": {
+			labels:   map[string]string{"topology.kubernetes.io/region": "region1", "topology.kubernetes.io/zone": "zone1"},
+			expected: true,
+		},
+		"error while listing the nodes": {
+			labels:      map[string]string{"topology.kubernetes.io/region": "region1", "topology.kubernetes.io/zone": "zone1"},
+			injectError: true,
+			expected:    false,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			// create fake nodes and add to a fake k8s client
+			fakeNode := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "fakeNode", Labels: test.labels}}
+			clientSet := k8sfake.NewSimpleClientset(fakeNode)
+
+			// add reactor to either return the list or return error if required
+			clientSet.Fake.PrependReactor(
+				"list" /* use '*' for all operations */, "*", /* use '*' all object types */
+				func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+					if test.injectError {
+						status := &k8serrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusFailure}}
+						return true, nil, status
+					} else {
+						return true, &v1.NodeList{Items: []v1.Node{*fakeNode}}, nil
+					}
+				},
+			)
+
+			// add the fake client to the plugin
+			plugin.kubeClient = clientSet
+
+			// check if the topology is in use
+			result := plugin.IsTopologyInUse(ctx)
+
+			assert.Equal(t, test.expected, result, fmt.Sprintf("topology usage not as expected; expected %v, got %v", test.expected, result))
+		})
+	}
+}

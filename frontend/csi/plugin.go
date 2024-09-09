@@ -58,6 +58,8 @@ type Plugin struct {
 	nsCap []*csi.NodeServiceCapability
 	vCap  []*csi.VolumeCapability_AccessMode
 
+	topologyInUse bool
+
 	opCache sync.Map
 
 	nodeIsRegistered bool
@@ -306,7 +308,8 @@ func (p *Plugin) Activate() error {
 		ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
 		p.grpc = NewNonBlockingGRPCServer()
 
-		Logc(ctx).Info("Activating CSI frontend.")
+		fields := LogFields{"nodeName": p.nodeName, "role": p.role}
+		Logc(ctx).WithFields(fields).Info("Activating CSI frontend.")
 
 		if p.role == CSINode || p.role == CSIAllInOne {
 			p.nodeRegisterWithController(ctx, 0) // Retry indefinitely
@@ -328,6 +331,13 @@ func (p *Plugin) Activate() error {
 				p.startReconcilingNodePublications(ctx)
 			}
 		}
+
+		if p.role == CSIController || p.role == CSIAllInOne {
+			// Check if topology is in use and store it in the plugin
+			topologyInUse := p.controllerHelper.IsTopologyInUse(ctx)
+			p.topologyInUse = topologyInUse
+		}
+
 		p.grpc.Start(p.endpoint, p, p, p)
 	}()
 	return nil

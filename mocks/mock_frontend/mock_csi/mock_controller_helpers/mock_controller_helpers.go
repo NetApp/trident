@@ -113,6 +113,20 @@ func (mr *MockControllerHelperMockRecorder) GetVolumeConfig(arg0, arg1, arg2, ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeConfig", reflect.TypeOf((*MockControllerHelper)(nil).GetVolumeConfig), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
 }
 
+// IsTopologyInUse mocks base method.
+func (m *MockControllerHelper) IsTopologyInUse(arg0 context.Context) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsTopologyInUse", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsTopologyInUse indicates an expected call of IsTopologyInUse.
+func (mr *MockControllerHelperMockRecorder) IsTopologyInUse(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsTopologyInUse", reflect.TypeOf((*MockControllerHelper)(nil).IsTopologyInUse), arg0)
+}
+
 // IsValidResourceName mocks base method.
 func (m *MockControllerHelper) IsValidResourceName(arg0 string) bool {
 	m.ctrl.T.Helper()

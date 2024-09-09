@@ -309,3 +309,17 @@ func TestSupportsFeature(t *testing.T) {
 		assert.Equal(t, tc.expected, supported, "Feature is not supported")
 	}
 }
+
+func TestIsTopologyInUse(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mock.NewMockOrchestrator(mockCtrl)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
+
+	result := plugin.IsTopologyInUse(context.TODO())
+
+	assert.Equal(t, false, result, "expected topology usage to be false")
+}

@@ -14,6 +14,8 @@ import (
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
 
+	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
+	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
 	mockUtils "github.com/netapp/trident/mocks/mock_utils"
@@ -1154,4 +1156,198 @@ func TestOutdatedAccessControlInUse(t *testing.T) {
 			assert.Equal(t, data.expected, p.deprecatedIgroupInUse(ctx))
 		})
 	}
+}
+
+func TestNodeRegisterWithController_Success(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "fakeNode"
+
+	// Create a mock rest client for Trident controller, mock core and mock NVMe handler
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+
+	// Create a node server plugin
+	nodeServer := &Plugin{
+		nodeName:     nodeName,
+		role:         CSINode,
+		hostInfo:     &models.HostSystem{},
+		restClient:   mockClient,
+		nvmeHandler:  mockNVMeHandler,
+		orchestrator: mockOrchestrator,
+	}
+
+	// Create a fake node response to be returned by controller
+	fakeNodeResponse := controllerAPI.CreateNodeResponse{
+		TopologyLabels: map[string]string{},
+		LogLevel:       "debug",
+		LogWorkflows:   "frontend",
+		LogLayers:      "node=add",
+	}
+
+	// Set expects
+	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
+	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
+	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
+	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
+
+	// register node with controller
+	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
+
+	// assert node is registered
+	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+}
+
+func TestNodeRegisterWithController_TopologyLabels(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "fakeNode"
+
+	// Create a mock rest client for Trident controller, mock core and mock NVMe handler
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+
+	// Create a node server plugin
+	nodeServer := &Plugin{
+		nodeName:     nodeName,
+		role:         CSINode,
+		hostInfo:     &models.HostSystem{},
+		restClient:   mockClient,
+		nvmeHandler:  mockNVMeHandler,
+		orchestrator: mockOrchestrator,
+	}
+
+	// Create set of cases with varying topology labels
+	tt := map[string]struct {
+		topologyLabels map[string]string
+		expected       bool
+	}{
+		"when no topology labels are set": {
+			topologyLabels: map[string]string{},
+			expected:       false,
+		},
+		"when only zone label is set": {
+			topologyLabels: map[string]string{
+				"topology.kubernetes.io/zone": "us-west-1",
+			},
+			expected: false,
+		},
+		"when only region label is set": {
+			topologyLabels: map[string]string{
+				"topology.kubernetes.io/region": "us-west",
+			},
+			expected: true,
+		},
+		"when both zone and region labels are set": {
+			topologyLabels: map[string]string{
+				"topology.kubernetes.io/zone":   "us-west-1",
+				"topology.kubernetes.io/region": "us-west",
+			},
+			expected: true,
+		},
+		"when neither zone nor region labels are set": {
+			topologyLabels: map[string]string{
+				"topology.kubernetes.io/foo": "bar",
+			},
+			expected: false,
+		},
+	}
+
+	for test, data := range tt {
+		t.Run(test, func(t *testing.T) {
+			// Create a fake node response to be returned by controller
+			fakeNodeResponse := controllerAPI.CreateNodeResponse{
+				TopologyLabels: data.topologyLabels,
+				LogLevel:       "debug",
+				LogWorkflows:   "frontend",
+				LogLayers:      "node=add",
+			}
+
+			// Set expects
+			mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
+			mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
+			mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
+			mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
+			mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
+
+			// register node with controller
+			nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
+
+			// assert node is registered and topology in use is as expected
+			assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+			assert.Equal(t, data.expected, nodeServer.topologyInUse, "topologyInUse not as expected")
+		})
+	}
+}
+
+func TestNodeRegisterWithController_Failure(t *testing.T) {
+	ctx := context.Background()
+	nodeName := "fakeNode"
+
+	// Create a mock rest client for Trident controller, mock core and mock NVMe handler
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockNVMeHandler := mockUtils.NewMockNVMeInterface(mockCtrl)
+
+	// Create a node server plugin
+	nodeServer := &Plugin{
+		nodeName:     nodeName,
+		role:         CSINode,
+		hostInfo:     &models.HostSystem{},
+		restClient:   mockClient,
+		nvmeHandler:  mockNVMeHandler,
+		orchestrator: mockOrchestrator,
+	}
+
+	// Create a fake node response to be returned by controller
+	fakeNodeResponse := controllerAPI.CreateNodeResponse{
+		LogLevel:     "debug",
+		LogWorkflows: "frontend",
+		LogLayers:    "node=add",
+	}
+
+	// Case: Error creating node by trident controller
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
+	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(controllerAPI.CreateNodeResponse{}, errors.New("failed to create node"))
+
+	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
+
+	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+
+	// Case: Error setting log level
+	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
+	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
+	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(errors.New("failed to set log level"))
+	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
+
+	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
+
+	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+
+	// Case: Error setting log layer
+	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
+	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(errors.New("failed to set log layers"))
+	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
+	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(nil)
+
+	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
+
+	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
+
+	// Case: Error setting log workflow
+	mockClient.EXPECT().CreateNode(ctx, gomock.Any()).Return(fakeNodeResponse, nil)
+	mockNVMeHandler.EXPECT().NVMeActiveOnHost(ctx).Return(false, nil)
+	mockOrchestrator.EXPECT().SetLogLayers(ctx, fakeNodeResponse.LogLayers).Return(nil)
+	mockOrchestrator.EXPECT().SetLogLevel(ctx, fakeNodeResponse.LogLevel).Return(nil)
+	mockOrchestrator.EXPECT().SetLoggingWorkflows(ctx, fakeNodeResponse.LogWorkflows).Return(errors.New("failed to set log workflows"))
+
+	nodeServer.nodeRegisterWithController(ctx, 1*time.Second)
+
+	assert.True(t, nodeServer.nodeIsRegistered, "expected node to be registered, but it is not")
 }

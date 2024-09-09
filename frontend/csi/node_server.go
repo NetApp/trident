@@ -761,6 +761,19 @@ func (p *Plugin) nodeRegisterWithController(ctx context.Context, timeout time.Du
 			topologyLabels = nodeDetails.TopologyLabels
 			node.TopologyLabels = nodeDetails.TopologyLabels
 
+			// Assume topology to be in use only if there exists a topology label with key "topology.kubernetes.io/region" on the node.
+			if len(topologyLabels) > 0 {
+				val, ok := topologyLabels[K8sTopologyRegionLabel]
+				fields := LogFields{"topologyLabelKey": K8sTopologyRegionLabel, "value": val}
+				if ok && val != "" {
+					Logc(ctx).WithFields(fields).Infof("%s label found on node. Assuming topology to be in use.", K8sTopologyRegionLabel)
+					p.topologyInUse = true
+				} else {
+					Logc(ctx).WithFields(fields).Infof("%s label not found on node. Assuming topology not in use.", K8sTopologyRegionLabel)
+					p.topologyInUse = false
+				}
+			}
+
 			// Setting log level, log workflows and log layers on the node same as to what is set on the controller.
 			if err = p.orchestrator.SetLogLevel(ctx, nodeDetails.LogLevel); err != nil {
 				Logc(ctx).WithError(err).Error("Unable to set log level.")

@@ -1338,3 +1338,31 @@ func (h *helper) SupportsFeature(ctx context.Context, feature controllerhelpers.
 		return false
 	}
 }
+
+func (h *helper) IsTopologyInUse(ctx context.Context) bool {
+	Logc(ctx).Trace(">>>> IsTopologyInUse")
+	defer Logc(ctx).Trace("<<<< IsTopologyInUse")
+
+	// Get one node with a region topology label.
+	listOpts := metav1.ListOptions{
+		LabelSelector: csi.K8sTopologyRegionLabel,
+		Limit:         1,
+	}
+
+	nodes, err := h.kubeClient.CoreV1().Nodes().List(ctx, listOpts)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Failed to list nodes with topology label. Assuming topology in use to be 'false' by default.")
+		return false
+	}
+
+	// If there exists even a single node with topology label, we consider topology to be in use.
+	topologyInUse := false
+	if nodes != nil && len(nodes.Items) > 0 {
+		topologyInUse = true
+	}
+
+	fields := LogFields{"topologyInUse": topologyInUse}
+	Logc(ctx).WithFields(fields).Info("Successfully determined if topology is in use.")
+
+	return topologyInUse
+}

@@ -135,7 +135,6 @@ type KubernetesClient interface {
 	AddFinalizerToCRD(crdName string) error
 	AddFinalizerToCRDs(CRDnames []string) error
 	RemoveFinalizerFromCRD(crdName string) error
-	IsTopologyInUse() (bool, error)
 	GetPersistentVolumes() ([]v1.PersistentVolume, error)
 	GetPersistentVolumeClaims(allNamespaces bool) ([]v1.PersistentVolumeClaim, error)
 	GetVolumeSnapshotClasses() ([]snapshotv1.VolumeSnapshotClass, error)
@@ -164,7 +163,6 @@ type DeploymentYAMLArguments struct {
 	UseIPv6                 bool                  `json:"useIPv6"`
 	SilenceAutosupport      bool                  `json:"silenceAutosupport"`
 	Version                 *versionutils.Version `json:"version"`
-	TopologyEnabled         bool                  `json:"topologyEnabled"`
 	DisableAuditLog         bool                  `json:"disableAuditLog"`
 	HTTPRequestTimeout      string                `json:"httpRequestTimeout"`
 	NodeSelector            map[string]string     `json:"nodeSelector"`

@@ -55,26 +55,34 @@ func (p *Plugin) GetPluginCapabilities(
 	ctx = SetContextWorkflow(ctx, WorkflowIdentityGetCapabilities)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
-	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity"}
+	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity", "topologyInUse": p.topologyInUse}
 	Logc(ctx).WithFields(fields).Trace(">>>> GetPluginCapabilities")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< GetPluginCapabilities")
 
-	return &csi.GetPluginCapabilitiesResponse{
-		Capabilities: []*csi.PluginCapability{
-			{
-				Type: &csi.PluginCapability_Service_{
-					Service: &csi.PluginCapability_Service{
-						Type: csi.PluginCapability_Service_CONTROLLER_SERVICE,
-					},
-				},
-			},
-			{
-				Type: &csi.PluginCapability_Service_{
-					Service: &csi.PluginCapability_Service{
-						Type: csi.PluginCapability_Service_VOLUME_ACCESSIBILITY_CONSTRAINTS,
-					},
+	// Add controller service capability
+	csiPluginCap := []*csi.PluginCapability{
+		{
+			Type: &csi.PluginCapability_Service_{
+				Service: &csi.PluginCapability_Service{
+					Type: csi.PluginCapability_Service_CONTROLLER_SERVICE,
 				},
 			},
 		},
+	}
+
+	// If topology is in use, add VOLUME_ACCESSIBILITY_CONSTRAINTS capability
+	if p.topologyInUse {
+		Logc(ctx).WithFields(fields).Info("Topology is in use. Adding VOLUME_ACCESSIBILITY_CONSTRAINTS capability.")
+		csiPluginCap = append(csiPluginCap, &csi.PluginCapability{
+			Type: &csi.PluginCapability_Service_{
+				Service: &csi.PluginCapability_Service{
+					Type: csi.PluginCapability_Service_VOLUME_ACCESSIBILITY_CONSTRAINTS,
+				},
+			},
+		})
+	}
+
+	return &csi.GetPluginCapabilitiesResponse{
+		Capabilities: csiPluginCap,
 	}, nil
 }

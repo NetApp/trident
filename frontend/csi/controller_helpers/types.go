@@ -71,4 +71,7 @@ type ControllerHelper interface {
 	// Version returns the version of the CO this helper is managing, or the supported
 	// CSI version in the plain-CSI case.  This value is reported in Trident's telemetry.
 	Version() string
+
+	// IsTopologyInUse checks if any node in the cluster has topology labels
+	IsTopologyInUse(ctx context.Context) bool
 }

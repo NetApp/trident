@@ -581,11 +581,6 @@ func prepareYAMLFiles() error {
 	daemonSetlabels := make(map[string]string)
 	daemonSetlabels[appLabelKey] = TridentNodeLabelValue
 
-	topologyEnabled, err := client.IsTopologyInUse()
-	if err != nil {
-		return fmt.Errorf("could not determine node topology; %v", err)
-	}
-
 	namespaceYAML := k8sclient.GetNamespaceYAML(TridentPodNamespace)
 	if err = writeFile(namespacePath, namespaceYAML); err != nil {
 		return fmt.Errorf("could not write namespace YAML file; %v", err)
@@ -671,7 +666,6 @@ func prepareYAMLFiles() error {
 		UseIPv6:                 useIPv6,
 		SilenceAutosupport:      silenceAutosupport,
 		Version:                 client.ServerVersion(),
-		TopologyEnabled:         topologyEnabled,
 		HTTPRequestTimeout:      httpRequestTimeout.String(),
 		ServiceAccountName:      getControllerRBACResourceName(),
 		ImagePullPolicy:         imagePullPolicy,
@@ -867,8 +861,6 @@ func installTrident() (returnError error) {
 		return fmt.Errorf("not able to connect to Kubernetes API server")
 	}
 
-	topologyEnabled, err := client.IsTopologyInUse()
-
 	// Ensure CSI Trident isn't already installed
 	if installed, namespace, err := isCSITridentInstalled(); err != nil {
 		return fmt.Errorf("could not check if CSI Trident deployment exists; %v", err)
@@ -987,10 +979,6 @@ func installTrident() (returnError error) {
 	// Patch the CRD definitions with finalizers to protect them
 	if returnError = protectCustomResourceDefinitions(); returnError != nil {
 		return
-	}
-
-	if err != nil {
-		return fmt.Errorf("could not determine node topology; %v", err)
 	}
 
 	// Create the CSI Driver object
@@ -1124,7 +1112,6 @@ func installTrident() (returnError error) {
 			UseIPv6:                 useIPv6,
 			SilenceAutosupport:      silenceAutosupport,
 			Version:                 client.ServerVersion(),
-			TopologyEnabled:         topologyEnabled,
 			HTTPRequestTimeout:      httpRequestTimeout.String(),
 			ServiceAccountName:      getControllerRBACResourceName(),
 			ImagePullPolicy:         imagePullPolicy,

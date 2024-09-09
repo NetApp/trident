@@ -91,7 +91,6 @@ func TestYAMLFactory(t *testing.T) {
 		UseIPv6:                 false,
 		SilenceAutosupport:      false,
 		Version:                 version,
-		TopologyEnabled:         false,
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
 		EnableACP:               true,
 		IdentityLabel:           true,
@@ -170,7 +169,6 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		ControllingCRDetails:    map[string]string{},
 		Version:                 version,
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
-		TopologyEnabled:         true,
 		UseIPv6:                 true,
 		SilenceAutosupport:      false,
 		EnableACP:               true,
@@ -219,7 +217,6 @@ func TestValidateGetCSIDeploymentYAMLFail(t *testing.T) {
 		UseIPv6:                 true,
 		SilenceAutosupport:      false,
 		Version:                 version,
-		TopologyEnabled:         true,
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
 	}
 

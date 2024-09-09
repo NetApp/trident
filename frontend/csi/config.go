@@ -11,4 +11,7 @@ const (
 	// CSI supported features
 	CSIBlockVolumes  controllerhelpers.Feature = "CSI_BLOCK_VOLUMES"
 	ExpandCSIVolumes controllerhelpers.Feature = "EXPAND_CSI_VOLUMES"
+
+	// Kubernetes topology labels
+	K8sTopologyRegionLabel = "topology.kubernetes.io/region"
 )

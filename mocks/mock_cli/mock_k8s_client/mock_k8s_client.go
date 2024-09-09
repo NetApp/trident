@@ -1371,21 +1371,6 @@ func (mr *MockKubernetesClientMockRecorder) GetVolumeSnapshots(arg0 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshots", reflect.TypeOf((*MockKubernetesClient)(nil).GetVolumeSnapshots), arg0)
 }
 
-// IsTopologyInUse mocks base method.
-func (m *MockKubernetesClient) IsTopologyInUse() (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsTopologyInUse")
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsTopologyInUse indicates an expected call of IsTopologyInUse.
-func (mr *MockKubernetesClientMockRecorder) IsTopologyInUse() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsTopologyInUse", reflect.TypeOf((*MockKubernetesClient)(nil).IsTopologyInUse))
-}
-
 // Namespace mocks base method.
 func (m *MockKubernetesClient) Namespace() string {
 	m.ctrl.T.Helper()

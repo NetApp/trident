@@ -2733,22 +2733,6 @@ func (k *KubeClient) deleteOptions() metav1.DeleteOptions {
 	}
 }
 
-func (k *KubeClient) IsTopologyInUse() (bool, error) {
-	nodes, err := k.clientset.CoreV1().Nodes().List(reqCtx(), metav1.ListOptions{})
-	if err != nil {
-		return false, err
-	}
-	for _, node := range nodes.Items {
-		for key := range node.Labels {
-			if strings.Contains(key, "topology.kubernetes.io") {
-				return true, nil
-			}
-		}
-	}
-
-	return false, nil
-}
-
 // addFinalizerToCRDObject is a helper function that updates the CRD object to include our Trident finalizer (
 // definitions are not namespaced)
 func (k *KubeClient) addFinalizerToCRDObject(

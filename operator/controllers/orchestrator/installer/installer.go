@@ -1454,11 +1454,6 @@ func (i *Installer) createOrPatchTridentResourceQuota(
 func (i *Installer) createOrPatchTridentDeployment(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool, reuseServiceAccountMap map[string]bool,
 ) error {
-	topologyEnabled, err := i.client.IsTopologyInUse()
-	if err != nil {
-		return fmt.Errorf("failed to determine if node topology settings; %v", err)
-	}
-
 	deploymentName := getDeploymentName()
 	serviceAccName := getControllerRBACResourceName()
 
@@ -1509,7 +1504,6 @@ func (i *Installer) createOrPatchTridentDeployment(
 		UseIPv6:                 useIPv6,
 		SilenceAutosupport:      silenceAutosupport,
 		Version:                 i.client.ServerVersion(),
-		TopologyEnabled:         topologyEnabled,
 		HTTPRequestTimeout:      httpTimeout,
 		NodeSelector:            controllerPluginNodeSelector,
 		Tolerations:             tolerations,
