@@ -1212,7 +1212,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 
 	// Do not allow update of TridentBackendConfig-based backends using tridentctl
 	if originalConfigRef != "" {
-		if !o.isCRDContext(ctx) {
+		if !o.isCRDContext(ctx) && !o.isPeriodicContext(ctx) {
 			Logc(ctx).WithFields(LogFields{
 				"backendName": backendName,
 				"backendUUID": backendUUID,
@@ -5069,6 +5069,8 @@ func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*mod
 }
 
 func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b storage.Backend) error {
+	Logc(ctx).WithField("backend", b.Name()).Debug(">>>>>> reconcileBackendState")
+	defer Logc(ctx).WithField("backend", b.Name()).Debug("<<<<<<< reconcileBackendState")
 	if !b.CanGetState() {
 		// This backend does not support polling backend for state.
 		return nil
@@ -5084,13 +5086,51 @@ func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b stora
 
 	reason, changeMap := b.GetBackendState(ctx)
 
-	Logc(ctx).WithField("reason", reason).Debug("reconcileBackendState")
+	if changeMap != nil {
+		if changeMap.Contains(storage.BackendStateReasonChange) {
+			// Update CR.
+			Logc(ctx).WithField("reason", reason).Debugf("Backend state reason change detected for %s.", b.Name())
+			if err := o.storeClient.UpdateBackend(ctx, b); err != nil {
+				return err
+			}
+		}
 
-	// For now, skip modifying if there is change in pools list.
-	if changeMap != nil && changeMap.Contains(storage.BackendStateReasonChange) {
-		// Update CR.
-		if err := o.storeClient.UpdateBackend(ctx, b); err != nil {
-			return err
+		// If reason is not-empty, which means backend is offline,
+		// Doesn't make sense to call updateBackend() when backend is offline itself.
+		// So, return early.
+		// Additionally, calling updateBackend() might fail for various reasons, such as
+		// - A dataLIF being down
+		// - The aggregate specified in the backend config's aggregate field being different
+		// - And other similar issues
+		if reason != "" {
+			return nil
+		}
+
+		var logMessage string
+
+		// Determine the log message based on the changes detected
+		switch {
+		case changeMap.Contains(storage.BackendStatePoolsChange) && changeMap.Contains(storage.BackendStateAPIVersionChange):
+			logMessage = "Change in physical pools and API version detected for the backend %s."
+		case changeMap.Contains(storage.BackendStatePoolsChange):
+			logMessage = "Change in physical pools detected for the backend %s."
+		case changeMap.Contains(storage.BackendStateAPIVersionChange):
+			logMessage = "Change in API version detected for the backend %s."
+		}
+
+		if logMessage != "" {
+			Logc(ctx).Debugf(logMessage, b.Name())
+
+			// Getting the marshaled driver's config.
+			bytes, err := b.MarshalDriverConfig()
+			if err != nil {
+				return err
+			}
+
+			_, err = o.updateBackend(ctx, b.Name(), string(bytes), b.ConfigRef())
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -5155,8 +5195,8 @@ func (o *TridentOrchestrator) PeriodicallyReconcileBackendState(pollInterval tim
 		return
 	}
 
-	Logc(ctx).Info("Starting periodic backend state reconciliation service.")
-	defer Logc(ctx).Info("Stopping periodic backend state reconciliation service.")
+	Logc(ctx).WithField("pollInterval", pollInterval).Info("Starting periodic backend state reconciliation service.")
+	defer Logc(ctx).WithField("pollInterval", pollInterval).Info("Stopping periodic backend state reconciliation service.")
 
 	o.stopReconcileBackendLoop = make(chan bool)
 	reconcileBackendTimer := time.NewTimer(pollInterval)
@@ -5173,7 +5213,7 @@ func (o *TridentOrchestrator) PeriodicallyReconcileBackendState(pollInterval tim
 			return
 
 		case <-reconcileBackendTimer.C:
-			Logc(ctx).Trace("Periodic backend state reconciliation loop beginning.")
+			Logc(ctx).Debug("Periodic backend state reconciliation loop beginning.")
 			for _, backend := range o.backends {
 				if err := o.reconcileBackendState(ctx, backend); err != nil {
 					// If there is a problem, log an error and keep going.
@@ -5723,6 +5763,11 @@ func (o *TridentOrchestrator) replaceBackendAndUpdateVolumesOnPersistentStore(
 func (o *TridentOrchestrator) isCRDContext(ctx context.Context) bool {
 	ctxSource := ctx.Value(ContextKeyRequestSource)
 	return ctxSource != nil && ctxSource == ContextSourceCRD
+}
+
+func (o *TridentOrchestrator) isPeriodicContext(ctx context.Context) bool {
+	ctxSource := ctx.Value(ContextKeyRequestSource)
+	return ctxSource != nil && ctxSource == ContextSourcePeriodic
 }
 
 // EstablishMirror creates a net-new replication mirror relationship between 2 volumes on a backend

@@ -2110,18 +2110,18 @@ func (mr *MockRestClientInterfaceMockRecorder) SvmList(arg0, arg1 interface{}) *
 }
 
 // SystemGetOntapVersion mocks base method.
-func (m *MockRestClientInterface) SystemGetOntapVersion(arg0 context.Context) (string, error) {
+func (m *MockRestClientInterface) SystemGetOntapVersion(arg0 context.Context, arg1 bool) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SystemGetOntapVersion", arg0)
+	ret := m.ctrl.Call(m, "SystemGetOntapVersion", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SystemGetOntapVersion indicates an expected call of SystemGetOntapVersion.
-func (mr *MockRestClientInterfaceMockRecorder) SystemGetOntapVersion(arg0 interface{}) *gomock.Call {
+func (mr *MockRestClientInterfaceMockRecorder) SystemGetOntapVersion(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SystemGetOntapVersion", reflect.TypeOf((*MockRestClientInterface)(nil).SystemGetOntapVersion), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SystemGetOntapVersion", reflect.TypeOf((*MockRestClientInterface)(nil).SystemGetOntapVersion), arg0, arg1)
 }
 
 // TieringPolicyValue mocks base method.

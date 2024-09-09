@@ -58,7 +58,11 @@ type NASStorageDriver struct {
 	cloneSplitTimers map[string]time.Time
 }
 
-func (d *NASStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
+func (d *NASStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
+func (d *NASStorageDriver) GetOntapConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
 }
 
@@ -445,9 +449,9 @@ func (d *NASStorageDriver) CreateClone(
 		"snapshot":    cloneVolConfig.CloneSourceSnapshotInternal,
 		"storagePool": storagePool,
 	}
-	Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).
 		Trace(">>>> CreateClone")
-	defer Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).
 		Trace("<<<< CreateClone")
 
 	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
@@ -466,7 +470,7 @@ func (d *NASStorageDriver) CreateClone(
 	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 
 		// Make comment field from labels
 		labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
@@ -495,7 +499,7 @@ func (d *NASStorageDriver) CreateClone(
 
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
 	if storagePoolSplitOnCloneVal == "" {
-		storagePoolSplitOnCloneVal = d.GetConfig().SplitOnClone
+		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
 	}
 
 	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
@@ -512,7 +516,7 @@ func (d *NASStorageDriver) CreateClone(
 
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating volume clone.")
 
-	if err = cloneFlexvol(ctx, cloneVolConfig, labels, split, d.GetConfig(), d.GetAPI(), qosPolicyGroup); err != nil {
+	if err = cloneFlexvol(ctx, cloneVolConfig, labels, split, &d.Config, d.GetAPI(), qosPolicyGroup); err != nil {
 		return err
 	}
 
@@ -644,7 +648,7 @@ func (d *NASStorageDriver) Import(
 	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexvol.Comment) {
 			// Set the base label
-			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 
 			// Make comment field from labels
 			labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
@@ -1052,7 +1056,7 @@ func (d *NASStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage
 	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
 	// The process of generating a custom volume name necessitates a name template and label.
 	if storage.IsStoragePoolUnset(pool) {
-		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 	}
 	createPrepareCommon(ctx, d, volConfig, pool)
 }
@@ -1301,7 +1305,7 @@ func (d *NASStorageDriver) GetBackendState(ctx context.Context) (string, *roarin
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
+	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
 }
 
 // String makes NASStorageDriver satisfy the Stringer interface.
@@ -1326,15 +1330,15 @@ func (d *NASStorageDriver) EstablishMirror(
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+		replicationPolicy = d.Config.ReplicationPolicy
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
 	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
-			replicationPolicy, d.GetConfig().ReplicationPolicy)
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+			replicationPolicy, d.Config.ReplicationPolicy)
+		replicationPolicy = d.Config.ReplicationPolicy
 		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
@@ -1346,11 +1350,11 @@ func (d *NASStorageDriver) EstablishMirror(
 		if replicationSchedule != "" {
 			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
 				Logc(ctx).Debugf("Replication schedule given in TMR %s is invalid, using schedule %s from backend.",
-					replicationSchedule, d.GetConfig().ReplicationSchedule)
-				replicationSchedule = d.GetConfig().ReplicationSchedule
+					replicationSchedule, d.Config.ReplicationSchedule)
+				replicationSchedule = d.Config.ReplicationSchedule
 			}
 		} else {
-			replicationSchedule = d.GetConfig().ReplicationSchedule
+			replicationSchedule = d.Config.ReplicationSchedule
 		}
 	} else {
 		replicationSchedule = ""
@@ -1366,15 +1370,15 @@ func (d *NASStorageDriver) ReestablishMirror(
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+		replicationPolicy = d.Config.ReplicationPolicy
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
 	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
-			replicationPolicy, d.GetConfig().ReplicationPolicy)
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+			replicationPolicy, d.Config.ReplicationPolicy)
+		replicationPolicy = d.Config.ReplicationPolicy
 		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
@@ -1386,11 +1390,11 @@ func (d *NASStorageDriver) ReestablishMirror(
 		if replicationSchedule != "" {
 			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
 				Logc(ctx).Debugf("Replication schedule given in TMR %s is invalid, using schedule %s from backend.",
-					replicationSchedule, d.GetConfig().ReplicationSchedule)
-				replicationSchedule = d.GetConfig().ReplicationSchedule
+					replicationSchedule, d.Config.ReplicationSchedule)
+				replicationSchedule = d.Config.ReplicationSchedule
 			}
 		} else {
-			replicationSchedule = d.GetConfig().ReplicationSchedule
+			replicationSchedule = d.Config.ReplicationSchedule
 		}
 	} else {
 		replicationSchedule = ""
@@ -1406,7 +1410,7 @@ func (d *NASStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
 	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName,
-		d.GetConfig().ReplicationPolicy, d.API)
+		d.Config.ReplicationPolicy, d.API)
 }
 
 // GetMirrorStatus returns the current state of a mirror relationship

@@ -111,7 +111,7 @@ func TestGetTelemetry_Success(t *testing.T) {
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           "SVM1",
-		StoragePrefix: *driver.GetConfig().StoragePrefix,
+		StoragePrefix: *driver.Config.StoragePrefix,
 		Driver:        driver,
 		done:          make(chan struct{}),
 		stopped:       false,
@@ -607,7 +607,7 @@ func TestTerminate_WithErrorInApiOperation(t *testing.T) {
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           "SVM1",
-		StoragePrefix: *driver.GetConfig().StoragePrefix,
+		StoragePrefix: *driver.Config.StoragePrefix,
 		Driver:        driver,
 		done:          make(chan struct{}),
 	}

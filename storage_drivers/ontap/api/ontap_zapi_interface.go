@@ -366,7 +366,7 @@ type ZapiClientInterface interface {
 	// equivalent to filer::> version
 	SystemGetVersion() (*azgo.SystemGetVersionResponse, error)
 	// SystemGetOntapiVersion gets the ONTAPI version using the credentials, and caches & returns the result.
-	SystemGetOntapiVersion(ctx context.Context) (string, error)
+	SystemGetOntapiVersion(ctx context.Context, cached bool) (string, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)
 	// EmsAutosupportLog generates an auto support message with the supplied parameters
 	EmsAutosupportLog(

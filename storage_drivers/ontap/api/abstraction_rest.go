@@ -141,7 +141,7 @@ func (d OntapAPIREST) SVMName() string {
 
 func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	// Make sure we're using a valid ONTAP version
-	ontapVersion, err := d.APIVersion(ctx)
+	ontapVersion, err := d.APIVersion(ctx, true)
 	if err != nil {
 		return fmt.Errorf("could not determine Data ONTAP version; %v", err)
 	}
@@ -519,8 +519,8 @@ func namespaceInfoFromRestAttrsHelper(namespaceGetResponse *models.NvmeNamespace
 	return nsInfo, nil
 }
 
-func (d OntapAPIREST) APIVersion(ctx context.Context) (string, error) {
-	return d.api.SystemGetOntapVersion(ctx)
+func (d OntapAPIREST) APIVersion(ctx context.Context, cached bool) (string, error) {
+	return d.api.SystemGetOntapVersion(ctx, cached)
 }
 
 func (d OntapAPIREST) NodeListSerialNumbers(ctx context.Context) ([]string, error) {

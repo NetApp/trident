@@ -59,7 +59,7 @@ type NFSStorageDriver struct {
 	volumeCreateTimeout time.Duration
 }
 
-func (d *NFSStorageDriver) GetConfig() *drivers.GCPNFSStorageDriverConfig {
+func (d *NFSStorageDriver) GetConfig() drivers.DriverConfig {
 	return &d.Config
 }
 
@@ -1094,7 +1094,7 @@ func (d *NFSStorageDriver) CreateClone(
 		// Set the base label
 		storagePoolTemp := &storage.StoragePool{}
 		storagePoolTemp.SetAttributes(map[string]sa.Offer{
-			sa.Labels: sa.NewLabelOffer(d.GetConfig().Labels),
+			sa.Labels: sa.NewLabelOffer(d.Config.Labels),
 		})
 		poolLabels, err := storagePoolTemp.GetLabelsJSON(ctx, storage.ProvisioningLabelTag, api.MaxLabelLength)
 		if err != nil {

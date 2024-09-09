@@ -58,6 +58,7 @@ type Driver interface {
 	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
 	RestoreSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
 	DeleteSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
+	GetConfig() drivers.DriverConfig
 	StoreConfig(ctx context.Context, b *PersistentStorageBackendConfig)
 	// GetExternalConfig returns a version of the driver configuration that
 	// lacks confidential information, such as usernames and passwords.
@@ -156,6 +157,11 @@ func (b *StorageBackend) Driver() Driver {
 
 func (b *StorageBackend) SetDriver(Driver Driver) {
 	b.driver = Driver
+}
+
+func (b *StorageBackend) MarshalDriverConfig() ([]byte, error) {
+	driverConfig := b.driver.GetConfig()
+	return driverConfig.Marshal()
 }
 
 func (b *StorageBackend) Name() string {
@@ -978,6 +984,7 @@ const (
 const (
 	BackendStateReasonChange = iota
 	BackendStatePoolsChange
+	BackendStateAPIVersionChange
 )
 
 func (b *StorageBackend) GetUpdateType(ctx context.Context, origBackend Backend) *roaring.Bitmap {

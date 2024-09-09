@@ -145,6 +145,11 @@ func (d *NASBlockStorageDriver) Name() string {
 	return tridentconfig.AzureNASBlockStorageDriverName
 }
 
+// GetConfig returns the config of this driver.
+func (d *NASBlockStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
 // defaultBackendName returns the default name of the backend managed by this driver instance.
 func (d *NASBlockStorageDriver) defaultBackendName() string {
 	id := utils.RandomString(6)

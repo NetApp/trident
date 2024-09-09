@@ -37,18 +37,18 @@ func (m *MockOntapAPI) EXPECT() *MockOntapAPIMockRecorder {
 }
 
 // APIVersion mocks base method.
-func (m *MockOntapAPI) APIVersion(arg0 context.Context) (string, error) {
+func (m *MockOntapAPI) APIVersion(arg0 context.Context, arg1 bool) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "APIVersion", arg0)
+	ret := m.ctrl.Call(m, "APIVersion", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // APIVersion indicates an expected call of APIVersion.
-func (mr *MockOntapAPIMockRecorder) APIVersion(arg0 interface{}) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) APIVersion(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "APIVersion", reflect.TypeOf((*MockOntapAPI)(nil).APIVersion), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "APIVersion", reflect.TypeOf((*MockOntapAPI)(nil).APIVersion), arg0, arg1)
 }
 
 // EmsAutosupportLog mocks base method.

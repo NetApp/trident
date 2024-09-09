@@ -217,7 +217,7 @@ func newTestOntapSanEcoDriver(
 	sanEcoDriver.telemetry = &Telemetry{
 		Plugin:        sanEcoDriver.Name(),
 		SVM:           "SVM1",
-		StoragePrefix: *sanEcoDriver.GetConfig().StoragePrefix,
+		StoragePrefix: *sanEcoDriver.Config.StoragePrefix,
 		Driver:        sanEcoDriver,
 	}
 
@@ -514,8 +514,8 @@ func TestGetTelemetry(t *testing.T) {
 
 	d.telemetry = &Telemetry{
 		Plugin:        d.Name(),
-		SVM:           d.GetConfig().SVM,
-		StoragePrefix: *d.GetConfig().StoragePrefix,
+		SVM:           d.Config.SVM,
+		StoragePrefix: *d.Config.StoragePrefix,
 		Driver:        d,
 		done:          make(chan struct{}),
 	}

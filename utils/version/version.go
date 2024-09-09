@@ -131,8 +131,18 @@ func MustParseSemantic(str string) *Version {
 	return v
 }
 
-// MustParseMajorMinorVersion accepts a major-minor version and adds a dummy patch value to the version to
+// ParseMajorMinorVersion accepts a major-minor version and adds a dummy patch value to the version to
 // satisfy the parser. There are circumstances where the caller is only concerned with the major-minor version
+func ParseMajorMinorVersion(str string) (*Version, error) {
+	v, err := ParseSemantic(str + ".0")
+	if err != nil {
+		return nil, err
+	}
+
+	return v.ToMajorMinorVersion(), nil
+}
+
+// MustParseMajorMinorVersion is like ParseMajorMinorVersion except that it panics on error
 func MustParseMajorMinorVersion(str string) *Version {
 	return MustParseSemantic(str + ".0").ToMajorMinorVersion()
 }

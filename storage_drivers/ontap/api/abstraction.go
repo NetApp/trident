@@ -43,7 +43,7 @@ const (
 )
 
 type OntapAPI interface {
-	APIVersion(context.Context) (string, error)
+	APIVersion(ctx context.Context, cached bool) (string, error)
 	SVMName() string
 
 	EmsAutosupportLog(

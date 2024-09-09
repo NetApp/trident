@@ -63,7 +63,11 @@ const (
 )
 
 // GetConfig is to get the driver's configuration.
-func (d *NVMeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
+func (d *NVMeStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
+func (d *NVMeStorageDriver) GetOntapConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
 }
 
@@ -521,7 +525,7 @@ func (d *NVMeStorageDriver) CreateClone(
 	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 
 		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
 			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
@@ -647,7 +651,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		}
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexvol.Comment) {
 			// Set the base label
-			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 
 			// Make comment field from labels
 			labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
@@ -1068,7 +1072,7 @@ func (d *NVMeStorageDriver) CreatePrepare(ctx context.Context, volConfig *storag
 	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
 	// The process of generating a custom volume name necessitates a name template and label.
 	if storage.IsStoragePoolUnset(pool) {
-		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 	}
 	createPrepareCommon(ctx, d, volConfig, pool)
 }
@@ -1379,7 +1383,7 @@ func (d *NVMeStorageDriver) GetBackendState(ctx context.Context) (string, *roari
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, sa.NVMeTransport, d.GetStorageBackendPhysicalPoolNames(ctx))
+	return getSVMState(ctx, d.API, sa.NVMeTransport, d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
 }
 
 // String makes NVMeStorageDriver satisfy the Stringer interface.
@@ -1404,15 +1408,15 @@ func (d *NVMeStorageDriver) EstablishMirror(
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+		replicationPolicy = d.Config.ReplicationPolicy
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
 	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
-			replicationPolicy, d.GetConfig().ReplicationPolicy)
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+			replicationPolicy, d.Config.ReplicationPolicy)
+		replicationPolicy = d.Config.ReplicationPolicy
 		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
@@ -1424,11 +1428,11 @@ func (d *NVMeStorageDriver) EstablishMirror(
 		if replicationSchedule != "" {
 			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
 				Logc(ctx).Debugf("Replication schedule given in TMR %s is invalid, using schedule %s from backend.",
-					replicationSchedule, d.GetConfig().ReplicationSchedule)
-				replicationSchedule = d.GetConfig().ReplicationSchedule
+					replicationSchedule, d.Config.ReplicationSchedule)
+				replicationSchedule = d.Config.ReplicationSchedule
 			}
 		} else {
-			replicationSchedule = d.GetConfig().ReplicationSchedule
+			replicationSchedule = d.Config.ReplicationSchedule
 		}
 	} else {
 		replicationSchedule = ""
@@ -1444,15 +1448,15 @@ func (d *NVMeStorageDriver) ReestablishMirror(
 ) error {
 	// If replication policy in TMR is empty use the backend policy
 	if replicationPolicy == "" {
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+		replicationPolicy = d.Config.ReplicationPolicy
 	}
 
 	// Validate replication policy, if it is invalid, use the backend policy
 	isAsync, err := validateReplicationPolicy(ctx, replicationPolicy, d.API)
 	if err != nil {
 		Logc(ctx).Debugf("Replication policy given in TMR %s is invalid, using policy %s from backend.",
-			replicationPolicy, d.GetConfig().ReplicationPolicy)
-		replicationPolicy = d.GetConfig().ReplicationPolicy
+			replicationPolicy, d.Config.ReplicationPolicy)
+		replicationPolicy = d.Config.ReplicationPolicy
 		isAsync, err = validateReplicationPolicy(ctx, replicationPolicy, d.API)
 		if err != nil {
 			Logc(ctx).Debugf("Replication policy %s in backend should be valid.", replicationPolicy)
@@ -1464,11 +1468,11 @@ func (d *NVMeStorageDriver) ReestablishMirror(
 		if replicationSchedule != "" {
 			if err := validateReplicationSchedule(ctx, replicationSchedule, d.API); err != nil {
 				Logc(ctx).Debugf("Replication schedule given in TMR %s is invalid, using schedule %s from backend.",
-					replicationSchedule, d.GetConfig().ReplicationSchedule)
-				replicationSchedule = d.GetConfig().ReplicationSchedule
+					replicationSchedule, d.Config.ReplicationSchedule)
+				replicationSchedule = d.Config.ReplicationSchedule
 			}
 		} else {
-			replicationSchedule = d.GetConfig().ReplicationSchedule
+			replicationSchedule = d.Config.ReplicationSchedule
 		}
 	} else {
 		replicationSchedule = ""
@@ -1482,7 +1486,7 @@ func (d *NVMeStorageDriver) ReestablishMirror(
 func (d *NVMeStorageDriver) PromoteMirror(
 	ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string,
 ) (bool, error) {
-	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.GetConfig().ReplicationPolicy,
+	return promoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName, d.Config.ReplicationPolicy,
 		d.API)
 }
 

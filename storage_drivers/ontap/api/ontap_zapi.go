@@ -225,7 +225,7 @@ var MaximumONTAPIVersion = versionutils.MustParseMajorMinorVersion("9.17")
 
 // SupportsFeature returns true if the Ontapi version supports the supplied feature
 func (c Client) SupportsFeature(ctx context.Context, feature Feature) bool {
-	ontapiVersion, err := c.SystemGetOntapiVersion(ctx)
+	ontapiVersion, err := c.SystemGetOntapiVersion(ctx, true)
 	if err != nil {
 		return false
 	}
@@ -2973,8 +2973,8 @@ func (c Client) SystemGetVersion() (*azgo.SystemGetVersionResponse, error) {
 }
 
 // SystemGetOntapiVersion gets the ONTAPI version using the credentials, and caches & returns the result.
-func (c Client) SystemGetOntapiVersion(ctx context.Context) (string, error) {
-	if c.zr.OntapiVersion == "" {
+func (c Client) SystemGetOntapiVersion(ctx context.Context, cached bool) (string, error) {
+	if c.zr.OntapiVersion == "" || !cached {
 		result, err := azgo.NewSystemGetOntapiVersionRequest().ExecuteUsing(c.zr)
 		if err = azgo.GetError(ctx, result, err); err != nil {
 			return "", fmt.Errorf("could not read ONTAPI version: %v", err)

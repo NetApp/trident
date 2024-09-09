@@ -34,6 +34,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	tridentmodels "github.com/netapp/trident/utils/models"
+	"github.com/netapp/trident/utils/version"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -107,9 +108,12 @@ const (
 
 // StateReason, Change in these strings require change in test automation.
 const (
-	StateReasonSVMStopped     = "SVM is not in 'running' state"
-	StateReasonDataLIFsDown   = "No data LIFs present or all of them are 'down'"
-	StateReasonSVMUnreachable = "SVM is not reachable"
+	StateReasonSVMStopped                 = "SVM is not in 'running' state"
+	StateReasonDataLIFsDown               = "No data LIFs present or all of them are 'down'"
+	StateReasonSVMUnreachable             = "SVM is not reachable"
+	StateReasonNoAggregates               = "SVM does not contain any aggregates."
+	StateReasonMissingAggregate           = "Aggregate defined in the aggregate field of the backend config is not present in the SVM"
+	StateReasonMissingFlexGroupAggregates = "Some of the aggregates defined in the flexgroupAggregateList field of the backend config are not present in the SVM"
 )
 
 var (
@@ -126,15 +130,16 @@ func CleanBackendName(backendName string) string {
 }
 
 func NewOntapTelemetry(ctx context.Context, d StorageDriver) *Telemetry {
+	config := d.GetOntapConfig()
 	t := &Telemetry{
 		Plugin:        d.Name(),
-		SVM:           d.GetConfig().SVM,
-		StoragePrefix: *d.GetConfig().StoragePrefix,
+		SVM:           config.SVM,
+		StoragePrefix: *config.StoragePrefix,
 		Driver:        d,
 		done:          make(chan struct{}),
 	}
 
-	usageHeartbeat := d.GetConfig().UsageHeartbeat
+	usageHeartbeat := config.UsageHeartbeat
 	heartbeatIntervalInHours := 24.0 // default to 24 hours
 	if usageHeartbeat != "" {
 		f, err := strconv.ParseFloat(usageHeartbeat, 64)
@@ -413,7 +418,7 @@ func reconcileExportPolicyRules(
 // protocol - to get the data LIFs of similar service from backend.
 // pools - list of known pools to compare with the backend aggregate list and determine the change if any.
 func getSVMState(
-	ctx context.Context, client api.OntapAPI, protocol string, pools []string,
+	ctx context.Context, client api.OntapAPI, protocol string, pools []string, configAggrs ...string,
 ) (string, *roaring.Bitmap) {
 	changeMap := roaring.New()
 	svmState, err := client.GetSVMState(ctx)
@@ -424,20 +429,31 @@ func getSVMState(
 		return StateReasonSVMUnreachable, changeMap
 	}
 
+	if svmState != models.SvmStateRunning {
+		return StateReasonSVMStopped, changeMap
+	}
+
 	// Get Aggregates list and verify if there is any change.
 	aggrList, err := client.GetSVMAggregateNames(ctx)
 	if err != nil {
 		Logc(ctx).WithField("error", err).Debug("Error getting the physical pools from backend.")
 	} else {
+		if len(aggrList) == 0 {
+			changeMap.Add(storage.BackendStatePoolsChange)
+			return StateReasonNoAggregates, changeMap
+		}
 		sort.Strings(aggrList)
 		sort.Strings(pools)
 		if !cmp.Equal(pools, aggrList) {
 			changeMap.Add(storage.BackendStatePoolsChange)
+			// For the case where config.Aggregate is "", but due to configAggrs being a variadic parameter,
+			// it will be passed as []string{""}.
+			if strings.Join(configAggrs, "") != "" {
+				if containsAll, _ := utils.SliceContainsElements(aggrList, configAggrs); !containsAll {
+					return StateReasonMissingAggregate, changeMap
+				}
+			}
 		}
-	}
-
-	if svmState != models.SvmStateRunning {
-		return StateReasonSVMStopped, changeMap
 	}
 
 	// Get data LIFs.
@@ -449,6 +465,55 @@ func getSVMState(
 		}
 		// No data LIFs with state 'up' found.
 		return StateReasonDataLIFsDown, changeMap
+	}
+
+	// Get ONTAP version
+	ontapVerCached, err := client.APIVersion(ctx, true)
+	if err != nil {
+		// Could not get the ONTAP version. Just log it.
+		Logc(ctx).WithError(err).Debug("Error getting cached ONTAP version.")
+		return "", changeMap
+	}
+
+	ontapVerCurrent, err := client.APIVersion(ctx, false)
+	if err != nil {
+		// Could not get the ONTAP version. Just log it.
+		Logc(ctx).WithError(err).Debug("Error getting ONTAP version.")
+		return "", changeMap
+	}
+
+	var parsedOntapVerCurrent, parsedOntapVerCached *version.Version
+
+	switch client.(type) {
+	// versioning is different for ZAPI, for ex: 1.251 which is equivalent to 9.15.1
+	case api.OntapAPIZAPI:
+		parsedOntapVerCached, err = version.ParseMajorMinorVersion(ontapVerCached)
+		if err != nil {
+			Logc(ctx).WithField("error", err).Debug("Error parsing cached ONTAP version.")
+			return "", changeMap
+		}
+		parsedOntapVerCurrent, err = version.ParseMajorMinorVersion(ontapVerCurrent)
+		if err != nil {
+			Logc(ctx).WithField("error", err).Debug("Error parsing ONTAP version.")
+			return "", changeMap
+		}
+
+	default:
+		parsedOntapVerCached, err = version.ParseSemantic(ontapVerCached)
+		if err != nil {
+			Logc(ctx).WithField("error", err).Debug("Error parsing cached ONTAP version.")
+			return "", changeMap
+		}
+		parsedOntapVerCurrent, err = version.ParseSemantic(ontapVerCurrent)
+		if err != nil {
+			Logc(ctx).WithField("error", err).Debug("Error parsing ONTAP version.")
+			return "", changeMap
+		}
+	}
+
+	// Comparing the retrieved ONTAP version with the cached version.
+	if parsedOntapVerCurrent.GreaterThan(parsedOntapVerCached) || parsedOntapVerCurrent.LessThan(parsedOntapVerCached) {
+		changeMap.Add(storage.BackendStateAPIVersionChange)
 	}
 
 	return "", changeMap
@@ -1125,7 +1190,7 @@ func InitializeOntapAPI(
 		return ontapAPI, nil
 	}
 
-	ontapVer, err := ontapAPI.APIVersion(ctx)
+	ontapVer, err := ontapAPI.APIVersion(ctx, true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting ONTAP version: %v", err)
 	}
@@ -1937,7 +2002,7 @@ var ontapPerformanceClasses = map[ontapPerformanceClass]map[string]sa.Offer{
 // discoverBackendAggrNamesCommon discovers names of the aggregates assigned to the configured SVM
 func discoverBackendAggrNamesCommon(ctx context.Context, d StorageDriver) ([]string, error) {
 	client := d.GetAPI()
-	config := d.GetConfig()
+	config := d.GetOntapConfig()
 	driverName := d.Name()
 	var err error
 
@@ -2051,7 +2116,7 @@ func ensureUniquenessInNameTemplate(nameTemplate string) string {
 func InitializeStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
 ) (map[string]storage.Pool, map[string]storage.Pool, error) {
-	config := d.GetConfig()
+	config := d.GetOntapConfig()
 	physicalPools := make(map[string]storage.Pool)
 	virtualPools := make(map[string]storage.Pool)
 
@@ -2340,7 +2405,7 @@ func InitializeStoragePoolsCommon(
 func ValidateStoragePools(
 	ctx context.Context, physicalPools, virtualPools map[string]storage.Pool, d StorageDriver, labelLimit int,
 ) error {
-	config := d.GetConfig()
+	config := d.GetOntapConfig()
 
 	// Validate pool-level attributes
 	allPools := make([]storage.Pool, 0, len(physicalPools)+len(virtualPools))

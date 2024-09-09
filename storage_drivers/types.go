@@ -18,6 +18,7 @@ import (
 type DriverConfig interface {
 	String() string
 	GoString() string
+	Marshal() ([]byte, error)
 	GetCredentials() (string, string, error)
 	HasCredentials() bool
 	SetBackendName(backendName string)
@@ -222,6 +223,15 @@ func (d OntapStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+func (d *OntapStorageDriverConfig) Marshal() ([]byte, error) {
+	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
+	bytes, err := json.Marshal(d)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal OntapStorageDriverConfig: %v", err)
+	}
+	return bytes, nil
+}
+
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *OntapStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
@@ -389,6 +399,15 @@ func (d SolidfireStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+func (d *SolidfireStorageDriverConfig) Marshal() ([]byte, error) {
+	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
+	bytes, err := json.Marshal(d)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal SolidfireStorageDriverConfig: %v", err)
+	}
+	return bytes, nil
+}
+
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *SolidfireStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
@@ -519,6 +538,15 @@ func (d AzureNASStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+func (d *AzureNASStorageDriverConfig) Marshal() ([]byte, error) {
+	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
+	bytes, err := json.Marshal(d)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal AzureNASStorageDriverConfig: %v", err)
+	}
+	return bytes, nil
+}
+
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *AzureNASStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
@@ -646,6 +674,15 @@ func (d GCPNFSStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+func (d *GCPNFSStorageDriverConfig) Marshal() ([]byte, error) {
+	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
+	bytes, err := json.Marshal(d)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal GCPNFSStorageDriverConfig: %v", err)
+	}
+	return bytes, nil
+}
+
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *GCPNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
@@ -763,6 +800,15 @@ func (d GCNVNASStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
+func (d *GCNVNASStorageDriverConfig) Marshal() ([]byte, error) {
+	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
+	bytes, err := json.Marshal(d)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal GCNVNASStorageDriverConfig: %v", err)
+	}
+	return bytes, nil
+}
+
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
 func (d *GCNVNASStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
 	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
@@ -848,6 +894,15 @@ func (d FakeStorageDriverConfig) String() string {
 // Implement GoStringer interface for the FakeStorageDriverConfig driver
 func (d FakeStorageDriverConfig) GoString() string {
 	return d.String()
+}
+
+func (d *FakeStorageDriverConfig) Marshal() ([]byte, error) {
+	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
+	bytes, err := json.Marshal(d)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal FakeStorageDriverConfig: %v", err)
+	}
+	return bytes, nil
 }
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map

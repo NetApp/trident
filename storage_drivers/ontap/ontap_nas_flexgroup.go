@@ -44,7 +44,11 @@ type NASFlexGroupStorageDriver struct {
 	cloneSplitTimers map[string]time.Time
 }
 
-func (d *NASFlexGroupStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
+func (d *NASFlexGroupStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
+func (d *NASFlexGroupStorageDriver) GetOntapConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
 }
 
@@ -164,8 +168,6 @@ func (d *NASFlexGroupStorageDriver) Terminate(ctx context.Context, backendUUID s
 }
 
 func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) error {
-	config := d.GetConfig()
-
 	vserverAggrs, err := d.vserverAggregates(ctx, d.API.SVMName())
 	if err != nil {
 		return err
@@ -195,37 +197,37 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 		pool.Attributes()[attrName] = offer
 	}
 
-	if config.Region != "" {
-		pool.Attributes()[sa.Region] = sa.NewStringOffer(config.Region)
+	if d.Config.Region != "" {
+		pool.Attributes()[sa.Region] = sa.NewStringOffer(d.Config.Region)
 	}
-	if config.Zone != "" {
-		pool.Attributes()[sa.Zone] = sa.NewStringOffer(config.Zone)
+	if d.Config.Zone != "" {
+		pool.Attributes()[sa.Zone] = sa.NewStringOffer(d.Config.Zone)
 	}
 
-	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
-	pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
+	pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels)
+	pool.Attributes()[sa.NASType] = sa.NewStringOffer(d.Config.NASType)
 
 	if len(mediaOffers) > 0 {
 		pool.Attributes()[sa.Media] = sa.NewStringOfferFromOffers(mediaOffers...)
 		pool.InternalAttributes()[Media] = pool.Attributes()[sa.Media].ToString()
 	}
 
-	pool.InternalAttributes()[Size] = config.Size
-	pool.InternalAttributes()[NameTemplate] = ensureUniquenessInNameTemplate(config.NameTemplate)
-	pool.InternalAttributes()[Region] = config.Region
-	pool.InternalAttributes()[Zone] = config.Zone
-	pool.InternalAttributes()[SpaceReserve] = config.SpaceReserve
-	pool.InternalAttributes()[SnapshotPolicy] = config.SnapshotPolicy
-	pool.InternalAttributes()[SnapshotReserve] = config.SnapshotReserve
-	pool.InternalAttributes()[Encryption] = config.Encryption
-	pool.InternalAttributes()[UnixPermissions] = config.UnixPermissions
-	pool.InternalAttributes()[SnapshotDir] = config.SnapshotDir
-	pool.InternalAttributes()[SplitOnClone] = config.SplitOnClone
-	pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
-	pool.InternalAttributes()[SecurityStyle] = config.SecurityStyle
-	pool.InternalAttributes()[TieringPolicy] = config.TieringPolicy
-	pool.InternalAttributes()[QosPolicy] = config.QosPolicy
-	pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
+	pool.InternalAttributes()[Size] = d.Config.Size
+	pool.InternalAttributes()[NameTemplate] = ensureUniquenessInNameTemplate(d.Config.NameTemplate)
+	pool.InternalAttributes()[Region] = d.Config.Region
+	pool.InternalAttributes()[Zone] = d.Config.Zone
+	pool.InternalAttributes()[SpaceReserve] = d.Config.SpaceReserve
+	pool.InternalAttributes()[SnapshotPolicy] = d.Config.SnapshotPolicy
+	pool.InternalAttributes()[SnapshotReserve] = d.Config.SnapshotReserve
+	pool.InternalAttributes()[Encryption] = d.Config.Encryption
+	pool.InternalAttributes()[UnixPermissions] = d.Config.UnixPermissions
+	pool.InternalAttributes()[SnapshotDir] = d.Config.SnapshotDir
+	pool.InternalAttributes()[SplitOnClone] = d.Config.SplitOnClone
+	pool.InternalAttributes()[ExportPolicy] = d.Config.ExportPolicy
+	pool.InternalAttributes()[SecurityStyle] = d.Config.SecurityStyle
+	pool.InternalAttributes()[TieringPolicy] = d.Config.TieringPolicy
+	pool.InternalAttributes()[QosPolicy] = d.Config.QosPolicy
+	pool.InternalAttributes()[AdaptiveQosPolicy] = d.Config.AdaptiveQosPolicy
 
 	d.physicalPool = pool
 
@@ -235,82 +237,82 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 		Logc(ctx).Debug("Defining Virtual Pools based on Virtual Pools definition in the backend file.")
 
 		for index, vpool := range d.Config.Storage {
-			region := config.Region
+			region := d.Config.Region
 			if vpool.Region != "" {
 				region = vpool.Region
 			}
 
-			zone := config.Zone
+			zone := d.Config.Zone
 			if vpool.Zone != "" {
 				zone = vpool.Zone
 			}
 
-			size := config.Size
+			size := d.Config.Size
 			if vpool.Size != "" {
 				size = vpool.Size
 			}
 
-			nameTemplate := config.NameTemplate
+			nameTemplate := d.Config.NameTemplate
 			if vpool.NameTemplate != "" {
 				nameTemplate = vpool.NameTemplate
 			}
 
-			spaceReserve := config.SpaceReserve
+			spaceReserve := d.Config.SpaceReserve
 			if vpool.SpaceReserve != "" {
 				spaceReserve = vpool.SpaceReserve
 			}
 
-			snapshotPolicy := config.SnapshotPolicy
+			snapshotPolicy := d.Config.SnapshotPolicy
 			if vpool.SnapshotPolicy != "" {
 				snapshotPolicy = vpool.SnapshotPolicy
 			}
 
-			snapshotReserve := config.SnapshotReserve
+			snapshotReserve := d.Config.SnapshotReserve
 			if vpool.SnapshotReserve != "" {
 				snapshotReserve = vpool.SnapshotReserve
 			}
 
-			splitOnClone := config.SplitOnClone
+			splitOnClone := d.Config.SplitOnClone
 			if vpool.SplitOnClone != "" {
 				splitOnClone = vpool.SplitOnClone
 			}
 
-			unixPermissions := config.UnixPermissions
+			unixPermissions := d.Config.UnixPermissions
 			if vpool.UnixPermissions != "" {
 				unixPermissions = vpool.UnixPermissions
 			}
 
-			snapshotDir := config.SnapshotDir
+			snapshotDir := d.Config.SnapshotDir
 			if vpool.SnapshotDir != "" {
 				snapshotDir = vpool.SnapshotDir
 			}
 
-			exportPolicy := config.ExportPolicy
+			exportPolicy := d.Config.ExportPolicy
 			if vpool.ExportPolicy != "" {
 				exportPolicy = vpool.ExportPolicy
 			}
 
-			securityStyle := config.SecurityStyle
+			securityStyle := d.Config.SecurityStyle
 			if vpool.SecurityStyle != "" {
 				securityStyle = vpool.SecurityStyle
 			}
 
-			encryption := config.Encryption
+			encryption := d.Config.Encryption
 			if vpool.Encryption != "" {
 				encryption = vpool.Encryption
 			}
 
-			tieringPolicy := config.TieringPolicy
+			tieringPolicy := d.Config.TieringPolicy
 			if vpool.TieringPolicy != "" {
 				tieringPolicy = vpool.TieringPolicy
 			}
 
-			qosPolicy := config.QosPolicy
+			qosPolicy := d.Config.QosPolicy
 			if vpool.QosPolicy != "" {
 				qosPolicy = vpool.QosPolicy
 			}
 
-			adaptiveQosPolicy := config.AdaptiveQosPolicy
+			adaptiveQosPolicy := d.Config.AdaptiveQosPolicy
 			if vpool.AdaptiveQosPolicy != "" {
 				adaptiveQosPolicy = vpool.AdaptiveQosPolicy
 			}
@@ -325,12 +327,12 @@ func (d *NASFlexGroupStorageDriver) initializeStoragePools(ctx context.Context) 
 				pool.Attributes()[attrName] = offer
 			}
 
-			nasType := config.NASType
+			nasType := d.Config.NASType
 			if vpool.NASType != "" {
 				nasType = vpool.NASType
 			}
 
-			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels, vpool.Labels)
+			pool.Attributes()[sa.Labels] = sa.NewLabelOffer(d.Config.Labels, vpool.Labels)
 			pool.Attributes()[sa.NASType] = sa.NewStringOffer(nasType)
 
 			if region != "" {
@@ -821,9 +823,9 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 		"storagePool": storagePool,
 	}
 
-	Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+	Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).
 		Trace(">>>> CreateClone")
-	defer Logd(ctx, d.GetConfig().StorageDriverName, d.GetConfig().DebugTraceFlags["method"]).WithFields(fields).
+	defer Logd(ctx, d.Config.StorageDriverName, d.Config.DebugTraceFlags["method"]).WithFields(fields).
 		Trace("<<<< CreateClone")
 
 	opts := d.GetVolumeOpts(context.Background(), cloneVolConfig, make(map[string]sa.Request))
@@ -842,7 +844,7 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
 		// Set the base label
-		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 
 		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
 			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
@@ -859,7 +861,7 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
 	if storagePoolSplitOnCloneVal == "" {
-		storagePoolSplitOnCloneVal = d.GetConfig().SplitOnClone
+		storagePoolSplitOnCloneVal = d.Config.SplitOnClone
 	}
 
 	split, err := strconv.ParseBool(utils.GetV(opts, "splitOnClone", storagePoolSplitOnCloneVal))
@@ -875,7 +877,7 @@ func (d *NASFlexGroupStorageDriver) CreateClone(
 	}
 
 	if err := cloneFlexgroup(
-		ctx, cloneVolConfig, labels, split, d.GetConfig(), d.GetAPI(), true, qosPolicyGroup,
+		ctx, cloneVolConfig, labels, split, &d.Config, d.GetAPI(), true, qosPolicyGroup,
 	); err != nil {
 		return err
 	}
@@ -1697,7 +1699,12 @@ func (d *NASFlexGroupStorageDriver) GetBackendState(ctx context.Context) (string
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
+	reason, changeMap := getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.FlexGroupAggregateList...)
+	if reason == StateReasonMissingAggregate {
+		return StateReasonMissingFlexGroupAggregates, changeMap
+	} else {
+		return reason, changeMap
+	}
 }
 
 // String makes NASFlexGroupStorageDriver satisfy the Stringer interface.

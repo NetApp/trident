@@ -260,6 +260,11 @@ func (d *StorageDriver) Name() string {
 	return config.FakeStorageDriverName
 }
 
+// GetConfig returns the config of this driver.
+func (d *StorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
 // BackendName returns the name of the backend managed by this driver instance
 func (d *StorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {

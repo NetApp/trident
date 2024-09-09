@@ -67,7 +67,11 @@ type NASQtreeStorageDriver struct {
 	cloneSplitTimers map[string]time.Time
 }
 
-func (d *NASQtreeStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
+func (d *NASQtreeStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
+func (d *NASQtreeStorageDriver) GetOntapConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
 }
 
@@ -1693,7 +1697,7 @@ func (d *NASQtreeStorageDriver) CreatePrepare(
 	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
 	// The process of generating a custom volume name necessitates a name template and label.
 	if storage.IsStoragePoolUnset(pool) {
-		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 	}
 	createPrepareCommon(ctx, d, volConfig, pool)
 }
@@ -2228,7 +2232,7 @@ func (d *NASQtreeStorageDriver) GetBackendState(ctx context.Context) (string, *r
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx))
+	return getSVMState(ctx, d.API, "nfs", d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
 }
 
 // String makes NASQtreeStorageDriver satisfy the Stringer interface.

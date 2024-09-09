@@ -14,7 +14,7 @@ import (
 )
 
 type StorageDriver interface {
-	GetConfig() *drivers.OntapStorageDriverConfig
+	GetOntapConfig() *drivers.OntapStorageDriverConfig
 	GetAPI() api.OntapAPI
 	GetTelemetry() *Telemetry
 	Name() string
@@ -23,7 +23,7 @@ type StorageDriver interface {
 type NASDriver interface {
 	GetVolumeOpts(context.Context, *storage.VolumeConfig, map[string]sa.Request) map[string]string
 	GetAPI() api.OntapAPI
-	GetConfig() *drivers.OntapStorageDriverConfig
+	GetOntapConfig() *drivers.OntapStorageDriverConfig
 }
 
 type Telemetry struct {

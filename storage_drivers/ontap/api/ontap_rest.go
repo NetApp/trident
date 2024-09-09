@@ -1,5 +1,3 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
-
 package api
 
 import (
@@ -298,7 +296,7 @@ func IsRESTSupportedDefault(version string) (bool, error) {
 
 // SupportsFeature returns true if the Ontap version supports the supplied feature
 func (c RestClient) SupportsFeature(ctx context.Context, feature Feature) bool {
-	ontapVersion, err := c.SystemGetOntapVersion(ctx)
+	ontapVersion, err := c.SystemGetOntapVersion(ctx, true)
 	if err != nil {
 		return false
 	}
@@ -3491,9 +3489,9 @@ func (c RestClient) ClusterInfo(
 
 // SystemGetOntapVersion gets the ONTAP version using the credentials, and caches & returns the result.
 func (c RestClient) SystemGetOntapVersion(
-	ctx context.Context,
+	ctx context.Context, cached bool,
 ) (string, error) {
-	if c.OntapVersion != "" {
+	if c.OntapVersion != "" && cached {
 		// return cached version
 		return c.OntapVersion, nil
 	}

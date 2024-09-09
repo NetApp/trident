@@ -18,6 +18,7 @@ import (
 type Backend interface {
 	Driver() Driver
 	SetDriver(Driver Driver)
+	MarshalDriverConfig() ([]byte, error)
 	Name() string
 	SetName(Name string)
 	BackendUUID() string

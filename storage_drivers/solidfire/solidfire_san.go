@@ -103,6 +103,11 @@ func (d SANStorageDriver) Name() string {
 	return tridentconfig.SolidfireSANStorageDriverName
 }
 
+// GetConfig returns the config of this driver.
+func (d *SANStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
 // BackendName returns the name of the backend managed by this driver instance
 func (d *SANStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {

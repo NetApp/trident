@@ -194,7 +194,11 @@ type SANEconomyStorageDriver struct {
 	virtualPools  map[string]storage.Pool
 }
 
-func (d *SANEconomyStorageDriver) GetConfig() *drivers.OntapStorageDriverConfig {
+func (d *SANEconomyStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
+func (d *SANEconomyStorageDriver) GetOntapConfig() *drivers.OntapStorageDriverConfig {
 	return &d.Config
 }
 
@@ -1933,7 +1937,7 @@ func (d *SANEconomyStorageDriver) CreatePrepare(
 	// If no pool is specified, a new pool is created and assigned a name template and label from the common configuration.
 	// The process of generating a custom volume name necessitates a name template and label.
 	if storage.IsStoragePoolUnset(pool) {
-		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.GetConfig().Labels)
+		pool = ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 	}
 	createPrepareCommon(ctx, d, volConfig, pool)
 }
@@ -2355,7 +2359,7 @@ func (d *SANEconomyStorageDriver) GetBackendState(ctx context.Context) (string, 
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx))
+	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx), d.Config.Aggregate)
 }
 
 // String makes SANEconomyStorageDriver satisfy the Stringer interface.

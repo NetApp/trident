@@ -49,7 +49,7 @@ func newNVMeDriver(apiOverride api.OntapAPI, awsApiOverride awsapi.AWSAPI, fsxId
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           config.SVM,
-		StoragePrefix: *driver.GetConfig().StoragePrefix,
+		StoragePrefix: *driver.Config.StoragePrefix,
 		Driver:        driver,
 	}
 

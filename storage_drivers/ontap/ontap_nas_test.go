@@ -136,7 +136,7 @@ func newTestOntapNASDriver(
 	nasDriver.telemetry = &Telemetry{
 		Plugin:        nasDriver.Name(),
 		SVM:           config.SVM,
-		StoragePrefix: *nasDriver.GetConfig().StoragePrefix,
+		StoragePrefix: *nasDriver.Config.StoragePrefix,
 		Driver:        nasDriver,
 	}
 
@@ -751,7 +751,7 @@ func TestOntapNasStorageDriverTerminate_TelemetryFailure(t *testing.T) {
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           "SVM1",
-		StoragePrefix: *driver.GetConfig().StoragePrefix,
+		StoragePrefix: *driver.Config.StoragePrefix,
 		Driver:        driver,
 		done:          make(chan struct{}),
 	}
@@ -1143,7 +1143,7 @@ func TestOntapNasStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 				test.labelKey: test.labelValue,
 			}
 			pool1.SetAttributes(map[string]sa.Offer{
-				sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
 			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -1194,7 +1194,7 @@ func TestOntapNasStorageDriverVolumeClone_LabelLengthExceeding(t *testing.T) {
 		"tieringPolicy": "none",
 	})
 	pool1.SetAttributes(map[string]sa.Offer{
-		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.SplitOnClone = "false"
@@ -1246,7 +1246,7 @@ func TestOntapNasStorageDriverVolumeClone_StoragePoolUnsetLabelLengthExceeding(t
 	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
 		"RequestName}}"
 	pool1.SetAttributes(map[string]sa.Offer{
-		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.SplitOnClone = "false"
@@ -4564,7 +4564,7 @@ func TestOntapNasStorageDriverGetTelemetry(t *testing.T) {
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           "SVM1",
-		StoragePrefix: *driver.GetConfig().StoragePrefix,
+		StoragePrefix: *driver.Config.StoragePrefix,
 		Driver:        driver,
 		done:          make(chan struct{}),
 	}

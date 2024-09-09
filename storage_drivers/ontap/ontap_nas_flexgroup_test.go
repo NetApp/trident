@@ -72,7 +72,7 @@ func newTestOntapNASFlexgroupDriver(
 	nasDriver.telemetry = &Telemetry{
 		Plugin:        nasDriver.Name(),
 		SVM:           config.SVM,
-		StoragePrefix: *nasDriver.GetConfig().StoragePrefix,
+		StoragePrefix: *nasDriver.Config.StoragePrefix,
 		Driver:        nasDriver,
 	}
 
@@ -982,7 +982,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate_TelemetryFailure(t *testing.T) 
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           "SVM1",
-		StoragePrefix: *driver.GetConfig().StoragePrefix,
+		StoragePrefix: *driver.Config.StoragePrefix,
 		Driver:        driver,
 		done:          make(chan struct{}),
 	}
@@ -2453,7 +2453,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 			}
 
 			pool1.SetAttributes(map[string]sa.Offer{
-				sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
 			driver.physicalPool = pool1
 

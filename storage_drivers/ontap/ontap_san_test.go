@@ -166,7 +166,7 @@ func newTestOntapSANDriver(
 	sanDriver.API = ontapAPI
 	sanDriver.telemetry = &Telemetry{
 		Plugin:        sanDriver.Name(),
-		StoragePrefix: *sanDriver.GetConfig().StoragePrefix,
+		StoragePrefix: *sanDriver.Config.StoragePrefix,
 		Driver:        sanDriver,
 	}
 
@@ -253,7 +253,7 @@ func TestOntapSANStorageDriverTerminate_TelemetryFailure(t *testing.T) {
 	driver.telemetry = &Telemetry{
 		Plugin:        driver.Name(),
 		SVM:           "SVM1",
-		StoragePrefix: *driver.GetConfig().StoragePrefix,
+		StoragePrefix: *driver.Config.StoragePrefix,
 		Driver:        driver,
 		done:          make(chan struct{}),
 	}
@@ -1602,7 +1602,7 @@ func TestOntapSanVolumeClone_NameTemplate(t *testing.T) {
 				test.labelKey: test.labelValue,
 			}
 			pool1.SetAttributes(map[string]sa.Offer{
-				sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
 
 			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
@@ -1664,7 +1664,7 @@ func TestOntapSanVolumeClone_NameTemplateLabelLengthExceeding(t *testing.T) {
 	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
 		"RequestName}}"
 	pool1.SetAttributes(map[string]sa.Offer{
-		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
 
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
@@ -1709,7 +1709,7 @@ func TestOntapSanVolumeImport(t *testing.T) {
 	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
 		"RequestName}}"
 	pool1.SetAttributes(map[string]sa.Offer{
-		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -2049,7 +2049,7 @@ func TestOntapSanVolumeImport_NameTemplateLabel(t *testing.T) {
 				test.labelKey: test.labelValue,
 			}
 			pool1.SetAttributes(map[string]sa.Offer{
-				sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
 			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
@@ -2101,7 +2101,7 @@ func TestOntapSanVolumeImport_NameTemplateLabelLengthExceeding(t *testing.T) {
 	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
 		"RequestName}}"
 	pool1.SetAttributes(map[string]sa.Offer{
-		sa.Labels: sa.NewLabelOffer(driver.GetConfig().Labels),
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 	})
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 

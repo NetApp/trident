@@ -186,7 +186,7 @@ type RestClientInterface interface {
 	// ClusterInfo returns information about the cluster
 	ClusterInfo(ctx context.Context) (*cluster.ClusterGetOK, error)
 	// SystemGetOntapVersion gets the ONTAP version using the credentials, and caches & returns the result.
-	SystemGetOntapVersion(ctx context.Context) (string, error)
+	SystemGetOntapVersion(ctx context.Context, cached bool) (string, error)
 	// NodeList returns information about nodes
 	NodeList(ctx context.Context, pattern string) (*cluster.NodesGetOK, error)
 	NodeListSerialNumbers(ctx context.Context) ([]string, error)

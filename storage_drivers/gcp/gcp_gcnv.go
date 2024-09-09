@@ -71,6 +71,11 @@ func (d *NASStorageDriver) Name() string {
 	return tridentconfig.GCNVNASStorageDriverName
 }
 
+// GetConfig returns the config of this driver.
+func (d *NASStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
+}
+
 // defaultBackendName returns the default name of the backend managed by this driver instance.
 func (d *NASStorageDriver) defaultBackendName() string {
 	return fmt.Sprintf("%s_%s", strings.Replace(d.Name(), "-", "", -1), d.Config.APIKey.PrivateKeyID[0:5])

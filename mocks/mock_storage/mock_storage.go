@@ -481,6 +481,21 @@ func (mr *MockBackendMockRecorder) IsCredentialsFieldSet(arg0 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCredentialsFieldSet", reflect.TypeOf((*MockBackend)(nil).IsCredentialsFieldSet), arg0)
 }
 
+// MarshalDriverConfig mocks base method.
+func (m *MockBackend) MarshalDriverConfig() ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MarshalDriverConfig")
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MarshalDriverConfig indicates an expected call of MarshalDriverConfig.
+func (mr *MockBackendMockRecorder) MarshalDriverConfig() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalDriverConfig", reflect.TypeOf((*MockBackend)(nil).MarshalDriverConfig))
+}
+
 // Name mocks base method.
 func (m *MockBackend) Name() string {
 	m.ctrl.T.Helper()

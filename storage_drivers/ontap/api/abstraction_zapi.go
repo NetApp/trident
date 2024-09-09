@@ -29,7 +29,7 @@ func (d OntapAPIZAPI) SVMName() string {
 
 func (d OntapAPIZAPI) ValidateAPIVersion(ctx context.Context) error {
 	// Make sure we're using a valid ONTAP version
-	ontapVersion, err := d.APIVersion(ctx)
+	ontapVersion, err := d.APIVersion(ctx, true)
 	if err != nil {
 		return fmt.Errorf("could not determine Data ONTAP API version: %v", err)
 	}
@@ -237,8 +237,8 @@ func VolumeInfoFromZapiAttrsHelper(volumeGetResponse *azgo.VolumeAttributesType)
 	return volumeInfo, nil
 }
 
-func (d OntapAPIZAPI) APIVersion(ctx context.Context) (string, error) {
-	return d.api.SystemGetOntapiVersion(ctx)
+func (d OntapAPIZAPI) APIVersion(ctx context.Context, cached bool) (string, error) {
+	return d.api.SystemGetOntapiVersion(ctx, cached)
 }
 
 func (d OntapAPIZAPI) SupportsFeature(ctx context.Context, feature Feature) bool {

@@ -19,6 +19,8 @@ package version
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type testItem struct {
@@ -375,5 +377,58 @@ func TestBadGenericVersions(t *testing.T) {
 		if err == nil {
 			t.Errorf("unexpected success parsing invalid version %q", tests[i])
 		}
+	}
+}
+
+func TestParseMajorMinorVersion(t *testing.T) {
+	validTests := []string{
+		"1.2",
+		"2.3",
+		"v1.2",
+		"0.2",
+		"1.251",
+	}
+
+	invalidTests := []string{
+		".02",
+		"1.2.3",
+		"bob",
+		"v1.2.3",
+		"1",
+		"01.2.3",
+		"-1.2.3",
+		"1.-2.3",
+		".2.3",
+		"1..3",
+		"1a.2.3",
+		"a1.2.3",
+		"1 .2.3",
+		"1. 2.3",
+		"1.bob",
+		"bob",
+		"v 1.2.3",
+		"vv1.2.3",
+		"",
+		".",
+		"1.03-alpha",
+		"1.251RC1",
+	}
+
+	for _, tt := range validTests {
+		tt := tt
+		t.Run("ValidTests", func(t *testing.T) {
+			t.Parallel()
+			_, err := ParseMajorMinorVersion(tt)
+			assert.NoError(t, err, "Shouldn't be an error")
+		})
+	}
+
+	for _, tt := range invalidTests {
+		tt := tt
+		t.Run("InvalidTests", func(t *testing.T) {
+			t.Parallel()
+			_, err := ParseMajorMinorVersion(tt)
+			assert.Error(t, err, "Should be an error")
+		})
 	}
 }

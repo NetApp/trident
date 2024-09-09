@@ -193,6 +193,20 @@ func (mr *MockDriverMockRecorder) GetCommonConfig(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommonConfig", reflect.TypeOf((*MockDriver)(nil).GetCommonConfig), arg0)
 }
 
+// GetConfig mocks base method.
+func (m *MockDriver) GetConfig() storagedrivers.DriverConfig {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConfig")
+	ret0, _ := ret[0].(storagedrivers.DriverConfig)
+	return ret0
+}
+
+// GetConfig indicates an expected call of GetConfig.
+func (mr *MockDriverMockRecorder) GetConfig() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfig", reflect.TypeOf((*MockDriver)(nil).GetConfig))
+}
+
 // GetExternalConfig mocks base method.
 func (m *MockDriver) GetExternalConfig(arg0 context.Context) interface{} {
 	m.ctrl.T.Helper()
