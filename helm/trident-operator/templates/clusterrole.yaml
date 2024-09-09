@@ -408,3 +408,9 @@ rules:
       - use
     resourceNames:
       - tridentoperatorpods
+  - apiGroups:
+    - management.cattle.io
+    resources:
+    - projects
+    verbs:
+    - updatepsa
