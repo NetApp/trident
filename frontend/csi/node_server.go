@@ -500,12 +500,7 @@ func (p *Plugin) nodeExpandVolume(
 		return err
 	}
 
-	isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
-	if err != nil {
-		Logc(ctx).WithField("volumeId", volumeId).Warnf("Could not parse LUKSEncryption into a bool, got %v.",
-			publishInfo.LUKSEncryption)
-	}
-	if isLUKS {
+	if utils.ParseBool(publishInfo.LUKSEncryption) {
 		Logc(ctx).WithField("volumeId", volumeId).Info("Resizing the LUKS mapping.")
 		// Refresh the luks device
 		// cryptsetup resize <luks-device-path> << <passphrase>
@@ -1127,13 +1122,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 		return err
 	}
 
-	var isLUKS bool
-	if req.PublishContext["LUKSEncryption"] != "" {
-		isLUKS, err = strconv.ParseBool(req.PublishContext["LUKSEncryption"])
-		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
-		}
-	}
+	isLUKS := utils.ParseBool(req.PublishContext["LUKSEncryption"])
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 
 	err = unstashIscsiTargetPortals(publishInfo, req.PublishContext)
@@ -1309,42 +1298,31 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	// Remove Portal/LUN entries in self-healing map.
 	utils.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
 
-	if publishInfo.LUKSEncryption != "" {
-		isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
+	if utils.ParseBool(publishInfo.LUKSEncryption) {
+		fields := LogFields{"luksDevicePath": publishInfo.DevicePath, "lunID": publishInfo.IscsiLunNumber}
+
+		// Before closing the LUKS device, get the underlying mapper device from cryptsetup.
+		mapperPath, err := utils.GetUnderlyingDevicePathForLUKSDevice(ctx, publishInfo.DevicePath)
 		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+			// No need to return an error
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not determine underlying device for LUKS.")
 		}
-		if isLUKS {
-			// Before closing the device, get the corresponding DM device.
-			publishedLUKsDevice, err := utils.GetUnderlyingDevicePathForLUKSDevice(ctx, publishInfo.DevicePath)
-			if err != nil {
-				// No need to return an error
-				Logc(ctx).WithFields(LogFields{
-					"devicePath": publishInfo.DevicePath,
-					"lun":        publishInfo.IscsiLunNumber,
-					"err":        err,
-				}).Error("Failed to verify the multipath device, could not determine" +
-					" underlying device for LUKS mapping.")
-			}
+		fields["mapperPath"] = mapperPath
 
-			err = utils.EnsureLUKSDeviceClosed(ctx, publishInfo.DevicePath)
-			if err != nil {
-				return err
-			}
-
-			publishedLUKsDMDevice := ""
-			// Get the DM device for the LUKS device
-			if publishedLUKsDMDevice, err = utils.GetDMDeviceForMapperPath(ctx, publishedLUKsDevice); err != nil {
-				Logc(ctx).WithFields(LogFields{
-					"devicePath": publishedLUKsDevice,
-					"err":        err,
-				}).Warning("Failed to get the DM device for mapper device.")
-			}
-
-			// For the future steps LUKs device path is not really useful, either it should be
-			// DM device or empty.
-			publishInfo.DevicePath = publishedLUKsDMDevice
+		if err = utils.EnsureLUKSDeviceClosed(ctx, publishInfo.DevicePath); err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to close LUKS device.")
+			return err
 		}
+
+		// Get the underlying device mapper device for the block device used by LUKS.
+		dmDevicePath, err := utils.GetDMDeviceForMapperPath(ctx, mapperPath)
+		if err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to determine dm device from device mapper.")
+		}
+
+		// At this point, the LUKs device path is no longer useful.
+		// However, the device mapper device path is (/dev/dm-#).
+		publishInfo.DevicePath = dmDevicePath
 	}
 
 	// Delete the device from the host.
@@ -1397,6 +1375,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal); err != nil {
 			Logc(ctx).Error(err)
 		}
+
 		for _, portal := range publishInfo.IscsiPortals {
 			if err := utils.ISCSILogout(ctx, publishInfo.IscsiTargetIQN, portal); err != nil {
 				Logc(ctx).Error(err)
@@ -1479,24 +1458,20 @@ func (p *Plugin) nodePublishISCSIVolume(
 	if req.GetReadonly() {
 		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
-	if publishInfo.LUKSEncryption != "" {
-		isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
+
+	if utils.ParseBool(publishInfo.LUKSEncryption) {
+		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
+		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+			req.VolumeContext["internalName"])
 		if err != nil {
-			return nil, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+			return nil, status.Error(codes.Internal, err.Error())
 		}
-		if isLUKS {
-			// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
-				req.VolumeContext["internalName"])
-			if err != nil {
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-			err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
-			if err != nil {
-				Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
-			}
+		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
 	}
+
 	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
 	if isRawBlock {
 
@@ -2308,16 +2283,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 	publishInfo *models.VolumePublishInfo,
 ) error {
-	var isLUKS bool
-	var err error
-
-	if req.PublishContext["LUKSEncryption"] != "" {
-		isLUKS, err = strconv.ParseBool(req.PublishContext["LUKSEncryption"])
-		if err != nil {
-			return fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
-		}
-	}
-
+	isLUKS := utils.ParseBool(publishInfo.LUKSEncryption)
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
 	publishInfo.NVMeSubsystemNQN = req.PublishContext["nvmeSubsystemNqn"]
@@ -2483,24 +2449,20 @@ func (p *Plugin) nodePublishNVMeVolume(
 	if req.GetReadonly() {
 		publishInfo.MountOptions = utils.AppendToStringList(publishInfo.MountOptions, "ro", ",")
 	}
-	if publishInfo.LUKSEncryption != "" {
-		isLUKS, err := strconv.ParseBool(publishInfo.LUKSEncryption)
+
+	if utils.ParseBool(publishInfo.LUKSEncryption) {
+		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
+		luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
+			req.VolumeContext["internalName"])
 		if err != nil {
-			return nil, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v", publishInfo.LUKSEncryption)
+			return nil, status.Error(codes.Internal, err.Error())
 		}
-		if isLUKS {
-			// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-			luksDevice, err := utils.NewLUKSDeviceFromMappingPath(ctx, publishInfo.DevicePath,
-				req.VolumeContext["internalName"])
-			if err != nil {
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-			err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
-			if err != nil {
-				Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
-			}
+		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Failed to ensure current LUKS passphrase.")
 		}
 	}
+
 	isRawBlock := publishInfo.FilesystemType == tridentconfig.FsRaw
 	if isRawBlock {
 

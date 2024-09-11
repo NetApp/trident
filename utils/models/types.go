@@ -10,6 +10,7 @@ import (
 
 	"github.com/mitchellh/copystructure"
 
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -696,15 +697,24 @@ func (p *ISCSISessions) AddLUNToPortal(portal string, lData LUNData) error {
 // RemoveLUNFromPortal removes a LUNInfo from the given portal mapping
 // If it is the last LUNInfo corresponding to a portal, then portal is
 // removed from the map as well
-func (p *ISCSISessions) RemoveLUNFromPortal(portal string, l int32) {
-	if iSCSISessionData, err := p.ISCSISessionData(portal); err == nil && iSCSISessionData != nil {
-		iSCSISessionData.LUNs.RemoveLUN(l)
+func (p *ISCSISessions) RemoveLUNFromPortal(portal string, lunID int32) {
+	fields := LogFields{"portal": portal, "lunID": lunID}
 
-		// If this is the last LUN, remove the portal entry
-		if iSCSISessionData.LUNs.IsEmpty() {
-			p.RemovePortal(portal)
-		}
+	iSCSISessionData, err := p.ISCSISessionData(portal)
+	if err != nil {
+		Log().WithFields(fields).WithError(err).Debug("Failed to get session data for portal.")
+		return
+	} else if iSCSISessionData == nil {
+		Log().WithFields(fields).Debug("No session data found for portal.")
+		return
 	}
+	iSCSISessionData.LUNs.RemoveLUN(lunID)
+
+	// If this is the last LUN, remove the portal entry
+	if iSCSISessionData.LUNs.IsEmpty() {
+		p.RemovePortal(portal)
+	}
+	Log().WithFields(fields).Debug("Removed LUN from portal.")
 }
 
 // RemovePortal removes portal (along with its PortalInfo and LUNInfo) from the map

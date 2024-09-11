@@ -872,8 +872,8 @@ func findDevicesForMultipathDevice(ctx context.Context, device string) []string 
 }
 
 // compareWithPublishedDevicePath verifies that published path matches the discovered device path
-func compareWithPublishedDevicePath(ctx context.Context, publishInfo *models.VolumePublishInfo,
-	deviceInfo *ScsiDeviceInfo,
+func compareWithPublishedDevicePath(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
 ) (bool, error) {
 	isProbablyGhostDevice := false
 	discoverMpath := strings.TrimPrefix(deviceInfo.MultipathDevice, devPrefix)
@@ -926,8 +926,8 @@ func compareWithPublishedDevicePath(ctx context.Context, publishInfo *models.Vol
 }
 
 // compareWithPublishedSerialNumber verifies that device serial number matches the discovered LUNs
-func compareWithPublishedSerialNumber(ctx context.Context, publishInfo *models.VolumePublishInfo,
-	deviceInfo *ScsiDeviceInfo,
+func compareWithPublishedSerialNumber(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
 ) (bool, error) {
 	isProbablyGhostDevice := false
 	lunSerialCheckPassed := false
@@ -999,7 +999,8 @@ func compareWithPublishedSerialNumber(ctx context.Context, publishInfo *models.V
 // compareWithAllPublishInfos comparing all publications (allPublishInfos) for
 // LUN number uniqueness, if more than one publication exists with the same LUN number
 // then it indicates a larger problem that user needs to manually fix
-func compareWithAllPublishInfos(ctx context.Context, publishInfo *models.VolumePublishInfo,
+func compareWithAllPublishInfos(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
 	allPublishInfos []models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
 ) error {
 	// During unstaging at least 1 publish info should exist else
@@ -1046,8 +1047,9 @@ func compareWithAllPublishInfos(ctx context.Context, publishInfo *models.VolumeP
 // verifyMultipathDevice verifies that device being removed is correct based on published device path,
 // device serial number (if present) or comparing all publications (allPublishInfos) for
 // LUN number uniqueness.
-func verifyMultipathDevice(ctx context.Context, publishInfo *models.VolumePublishInfo, allPublishInfos []models.VolumePublishInfo,
-	deviceInfo *ScsiDeviceInfo,
+func verifyMultipathDevice(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+	allPublishInfos []models.VolumePublishInfo, deviceInfo *ScsiDeviceInfo,
 ) (bool, error) {
 	// Ensure a correct multipath device is being discovered.
 	// Following steps can be performed:
@@ -1072,8 +1074,9 @@ func verifyMultipathDevice(ctx context.Context, publishInfo *models.VolumePublis
 // also verifies that device being removed is correct based on published device path,
 // device serial number (if present) or comparing all publications (allPublishInfos) for
 // LUN number uniqueness.
-func PrepareDeviceForRemoval(ctx context.Context, publishInfo *models.VolumePublishInfo, allPublishInfos []models.VolumePublishInfo, ignoreErrors,
-	force bool,
+func PrepareDeviceForRemoval(
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
+	allPublishInfos []models.VolumePublishInfo, ignoreErrors, force bool,
 ) (string, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
@@ -1088,35 +1091,37 @@ func PrepareDeviceForRemoval(ctx context.Context, publishInfo *models.VolumePubl
 	Logc(ctx).WithFields(fields).Debug(">>>> devices.PrepareDeviceForRemoval")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.PrepareDeviceForRemoval")
 
-	var multipathDevice string
-	var performDeferredDeviceRemoval bool
-
 	deviceInfo, err := getDeviceInfoForLUN(ctx, lunID, iSCSINodeName, false, true)
 	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"error": err,
-			"lunID": lunID,
-		}).Warn("Could not get device info for removal, skipping host removal steps.")
-		return multipathDevice, err
+		Logc(ctx).WithField(
+			"lunID", lunID,
+		).WithError(err).Warn("Could not get device info for removal, skipping host removal steps.")
+		return "", err
 	}
 
 	if deviceInfo == nil {
-		Logc(ctx).WithFields(LogFields{
-			"lunID": lunID,
-		}).Debug("No device found for removal, skipping host removal steps.")
-		return multipathDevice, nil
+		Logc(ctx).WithField(
+			"lunID", lunID,
+		).Debug("No device found for removal, skipping host removal steps.")
+		return "", nil
 	}
 
-	if publishInfo.IscsiTargetPortal != "" /* CSI Case */ {
+	// CSI Case
+	if publishInfo.IscsiTargetPortal != "" {
 		_, err = verifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
 		if err != nil {
-			return multipathDevice, err
+			return "", err
 		}
 	}
 
-	performDeferredDeviceRemoval, err = removeSCSIDevice(ctx, deviceInfo, ignoreErrors, force)
+	var multipathDevice string
+	performDeferredDeviceRemoval, err := removeSCSIDevice(ctx, deviceInfo, ignoreErrors, force)
 	if performDeferredDeviceRemoval && deviceInfo.MultipathDevice != "" {
 		multipathDevice = devPrefix + deviceInfo.MultipathDevice
+		Logc(ctx).WithFields(LogFields{
+			"lunID":           lunID,
+			"multipathDevice": multipathDevice,
+		}).Debug("Discovered unmapped multipath device when removing SCSI device.")
 	}
 
 	return multipathDevice, err
@@ -1502,7 +1507,9 @@ func GetLUKSPassphrasesFromSecretMap(secrets map[string]string) (string, string,
 }
 
 // EnsureLUKSDeviceMappedOnHost ensures the specified device is LUKS formatted, opened, and has the current passphrase.
-func EnsureLUKSDeviceMappedOnHost(ctx context.Context, luksDevice LUKSDeviceInterface, name string, secrets map[string]string) (bool, error) {
+func EnsureLUKSDeviceMappedOnHost(
+	ctx context.Context, luksDevice LUKSDeviceInterface, name string, secrets map[string]string,
+) (bool, error) {
 	// Try to Open with current luks passphrase
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := GetLUKSPassphrasesFromSecretMap(secrets)
 	if luksPassphrase == "" {

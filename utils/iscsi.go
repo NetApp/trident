@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -471,9 +472,9 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceUUID(multipathDevicePath string
 }
 
 // GetMultipathDeviceDisks find the /sys/block/dmX/slaves/sdX disks.
-func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(ctx context.Context, multipathDevicePath string) ([]string,
-	error,
-) {
+func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(
+	ctx context.Context, multipathDevicePath string,
+) ([]string, error) {
 	devices := make([]string, 0)
 	multipathDevice := strings.TrimPrefix(multipathDevicePath, "/dev/")
 
@@ -1843,7 +1844,8 @@ func EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP strin
 }
 
 // execIscsiadmCommand uses the 'iscsiadm' command to perform operations without logging specified secrets
-func execIscsiadmCommandRedacted(ctx context.Context, args []string, secretsToRedact map[string]string) ([]byte,
+func execIscsiadmCommandRedacted(ctx context.Context, args []string, secretsToRedact map[string]string) (
+	[]byte,
 	error,
 ) {
 	return command.ExecuteRedacted(ctx, "iscsiadm", args, secretsToRedact)
@@ -2058,7 +2060,9 @@ func RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublis
 }
 
 // RemovePortalsFromSession removes portals from portal LUN mapping
-func RemovePortalsFromSession(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions) {
+func RemovePortalsFromSession(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions,
+) {
 	if sessions == nil || len(sessions.Info) == 0 {
 		Logc(ctx).Debug("No sessions found, nothing to remove.")
 		return
@@ -2476,23 +2480,15 @@ func GetDMDeviceForMapperPath(ctx context.Context, mapperPath string) (string, e
 		return "", fmt.Errorf("invalid mapper device path: %s", mapperPath)
 	}
 
-	// Use Lstat to get information about the symlink
-	info, err := os.Lstat(mapperPath)
+	// Use EvalSymlinks to resolve the symlink to its target
+	dmDevicePath, err := filepath.EvalSymlinks(mapperPath)
 	if err != nil {
-		return "", fmt.Errorf("failed to get mapper path: %s", err)
+		return "", fmt.Errorf("failed to resolve symlink: %s", err)
 	}
+	Logc(ctx).WithFields(LogFields{
+		"multipathDevicePath":    mapperPath,
+		"deviceMapperDevicePath": dmDevicePath,
+	}).Debug("Discovered device-mapper device path for multipath device path.")
 
-	// Check if the path is a symlink
-	if info.Mode()&os.ModeSymlink == 0 {
-		return "", fmt.Errorf("path is not symlink: %s", mapperPath)
-	}
-
-	// Get the target of the symlink
-	target, err := os.Readlink(mapperPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read mapper path: %s", err)
-	}
-
-	target = strings.TrimPrefix(target, "../")
-	return "/dev/" + target, nil
+	return dmDevicePath, nil
 }
